@@ -1,0 +1,10 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  errors:
+    missing_required_param: error
+    missing_return: error
+    # This forces to use AppTheme instead of random colors
+    always_use_package_imports: false
