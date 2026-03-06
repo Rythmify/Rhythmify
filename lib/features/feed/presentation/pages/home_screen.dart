@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -22,14 +23,14 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.mail_outline),
             onPressed: () {
-              
+              context.push('/home/inbox');
             },
           ),
 
           IconButton(
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
-              
+              context.push('/home/notifications');
             },
           ),
         ],
