@@ -38,7 +38,7 @@ class LibraryScreen extends ConsumerWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  context.push('/library/playlist'); //change this to be playlist
+                  context.push('/library/playlist');
                 },
                 child: const Text('Go to Playlist Page'),
               ),
