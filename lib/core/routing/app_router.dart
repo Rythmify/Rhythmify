@@ -8,6 +8,11 @@ import '../../features/feed/presentation/pages/feed_screen.dart';
 import '../../features/search/presentation/pages/search_screen.dart';
 import '../../features/library/presentation/pages/library_screen.dart';
 import '../../features/premium/presentation/pages/upgrade_screen.dart';
+import '../../features/messaging/presentation/pages/inbox_screen.dart';
+import '../../features/messaging/presentation/pages/chat_screen.dart';
+import '../../features/notifications/presentation/pages/notifications_screen.dart';
+import '../../features/settings/presentation/pages/settings_screen.dart';
+import '../../features/playlist/presentation/pages/playlist_screen.dart';
 
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -36,6 +41,26 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home',
                 builder: (context, state) => const HomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'inbox', 
+                    builder: (context, state) => const InboxScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'chat/:chatId', //change this to be 
+                        builder: (context, state) => const ChatScreen(), //change this to be dynamic
+                        //{
+                          // final chatId = state.pathParameters['chatId'];
+                          // return ChatScreen(chatId: chatId);
+                        //},
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'notifications',
+                    builder: (context, state) => const NotificationsScreen(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -66,6 +91,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/library',
                 builder: (context, state) => const LibraryScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'settings',
+                    builder: (context, state) => const SettingsScreen(),
+                  ),
+
+                  //// this is dumy to be removed later
+                  GoRoute(
+                    path: 'playlist',
+                    builder: (context, state) => const PlaylistScreen(),
+                  ),
+                ],
               ),
             ],
           ),
