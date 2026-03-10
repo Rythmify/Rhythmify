@@ -1,4 +1,5 @@
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 
 abstract class TrackRepository {
 
@@ -10,16 +11,16 @@ abstract class TrackRepository {
   Future<Track> getTrackDetails(String id);
 
   /// Fetches basic metadata ONLY (used for quick previews of track e.g. in home page)
-  Future<Track> getTrackSummary(String id);
+  Future<TrackSummary> getTrackSummary(String id);
 
   /// Fetches a list of tracks matching a search query.
-  Future<List<Track>> searchTracks(String query);
+  Future<List<TrackSummary>> searchTracks(String query);
 
   /// Fetches a list of tracks that contain a specific tag (e.g. "#lofi").
-  Future<List<Track>> getTracksByTag(String tag);
+  Future<List<TrackSummary>> getTracksByTag(String tag);
 
   /// Fetches tracks uploaded by a specific artist (used on the Artist Profile screen).
-  Future<List<Track>> getTracksByArtist(String artistId);
+  Future<List<TrackSummary>> getTracksByArtist(String artistId);
 
   //=========================
   //   --- Mutations ---
@@ -39,12 +40,12 @@ abstract class TrackRepository {
   //=========================
 
   /// Fetches trending tracks.
-  Future<List<Track>> getTrendingTracks();
+  Future<List<TrackSummary>> getTrendingTracks();
 
   /// Fetches trending tracks filtered by a specific genre.
-  Future<List<Track>> getTrendingTracksByGenre(String genre);
+  Future<List<TrackSummary>> getTrendingTracksByGenre(String genre);
 
   /// Fetches the single "Track of the Day".
-  Future<Track> getHotTrackForYou();
+  Future<TrackSummary> getHotTrackForYou();
   
 }

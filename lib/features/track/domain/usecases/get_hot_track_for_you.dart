@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/track_repository.dart';
 
 class GetHotTrackForYou {
@@ -6,7 +6,7 @@ class GetHotTrackForYou {
 
   GetHotTrackForYou(this.repository);
 
-  Future<Track> call() async {
+  Future<TrackSummary> call() async {
     return await repository.getHotTrackForYou();
   }
 }

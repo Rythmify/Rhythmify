@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/track_repository.dart';
 
 class GetTrendingTracksByGenre {
@@ -6,7 +6,7 @@ class GetTrendingTracksByGenre {
 
   GetTrendingTracksByGenre(this.repository);
 
-  Future<List<Track>> call(String genre) async {
+  Future<List<TrackSummary>> call(String genre) async {
     if (genre.isEmpty) return await repository.getTrendingTracks();
     return await repository.getTrendingTracksByGenre(genre);
   }

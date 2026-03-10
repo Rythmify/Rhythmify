@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/track_repository.dart';
 
 class GetTracksByArtist {
@@ -6,7 +6,7 @@ class GetTracksByArtist {
 
   GetTracksByArtist(this.repository);
 
-  Future<List<Track>> call(String artistId) async {
+  Future<List<TrackSummary>> call(String artistId) async {
     if (artistId.isEmpty) throw ArgumentError('Artist ID cannot be empty');
     return await repository.getTracksByArtist(artistId);
   }

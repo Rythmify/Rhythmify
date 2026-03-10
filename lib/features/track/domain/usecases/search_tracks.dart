@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/track_repository.dart';
 
 class SearchTracks {
@@ -6,7 +6,7 @@ class SearchTracks {
 
   SearchTracks(this.repository);
 
-  Future<List<Track>> call(String query) async {
+  Future<List<TrackSummary>> call(String query) async {
     if (query.trim().isEmpty) return [];
     return await repository.searchTracks(query);
   }

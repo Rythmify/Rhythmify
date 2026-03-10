@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/track_repository.dart';
 
 class GetTracksByTag {
@@ -6,7 +6,7 @@ class GetTracksByTag {
 
   GetTracksByTag(this.repository);
 
-  Future<List<Track>> call(String tag) async {
+  Future<List<TrackSummary>> call(String tag) async {
     
     // Ensuring the tag always starts with a hash
     final formattedTag = tag.startsWith('#') ? tag : '#$tag';
