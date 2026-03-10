@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../domain/entities/track_summary.dart';
 
 class TrackSummaryDto {
   static TrackSummary fromJson(Map<String, dynamic> json) {
