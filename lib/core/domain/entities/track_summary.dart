@@ -5,6 +5,7 @@ class TrackSummary {
   final String artist;
   final String artworkUrl;
   final String audioUrl;
+  final String shareUrl;
   final Duration duration;
   final int playCount;
   final bool isLiked;
@@ -17,6 +18,7 @@ class TrackSummary {
     required this.artist,
     required this.artworkUrl,
     required this.audioUrl,
+    required this.shareUrl,
     required this.duration,
     required this.playCount,
     this.isLiked = false,
