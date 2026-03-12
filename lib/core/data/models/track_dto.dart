@@ -9,9 +9,9 @@ class TrackDto {
       artist:     json['artist'] as String,
       artworkUrl: json['artwork_url'] as String,
       audioUrl:   json['audio_url'] as String,
-      shareUrl:   json['share_url'] as String,
+      shareUrl:   json['share_url'] as String? ?? '',
       duration: Duration(seconds: json['duration_seconds'] as int),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
       
       playCount:     json['play_count'] as int? ?? 0,
       likeCount:     json['like_count'] as int? ?? 0,

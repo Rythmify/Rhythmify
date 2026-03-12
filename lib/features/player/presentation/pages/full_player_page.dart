@@ -1,145 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
-import '../widgets/player_controls.dart';
+import '../widgets/scrolling_artwork_background.dart';
+import '../widgets/playback_overlay_controls.dart';
+import '../widgets/track_info_box.dart';
+import '../widgets/player_progress_bar.dart';
+import 'package:rythmify/features/comments/presentation/widgets/floating_comment_bar.dart';
+import '../widgets/player_action_bar.dart';
+import 'package:go_router/go_router.dart';
 
 class FullPlayerPage extends ConsumerWidget {
-  const FullPlayerPage({super.key});
+  final VoidCallback? onCollapse;
+  const FullPlayerPage({super.key, this.onCollapse});
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$twoDigitMinutes:$twoDigitSeconds";
+  void _triggerNavigation(BuildContext context, String trackId) {
+    // Collapse the player
+    if (onCollapse != null) onCollapse!();
+    context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(playerStateProvider);
-    final track = playerState.currentTrack;
+    final summary = ref.watch(playerStateProvider.select((state) => state.currentTrack));
 
-    if (track == null) {
+    if (summary == null) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
-        body: Center(child: Text("No track playing", style: TextStyle(color: Colors.white))),
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text("No track playing", style: TextStyle(color: Colors.white)),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Now Playing', style: TextStyle(color: Colors.white, fontSize: 14)),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        // Tapping anywhere on the background toggles play/pause
+        onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
+        child: Stack(
           children: [
-            // Artwork
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  track.artworkUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (a,b,c) => Container(
-                    color: Colors.grey[800],
-                    child: const Icon(Icons.music_note, color: Colors.white54, size: 100),
-                  ),
-                ),
+            // ==========================================
+            // LAYER 1: Optimized Scrolling Background
+            // ==========================================
+            Positioned.fill(
+              child: ScrollingArtworkBackground(artworkUrl: summary.artworkUrl),
+            ),
+
+            // ==========================================
+            // LAYER 2: Playback Controls Overlay
+            // ==========================================
+            const Positioned.fill(
+              child: PlaybackOverlayControls(),
+            ),
+
+            // ==========================================
+            // LAYER 3: Top Left Track Info
+            // ==========================================
+            Positioned(
+              top: 60,
+              left: 16,
+              child: TrackInfoBox(
+                summary: summary,
+                onNavigateBehindTrack: () => _triggerNavigation(context, summary.id),
               ),
             ),
-            const SizedBox(height: 32),
-            
-            // Title & Artist
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.title,
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        track.artist,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+
+            // ==========================================
+            // LAYER 4: Top Right Controls
+            // ==========================================
+            Positioned(
+              top: 50,
+              right: 8,
+              child: Column(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    child: IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                      onPressed: onCollapse ?? () => Navigator.pop(context),
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    track.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    child: IconButton(
+                      icon: const Icon(Icons.person_add_alt_1, color: Colors.black),
+                      onPressed: () {
+                      },
+                    ),
                   ),
-                  onPressed: () {
-                    // Trigger like use case
-                  },
-                )
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-            // Progress Bar
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 4,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                activeTrackColor: AppTheme.primaryBrand,
-                inactiveTrackColor: Colors.grey[800],
-                thumbColor: AppTheme.primaryBrand,
-              ),
-              child: Slider(
-                min: 0,
-                max: playerState.duration.inMilliseconds.toDouble() > 0 
-                    ? playerState.duration.inMilliseconds.toDouble() 
-                    : 1,
-                value: playerState.position.inMilliseconds.toDouble().clamp(
-                    0.0, 
-                    playerState.duration.inMilliseconds.toDouble() > 0 ? playerState.duration.inMilliseconds.toDouble() : 1.0),
-                onChanged: (value) {
-                  ref.read(playerStateProvider.notifier).seek(Duration(milliseconds: value.toInt()));
-                },
+                ],
               ),
             ),
-            
-            // Time Info
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(_formatDuration(playerState.position), style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                Text(_formatDuration(playerState.duration), style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-              ],
+
+            // ==========================================
+            // LAYER 5, 6, 7: Bottom Elements
+            // ==========================================
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const PlayerProgressBar(),
+                  const SizedBox(height: 50),
+                  const FloatingCommentBar(),
+                  const SizedBox(height: 40),
+                  PlayerActionBar(trackId: summary.id),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            
-            // Controls
-            const PlayerControls(),
-            const SizedBox(height: 32),
           ],
         ),
       ),

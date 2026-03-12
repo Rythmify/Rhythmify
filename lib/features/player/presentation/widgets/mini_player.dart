@@ -37,11 +37,11 @@ class MiniPlayer extends ConsumerWidget {
               child: Image.asset(
                 track.artworkUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (a,b,c) => const Icon(Icons.music_note, color: Colors.white54),
+                errorBuilder: (a, b, c) => const Icon(Icons.music_note, color: Colors.white54),
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Info
             Expanded(
               child: Column(
@@ -64,7 +64,7 @@ class MiniPlayer extends ConsumerWidget {
                 ],
               ),
             ),
-            
+
             // Controls
             IconButton(
               icon: Icon(
