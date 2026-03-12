@@ -34,7 +34,7 @@ class TrackInfoBox extends StatelessWidget {
                   ),
                   TextSpan(
                     text: summary.artist,
-                    style: AppTheme.titleMedium.copyWith(fontSize: 16,color: AppTheme.semiWhite),
+                    style: AppTheme.titleMedium.copyWith(fontSize: 16, color: AppTheme.semiWhite),
                   ),
                 ],
               ),

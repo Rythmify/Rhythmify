@@ -24,8 +24,8 @@ class PlayerProgressBar extends ConsumerWidget {
       child: Column(
         children: [
           Text(
-            '${Formatters.formatDuration(position)} | ${Formatters.formatDuration(duration)}',
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+            '${Formatters.formatDuration(position)}  |  ${Formatters.formatDuration(duration)}',
+            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           ),
           SliderTheme(
             data: SliderThemeData(
