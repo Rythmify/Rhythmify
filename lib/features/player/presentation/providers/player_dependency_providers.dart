@@ -10,7 +10,7 @@ import '../../domain/usecases/load_queue_usecase.dart';
 
 // --- DATA Providers ---
 final audioHandlerProvider = Provider<RythmifyAudioHandler>((ref) {
-  return RythmifyAudioHandler();
+  throw UnimplementedError('audioHandlerProvider was not overridden in ProviderScope');
 });
 
 final audioRepositoryProvider = Provider<AudioRepository>((ref) {

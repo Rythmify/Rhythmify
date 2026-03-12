@@ -61,7 +61,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
           title: track.title,
           artist: track.artist,
           duration: track.duration,
-          artUri: Uri.parse('asset:///${track.artworkUrl}'), ///change this later
+          artUri: Uri.parse('asset:///${track.artworkUrl}'),
         ));
       }
     });
