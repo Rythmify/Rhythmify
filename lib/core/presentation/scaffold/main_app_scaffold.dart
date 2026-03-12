@@ -59,15 +59,14 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     final playerState = ref.watch(playerStateProvider);
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
-
+  
     // We use a local variable to capture the minSize during build
     final currentMinSize = _minSize;
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. Main Content
+          // 1. Main Content (Back to Full Screen)
           Positioned.fill(
             child: widget.navigationShell,
           ),

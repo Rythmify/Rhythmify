@@ -25,7 +25,7 @@ class BehindTheTrackPage extends ConsumerWidget {
       ),
       body: trackAsync.when(
         data: (track) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 180), // 180px bottom space for the player/nav-bar
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

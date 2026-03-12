@@ -13,47 +13,50 @@ class PlayerControls extends ConsumerWidget {
     final isPlaying = playerState.status == PlayerStatus.playing;
     final isLoading = playerState.status == PlayerStatus.loading;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.shuffle, color: Colors.white54),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
-          onPressed: () => ref.read(playerStateProvider.notifier).skipToPrevious(),
-        ),
-        GestureDetector(
-          onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryBrand,
-              shape: BoxShape.circle,
-            ),
-            child: isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                  )
-                : Icon(
-                    isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
-                    size: 36,
-                  ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0), 
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center, 
+        children: [
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
+            onPressed: () => ref.read(playerStateProvider.notifier).skipToPrevious(),
           ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
-          onPressed: () => ref.read(playerStateProvider.notifier).skipToNext(),
-        ),
-        IconButton(
-          icon: const Icon(Icons.repeat, color: Colors.white54),
-          onPressed: () {},
-        ),
-      ],
+          
+          const SizedBox(width: 60), 
+          
+          GestureDetector(
+            onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: AppTheme.primaryBrand,
+                shape: BoxShape.circle,
+              ),
+              child: isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                    )
+                  : Icon(
+                      isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 36,
+                    ),
+            ),
+          ),
+          
+          const SizedBox(width: 60), 
+          
+          IconButton(
+            icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
+            onPressed: () => ref.read(playerStateProvider.notifier).skipToNext(),
+          ),
+        ],
+      ),
     );
   }
 }

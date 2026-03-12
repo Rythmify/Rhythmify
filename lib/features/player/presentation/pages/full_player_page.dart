@@ -69,23 +69,36 @@ class FullPlayerPage extends ConsumerWidget {
             // LAYER 4: Top Right Controls
             // ==========================================
             Positioned(
-              top: 50,
+              top: 60,
               right: 8,
               child: Column(
                 children: [
                   Container(
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, 
+                        color: Colors.white,
+                      ),
                     child: IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 20),
+                      
                       onPressed: onCollapse ?? () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Container(
+                    width: 40,
+                    height: 40,
                     decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
                     child: IconButton(
-                      icon: const Icon(Icons.person_add_alt_1, color: Colors.black),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.person_add_alt_1, color: Colors.black, size: 20),
                       onPressed: () {
+                        // Handle user add
                       },
                     ),
                   ),
@@ -93,9 +106,9 @@ class FullPlayerPage extends ConsumerWidget {
               ),
             ),
 
-            // ==========================================
-            // LAYER 5, 6, 7: Bottom Elements
-            // ==========================================
+            // =================
+            //  Bottom Elements
+            // =================
             Align(
               alignment: Alignment.bottomCenter,
               child: Column(
