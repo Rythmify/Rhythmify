@@ -14,6 +14,12 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/playlist/presentation/pages/playlist_screen.dart';
 
+// ── Auth imports (Module 1 - Karim CP-5) ──
+import '../../features/authentication/presentation/pages/onboarding_page.dart';
+import '../../features/authentication/presentation/pages/sign_in_page.dart';
+import '../../features/authentication/presentation/pages/create_account_password_page.dart';
+import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -25,9 +31,36 @@ final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/home',
-    
+    initialLocation: '/onboarding',
+
     routes: [
+
+      // ── Auth routes (outside the shell, no bottom nav bar) ──
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: '/sign-in',
+        builder: (context, state) => const SignInPage(),
+      ),
+      GoRoute(
+        path: '/create-account/password',
+        builder: (context, state) {
+          final email = state.extra as String;
+          return CreateAccountPasswordPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/create-account/profile',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>;
+          return CreateAccountProfilePage(
+            email: data['email'] as String,
+            password: data['password'] as String,
+          );
+        },
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
