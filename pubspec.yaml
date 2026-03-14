@@ -16,6 +16,12 @@ dependencies:
   flutter_riverpod: ^3.2.1
   equatable: ^2.0.8
 
+  # Profile
+  image_picker: ^1.1.2
+  share_plus: ^10.1.2
+
+  font_awesome_flutter: ^10.7.0
+  
 # Authentication
   dartz: ^0.10.1
   google_sign_in: ^6.2.1
@@ -61,11 +67,11 @@ flutter:
   # Defining assets location
   uses-material-design: true
   assets:
-    - assets/icons/
-    - assets/mocks/
-    - assets/images/
-    - assets/audio/
-    
+  - assets/icons/
+  - assets/images/
+
+
+
 flutter_launcher_icons:
   android: true
   ios: true
