@@ -14,11 +14,15 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/playlist/presentation/pages/playlist_screen.dart';
 
-// ── Auth imports (Module 1 - Karim CP-5) ──
+//  Auth imports  
 import '../../features/authentication/presentation/pages/onboarding_page.dart';
 import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+//  Profile imports 
+import '../../features/profile/presentation/pages/public_profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/likes_page.dart';
 
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -34,8 +38,26 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/onboarding',
 
     routes: [
-
-      // ── Auth routes (outside the shell, no bottom nav bar) ──
+  //  Profile routes  
+  GoRoute(
+    path: '/profile/:userId',
+    builder: (context, state) {
+      final userId = state.pathParameters['userId']!;
+      return PublicProfilePage(userId: userId);
+    },
+  ),
+  GoRoute(
+    path: '/profile/edit',
+    builder: (context, state) => const EditProfilePage(),
+  ),
+  GoRoute(
+    path: '/profile/:userId/likes',
+    builder: (context, state) {
+      final userId = state.pathParameters['userId']!;
+      return LikesPage(userId: userId);
+    },
+  ),
+      //  Auth routes (outside the shell, no bottom nav bar) 
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
