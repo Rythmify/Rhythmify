@@ -5,9 +5,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 
-// =====================================================================
-// TRACK CARD WIDGET
-// =====================================================================
+// ===================
+//  TRACK CARD WIDGET
+// ===================
 
 class TrackCard extends ConsumerWidget {
   final TrackSummary track;
@@ -57,7 +57,7 @@ class TrackCard extends ConsumerWidget {
                 width: 65,
                 height: 65,
                 fit: BoxFit.cover,
-                // Fallback icon in case the mock image isn't in your assets folder yet
+                // Fallback icon in case the mock image isn't in the assets folder yet
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 65, height: 56, color: Colors.grey[800],
                   child: const Icon(Icons.music_note, color: Colors.grey),
@@ -66,7 +66,7 @@ class TrackCard extends ConsumerWidget {
             ),
             const SizedBox(width: 14),
 
-            // 2. Middle Text Column
+            // Middle Text Column
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
