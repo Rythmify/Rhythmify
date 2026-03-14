@@ -6,6 +6,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   file_selector_windows
   flutter_secure_storage_windows
+<<<<<<< HEAD
+=======
+  share_plus
+>>>>>>> de9aba3f320e3c553e5f7159c0d6a45d71a35460
   url_launcher_windows
 )
 
