@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../../domain/entities/profile_entity.dart';
 import '../../../../../core/theme/app_theme.dart';
 import 'profile_avatar.dart';
@@ -10,8 +12,7 @@ class ShareBottomSheet extends StatelessWidget {
 
   const ShareBottomSheet({super.key, required this.profile});
 
-  String get _profileUrl =>
-      'https://rythmify.com/users/${profile.id}';
+  String get _profileUrl => 'https://rythmify.com/users/${profile.id}';
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +25,13 @@ class ShareBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Handle ────────────────────────────────────────────────
+          /// ── Handle ─────────────────────────────────────────────
           Center(
             child: Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.textSecondary.withOpacity(0.4),
+                color: AppTheme.textSecondary.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -38,7 +39,7 @@ class ShareBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ── Profile preview ───────────────────────────────────────
+          /// ── Profile preview ────────────────────────────────────
           Row(
             children: [
               ProfileAvatar(
@@ -46,6 +47,7 @@ class ShareBottomSheet extends StatelessWidget {
                 radius: 24,
               ),
               const SizedBox(width: 12),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -57,61 +59,122 @@ class ShareBottomSheet extends StatelessWidget {
                   ),
                 ],
               ),
+
+              const Spacer(),
+
+              
             ],
           ),
 
           const SizedBox(height: 24),
 
-          // ── Share options ─────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _shareOption(
-                context,
-                icon: Icons.send,
-                label: 'Message',
-                onTap: () {
-                  Navigator.pop(context);
-                  Share.share(_profileUrl);
-                },
-              ),
-              _shareOption(
-                context,
-                icon: Icons.copy,
-                label: 'Copy Link',
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: _profileUrl));
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied to clipboard')),
-                  );
-                },
-              ),
-              _shareOption(
-                context,
-                icon: Icons.share,
-                label: 'More',
-                onTap: () {
-                  Navigator.pop(context);
-                  Share.share(
-                    'Check out ${profile.displayName} on Rythmify! $_profileUrl',
-                  );
-                },
-              ),
-              _shareOption(
-                context,
-                icon: Icons.qr_code,
-                label: 'QR code',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
+          /// ── Share options (SCROLLABLE) ─────────────────────────
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _shareOption(
+                  context,
+                  icon: Icons.send,
+                  label: 'Message',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Share.share(_profileUrl);
+                  },
+                ),
+
+                const SizedBox(width: 16),
+
+                _shareOption(
+                  context,
+                  icon: Icons.copy,
+                  label: 'Copy Link',
+                  onTap: () {
+                    Clipboard.setData(
+                      ClipboardData(text: _profileUrl),
+                    );
+
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link copied to clipboard'),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(width: 16),
+
+                _shareOption(
+                  context,
+                  icon: FontAwesomeIcons.whatsapp,
+                  label: 'WhatsApp',
+                  iconColor: Colors.white,
+                  backgroundColor: AppTheme.whatsApp,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Share.share(_profileUrl);
+                  },
+                ),
+                 
+                 const SizedBox(width: 16),
+
+                     _shareOption(
+                  context,
+                  icon: FontAwesomeIcons.whatsapp,
+                  label: 'status',
+                  iconColor: Colors.white,
+                  backgroundColor: AppTheme.whatsApp,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Share.share(_profileUrl);
+                  },
+                ),
+
+                const SizedBox(width: 16),
+                
+                _shareOption(
+                  context,
+                  icon: FontAwesomeIcons.instagram,
+                  label: 'Stories',
+                  iconColor: Colors.white,
+                  backgroundColor: AppTheme.instagram,
+                  onTap: () {},
+                ),
+
+                const SizedBox(width: 16),
+
+                _shareOption(
+                  context,
+                  icon: Icons.sms,
+                  label: 'SMS',
+                  iconColor: Colors.white,
+                  backgroundColor: AppTheme.sms,
+                  onTap: () {},
+                ),
+
+                const SizedBox(width: 16),
+
+                _shareOption(
+                  context,
+                  icon: Icons.qr_code,
+                  label: 'QR code',
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 24),
 
-          // ── View info ─────────────────────────────────────────────
+          /// Divider
+          Divider(
+            color: AppTheme.textSecondary.withOpacity(0.2),
+            height: 32,
+          ),
+
+          /// ── View info ──────────────────────────────────────────
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Row(
@@ -131,11 +194,14 @@ class ShareBottomSheet extends StatelessWidget {
     );
   }
 
+  /// ── Share button widget ──────────────────────────────────────
   Widget _shareOption(
     BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? backgroundColor,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -145,10 +211,14 @@ class ShareBottomSheet extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppTheme.background,
+              color: backgroundColor ?? AppTheme.shareCircle,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.textPrimary, size: 24),
+            child: Icon(
+              icon,
+              color: iconColor ?? AppTheme.textPrimary,
+              size: 26,
+            ),
           ),
           const SizedBox(height: 6),
           Text(label, style: AppTheme.labelSmall),

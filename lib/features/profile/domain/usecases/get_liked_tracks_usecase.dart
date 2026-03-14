@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../entities/track_entity.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../repositories/profile_repository.dart';
 
 class GetLikedTracksUseCase {
@@ -8,7 +8,7 @@ class GetLikedTracksUseCase {
 
   GetLikedTracksUseCase(this.repository);
 
-  Future<Either<Failure, List<TrackEntity>>> call({
+  Future<Either<Failure, List<TrackSummary>>> call({
     required String userId,
     int page = 1,
     int limit = 20,

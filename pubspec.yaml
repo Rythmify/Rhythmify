@@ -19,6 +19,8 @@ dependencies:
   # Profile
   image_picker: ^1.1.2
   share_plus: ^10.1.2
+
+  font_awesome_flutter: ^10.7.0
   
 # Authentication
   dartz: ^0.10.1

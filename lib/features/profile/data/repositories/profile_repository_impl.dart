@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/profile_entity.dart';
-import '../../domain/entities/track_entity.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/profile_remote_datasource.dart';
@@ -112,7 +112,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, List<TrackEntity>>> getLikedTracks({
+  Future<Either<Failure, List<TrackSummary>>> getLikedTracks({
     required String userId,
     required int page,
     required int limit,

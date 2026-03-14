@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../domain/entities/track_entity.dart';
+import '../../../../core/domain/entities/track_summary.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 class TrackListTile extends StatelessWidget {
-  final TrackEntity track;
+  final TrackSummary track;
   final VoidCallback? onTap;
   final VoidCallback? onMoreTap;
 
@@ -72,7 +72,7 @@ class TrackListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    track.artistName,
+                    track.artist,
                     style: AppTheme.bodyMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -97,7 +97,7 @@ class TrackListTile extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _formatDuration(track.durationSeconds),
+                        _formatDuration(track.duration.inSeconds),
                         style: AppTheme.labelSmall,
                       ),
                       const SizedBox(width: 8),
