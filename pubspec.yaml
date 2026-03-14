@@ -71,8 +71,10 @@ flutter:
   # Defining assets location
   uses-material-design: true
   assets:
-  - assets/icons/
-  - assets/images/
+    - assets/icons/
+    - assets/images/
+    - assets/mocks/
+    - assets/audio/
 
 
 
