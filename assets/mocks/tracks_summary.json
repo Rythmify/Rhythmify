@@ -1,0 +1,74 @@
+[
+  {
+    "id": "t_001",
+    "artist_id": "a_101",
+    "title": "Neon Nights",
+    "artist": "Synthwave Boy",
+    "artwork_url": "assets/images/track_1.jpg",
+    "audio_url": "assets/audio/Track_audio_1.mp3",
+    "duration_seconds": 214,
+    "play_count": 1542000,
+    "is_liked": true,
+    "is_artist_followed": true
+  },
+  {
+    "id": "t_002",
+    "artist_id": "a_102",
+    "title": "Midnight Chill",
+    "artist": "LoFi Beats",
+    "artwork_url": "assets/images/track_2.jpg",
+    "audio_url": "assets/audio/Track_audio_2.mp3",
+    "duration_seconds": 185,
+    "play_count": 890500,
+    "is_liked": false,
+    "is_artist_followed": false
+  },
+  {
+    "id": "t_003",
+    "artist_id": "a_103",
+    "title": "Drop The Bass",
+    "artist": "DJ Rythm",
+    "artwork_url": "assets/images/track_3.jpg",
+    "audio_url": "assets/audio/Track_audio_3.mp3",
+    "duration_seconds": 240,
+    "play_count": 45000,
+    "is_liked": true,
+    "is_artist_followed": false
+  },
+  {
+    "id": "t_004",
+    "artist_id": "a_104",
+    "title": "Cairo Drift",
+    "artist": "Desert Trap",
+    "artwork_url": "assets/images/track_4.jpg",
+    "audio_url": "assets/audio/Track_audio_4.mp3",
+    "duration_seconds": 198,
+    "play_count": 3200000,
+    "is_liked": true,
+    "is_artist_followed": true
+  },
+  {
+    "id": "t_005",
+    "artist_id": "a_105",
+    "title": "Acoustic Sunrise",
+    "artist": "The Indie Strings",
+    "artwork_url": "assets/images/track_5.jpg",
+    "audio_url": "assets/audio/Track_audio_5.mp3",
+    "duration_seconds": 275,
+    "play_count": 12500,
+    "is_liked": false,
+    "is_artist_followed": false
+  },
+  {
+    "id": "t_006",
+    "artist_id": "a_106",
+    "title": "Deep Focus",
+    "artist": "Ambient Mind",
+    "artwork_url": "assets/images/track_6.jpg",
+    "audio_url": "assets/audio/Track_audio_6.mp3",
+    "duration_seconds": 3600,
+    "play_count": 550000,
+    "is_liked": false,
+    "is_artist_followed": true
+  }
+]
