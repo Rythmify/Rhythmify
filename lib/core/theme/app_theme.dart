@@ -13,6 +13,7 @@ class AppTheme {
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.grey;
   static const Color appBarItems = Color(0xFFD6D6D6);
+  static const Color link = Color(0xFF2F80ED);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
