@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/feed/presentation/widgets/trending_by_genre.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 
 // Import your entities, models, and widgets (adjust the relative paths if your folder structure differs slightly)
@@ -33,7 +34,15 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('Home'),
         centerTitle: false,
         actions: [
-          IconButton(icon: const Icon(Icons.arrow_circle_up), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.arrow_circle_up), onPressed: () {
+            ref.read(uploadFormProvider.notifier).initDraft(
+                artistId:       'dev_user_001',
+                localAudioPath: '/fake/path/summer_vibes.mp3',
+                duration:       const Duration(minutes: 3, seconds: 32),
+                fileName:       'summer_vibes.mp3',
+              );
+              GoRouter.of(context).push('/upload-track');
+          }),
           IconButton(
             icon: const Icon(Icons.mail_outline),
             onPressed: () {

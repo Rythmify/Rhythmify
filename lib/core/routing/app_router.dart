@@ -22,6 +22,9 @@ import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
 
+// ── Track_upload imports (Module 1 - Karim CP-5) ──
+import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
+
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -202,6 +205,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
       ),
+      GoRoute(
+      parentNavigatorKey: _rootNavigatorKey, // uses root navigator
+      path: '/upload-track',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const UploadTrackScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slides up from bottom — exactly like SoundCloud
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1), // starts from bottom
+              end: Offset.zero,          // ends at normal position
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
+    ),
     ],
   );
 });
