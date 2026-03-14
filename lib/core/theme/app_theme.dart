@@ -83,8 +83,9 @@ class AppTheme {
 
   // --- TITLES ---
   static TextStyle get titleLarge => GoogleFonts.inter(
-    fontSize: 22,
-    fontWeight: FontWeight.w600, // SemiBold
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
     color: textPrimary,
   );
 
