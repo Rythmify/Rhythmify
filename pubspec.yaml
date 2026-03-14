@@ -61,11 +61,11 @@ flutter:
   # Defining assets location
   uses-material-design: true
   assets:
-  - assets/icons/
-  - assets/images/
-
-
-
+    - assets/icons/
+    - assets/mocks/
+    - assets/images/
+    - assets/audio/
+    
 flutter_launcher_icons:
   android: true
   ios: true
