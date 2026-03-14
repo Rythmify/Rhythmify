@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/player_provider.dart';
+import '../../domain/entities/player_state.dart';
+
+class PlaybackOverlayControls extends ConsumerWidget {
+  const PlaybackOverlayControls({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only rebuilds when the playing status changes (play vs pause)
+    final status = ref.watch(playerStateProvider.select((state) => state.status));
+    final bool isPaused = status != PlayerStatus.playing;
+
+    return IgnorePointer(
+      ignoring: !isPaused,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        // Replaced heavy BackdropFilter with a smooth, dark overlay
+        color: isPaused ? Colors.black.withValues(alpha: 0.6) : Colors.transparent,
+        child: isPaused 
+            ? Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildCircleControlButton(
+                      icon: Icons.skip_previous,
+                      onTap: () => ref.read(playerStateProvider.notifier).skipToPrevious(),
+                    ),
+                    const SizedBox(width: 32),
+                    _buildCircleControlButton(
+                      icon: Icons.play_arrow,
+                      size: 55,
+                      iconSize: 35,
+                      color: const Color.fromARGB(255, 18, 18, 18),
+                      onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
+                    ),
+                    const SizedBox(width: 32),
+                    _buildCircleControlButton(
+                      icon: Icons.skip_next,
+                      onTap: () => ref.read(playerStateProvider.notifier).skipToNext(),
+                    ),
+                  ],
+                ),
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildCircleControlButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    double size = 42,
+    double iconSize = 25,
+    Color? color,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color ?? const Color.fromARGB(255, 18, 18, 18),
+        ),
+        child: Icon(icon, color: Colors.white, size: iconSize),
+      ),
+    );
+  }
+}

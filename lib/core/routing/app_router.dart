@@ -13,6 +13,8 @@ import '../../features/messaging/presentation/pages/chat_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/playlist/presentation/pages/playlist_screen.dart';
+import '../../features/player/presentation/pages/full_player_page.dart';
+import '../../features/track/presentation/pages/behind_the_track.dart';
 
 // ── Auth imports (Module 1 - Karim CP-5) ──
 import '../../features/authentication/presentation/pages/onboarding_page.dart';
@@ -93,6 +95,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'notifications',
                     builder: (context, state) => const NotificationsScreen(),
                   ),
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
+                    },
+                  ),
                 ],
               ),
             ],
@@ -104,6 +113,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/feed',
                 builder: (context, state) => const FeedScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    name: 'behindTheTrack', // <-- Add this exact name!
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
+                    },
+                  )
+                ],
               ),
             ],
           ),
@@ -114,6 +133,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/search',
                 builder: (context, state) => const SearchScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -135,6 +163,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'playlist',
                     builder: (context, state) => const PlaylistScreen(),
                   ),
+
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
+                    },
+                  ),
                 ],
               ),
             ],
@@ -146,10 +182,25 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
         ],
+      ),
+      
+      GoRoute(
+        path: '/player',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const FullPlayerPage(),
       ),
     ],
   );

@@ -12,6 +12,7 @@ class AppTheme {
   static const Color surface = Color(0xFF2E2E2E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.grey;
+  static const Color semiWhite = Color.fromARGB(255, 188, 188, 188);
   static const Color appBarItems = Color(0xFFD6D6D6);
   static const Color link = Color(0xFF2F80ED);
 
@@ -31,6 +32,27 @@ class AppTheme {
     fontWeight: FontWeight.w500,
     letterSpacing: -0.1,
     color: textSecondary,
+  );
+
+  static TextStyle get miniPlayerFont1 => GoogleFonts.inter(
+    fontSize: 15,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
+  static TextStyle get miniPlayerFont2 => GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    color: semiWhite,
+  );
+
+  static TextStyle get bodyNormal => GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
+    color: textPrimary,
   );
 
   // ==========================================
@@ -59,8 +81,8 @@ class AppTheme {
   );
 
   static TextStyle get titleMedium => GoogleFonts.inter(
-    fontSize: 16,
-    fontWeight: FontWeight.w500, // Medium
+    fontSize: 18,
+    fontWeight: FontWeight.w900, // Medium
     letterSpacing: 0.15,
     color: textPrimary,
   );
