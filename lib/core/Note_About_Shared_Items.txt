@@ -1,0 +1,6 @@
+The Shared Vocabulary (domain and presentation):
+
+This is where we solve the problem of modules needing the same things.
+Because feed and library both need to display songs, the blueprint (track_entity)
+and the visual layout (track_card) live here so everyone can use them
+without creating circular dependencies.
