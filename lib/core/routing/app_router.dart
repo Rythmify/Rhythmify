@@ -14,6 +14,9 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/playlist/presentation/pages/playlist_screen.dart';
 
+//added by hana
+import 'package:rythmify/features/upload_track/presentation/screens/upload_track_screen.dart';
+
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -28,6 +31,32 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/home',
     
     routes: [
+
+
+
+      //added by hana
+            // ── ADD THIS ──────────────────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey, // uses root navigator
+        path: '/upload-track',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const UploadTrackScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            // Slides up from bottom — exactly like SoundCloud
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1), // starts from bottom
+                end: Offset.zero,          // ends at normal position
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            );
+          },
+        ),
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

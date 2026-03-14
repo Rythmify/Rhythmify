@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:rythmify/features/upload_track/presentation/providers/upload_track_provider.dart';
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -16,7 +18,15 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
             onPressed: () {
-              
+              // Initialize fake draft for Chrome testing.
+              // Replace with pick_audio_usecase when on real device.
+              ref.read(uploadFormProvider.notifier).initDraft(
+                artistId:       'dev_user_001',
+                localAudioPath: '/fake/path/summer_vibes.mp3',
+                duration:       const Duration(minutes: 3, seconds: 32),
+                fileName:       'summer_vibes.mp3',
+              );
+              GoRouter.of(context).push('/upload-track');
             },
           ),
 
