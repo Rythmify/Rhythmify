@@ -10,9 +10,9 @@ import '../../../player/domain/entities/player_state.dart';
 import '../providers/home_providers.dart';
 import 'dart:ui';
 
-// ======================================================
-// HOT FOR YOU SECTION
-// ======================================================
+// =====================
+//  HOT FOR YOU SECTION
+// =====================
 
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
@@ -50,9 +50,9 @@ class HotForYouSection extends ConsumerWidget {
   }
 }
 
-// ======================================================
-// HOT FOR YOU CARD
-// ======================================================
+// ==================
+//  HOT FOR YOU CARD
+// ==================
 
 class HotForYouCard extends ConsumerStatefulWidget {
   final TrackSummary track;
@@ -96,7 +96,13 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+
+           border: Border.all(
+                color: Colors.grey,
+                width: 0.5,
+              ),
+          
+          borderRadius: BorderRadius.circular(12),
           image: DecorationImage(
             image: AssetImage(widget.track.artworkUrl),
             fit: BoxFit.cover,
@@ -132,7 +138,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
                               Text(
                                 widget.track.artist,
-                                style: AppTheme.labelSmall,
+                                style: AppTheme.bodyNormal.copyWith(color: AppTheme.semiWhite),
                               ),
                             ],
                           ),
@@ -231,6 +237,10 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             width: 65,
             height: 70,
             decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.7),
+                width: 0.8,
+              ),
               borderRadius: BorderRadius.circular(8),
               color: Colors.grey[900],
             ),
@@ -271,7 +281,7 @@ class FrostedGlassBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(

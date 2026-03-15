@@ -16,6 +16,19 @@ import '../../features/playlist/presentation/pages/playlist_screen.dart';
 import '../../features/player/presentation/pages/full_player_page.dart';
 import '../../features/track/presentation/pages/behind_the_track.dart';
 
+//  Auth imports  
+import '../../features/authentication/presentation/pages/onboarding_page.dart';
+import '../../features/authentication/presentation/pages/sign_in_page.dart';
+import '../../features/authentication/presentation/pages/create_account_password_page.dart';
+import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+//  Profile imports 
+import '../../features/profile/presentation/pages/public_profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/likes_page.dart';
+
+// ── Track_upload imports (Module 1 - Karim CP-5) ──
+import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
+
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -27,9 +40,54 @@ final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/home',
-    
+    initialLocation: '/onboarding',
+
     routes: [
+  //  Profile routes  
+  GoRoute(
+    path: '/profile/:userId',
+    builder: (context, state) {
+      final userId = state.pathParameters['userId']!;
+      return PublicProfilePage(userId: userId);
+    },
+  ),
+  GoRoute(
+    path: '/profile/edit',
+    builder: (context, state) => const EditProfilePage(),
+  ),
+  GoRoute(
+    path: '/profile/:userId/likes',
+    builder: (context, state) {
+      final userId = state.pathParameters['userId']!;
+      return LikesPage(userId: userId);
+    },
+  ),
+      //  Auth routes (outside the shell, no bottom nav bar) 
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: '/sign-in',
+        builder: (context, state) => const SignInPage(),
+      ),
+      GoRoute(
+        path: '/create-account/password',
+        builder: (context, state) {
+          final email = state.extra as String;
+          return CreateAccountPasswordPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/create-account/profile',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>;
+          return CreateAccountProfilePage(
+            email: data['email'] as String,
+            password: data['password'] as String,
+          );
+        },
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -169,6 +227,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
       ),
+      GoRoute(
+      parentNavigatorKey: _rootNavigatorKey, // uses root navigator
+      path: '/upload-track',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const UploadTrackScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slides up from bottom — exactly like SoundCloud
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1), // starts from bottom
+              end: Offset.zero,          // ends at normal position
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
+    ),
     ],
   );
 });
