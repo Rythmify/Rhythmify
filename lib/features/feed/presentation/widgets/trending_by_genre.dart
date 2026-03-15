@@ -5,7 +5,6 @@ import '../../presentation/providers/home_providers.dart';
 import '../../../../core/domain/entities/track_summary.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../feed/presentation/widgets/trending_by_genre.dart';
 
 final List<String> genres = [
   'Reggae',
