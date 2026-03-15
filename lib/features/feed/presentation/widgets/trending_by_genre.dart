@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 import '../../presentation/providers/home_providers.dart';
 import '../../../../core/domain/entities/track_summary.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../feed/presentation/widgets/trending_by_genre.dart';
 
 final List<String> genres = [
   'Reggae',
@@ -97,16 +99,18 @@ class GenreTabView extends ConsumerWidget {
       child: Stack(
         children: [
           // green orb background
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(-0.3, -0.4),
-                  radius: 0.3,
-                  colors: [
-                    Color.fromARGB(68, 8, 117, 46),
-                    (AppTheme.background),
-                  ],
+          FrostedGlassBox(
+            child: Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(-0.4, -0.4),
+                    radius: 0.3,
+                    colors: [
+                      Color.fromARGB(68, 8, 117, 46),
+                      (AppTheme.background),
+                    ],
+                  ),
                 ),
               ),
             ),
