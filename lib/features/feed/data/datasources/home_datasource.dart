@@ -29,4 +29,123 @@ class HomeDatasource {
 
     return jsonList.map((json) => TrackSummaryDto.fromJson(json)).toList();
   }
+
+  Future<List<Map<String, dynamic>>> getMixedPlaylists() async {
+    return [
+      {
+        "mixLabel": "MIX 1",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist1",
+      },
+      {
+        "mixLabel": "MIX 2",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist2",
+      },
+      {
+        "mixLabel": "MIX 3",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist3",
+      },
+      {
+        "mixLabel": "MIX 4",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist4",
+      },
+      {
+        "mixLabel": "MIX 5",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist5",
+      },
+      {
+        "mixLabel": "MIX 6",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist6",
+      },
+      {
+        "mixLabel": "MIX 7",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist7",
+      },
+      {
+        "mixLabel": "MIX 8",
+        "image": "assets/images/track_6.jpg",
+        "artists": " artist8",
+      },
+    ];
+  }
+
+  Future<List<Map<String, dynamic>>> getStationPlaylists() async {
+    return [
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist1",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist2",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist3",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist4",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist5",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist6",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist7",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist8",
+      },
+    ];
+  }
+
+  Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async {
+    return [
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist1",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist2",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist3",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist4",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist5",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist6",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist7",
+      },
+      {
+        "image": "https://picsum.photos/seed/techno2/300/300",
+        "artists": " artist8",
+      },
+    ];
+  }
 }

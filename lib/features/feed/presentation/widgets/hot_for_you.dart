@@ -19,7 +19,7 @@ class HotForYouSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hotTracks = ref.watch(hotTracksProvider);
+    final asyncHotTracks = ref.watch(hotTracksProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -28,7 +28,7 @@ class HotForYouSection extends ConsumerWidget {
           child: Text("Hot For You 🔥", style: AppTheme.titleLarge),
         ),
 
-        hotTracks.when(
+        asyncHotTracks.when(
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
@@ -96,12 +96,8 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey, width: 0.5),
 
-           border: Border.all(
-                color: Colors.grey,
-                width: 0.5,
-              ),
-          
           borderRadius: BorderRadius.circular(12),
           image: DecorationImage(
             image: AssetImage(widget.track.artworkUrl),
@@ -138,7 +134,9 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
                               Text(
                                 widget.track.artist,
-                                style: AppTheme.bodyNormal.copyWith(color: AppTheme.semiWhite),
+                                style: AppTheme.bodyNormal.copyWith(
+                                  color: AppTheme.semiWhite,
+                                ),
                               ),
                             ],
                           ),

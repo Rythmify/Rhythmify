@@ -17,117 +17,168 @@ final List<String> genres = [
   'Rock,Metal,Punk',
 ];
 
+final List<Color> genreColors = [
+  Colors.green,
+  Colors.orange,
+  Colors.purple,
+  Colors.blue,
+  Colors.pink,
+  Colors.teal,
+  Colors.amber,
+  Colors.red,
+  Colors.indigo,
+];
+
 //Trending by genre section
-class TrendingByGenre extends StatelessWidget {
+class TrendingByGenre extends StatefulWidget {
   const TrendingByGenre({super.key});
 
   @override
+  State<TrendingByGenre> createState() => _TrendingByGenreState();
+}
+
+class _TrendingByGenreState extends State<TrendingByGenre>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: genres.length, vsync: this);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: genres.length,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text("Trending by Genre", style: AppTheme.titleLarge),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text("Trending by Genre", style: AppTheme.titleLarge),
+        ),
+        SizedBox(height: 10),
 
-          SizedBox(height: 10),
+        GenreTabBar(tabController: _tabController),
 
-          GenreTabBar(),
+        SizedBox(height: 20),
 
-          SizedBox(height: 20),
-
-          SizedBox(height: 250, child: GenreTabView()),
-        ],
-      ),
+        SizedBox(
+          height: 250,
+          child: GenreTabView(tabController: _tabController),
+        ),
+      ],
     );
   }
 }
 
 //Genre TabBar
 class GenreTabBar extends StatelessWidget {
-  const GenreTabBar({super.key});
+  final TabController tabController;
+
+  const GenreTabBar({super.key, required this.tabController});
 
   @override
   Widget build(BuildContext context) {
-    return TabBar(
-      isScrollable: true,
-      tabAlignment: TabAlignment.start,
-      labelPadding: const EdgeInsets.all(6),
-      indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Color(0xFF1DB954), width: 1.5),
-      ),
-      indicatorPadding: const EdgeInsets.symmetric(vertical: 7),
-      dividerColor: Colors.transparent,
-      labelColor: const Color(0xFF1DB954),
-      unselectedLabelColor: const Color(0xFFB0BEB5),
-      tabs: genres
-          .map(
-            (g) => Tab(
+    return AnimatedBuilder(
+      animation: tabController,
+      builder: (context, _) {
+        return TabBar(
+          controller: tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          dividerColor: Colors.transparent,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+
+          indicator: const BoxDecoration(),
+
+          tabs: List.generate(genres.length, (index) {
+            final isSelected = tabController.index == index;
+            final color = genreColors[index];
+
+            return Tab(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: const Color(0xFF5A6B60),
+                    color: isSelected
+                        ? color
+                        : const Color(0xFF5A6B60), // grey when unselected
                     width: 1.5,
                   ),
                 ),
-                child: Center(child: Text(g)),
+                child: Text(
+                  genres[index],
+                  style: TextStyle(
+                    color: isSelected ? color : const Color(0xFFB0BEB5),
+                  ),
+                ),
               ),
-            ),
-          )
-          .toList(),
+            );
+          }),
+        );
+      },
     );
   }
 }
-
 //TabBar View
 
 class GenreTabView extends ConsumerWidget {
-  const GenreTabView({super.key});
+  final TabController tabController;
+
+  const GenreTabView({super.key, required this.tabController});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: 110,
-      child: Stack(
-        children: [
-          // green orb background
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(-0.3, -0.4),
-                  radius: 0.3,
-                  colors: [
-                    Color.fromARGB(68, 8, 117, 46),
-                    (AppTheme.background),
-                  ],
+      child: AnimatedBuilder(
+        animation: tabController,
+        builder: (context, _) {
+          final selectedIndex = tabController.index;
+          final currentColor = genreColors[selectedIndex];
+
+          return Stack(
+            children: [
+              //Dynamic orb background
+              Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(-0.4, -0.1),
+                    radius: 0.4,
+                    colors: [
+                      currentColor.withValues(alpha: 0.5),
+                      AppTheme.background,
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ),
-          TabBarView(
-            children: genres.map((genre) {
-              final asyncTracks = ref.watch(trendingTracksProvider(genre));
 
-              return asyncTracks.when(
-                data: (tracks) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: _TrendingHorizontalColumns(tracks: tracks),
+              // TabBarView
+              TabBarView(
+                controller: tabController,
+                children: genres.map((genre) {
+                  final asyncTracks = ref.watch(trendingTracksProvider(genre));
+
+                  return asyncTracks.when(
+                    data: (tracks) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25),
+                        child: _TrendingHorizontalColumns(tracks: tracks),
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Error: $e')),
                   );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-              );
-            }).toList(),
-          ),
-        ],
+                }).toList(),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
