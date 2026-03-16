@@ -7,6 +7,8 @@ import 'package:rythmify/features/feed/presentation/widgets/trending_by_genre.da
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/mixed_for_you.dart';
+import 'package:rythmify/features/feed/presentation/widgets/discover_with_stations.dart';
+import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_like.dart';
 
 // Import your entities, models, and widgets (adjust the relative paths if your folder structure differs slightly)
 import '../../../../core/domain/entities/track_summary.dart';
@@ -78,9 +80,13 @@ class HomeScreen extends ConsumerWidget {
 
           MixedPlaylistsSection(),
 
-          SizedBox(height: 32),
+          SizedBox(height: 40),
 
-          MixedPlaylistsSection(),
+          DiscoverWithStationsSection(),
+
+          SizedBox(height: 40),
+
+          MoreOfWhatYouLikeSection(),
         ],
       ),
     );

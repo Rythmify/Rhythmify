@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 
-class MixedPlaylistsSection extends ConsumerWidget {
-  const MixedPlaylistsSection({super.key});
+class DiscoverWithStationsSection extends ConsumerWidget {
+  const DiscoverWithStationsSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncMixedPlaylists = ref.watch(mixedPlaylistsProvider);
+    final asyncMixedPlaylists = ref.watch(discoverStationsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Mixed For You", style: AppTheme.titleLarge),
+          child: Text("Discover with Stations", style: AppTheme.titleLarge),
         ),
 
         const SizedBox(height: 15),
@@ -32,10 +32,9 @@ class MixedPlaylistsSection extends ConsumerWidget {
                 itemCount: items.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  return MixedPlaylistCard(
+                  return StationPlaylistCard(
                     artists: items[index]['artists'],
                     imagePath: items[index]['image'],
-                    mixLabel: items[index]['mixLabel'],
                   );
                 },
               ),
@@ -47,14 +46,13 @@ class MixedPlaylistsSection extends ConsumerWidget {
   }
 }
 
-class MixedPlaylistCard extends StatelessWidget {
-  final String mixLabel;
+class StationPlaylistCard extends StatelessWidget {
   final String artists;
   final String imagePath;
 
-  const MixedPlaylistCard({
+  const StationPlaylistCard({
     super.key,
-    required this.mixLabel,
+
     required this.artists,
     required this.imagePath,
   });
@@ -66,7 +64,7 @@ class MixedPlaylistCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Image + Mix badge
+          /// Image + station badge
           Stack(
             children: [
               Container(
@@ -78,30 +76,38 @@ class MixedPlaylistCard extends StatelessWidget {
                     width: 0.5, // very thin border
                   ),
                   image: DecorationImage(
-                    image: AssetImage(imagePath),
+                    image: NetworkImage(imagePath),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
 
-              /// Mix label badge
+              /// Station badge
               Positioned(
                 bottom: 8,
                 left: 8,
-                child: Container(
-                  padding: const EdgeInsets.only(top: 3, left: 10, right: 80),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(180),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    mixLabel,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "STATIONS",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  ),
+
+                    Text(
+                      artists,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -111,7 +117,7 @@ class MixedPlaylistCard extends StatelessWidget {
 
           /// Artist names under the card
           Text(
-            artists,
+            'Based on$artists',
             style: const TextStyle(color: Colors.white70, fontSize: 12),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
