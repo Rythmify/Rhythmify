@@ -16,4 +16,9 @@ class HomeRepositoryImpl implements HomeRepository {
   Future<List<TrackSummary>> getHotTracks() {
     return datasource.getHotTracks();
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMixedPlaylists() {
+    return datasource.getMixedPlaylists();
+  }
 }

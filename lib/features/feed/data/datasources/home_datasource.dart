@@ -29,4 +29,12 @@ class HomeDatasource {
 
     return jsonList.map((json) => TrackSummaryDto.fromJson(json)).toList();
   }
+
+  Future<List<Map<String, dynamic>>> getMixedPlaylists() async {
+    return [
+      {"title": "Mix 1", "image": "https://picsum.photos/seed/techno2/300/300"},
+      {"title": "Mix 2", "image": "https://picsum.photos/seed/techno2/300/300"},
+      {"title": "Mix 3", "image": "https://picsum.photos/seed/techno2/300/300"},
+    ];
+  }
 }
