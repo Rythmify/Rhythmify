@@ -50,8 +50,7 @@ class LibraryScreen extends ConsumerWidget {
             child: GestureDetector(
               onTap: () {
                 if (currentUserId != null) {
-                 // context.push('/profile/$currentUserId'); ===> For testing, we navigate to a fixed profile
-                 context.push('/profile/user-001');
+                 context.push('/profile/$currentUserId');
                 }
               },
               child: const CircleAvatar(

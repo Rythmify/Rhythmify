@@ -16,7 +16,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     }
 
     return const UserModel(
-      id: 'mock-user-001',
+      id: 'user-001',
       email: 'karim@rythmify.com',
       displayName: 'Karim',
       isEmailVerified: true,
@@ -33,7 +33,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     await Future.delayed(const Duration(seconds: 1));
 
     return UserModel(
-      id: 'mock-user-002',
+      id: 'user-001',
       email: email,
       displayName: displayName,
       isEmailVerified: false,
@@ -46,7 +46,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     await Future.delayed(const Duration(seconds: 1));
 
     return const UserModel(
-      id: 'mock-user-003',
+      id: 'user-001',
       email: 'karim.google@gmail.com',
       displayName: 'Karim Google',
       isEmailVerified: true,
@@ -59,7 +59,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     await Future.delayed(const Duration(seconds: 1));
 
     return const UserModel(
-      id: 'mock-user-004',
+      id: 'user-001',
       email: 'karim.apple@icloud.com',
       displayName: 'Karim Apple',
       isEmailVerified: true,
