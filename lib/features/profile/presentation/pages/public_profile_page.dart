@@ -24,6 +24,10 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
+  bool _showTitleInAppBar = false;
+
+  /// Threshold in pixels – roughly avatar (120) + spacing (12) + name line (48)
+  static const double _nameStickyThreshold = 180.0;
 
   @override
   void initState() {
@@ -32,6 +36,14 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ref.read(profileProvider.notifier).loadProfile(userId: widget.userId));
 
     _scrollController.addListener(() {
+      // Show / hide app-bar title based on scroll position
+      final shouldShow =
+          _scrollController.offset >= _nameStickyThreshold;
+      if (shouldShow != _showTitleInAppBar) {
+        setState(() => _showTitleInAppBar = shouldShow);
+      }
+
+      // Paginate liked tracks
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         final state = ref.read(profileProvider);
@@ -74,12 +86,28 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? authState.user.id == widget.userId
         : false;
 
+    // Resolve display name for the app bar
+    final String? displayName = profileState is ProfileLoaded
+        ? profileState.profile.displayName
+        : null;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
+        ),
+        title: AnimatedOpacity(
+          opacity: _showTitleInAppBar ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: Text(
+            displayName ?? '',
+            style: AppTheme.appBarTitle,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         actions: [
           IconButton(
