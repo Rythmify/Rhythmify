@@ -25,7 +25,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
   static const List<String> _genres = [
     'Electronic', 'Hip-Hop', 'Rock', 'Pop', 'Jazz',
     'Classical', 'R&B / Soul', 'Ambient', 'Folk',
-    'Metal', 'Country', 'Reggae', 'Podcast', 'Other',
+    'Metal', 'Country', 'Reggae', 'Podcast', 
   ];
 
   // Hardcoded tags for now
