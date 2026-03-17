@@ -31,7 +31,7 @@ class ShareBottomSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.textSecondary.withOpacity(0.25),
+                color: AppTheme.textSecondary.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -170,7 +170,7 @@ class ShareBottomSheet extends StatelessWidget {
 
           /// Divider
           Divider(
-            color: AppTheme.textSecondary.withOpacity(0.2),
+            color: AppTheme.textSecondary.withValues(alpha: 0.2),
             height: 32,
           ),
 

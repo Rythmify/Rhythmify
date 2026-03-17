@@ -38,7 +38,7 @@ class AudioPickerWidget extends ConsumerWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppTheme.primaryBrand.withOpacity(0.15),
+              color: AppTheme.primaryBrand.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(

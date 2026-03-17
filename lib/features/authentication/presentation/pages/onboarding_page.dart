@@ -89,7 +89,7 @@ class OnboardingPage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => context.push('/sign-in'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.6),
+                        backgroundColor: Colors.white.withValues(alpha: 0.6),
                         foregroundColor: Colors.black,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

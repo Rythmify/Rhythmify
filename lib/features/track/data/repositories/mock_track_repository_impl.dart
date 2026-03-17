@@ -1,7 +1,5 @@
 import '../../../../core/domain/entities/track.dart';
-import '../../../../core/domain/entities/track_summary.dart';
 import '../../../../core/data/models/track_dto.dart';
-import '../../../../core/data/models/track_summary_dto.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../datasources/track_local_data_source.dart';
 
@@ -28,15 +26,17 @@ class MockTrackRepositoryImpl implements TrackRepository {
   }
 
   @override
-  Future<TrackSummary> getTrackSummary(String id) async {
+  Future<Track> getTrackSummary(String id) async {
+    // In the unified model, summary just means we might have less data in the JSON
+    // but we still return a Track entity.
     final rawData = await localDataSource.getSummaryTracks();
     
     final summaryJson = rawData.firstWhere(
       (json) => json['id'] == id,
-      orElse: () => throw Exception('TrackSummary with ID $id not found'),
+      orElse: () => throw Exception('Track with ID $id not found'),
     );
 
-    return TrackSummaryDto.fromJson(summaryJson);
+    return TrackDto.fromJson(summaryJson);
   }
 
   // ================================

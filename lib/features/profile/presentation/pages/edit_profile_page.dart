@@ -122,13 +122,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     return PopScope(
       canPop: !_hasChanges,
-      onPopInvoked: (didPop) async {
-        if (!didPop && _hasChanges) {
-          final result = await showDialog<bool>(
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        if (_hasChanges) {
+          final dialogResult = await showDialog<bool>(
             context: context,
             builder: (_) => const UnsavedChangesDialog(),
           );
-          if (result == true && context.mounted) {
+          if (dialogResult == true && context.mounted) {
             context.pop();
           }
         }
@@ -207,7 +209,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.background.withOpacity(0.7),
+                                color: AppTheme.background.withValues(alpha: 0.7),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(

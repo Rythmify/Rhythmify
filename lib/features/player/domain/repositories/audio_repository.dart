@@ -1,17 +1,17 @@
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../entities/player_state.dart';
 
 abstract class AudioRepository {
   // Streams for the UI to listen to
   Stream<AppPlayerState> get playerStateStream;
-  Stream<List<TrackSummary>> get queueStream;
+  Stream<List<Track>> get queueStream;
 
   // Getters for immediate state
   AppPlayerState get currentState;
-  List<TrackSummary> get currentQueue;
+  List<Track> get currentQueue;
 
   Future<void> init();
-  Future<void> loadQueue(List<TrackSummary> tracks, {int initialIndex = 0});
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0});
   Future<void> play();
   Future<void> pause();
   Future<void> seek(Duration position);

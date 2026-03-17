@@ -63,7 +63,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   // ── Load profile ──────────────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
-     print('Loading profile for userId: $userId');
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
     result.fold(

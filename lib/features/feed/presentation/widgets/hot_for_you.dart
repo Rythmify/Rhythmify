@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
@@ -24,7 +24,7 @@ class HotForYouSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsetsGeometry.only(bottom: 18, left: 21),
+          padding: const EdgeInsets.only(bottom: 18, left: 21),
           child: Text("Hot For You 🔥", style: AppTheme.titleLarge),
         ),
 
@@ -55,7 +55,7 @@ class HotForYouSection extends ConsumerWidget {
 // ==================
 
 class HotForYouCard extends ConsumerStatefulWidget {
-  final TrackSummary track;
+  final Track track;
 
   const HotForYouCard({super.key, required this.track});
 
@@ -236,7 +236,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             height: 70,
             decoration: BoxDecoration(
               border: Border.all(
-                color: Colors.grey.withOpacity(0.7),
+                color: Colors.grey.withValues(alpha: 0.7),
                 width: 0.8,
               ),
               borderRadius: BorderRadius.circular(8),

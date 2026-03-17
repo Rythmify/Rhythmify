@@ -1,5 +1,4 @@
 import '../../../../core/domain/entities/track.dart';
-import '../../../../core/domain/entities/track_summary.dart';
 
 abstract class TrackRepository {
 
@@ -7,11 +6,11 @@ abstract class TrackRepository {
   //   --- Fetching Data ---
   //=========================
 
-  /// Fetches FULL details (including waveformData and description)
+  /// Fetches track data (including waveformData and description if available)
   Future<Track> getTrackDetails(String id);
 
-  /// Fetches basic metadata ONLY (used for quick previews of track e.g. in home page)
-  Future<TrackSummary> getTrackSummary(String id);
+  /// Fetches basic metadata (used for quick previews of track e.g. in home page)
+  Future<Track> getTrackSummary(String id);
 
   //=========================
   //   --- Mutations ---

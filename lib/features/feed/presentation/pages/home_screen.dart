@@ -4,25 +4,23 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/feed/presentation/widgets/trending_by_genre.dart';
-import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/mixed_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/discover_with_stations.dart';
 import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_like.dart';
 
-// Import your entities, models, and widgets (adjust the relative paths if your folder structure differs slightly)
-import '../../../../core/domain/entities/track_summary.dart';
-import '../../../../core/data/models/track_summary_dto.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../../../../core/data/models/track_dto.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
-final testAllTracksProvider = FutureProvider<List<TrackSummary>>((ref) async {
+final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   final jsonString = await rootBundle.loadString(
     'assets/mocks/tracks_summary.json',
   );
   final List<dynamic> jsonList = jsonDecode(jsonString);
 
-  // Map the whole JSON array into a list of TrackSummary objects
-  return jsonList.map((json) => TrackSummaryDto.fromJson(json)).toList();
+  // Map the whole JSON array into a list of Track objects
+  return jsonList.map((json) => TrackDto.fromJson(json)).toList();
 });
 
 class HomeScreen extends ConsumerWidget {
@@ -30,8 +28,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 2. Watch the list provider
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
@@ -40,15 +36,6 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
             onPressed: () {
-              ref
-                  .read(uploadFormProvider.notifier)
-                  .initDraft(
-                    artistId: 'dev_user_001',
-                    localAudioPath: '/fake/path/summer_vibes.mp3',
-                    duration: const Duration(minutes: 3, seconds: 32),
-                    fileName: 'summer_vibes.mp3',
-                  );
-              GoRouter.of(context).push('/upload-track');
             },
           ),
           IconButton(
@@ -67,25 +54,16 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 150),
-        children: const [
-          SizedBox(height: 16),
-
+        children: [
+          const SizedBox(height: 16),
           TrendingByGenre(),
-
-          SizedBox(height: 24),
-
+          const SizedBox(height: 24),
           HotForYouSection(),
-
-          SizedBox(height: 40),
-
+          const SizedBox(height: 40),
           MixedPlaylistsSection(),
-
-          SizedBox(height: 40),
-
+          const SizedBox(height: 40),
           DiscoverWithStationsSection(),
-
-          SizedBox(height: 40),
-
+          const SizedBox(height: 40),
           MoreOfWhatYouLikeSection(),
         ],
       ),

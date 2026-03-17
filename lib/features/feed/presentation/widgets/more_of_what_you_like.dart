@@ -8,33 +8,36 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncMixedPlaylists = ref.watch(moreOfWhatYouLikeProvider);
+    final asyncMore = ref.watch(moreOfWhatYouLikeProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text("More Of What You Like", style: AppTheme.titleLarge),
+          child: Text("More of what you like", style: AppTheme.titleLarge),
         ),
 
         const SizedBox(height: 15),
 
-        asyncMixedPlaylists.when(
+        asyncMore.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text("Error: $e"),
           data: (items) {
+            final list = items as List;
+            if (list.isEmpty) return const SizedBox.shrink();
             return SizedBox(
-              height: 160,
+              height: 180,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: items.length,
+                itemCount: list.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  return MoreOfWhatYouLikePlaylistCard(
-                    artists: items[index]['artists'],
-                    imagePath: items[index]['image'],
+                  final item = list[index] as Map<String, dynamic>;
+                  return PlaylistSquareCard(
+                    artists: item['artists'] ?? '',
+                    imagePath: item['image'] ?? '',
                   );
                 },
               ),
@@ -46,13 +49,12 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
   }
 }
 
-class MoreOfWhatYouLikePlaylistCard extends StatelessWidget {
+class PlaylistSquareCard extends StatelessWidget {
   final String artists;
   final String imagePath;
 
-  const MoreOfWhatYouLikePlaylistCard({
+  const PlaylistSquareCard({
     super.key,
-
     required this.artists,
     required this.imagePath,
   });
@@ -64,19 +66,32 @@ class MoreOfWhatYouLikePlaylistCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// Square Artwork
           Container(
-            height: 130,
+            height: 140,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(1),
               border: Border.all(
-                color: Colors.grey,
-                width: 0.5, // very thin border
+                color: const Color(0xFF6C7C71),
+                width: 0.5,
               ),
-              image: DecorationImage(
-                image: NetworkImage(imagePath),
-                fit: BoxFit.cover,
-              ),
+              image: imagePath.isNotEmpty 
+                ? (imagePath.startsWith('http') 
+                    ? DecorationImage(image: NetworkImage(imagePath), fit: BoxFit.cover)
+                    : DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover))
+                : null,
             ),
+            child: imagePath.isEmpty ? const Center(child: Icon(Icons.playlist_play)) : null,
+          ),
+
+          const SizedBox(height: 8),
+
+          /// Artist names
+          Text(
+            artists,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

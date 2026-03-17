@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 class TrackListTile extends StatelessWidget {
-  final TrackSummary track;
+  final Track track;
   final VoidCallback? onTap;
   final VoidCallback? onMoreTap;
 
@@ -41,19 +41,27 @@ class TrackListTile extends StatelessWidget {
             // ── Artwork ──────────────────────────────────────────────
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: track.artworkUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: track.artworkUrl!,
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 56,
-                        height: 56,
-                        color: AppTheme.surface,
-                      ),
-                      errorWidget: (context, url, error) => _placeholder(),
-                    )
+              child: track.artworkUrl.isNotEmpty
+                  ? (track.artworkUrl.startsWith('http') 
+                      ? CachedNetworkImage(
+                          imageUrl: track.artworkUrl,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 56,
+                            height: 56,
+                            color: AppTheme.surface,
+                          ),
+                          errorWidget: (context, url, error) => _placeholder(),
+                        )
+                      : Image.asset(
+                          track.artworkUrl,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _placeholder(),
+                        ))
                   : _placeholder(),
             ),
 

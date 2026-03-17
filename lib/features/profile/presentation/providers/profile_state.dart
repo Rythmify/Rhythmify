@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/profile_entity.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -19,7 +19,7 @@ class ProfileLoading extends ProfileState {
 
 class ProfileLoaded extends ProfileState {
   final ProfileEntity profile;
-  final List<TrackSummary> likedTracks;
+  final List<Track> likedTracks;
   final bool isLoadingTracks;
   final bool hasMoreTracks;
   final bool isSaving;
@@ -36,7 +36,7 @@ class ProfileLoaded extends ProfileState {
   // without recreating the entire state from scratch
   ProfileLoaded copyWith({
     ProfileEntity? profile,
-    List<TrackSummary>? likedTracks,
+    List<Track>? likedTracks,
     bool? isLoadingTracks,
     bool? hasMoreTracks,
     bool? isSaving,

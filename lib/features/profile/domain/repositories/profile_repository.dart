@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 abstract class ProfileRepository {
   Future<Either<Failure, ProfileEntity>> getProfile({
@@ -35,7 +35,7 @@ abstract class ProfileRepository {
     required String userId,
   });
 
-  Future<Either<Failure, List<TrackSummary>>> getLikedTracks({
+  Future<Either<Failure, List<Track>>> getLikedTracks({
     required String userId,
     required int page,
     required int limit,

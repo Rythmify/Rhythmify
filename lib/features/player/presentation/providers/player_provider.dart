@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/player_state.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import 'player_dependency_providers.dart';
 
 final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(() {
@@ -23,7 +23,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
   // --- ACTIONS THE UI CAN TRIGGER ---
 
-  Future<void> loadAndPlayQueue(List<TrackSummary> tracks, {int initialIndex = 0}) async {
+  Future<void> loadAndPlayQueue(List<Track> tracks, {int initialIndex = 0}) async {
     await ref.read(loadQueueUseCaseProvider).call(tracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }

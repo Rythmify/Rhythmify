@@ -1,11 +1,11 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
   
-  List<TrackSummary> _currentQueue = [];
+  List<Track> _currentQueue = [];
 
   RythmifyAudioHandler() { _init(); }
 
@@ -74,9 +74,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Stream<bool> get playingStream => _player.playingStream;
   bool get playing => _player.playing;
   ProcessingState get processingState => _player.processingState;
-  List<TrackSummary> get currentQueue => _currentQueue;
+  List<Track> get currentQueue => _currentQueue;
 
-  Future<void> loadQueue(List<TrackSummary> tracks, {int initialIndex = 0}) async {
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
     
     final audioSources = tracks.map((track) {

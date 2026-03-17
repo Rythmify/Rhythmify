@@ -8,7 +8,6 @@ import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
 import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
-import '../widgets/info_bottom_sheet.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 
@@ -55,14 +54,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => ShareBottomSheet(profile: state.profile),
-    );
-  }
-
-  void _showInfoSheet(BuildContext context, ProfileLoaded state) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => InfoBottomSheet(profile: state.profile),
     );
   }
 
@@ -118,7 +109,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           ),
         ProfileLoaded() => _buildLoaded(
             context,
-            profileState as ProfileLoaded,
+            profileState,
             isOwnProfile,
           ),
         _ => const SizedBox.shrink(),
@@ -209,7 +200,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -241,7 +232,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withOpacity(0.3),
+                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
