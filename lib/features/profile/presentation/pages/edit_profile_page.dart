@@ -19,15 +19,44 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _displayNameController = TextEditingController();
   final _cityController = TextEditingController();
   final _bioController = TextEditingController();
+
   String _selectedCountry = '';
+  String _selectedCountryDisplay = '';
   bool _hasChanges = false;
+
+  final Map<String, String> _countries = {
+    'Egypt': 'EG',
+    'Palestine': 'PS',
+    'Saudi Arabia': 'SA',
+    'United Arab Emirates': 'AE',
+    'Jordan': 'JO',
+    'Lebanon': 'LB',
+    'Syria': 'SY',
+    'Iraq': 'IQ',
+    'Kuwait': 'KW',
+    'Qatar': 'QA',
+    'Bahrain': 'BH',
+    'Oman': 'OM',
+    'Yemen': 'YE',
+    'Libya': 'LY',
+    'Tunisia': 'TN',
+    'Algeria': 'DZ',
+    'Morocco': 'MA',
+    'Sudan': 'SD',
+    'United States': 'US',
+    'United Kingdom': 'GB',
+    'Germany': 'DE',
+    'France': 'FR',
+    'Japan': 'JP',
+    'Brazil': 'BR',
+    'Canada': 'CA',
+    'Australia': 'AU',
+  };
 
   @override
   void initState() {
     super.initState();
     _loadCurrentValues();
-
-    // Track changes
     _displayNameController.addListener(_onChanged);
     _cityController.addListener(_onChanged);
     _bioController.addListener(_onChanged);
@@ -39,14 +68,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       _displayNameController.text = state.profile.displayName;
       _cityController.text = state.profile.city ?? '';
       _bioController.text = state.profile.bio ?? '';
-      _selectedCountry = state.profile.country ?? '';
+
+      // country from API is ISO code — find display name
+      final countryCode = state.profile.country ?? '';
+      _selectedCountry = countryCode;
+      _selectedCountryDisplay = _countries.entries
+          .firstWhere(
+            (e) => e.value == countryCode,
+            orElse: () => MapEntry(countryCode, countryCode),
+          )
+          .key;
     }
   }
 
   void _onChanged() {
-    if (!_hasChanges) {
-      setState(() => _hasChanges = true);
-    }
+    if (!_hasChanges) setState(() => _hasChanges = true);
   }
 
   @override
@@ -87,26 +123,109 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref
-          .read(profileProvider.notifier)
-          .uploadCoverPhoto(filePath: image.path);
+      ref.read(profileProvider.notifier).uploadCoverPhoto(filePath: image.path);
     }
   }
 
   void _onSave() {
-    ref.read(profileProvider.notifier).updateProfile(
+    ref
+        .read(profileProvider.notifier)
+        .updateProfile(
           displayName: _displayNameController.text.trim(),
           city: _cityController.text.trim(),
-          country: _selectedCountry,
+          country: _selectedCountry, // sends ISO code to API
           bio: _bioController.text.trim(),
         );
+  }
+
+  void _showCountryPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => ListView(
+        children: _countries.entries
+            .map(
+              (entry) => ListTile(
+                title: Text(entry.key, style: AppTheme.bodyLarge),
+                onTap: () {
+                  setState(() {
+                    _selectedCountry = entry.value;
+                    _selectedCountryDisplay = entry.key;
+                    _hasChanges = true;
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  void _showBioEditor() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bio', style: AppTheme.titleMedium),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _bioController,
+              maxLines: 5,
+              maxLength: 500,
+              style: AppTheme.bodyLarge,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Tell the world about yourself',
+                hintStyle: AppTheme.bodyMedium,
+                border: InputBorder.none,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() => _hasChanges = true);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBrand,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('Done', style: AppTheme.labelLarge),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
-    final isSaving =
-        profileState is ProfileLoaded && profileState.isSaving;
+    final isSaving = profileState is ProfileLoaded && profileState.isSaving;
 
     ref.listen(profileProvider, (previous, next) {
       if (previous is ProfileLoaded &&
@@ -128,9 +247,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             context: context,
             builder: (_) => const UnsavedChangesDialog(),
           );
-          if (result == true && context.mounted) {
-            context.pop();
-          }
+          if (result == true && context.mounted) context.pop();
         }
       },
       child: Scaffold(
@@ -177,9 +294,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         ),
         body: profileState is! ProfileLoaded
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.primaryBrand,
-                ),
+                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
               )
             : SingleChildScrollView(
                 child: Column(
@@ -195,10 +310,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ? Image.network(
                                   profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const SizedBox(),
                                 )
                               : null,
                         ),
-                        // Cover camera icon
                         Positioned(
                           right: 12,
                           bottom: 12,
@@ -218,7 +334,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             ),
                           ),
                         ),
-                        // Avatar on cover
                         Positioned(
                           left: 16,
                           bottom: -40,
@@ -234,7 +349,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                     const SizedBox(height: 56),
 
-                    // ── Fields ────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
@@ -261,9 +375,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           // Country
                           _buildChevronField(
                             label: 'Country',
-                            value: _selectedCountry.isEmpty
+                            value: _selectedCountryDisplay.isEmpty
                                 ? 'Select country'
-                                : _selectedCountry,
+                                : _selectedCountryDisplay,
                             onTap: _showCountryPicker,
                           ),
 
@@ -348,98 +462,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppTheme.textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCountryPicker() {
-    final countries = [
-      'Egypt', 'Palestine', 'Saudi Arabia', 'United Arab Emirates',
-      'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Kuwait', 'Qatar',
-      'Bahrain', 'Oman', 'Yemen', 'Libya', 'Tunisia', 'Algeria',
-      'Morocco', 'Sudan', 'United States', 'United Kingdom',
-      'Germany', 'France', 'Japan', 'Brazil', 'Canada', 'Australia',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => ListView.builder(
-        itemCount: countries.length,
-        itemBuilder: (context, index) => ListTile(
-          title: Text(countries[index], style: AppTheme.bodyLarge),
-          onTap: () {
-            setState(() {
-              _selectedCountry = countries[index];
-              _hasChanges = true;
-            });
-            Navigator.pop(context);
-          },
-        ),
-      ),
-    );
-  }
-
-  void _showBioEditor() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bio', style: AppTheme.titleMedium),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _bioController,
-              maxLines: 5,
-              maxLength: 500,
-              style: AppTheme.bodyLarge,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Tell the world about yourself',
-                hintStyle: AppTheme.bodyMedium,
-                border: InputBorder.none,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() => _hasChanges = true);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBrand,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text('Done', style: AppTheme.labelLarge),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
           ],
         ),
       ),

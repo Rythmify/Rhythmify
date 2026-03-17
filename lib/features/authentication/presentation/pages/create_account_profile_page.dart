@@ -32,13 +32,21 @@ class _CreateAccountProfilePageState
   String? _selectedGender;
 
   final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
-  final List<String> _genders = [
-    'Male', 'Female', 'Non-binary', 'Prefer not to say'
-  ];
+  final List<String> _genders = ['Male', 'Female'];
 
   @override
   void dispose() {
@@ -46,12 +54,45 @@ class _CreateAccountProfilePageState
     super.dispose();
   }
 
+  // ── Format date as YYYY-MM-DD ─────────────────────────────
+  String _formatDate() {
+    if (_selectedYear == null ||
+        _selectedMonth == null ||
+        _selectedDay == null) {
+      return '2000-01-01';
+    }
+    final monthIndex = (_months.indexOf(_selectedMonth!) + 1)
+        .toString()
+        .padLeft(2, '0');
+    final day = _selectedDay!.padLeft(2, '0');
+    return '$_selectedYear-$monthIndex-$day';
+  }
+
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authProvider.notifier).signUpWithEmailAndPassword(
+      if (_selectedGender == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select your gender')),
+        );
+        return;
+      }
+      if (_selectedYear == null ||
+          _selectedMonth == null ||
+          _selectedDay == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select your date of birth')),
+        );
+        return;
+      }
+
+      ref
+          .read(authProvider.notifier)
+          .signUpWithEmailAndPassword(
             email: widget.email,
             password: widget.password,
             displayName: _displayNameController.text.trim(),
+            gender: _selectedGender!.toLowerCase(),
+            dateOfBirth: _formatDate(),
           );
     }
   }
@@ -107,23 +148,18 @@ class _CreateAccountProfilePageState
                 const SizedBox(height: 8),
 
                 Text(
-                  'Your display name can be anything you like. Your name or artist name are good choices.',
+                  'Your display name can be anything you like.',
                   style: AppTheme.bodyMedium,
                 ),
 
                 const SizedBox(height: 24),
 
                 // Date of birth
-                Text(
-                  'Date of birth (required)',
-                  style: AppTheme.labelLarge,
-                ),
-
+                Text('Date of birth (required)', style: AppTheme.labelLarge),
                 const SizedBox(height: 12),
 
                 Row(
                   children: [
-                    // Month
                     Expanded(
                       flex: 3,
                       child: _buildDropdown(
@@ -135,28 +171,26 @@ class _CreateAccountProfilePageState
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Day
                     Expanded(
                       flex: 2,
                       child: _buildDropdown(
                         hint: 'Day',
                         value: _selectedDay,
                         items: List.generate(31, (i) => '${i + 1}'),
-                        onChanged: (val) =>
-                            setState(() => _selectedDay = val),
+                        onChanged: (val) => setState(() => _selectedDay = val),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Year
                     Expanded(
                       flex: 2,
                       child: _buildDropdown(
                         hint: 'Year',
                         value: _selectedYear,
-                        items: List.generate(100,
-                            (i) => '${DateTime.now().year - i}'),
-                        onChanged: (val) =>
-                            setState(() => _selectedYear = val),
+                        items: List.generate(
+                          100,
+                          (i) => '${DateTime.now().year - i}',
+                        ),
+                        onChanged: (val) => setState(() => _selectedYear = val),
                       ),
                     ),
                   ],
@@ -165,7 +199,7 @@ class _CreateAccountProfilePageState
                 const SizedBox(height: 8),
 
                 Text(
-                  'Your date of birth is used to verify your age and is not shared publicly.',
+                  'Your date of birth is used to verify your age.',
                   style: AppTheme.bodyMedium,
                 ),
 
@@ -186,8 +220,7 @@ class _CreateAccountProfilePageState
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed:
-                        authState is AuthLoading ? null : _onContinue,
+                    onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,
@@ -198,7 +231,9 @@ class _CreateAccountProfilePageState
                     ),
                     child: authState is AuthLoading
                         ? const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
                         : Text('Continue', style: AppTheme.labelLarge),
                   ),
                 ),
@@ -228,14 +263,13 @@ class _CreateAccountProfilePageState
           hint: Text(hint, style: AppTheme.bodyMedium),
           isExpanded: true,
           dropdownColor: AppTheme.surface,
-          icon: const Icon(Icons.keyboard_arrow_down,
-              color: AppTheme.textSecondary),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: AppTheme.textSecondary,
+          ),
           style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
           items: items
-              .map((item) => DropdownMenuItem(
-                    value: item,
-                    child: Text(item),
-                  ))
+              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
               .toList(),
           onChanged: onChanged,
         ),

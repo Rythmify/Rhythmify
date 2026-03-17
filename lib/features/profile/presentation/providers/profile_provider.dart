@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/profile_mock_datasource.dart';
+import '../../data/datasources/profile_remote_datasource_impl.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
@@ -12,7 +12,11 @@ import '../../domain/usecases/unfollow_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/authentication/presentation/providers/auth_state.dart';
+import '../../../../core/network/api_client.dart';
 import 'profile_state.dart';
+
+// ── Switch to mock when backend is not available ──────────────
+// import '../../data/datasources/profile_mock_datasource.dart';
 
 final profileProvider =
     NotifierProvider<ProfileNotifier, ProfileState>(() {
@@ -36,9 +40,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
   ProfileState build() {
     final authState = ref.watch(authProvider);
 
-    // ── Switch to real datasource when backend is ready ──────────────
-    // final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
-    final datasource = ProfileMockDatasource();
+    // ── Real datasource ───────────────────────────────────────
+    final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+
+    // ── Mock datasource (no backend needed) ───────────────────
+    // final datasource = ProfileMockDatasource();
 
     final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
@@ -52,18 +58,17 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _unfollowUser = UnfollowUserUseCase(repository);
     _getLikedTracks = GetLikedTracksUseCase(repository);
 
-    // ── Set current user in mock based on who is logged in ───────────
+    // ── Auto load own profile on login ────────────────────────
     if (authState is AuthAuthenticated) {
-      ProfileMockDatasource.setCurrentUser(authState.user.id);
-      Future.microtask(() => loadProfile(userId: authState.user.id));
+      Future.microtask(() => loadProfile(userId: 'me'));
     }
 
     return const ProfileInitial();
   }
 
-  // ── Load profile ──────────────────────────────────────────────────
+  // ── Load profile ──────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
-     print('Loading profile for userId: $userId');
+    print('Loading profile for userId: $userId');
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
     result.fold(
@@ -75,7 +80,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Load liked tracks with pagination ─────────────────────────────
+  // ── Load liked tracks with pagination ─────────────────────
   Future<void> loadLikedTracks({
     required String userId,
     bool refresh = false,
@@ -127,7 +132,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Update profile ────────────────────────────────────────────────
+  // ── Update profile ────────────────────────────────────────
   Future<void> updateProfile({
     required String displayName,
     required String city,
@@ -155,7 +160,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Upload avatar ─────────────────────────────────────────────────
+  // ── Upload avatar ─────────────────────────────────────────
   Future<void> uploadAvatar({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -172,7 +177,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Delete avatar ─────────────────────────────────────────────────
+  // ── Delete avatar ─────────────────────────────────────────
   Future<void> deleteAvatar() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -192,7 +197,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Upload cover photo ────────────────────────────────────────────
+  // ── Upload cover photo ────────────────────────────────────
   Future<void> uploadCoverPhoto({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -209,7 +214,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Delete cover photo ────────────────────────────────────────────
+  // ── Delete cover photo ────────────────────────────────────
   Future<void> deleteCoverPhoto() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -223,12 +228,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
-  // ── Follow user ───────────────────────────────────────────────────
+  // ── Follow user ───────────────────────────────────────────
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
 
-    // Optimistic update
     state = current.copyWith(
       profile: current.profile.copyWithFollowing(
         isFollowing: true,
@@ -238,18 +242,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _followUser(userId: userId);
     result.fold(
-      // Rollback on failure
       (failure) => state = current,
       (_) {},
     );
   }
 
-  // ── Unfollow user ─────────────────────────────────────────────────
+  // ── Unfollow user ─────────────────────────────────────────
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
 
-    // Optimistic update
     state = current.copyWith(
       profile: current.profile.copyWithFollowing(
         isFollowing: false,
@@ -259,7 +261,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     result.fold(
-      // Rollback on failure
       (failure) => state = current,
       (_) {},
     );

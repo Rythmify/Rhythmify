@@ -24,32 +24,38 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
-  bool _showTitleInAppBar = false;
-
-  /// Threshold in pixels – roughly avatar (120) + spacing (12) + name line (48)
-  static const double _nameStickyThreshold = 180.0;
+  late String _resolvedUserId;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        ref.read(profileProvider.notifier).loadProfile(userId: widget.userId));
+
+    final authState = ref.read(authProvider);
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+
+    // Use 'me' when viewing own profile
+    _resolvedUserId =
+        widget.userId == currentUserId || widget.userId == 'me'
+            ? 'me'
+            : widget.userId;
+
+    // Only load if viewing another user's profile
+    // For own profile the provider's build() handles it automatically
+    if (_resolvedUserId != 'me') {
+      Future.microtask(() => ref
+          .read(profileProvider.notifier)
+          .loadProfile(userId: _resolvedUserId));
+    }
 
     _scrollController.addListener(() {
-      // Show / hide app-bar title based on scroll position
-      final shouldShow =
-          _scrollController.offset >= _nameStickyThreshold;
-      if (shouldShow != _showTitleInAppBar) {
-        setState(() => _showTitleInAppBar = shouldShow);
-      }
-
-      // Paginate liked tracks
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         final state = ref.read(profileProvider);
         if (state is ProfileLoaded) {
           ref.read(profileProvider.notifier).loadLikedTracks(
-                userId: widget.userId,
+                userId: _resolvedUserId,
               );
         }
       }
@@ -82,32 +88,18 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final authState = ref.watch(authProvider);
-    final isOwnProfile = authState is AuthAuthenticated
-        ? authState.user.id == widget.userId
-        : false;
-
-    // Resolve display name for the app bar
-    final String? displayName = profileState is ProfileLoaded
-        ? profileState.profile.displayName
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
         : null;
+    final isOwnProfile =
+        widget.userId == currentUserId || widget.userId == 'me';
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
-        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-        ),
-        title: AnimatedOpacity(
-          opacity: _showTitleInAppBar ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          child: Text(
-            displayName ?? '',
-            style: AppTheme.appBarTitle,
-            overflow: TextOverflow.ellipsis,
-          ),
         ),
         actions: [
           IconButton(
@@ -138,7 +130,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 ElevatedButton(
                   onPressed: () => ref
                       .read(profileProvider.notifier)
-                      .loadProfile(userId: widget.userId),
+                      .loadProfile(userId: _resolvedUserId),
                   child: const Text('Retry'),
                 ),
               ],
@@ -207,7 +199,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 // ── Action buttons row ───────────────────────────────
                 Row(
                   children: [
-                    // Edit or Follow button
                     if (isOwnProfile)
                       GestureDetector(
                         onTap: () => context.push('/profile/edit'),
@@ -252,7 +243,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
                     const Spacer(),
 
-                    // Shuffle button
                     GestureDetector(
                       onTap: () {},
                       child: const Icon(
@@ -264,7 +254,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
                     const SizedBox(width: 16),
 
-                    // Play button
                     Container(
                       width: 48,
                       height: 48,
