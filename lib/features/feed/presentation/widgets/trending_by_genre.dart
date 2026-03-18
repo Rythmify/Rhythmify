@@ -51,6 +51,7 @@ class _TrendingByGenreState extends State<TrendingByGenre>
   @override
   Widget build(BuildContext context) {
     return Column(
+      key: const Key('trending_by_genre_section'), //key for whole section
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -84,6 +85,7 @@ class GenreTabBar extends StatelessWidget {
       animation: tabController,
       builder: (context, _) {
         return TabBar(
+          key: const Key('genre_tab_bar'), //tabbar key
           controller: tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -97,6 +99,7 @@ class GenreTabBar extends StatelessWidget {
             final color = genreColors[index];
 
             return Tab(
+              key: Key('genre_tab_${genres[index]}'), //key for every genre tab
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
@@ -186,6 +189,7 @@ class GenreTabView extends ConsumerWidget {
                   child: Container(
                     color: Colors.transparent,
                     child: TabBarView(
+                      key: const Key('genre_tab_view'), //key for genre tab view
                       controller: tabController,
                       children: genres.map((genre) {
                         final asyncTracks = ref.watch(
@@ -250,6 +254,9 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                   width: 340,
 
                   child: ListTile(
+                    key: Key(
+                      'trending_track_${track.id}',
+                    ), //key for each track card
                     contentPadding: EdgeInsets.zero,
 
                     leading: ClipRRect(

@@ -34,11 +34,14 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      key: const Key('home_scaffold'), //  Screen key
       appBar: AppBar(
+        key: const Key('home_app_bar'), // AppBar key
         title: const Text('Home'),
         centerTitle: false,
         actions: [
           IconButton(
+            key: const Key('home_upload_button'), // Upload
             icon: const Icon(Icons.arrow_circle_up),
 
             onPressed: () async {
@@ -81,12 +84,14 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            key: const Key('home_inbox_button'), // ✅ Inbox
             icon: const Icon(Icons.mail_outline),
             onPressed: () {
               context.push('/home/inbox');
             },
           ),
           IconButton(
+            key: const Key('home_notifications_button'), // ✅ Notifications
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
               context.push('/home/notifications');
@@ -95,6 +100,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
+        key: const Key('home_scroll_view'), // ✅ Scrollable area
         padding: const EdgeInsets.only(bottom: 150),
         children: [
           const SizedBox(height: 16),
