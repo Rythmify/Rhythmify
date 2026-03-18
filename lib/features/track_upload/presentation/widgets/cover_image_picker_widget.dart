@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../providers/upload_track_provider.dart';
+import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 
 class CoverImagePickerWidget extends ConsumerWidget {
   final VoidCallback onTap;

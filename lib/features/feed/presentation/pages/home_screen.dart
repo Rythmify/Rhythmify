@@ -14,6 +14,11 @@ import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_lik
 import '../../../../core/domain/entities/track_summary.dart';
 import '../../../../core/data/models/track_summary_dto.dart';
 
+//imports for track upload added by hana
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
+
+
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<TrackSummary>>((ref) async {
   final jsonString = await rootBundle.loadString(
@@ -39,16 +44,50 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
-            onPressed: () {
-              ref
-                  .read(uploadFormProvider.notifier)
-                  .initDraft(
-                    artistId: 'dev_user_001',
-                    localAudioPath: '/fake/path/summer_vibes.mp3',
-                    duration: const Duration(minutes: 3, seconds: 32),
-                    fileName: 'summer_vibes.mp3',
-                  );
-              GoRouter.of(context).push('/upload-track');
+            onPressed: () async{
+              // Step 1: Open file picker
+              final result = await FilePicker.platform.pickFiles(
+                  type: FileType.audio,
+                  allowMultiple: false,
+                );
+
+                // User cancelled — do nothing
+                if (result == null || result.files.isEmpty) return;
+
+                final picked = result.files.first;
+                if (picked.path == null) return;
+
+                // Step 2: Detect duration
+                Duration duration = Duration.zero;
+                try {
+                  final player = AudioPlayer();
+                  final detected = await player.setFilePath(picked.path!);
+                  duration = detected ?? Duration.zero;
+                  await player.dispose();
+                } catch (_) {}
+
+                // Step 3: Initialize draft with real file data
+                ref.read(uploadFormProvider.notifier).initDraft(
+                  artistId:       'dev_user_001',   // replace with real userId when auth ready
+                  localAudioPath: picked.path!,
+                  duration:       duration,
+                  fileName:       picked.name,
+                );
+
+                // Step 4: Navigate to upload screen
+                if (context.mounted) context.push('/upload-track'); 
+      
+
+              //old mocking
+              // ref
+              //     .read(uploadFormProvider.notifier)
+              //     .initDraft(
+              //       artistId: 'dev_user_001',
+              //       localAudioPath: '/fake/path/summer_vibes.mp3',
+              //       duration: const Duration(minutes: 3, seconds: 32),
+              //       fileName: 'summer_vibes.mp3',
+              //     );
+              // GoRouter.of(context).push('/upload-track');
             },
           ),
           IconButton(
