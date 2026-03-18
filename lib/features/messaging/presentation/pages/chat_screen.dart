@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
-import 'package:rythmify/features/messaging/domain/entities/message.dart';
+import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
@@ -9,7 +9,7 @@ import 'package:rythmify/features/messaging/presentation/providers/unread_messag
 import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_input_bubble.dart';
 
-class ChatScreen extends ConsumerWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   final Conversation conv;
 
   const ChatScreen({
@@ -18,20 +18,40 @@ class ChatScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatScreen> createState()=>_ChatScreenState();
+}
+
+class _ChatScreenState extends ConsumerState<ChatScreen>{
+  late final TextEditingController controller;
+
+  @override
+  void initState(){
+    super.initState();
+    controller=TextEditingController();
+  }
+
+  @override
+  void dispose(){
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    
+    final myId=ref.watch(currentUserIdProvider);
+
     final msgProvider=ref.watch(
-      messageProvider(conv.conversationId),
+      messageProvider(widget.conv.conversationId),
     );
 
     final unreadmsgProvider=ref.watch(
-      unreadProvider(conv.conversationId),
+      unreadProvider(widget.conv.conversationId),
     );
-    
-    final controller =TextEditingController();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(conv.participantName),
+        title: Text(widget.conv.participantName),
         backgroundColor: Colors.black,
       ),
       body:msgProvider.when(
@@ -40,7 +60,8 @@ class ChatScreen extends ConsumerWidget {
           Future.microtask(()async{
             for(final unread in unreads)
             {
-              await ref.read(markAsRead.notifier).markRead(msgId: unread.messageId, convId: unread.conversationId);
+              await ref.read(markAsRead.notifier).markRead(msgId: unread.messageId,
+                convId: unread.conversationId);
             }
           });
         });
@@ -51,10 +72,10 @@ class ChatScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 12),
             itemBuilder: (context,index){
               final message=msg[index];
-              return MessageBubble(myId: 'current_user',
+              return MessageBubble(myId: myId,
               senderId: message.senderId,
               sentAt: message.createdAt,
-              userAvatar: conv.participantAvatar,
+              userAvatar: widget.conv.participantAvatar,
               body: message.body);
             }
           
@@ -69,22 +90,14 @@ class ChatScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           Expanded(child: MessageInputBubble(
             controller: controller,
-            onSubmitted: (text)async {////////////////////////////////////////////
+            onSubmitted: (text)async {
           if(controller.text.trim().isEmpty) return;
-          final newMessage = Message(
-          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
-          senderId: 'current_user',
-          conversationId: conv.conversationId,
-          body: text.trim(),
-          embedId: null,
-          embedType: null,
-          isRead: true,
-          createdAt: DateTime.now(),
-        );
-///////////////////////////////////////////////////////////////////////////////////////
-  await ref.read(sendMessageProvider.notifier).sendMessage(msg: newMessage);
-
-  controller.clear();
+          await ref.read(sendMessageProvider.notifier).sendMessage(
+            conversationId:widget.conv.conversationId,
+            body:text.trim()
+          );
+          
+          controller.clear();
 },
 ),)
         ],),

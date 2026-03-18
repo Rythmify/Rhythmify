@@ -7,8 +7,8 @@ class MarkMessagesAsReadUsecase {
     required this.repo
   });
 
-  Future<void> call(String messageId)
+  Future<void> call(String messageId, String conversationId)
   {
-    return repo.markMessageAsRead(messageId);
+    return repo.markMessageAsRead(messageId,conversationId);
   }
 }

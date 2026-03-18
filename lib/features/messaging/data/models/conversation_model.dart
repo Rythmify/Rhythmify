@@ -21,7 +21,7 @@ class ConversationModel extends Conversation {
     lastMessageDate: json['last_message']!=null?
       DateTime.parse(json['last_message']['created_at'])
       :null,
-    unReadCount: json['unread_count']);
+    unReadCount: int.tryParse(json['unread_count'].toString()) ?? 0);
   }
 
   Map<String,dynamic> toJson()

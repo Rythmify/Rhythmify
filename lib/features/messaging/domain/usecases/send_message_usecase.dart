@@ -9,8 +9,8 @@ class SendMessageUsecase {
     required this.repo
   });
 
-  Future<Message> call(Message message)
+  Future<Message> call(String conversationId,String body)
   {
-    return repo.sendMessage(message);
+    return repo.sendMessage(conversationId,body);
   }
 }

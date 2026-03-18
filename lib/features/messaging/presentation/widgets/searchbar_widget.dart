@@ -32,8 +32,10 @@ class SearchBarWidget extends StatelessWidget{
                 decoration: InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
-                    prefixIcon: Icon(Icons.search)
-                    
+                    prefixIcon: Icon(Icons.search),
+                    suffixIcon: IconButton(onPressed: controller.clear,
+                      icon: Icon(Icons.close)
+                    )
                 ),
             ),
         );
