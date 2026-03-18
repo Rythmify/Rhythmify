@@ -6,17 +6,15 @@ import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 
-class CreateAccountPasswordPage extends ConsumerStatefulWidget {
+class LoginPasswordPage extends ConsumerStatefulWidget {
   final String email;
-  const CreateAccountPasswordPage({super.key, required this.email});
+  const LoginPasswordPage({super.key, required this.email});
 
   @override
-  ConsumerState<CreateAccountPasswordPage> createState() =>
-      _CreateAccountPasswordPageState();
+  ConsumerState<LoginPasswordPage> createState() => _LoginPasswordPageState();
 }
 
-class _CreateAccountPasswordPageState
-    extends ConsumerState<CreateAccountPasswordPage> {
+class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -28,10 +26,10 @@ class _CreateAccountPasswordPageState
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.push('/create-account/profile', extra: {
-        'email': widget.email,
-        'password': _passwordController.text,
-      });
+      ref.read(authProvider.notifier).signInWithEmailAndPassword(
+            email: widget.email,
+            password: _passwordController.text,
+          );
     }
   }
 
@@ -39,10 +37,24 @@ class _CreateAccountPasswordPageState
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
+    ref.listen(authProvider, (previous, next) {
+      if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      if (next is AuthAuthenticated) {
+        context.go('/home');
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Create an account'),
+        title: const Text('Sign in'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -56,48 +68,31 @@ class _CreateAccountPasswordPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Email display
                 Text('Your email address', style: AppTheme.bodyMedium),
                 const SizedBox(height: 4),
                 Text(widget.email, style: AppTheme.bodyLarge),
-
                 const SizedBox(height: 24),
 
-                // Password field
                 AuthTextField(
-                  hint: 'Choose a password (min. 8 characters)',
+                  hint: 'Your password',
                   controller: _passwordController,
                   isPassword: true,
                   textInputAction: TextInputAction.done,
                   validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
-                  }
-                  if (!value.contains(RegExp(r'[A-Z]'))) {
-                    return 'Password must contain an uppercase letter';
-                  }
-                  if (!value.contains(RegExp(r'[a-z]'))) {
-                    return 'Password must contain a lowercase letter';
-                  }
-                  if (!value.contains(RegExp(r'[0-9]'))) {
-                    return 'Password must contain a number';
-                  }
-                  return null;
-                },
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 24),
 
-                // Continue button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed:
-                        authState is AuthLoading ? null : _onContinue,
+                    onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,
@@ -109,7 +104,7 @@ class _CreateAccountPasswordPageState
                     child: authState is AuthLoading
                         ? const CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2)
-                        : Text('Continue', style: AppTheme.labelLarge),
+                        : Text('Sign in', style: AppTheme.labelLarge),
                   ),
                 ),
 
@@ -118,9 +113,9 @@ class _CreateAccountPasswordPageState
                 GestureDetector(
                   onTap: () {},
                   child: Text(
-                    'Need help?',
+                    'Forgot password?',
                     style: AppTheme.bodyMedium
-                        .copyWith(color: AppTheme.primaryBrand),
+                        .copyWith(color: AppTheme.link),
                   ),
                 ),
               ],

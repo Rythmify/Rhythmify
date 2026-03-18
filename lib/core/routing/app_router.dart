@@ -25,10 +25,8 @@ import '../../features/authentication/presentation/pages/create_account_profile_
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
-
-// ── Track_upload imports (Module 1 - Karim CP-5) ──
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
-
+import '../../features/authentication/presentation/pages/login_password_page.dart';
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -43,51 +41,64 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/onboarding',
 
     routes: [
-  //  Profile routes  
-  GoRoute(
-    path: '/profile/:userId',
-    builder: (context, state) {
-      final userId = state.pathParameters['userId']!;
-      return PublicProfilePage(userId: userId);
-    },
-  ),
-  GoRoute(
-    path: '/profile/edit',
-    builder: (context, state) => const EditProfilePage(),
-  ),
-  GoRoute(
-    path: '/profile/:userId/likes',
-    builder: (context, state) {
-      final userId = state.pathParameters['userId']!;
-      return LikesPage(userId: userId);
-    },
-  ),
-      //  Auth routes (outside the shell, no bottom nav bar) 
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingPage(),
-      ),
-      GoRoute(
-        path: '/sign-in',
-        builder: (context, state) => const SignInPage(),
-      ),
-      GoRoute(
-        path: '/create-account/password',
-        builder: (context, state) {
-          final email = state.extra as String;
-          return CreateAccountPasswordPage(email: email);
-        },
-      ),
-      GoRoute(
-        path: '/create-account/profile',
-        builder: (context, state) {
-          final data = state.extra as Map<String, dynamic>;
-          return CreateAccountProfilePage(
-            email: data['email'] as String,
-            password: data['password'] as String,
-          );
-        },
-      ),
+      //  Profile routes  
+    // ── Auth routes ──────────────────────────────────────────
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingPage(),
+    ),
+    GoRoute(
+      path: '/sign-in',
+      builder: (context, state) {
+        final mode = state.extra as String? ?? 'login';
+        return SignInPage(mode: mode);
+      },
+    ),
+    GoRoute(
+      path: '/login/password',
+      builder: (context, state) {
+        final email = state.extra as String;
+        return LoginPasswordPage(email: email);
+      },
+    ),
+    GoRoute(
+      path: '/create-account/password',
+      builder: (context, state) {
+        final email = state.extra as String;
+        return CreateAccountPasswordPage(email: email);
+      },
+    ),
+    GoRoute(
+      path: '/create-account/profile',
+      builder: (context, state) {
+        final data = state.extra as Map<String, dynamic>;
+        return CreateAccountProfilePage(
+          email: data['email'] as String,
+          password: data['password'] as String,
+        );
+      },
+    ),
+
+    // ── Profile routes ───────────────────────────────────────
+    // CRITICAL: /profile/edit MUST be before /profile/:userId
+    GoRoute(
+      path: '/profile/edit',
+      builder: (context, state) => const EditProfilePage(),
+    ),
+    GoRoute(
+      path: '/profile/:userId',
+      builder: (context, state) {
+        final userId = state.pathParameters['userId']!;
+        return PublicProfilePage(userId: userId);
+      },
+    ),
+    GoRoute(
+      path: '/profile/:userId/likes',
+      builder: (context, state) {
+        final userId = state.pathParameters['userId']!;
+        return LikesPage(userId: userId);
+      },
+    ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

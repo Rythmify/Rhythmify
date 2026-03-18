@@ -12,11 +12,15 @@ class SignUpWithEmailUseCase {
     required String email,
     required String password,
     required String displayName,
+    required String gender,
+    required String dateOfBirth,
   }) {
     return repository.signUpWithEmail(
       email: email,
       password: password,
       displayName: displayName,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
     );
   }
 }

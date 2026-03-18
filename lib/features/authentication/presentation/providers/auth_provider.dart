@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/datasources/auth_remote_datasource_impl.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
@@ -6,9 +8,11 @@ import '../../domain/usecases/sign_in_with_apple_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
-import '../../data/datasources/auth_mock_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
+import '../../../../core/network/api_client.dart';
 import 'auth_state.dart';
+
+// ── Uncomment to use mock instead of real backend ─────────────
+// import '../../data/datasources/auth_mock_datasource.dart';
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
@@ -25,7 +29,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    final datasource = AuthMockDatasource();
+    // ── Real datasource (backend must be running) ─────────────
+    final datasource = AuthRemoteDatasourceImpl(client: apiClient);
+
     final repository = AuthRepositoryImpl(remoteDatasource: datasource);
 
     _signInWithEmail = SignInWithEmailUseCase(repository);
@@ -55,12 +61,16 @@ class AuthNotifier extends Notifier<AuthState> {
     required String email,
     required String password,
     required String displayName,
+    required String gender,
+    required String dateOfBirth,
   }) async {
     state = const AuthLoading();
     final result = await _signUpWithEmail(
       email: email,
       password: password,
       displayName: displayName,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
     );
     result.fold(
       (failure) => state = AuthError(failure.message),
