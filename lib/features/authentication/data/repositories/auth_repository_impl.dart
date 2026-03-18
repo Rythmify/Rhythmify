@@ -30,12 +30,16 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    required String gender,
+    required String dateOfBirth,
   }) async {
     try {
       final user = await remoteDatasource.signUpWithEmail(
         email: email,
         password: password,
         displayName: displayName,
+        gender: gender,
+        dateOfBirth: dateOfBirth,
       );
       return Right(user);
     } catch (e) {
@@ -95,7 +99,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  // ── Maps error codes to typed Failures ───────────
   Failure _mapError(String error) {
     if (error.contains('AUTH_INVALID_CREDENTIALS')) {
       return const InvalidCredentialsFailure();

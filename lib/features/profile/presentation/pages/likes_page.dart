@@ -57,7 +57,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
         ],
       ),
       body: switch (profileState) {
-        ProfileLoaded() => _buildList(profileState as ProfileLoaded),
+        ProfileLoaded() => _buildList(profileState),
         ProfileLoading() => const Center(
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),

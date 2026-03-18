@@ -8,7 +8,9 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
-  const SignInPage({super.key});
+  final String mode; // 'login' or 'register'
+
+  const SignInPage({super.key, this.mode = 'login'});
 
   @override
   ConsumerState<SignInPage> createState() => _SignInPageState();
@@ -26,8 +28,13 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.push('/create-account/password',
-          extra: _emailController.text.trim());
+      if (widget.mode == 'register') {
+        context.push('/create-account/password',
+            extra: _emailController.text.trim());
+      } else {
+        context.push('/login/password',
+            extra: _emailController.text.trim());
+      }
     }
   }
 
@@ -62,10 +69,11 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 // Title
                 Text(
                   'Sign in or create an account',
-  style: AppTheme.headlineLarge.copyWith(
-    fontWeight: FontWeight.w500,
-    fontSize: 28,
-  ),),
+                  style: AppTheme.headlineLarge.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 28,
+                  ),
+                ),
 
                 const SizedBox(height: 16),
 
@@ -98,20 +106,23 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 // Social buttons
                 SocialLoginButton(
                   provider: SocialProvider.facebook,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithGoogleAccount(),
+                  onTap: () => ref
+                      .read(authProvider.notifier)
+                      .signInWithGoogleAccount(),
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
                   provider: SocialProvider.google,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithGoogleAccount(),
+                  onTap: () => ref
+                      .read(authProvider.notifier)
+                      .signInWithGoogleAccount(),
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
                   provider: SocialProvider.apple,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithAppleAccount(),
+                  onTap: () => ref
+                      .read(authProvider.notifier)
+                      .signInWithAppleAccount(),
                 ),
 
                 const SizedBox(height: 28),

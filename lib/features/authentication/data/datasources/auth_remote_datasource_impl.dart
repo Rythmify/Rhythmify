@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
 import '../../../../core/network/api_client.dart';
-
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final ApiClient client;
 
@@ -17,25 +16,33 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       final response = await client.dio.post(
         '/auth/login',
         data: {
-          'email': email,
+          'identifier': email,
           'password': password,
         },
       );
 
-      final data = response.data['data'];
-      final token = data['access_token'] as String;
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
 
-      // Save token to secure storage
+      final data = responseData['data'];
+      final token = data['access_token'] as String;
       await client.saveToken(token);
 
+      final user = data['user'];
       return UserModel.fromJson({
-        'id': data['user']['id'],
-        'email': data['user']['email'],
-        'display_name': data['user']['display_name'],
-        'is_email_verified': data['user']['is_email_verified'],
+        'id': user['user_id'].toString(),
+        'email': user['email'],
+        'display_name': user['display_name'],
+        'is_email_verified': user['is_verified'],
         'token': token,
       });
     } on DioException catch (e) {
+      print('SIGN IN ERROR ──────────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -46,28 +53,54 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String email,
     required String password,
     required String displayName,
+    required String gender,
+    required String dateOfBirth,
   }) async {
     try {
+      print('SIGN UP REQUEST ─────────────────────────');
+      print('Email: $email');
+      print('DisplayName: $displayName');
+      print('Gender: $gender');
+      print('DateOfBirth: $dateOfBirth');
+      print('URL: ${client.dio.options.baseUrl}/auth/register');
+      print('────────────────────────────────────────');
+
       final response = await client.dio.post(
         '/auth/register',
         data: {
           'email': email,
           'password': password,
           'display_name': displayName,
+          'gender': gender,
+          'date_of_birth': dateOfBirth,
+          'captcha_token': 'dev-bypass',
         },
       );
 
-      final data = response.data['data'];
+      print('SIGN UP RESPONSE ────────────────────────');
+      print('Status: ${response.statusCode}');
+      print('Data: ${response.data}');
+      print('────────────────────────────────────────');
 
-      // No token yet — user must verify email first
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
+
       return UserModel.fromJson({
-        'id': data['id'],
+        'id': data['user_id'].toString(),
         'email': data['email'],
         'display_name': data['display_name'],
         'is_email_verified': false,
         'token': null,
       });
     } on DioException catch (e) {
+      print('SIGN UP ERROR ───────────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -76,9 +109,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      // Step 1 — get Google id_token from google_sign_in package
-      // This part stays the same as before
-      // Step 2 — send it to our backend
       final response = await client.dio.post(
         '/auth/google',
         data: {
@@ -86,18 +116,28 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
 
+      final user = data['user'];
       return UserModel.fromJson({
-        'id': data['user']['id'],
-        'email': data['user']['email'],
-        'display_name': data['user']['display_name'],
+        'id': user['user_id'].toString(),
+        'email': user['email'],
+        'display_name': user['display_name'],
         'is_email_verified': true,
         'token': token,
       });
     } on DioException catch (e) {
+      print('GOOGLE SIGN IN ERROR ────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -113,18 +153,28 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
 
+      final user = data['user'];
       return UserModel.fromJson({
-        'id': data['user']['id'],
-        'email': data['user']['email'],
-        'display_name': data['user']['display_name'],
+        'id': user['user_id'].toString(),
+        'email': user['email'],
+        'display_name': user['display_name'],
         'is_email_verified': true,
         'token': token,
       });
     } on DioException catch (e) {
+      print('APPLE SIGN IN ERROR ─────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -136,6 +186,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       await client.dio.post('/auth/logout');
       await client.clearToken();
     } on DioException catch (e) {
+      print('SIGN OUT ERROR ──────────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -144,9 +199,13 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<void> sendVerificationEmail() async {
     try {
-      // Gets current user email from token
       await client.dio.post('/auth/resend-verification');
     } on DioException catch (e) {
+      print('VERIFICATION EMAIL ERROR ────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -160,15 +219,22 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         data: {'email': email},
       );
     } on DioException catch (e) {
+      print('PASSWORD RESET ERROR ────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('Error type: ${e.type}');
+      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
   }
 
-  // ── Error handler ─────────────────────────────────
   void _handleDioError(DioException e) {
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;
+
+    print('HANDLING ERROR CODE: $errorCode');
+    print('HANDLING ERROR MESSAGE: $errorMessage');
 
     switch (errorCode) {
       case 'AUTH_INVALID_CREDENTIALS':
@@ -183,6 +249,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         throw Exception('AUTH_REFRESH_TOKEN_INVALID');
       case 'RATE_LIMIT_EXCEEDED':
         throw Exception('RATE_LIMIT_EXCEEDED');
+      case 'VALIDATION_FAILED':
+        throw Exception(errorMessage ?? 'VALIDATION_FAILED');
       default:
         throw Exception(errorMessage ?? 'Unknown error occurred');
     }
