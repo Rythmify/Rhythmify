@@ -13,8 +13,11 @@ import '../../features/messaging/presentation/pages/chat_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/playlist/presentation/pages/playlist_screen.dart';
+
+import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
 import '../../features/player/presentation/pages/full_player_page.dart';
 import '../../features/track/presentation/pages/behind_the_track.dart';
+
 
 //  Auth imports  
 import '../../features/authentication/presentation/pages/onboarding_page.dart';
@@ -118,12 +121,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const InboxScreen(),
                     routes: [
                       GoRoute(
-                        path: 'chat/:chatId', //change this to be 
-                        builder: (context, state) => const ChatScreen(), //change this to be dynamic
-                        //{
-                          // final chatId = state.pathParameters['chatId'];
-                          // return ChatScreen(chatId: chatId);
-                        //},
+                        path: 'chat/:chatId',
+                        builder: (context, state) {
+                          final chatId = state.pathParameters['chatId']!;
+                          final conv = mockConversations.firstWhere(
+                            (c) => c.conversationId == chatId,
+                          );
+
+                          return ChatScreen(conv: conv);
+                        },
                       ),
                     ],
                   ),
