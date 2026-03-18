@@ -1,34 +1,38 @@
 class Track {
   final String id;
-  final String userId;       // Matches "user_id" in DB
+  final String userId;
   final String title;
-  final String artist;       // Display name of the user/artist
-  final String? description; // Nullable (Heavy)
-  final String? coverImage;  // Matches "cover_image"
+  final String artist;
+  final String? description;   // "Heavy" data (Nullable)
+  final String? coverImage;
   final String audioUrl;
   final String? streamUrl;
+  final String? waveformUrl;
   final Duration duration;
+
   final int playCount;
   final int likeCount;
   final int commentCount;
   final int repostCount;
   
-  // UI/State specific fields (usually from joins/logic)
   final bool isLiked;
   final bool isReposted;
   final bool isArtistFollowed;
-  final List<String> tags;   // From "track_tags" join
+  final List<String> tags;
   
-  // "Heavy" data (Nullable)
-  final List<double>? waveformData; 
+  final List<double>? waveformData;   // "Heavy" data (Nullable)
 
-  // New fields from your DB schema
-  final String? genreId;
+  final String? genre;
+  final String? artists;
+  final String? recordLabel;
+  final String? releaseDate;
+  final bool explicitContent;
+
   final bool isTrending;
   final bool isFeatured;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final String? status; // track_status enum in DB
+  final String? status;
 
   const Track({
     required this.id,
@@ -41,6 +45,7 @@ class Track {
     this.description,
     this.coverImage,
     this.streamUrl,
+    this.waveformUrl,
     this.playCount = 0,
     this.likeCount = 0,
     this.commentCount = 0,
@@ -50,14 +55,18 @@ class Track {
     this.isArtistFollowed = false,
     this.tags = const [],
     this.waveformData,
-    this.genreId,
+    this.genre,
+    this.artists,
+    this.recordLabel,
+    this.releaseDate,
+    this.explicitContent = false,
     this.isTrending = false,
     this.isFeatured = false,
     this.updatedAt,
     this.status,
   });
 
-  // Backward compatibility with older artworkUrl field
+  // Compatibility with older artworkUrl field
   String get artworkUrl => coverImage ?? '';
 
   Track copyWith({
@@ -69,6 +78,7 @@ class Track {
     String? coverImage,
     String? audioUrl,
     String? streamUrl,
+    String? waveformUrl,
     Duration? duration,
     int? playCount,
     int? likeCount,
@@ -79,7 +89,11 @@ class Track {
     bool? isArtistFollowed,
     List<String>? tags,
     List<double>? waveformData,
-    String? genreId,
+    String? genre,
+    String? artists,
+    String? recordLabel,
+    String? releaseDate,
+    bool? explicitContent,
     bool? isTrending,
     bool? isFeatured,
     DateTime? createdAt,
@@ -95,6 +109,7 @@ class Track {
       coverImage: coverImage ?? this.coverImage,
       audioUrl: audioUrl ?? this.audioUrl,
       streamUrl: streamUrl ?? this.streamUrl,
+      waveformUrl: waveformUrl ?? this.waveformUrl,
       duration: duration ?? this.duration,
       playCount: playCount ?? this.playCount,
       likeCount: likeCount ?? this.likeCount,
@@ -105,7 +120,11 @@ class Track {
       isArtistFollowed: isArtistFollowed ?? this.isArtistFollowed,
       tags: tags ?? this.tags,
       waveformData: waveformData ?? this.waveformData,
-      genreId: genreId ?? this.genreId,
+      genre: genre ?? this.genre,
+      artists: artists ?? this.artists,
+      recordLabel: recordLabel ?? this.recordLabel,
+      releaseDate: releaseDate ?? this.releaseDate,
+      explicitContent: explicitContent ?? this.explicitContent,
       isTrending: isTrending ?? this.isTrending,
       isFeatured: isFeatured ?? this.isFeatured,
       createdAt: createdAt ?? this.createdAt,

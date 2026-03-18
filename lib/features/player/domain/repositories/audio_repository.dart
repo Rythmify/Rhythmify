@@ -19,4 +19,6 @@ abstract class AudioRepository {
   Future<void> skipToPrevious();
   Future<void> setShuffleMode(bool enabled);
   Future<void> setLoopMode(String mode);
+  /// Updates metadata for a track in the current queue
+  Future<void> updateTrackInfo(String id, Track updatedTrack);
 }

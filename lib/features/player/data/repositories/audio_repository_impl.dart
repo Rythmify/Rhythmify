@@ -140,4 +140,17 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> setLoopMode(String mode) async {
     _updateState(_currentState.copyWith(loopMode: mode));
   }
+
+  @override
+  Future<void> updateTrackInfo(String id, Track updatedTrack) async {
+    await _audioHandler.updateTrackInfo(id, updatedTrack);
+    
+    // If the updated track is the current one, push a new state
+    if (_currentState.currentTrack?.id == id) {
+      _updateState(_currentState.copyWith(currentTrack: updatedTrack));
+    }
+    
+    // Also update the queue stream
+    _queueController.add(_audioHandler.currentQueue);
+  }
 }

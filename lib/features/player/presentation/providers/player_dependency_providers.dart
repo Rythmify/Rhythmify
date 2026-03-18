@@ -7,6 +7,7 @@ import '../../domain/usecases/skip_track_usecase.dart';
 import '../../domain/usecases/seek_position_usecase.dart';
 import '../../domain/usecases/get_player_state_stream_usecase.dart';
 import '../../domain/usecases/load_queue_usecase.dart';
+import '../../domain/usecases/update_track_info_usecase.dart';
 
 // --- DATA Providers ---
 final audioHandlerProvider = Provider<RythmifyAudioHandler>((ref) {
@@ -26,3 +27,4 @@ final skipPrevUseCaseProvider = Provider((ref) => SkipToPreviousUseCase(ref.read
 final seekPositionUseCaseProvider = Provider((ref) => SeekPositionUseCase(ref.read(audioRepositoryProvider)));
 final getPlayerStateStreamUseCaseProvider = Provider((ref) => GetPlayerStateStreamUseCase(ref.read(audioRepositoryProvider)));
 final loadQueueUseCaseProvider = Provider((ref) => LoadQueueUseCase(ref.read(audioRepositoryProvider)));
+final updateTrackInfoUseCaseProvider = Provider((ref) => UpdateTrackInfoUseCase(ref.read(audioRepositoryProvider)));

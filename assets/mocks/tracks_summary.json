@@ -1,7 +1,7 @@
 [
   {
-    "id": "t_001",
-    "user_id": "a_101",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "user_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "title": "Neon Nights",
     "artist": "Synthwave Boy",
     "description": "The ultimate retro-future synthwave experience with nostalgic analog textures.",
@@ -21,8 +21,8 @@
     "created_at": "2024-01-15T12:00:00Z"
   },
   {
-    "id": "t_002",
-    "user_id": "a_102",
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "user_id": "3f12b8c9-d4e5-4f6a-7b8c-9d0e1f2a3b4c",
     "title": "Midnight Chill",
     "artist": "LoFi Beats",
     "description": "Late night study sessions and rainy days. Best enjoyed with coffee.",
@@ -42,8 +42,8 @@
     "created_at": "2024-02-10T15:30:00Z"
   },
   {
-    "id": "t_003",
-    "user_id": "a_103",
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "user_id": "5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d",
     "title": "Drop The Bass",
     "artist": "DJ Rythm",
     "description": "High energy club anthem with heavy sub-bass and aggressive leads.",
@@ -63,8 +63,8 @@
     "created_at": "2024-03-05T20:15:00Z"
   },
   {
-    "id": "t_004",
-    "user_id": "a_104",
+    "id": "8f8c852b-c8c3-4d45-9303-3114a1e94119",
+    "user_id": "1d2c3b4a-5f6e-7d8c-9b0a-1f2e3d4c5b6a",
     "title": "Cairo Drift",
     "artist": "Desert Trap",
     "description": "Arabic scales meet modern trap percussion. Straight from the streets of Giza.",
@@ -84,8 +84,8 @@
     "created_at": "2024-02-28T10:00:00Z"
   },
   {
-    "id": "t_005",
-    "user_id": "a_105",
+    "id": "a3b8c9d0-e1f2-4a5b-8c7d-6e5f4a3b2c1d",
+    "user_id": "9c8b7a6f-5e4d-3c2b-1a0f-9e8d7c6b5a4f",
     "title": "Acoustic Sunrise",
     "artist": "The Indie Strings",
     "description": "Minimalist folk recorded in an old barn. Pure, raw, and emotional.",
@@ -105,8 +105,8 @@
     "created_at": "2024-03-12T08:45:00Z"
   },
   {
-    "id": "t_006",
-    "user_id": "a_106",
+    "id": "c90b1e2d-3f4a-5b6c-7d8e-9f0a1b2c3d4e",
+    "user_id": "b5a4c3d2-e1f0-9a8b-7c6d-5e4f3a2b1c0d",
     "title": "Deep Focus",
     "artist": "Ambient Mind",
     "description": "1 hour of deep space ambient for maximum productivity.",

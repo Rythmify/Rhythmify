@@ -21,7 +21,7 @@ class TrackModel extends Track {
     super.isArtistFollowed,
     super.tags,
     super.waveformData,
-    super.genreId,
+    super.genre,
     super.isTrending,
     super.isFeatured,
     super.updatedAt,

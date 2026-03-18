@@ -36,6 +36,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
             onPressed: () {
+              context.push('/upload-track');
             },
           ),
           IconButton(
