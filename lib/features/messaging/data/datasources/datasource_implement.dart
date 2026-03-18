@@ -12,29 +12,49 @@ class DatasourceImplement implements DatasourceInterface{
   });
 
   @override
-  Future<List<ConversationModel>> getConversations()async{
+  Future<List<ConversationModel>> getConversations() async {
     final response = await dio.get(ApiEndPoints.getConversations);
 
-    print('getConversations response: ${response.data}');
+    print('URL: ${response.realUri}');
+    print('status: ${response.statusCode}');
     print('type: ${response.data.runtimeType}');
+    print('data: ${response.data}');
 
-    final List data = response.data['data'];
-    return data
-        .map((e) => ConversationModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+    // 👇 PUT IT HERE
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+  final body = response.data as Map<String, dynamic>;
+  final List data = body['data'];
+
+  return data
+      .map((e) => ConversationModel.fromJson(e as Map<String, dynamic>))
+      .toList();
+}
 
   @override
   Future<List<MessageModel>> getMessages({required String conversationId}) async {
-  final response = await dio.get(ApiEndPoints.getConversation(conversationId));
+    final response = await dio.get(ApiEndPoints.getMessages(conversationId));
 
-  print('getMessages response: ${response.data}');
-  print('type: ${response.data.runtimeType}');
+    print('type: ${response.data.runtimeType}');
+    print('data: ${response.data}');
 
-  final List data = response.data['data']['messages'];
-  return data
-      .map((e) => MessageModel.fromJson(e as Map<String, dynamic>))
-      .toList();
+    // 👇 HERE TOO
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+    final body = response.data as Map<String, dynamic>;
+    final List data = body['data']['messages'];
+
+    return data
+        .map((e) => MessageModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   @override

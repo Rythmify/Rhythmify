@@ -6,12 +6,16 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 import 'package:dio/dio.dart';
 
 final repositoryprovider = Provider<MessagingRepository>((ref) {
-  final dio = Dio();
-  final datasource = DatasourceImplement(dio:dio);
-
-  //final datasource = MockDatasourceImplement();
-
-  return RepositoryImplement(
-    dataSource: datasource,
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: 'http://localhost:8080/api/v1',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    ),
   );
+
+  final datasource = DatasourceImplement(dio: dio);
+
+  return RepositoryImplement(dataSource: datasource);
 });
