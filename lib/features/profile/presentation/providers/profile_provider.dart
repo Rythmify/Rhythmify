@@ -37,34 +37,31 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _currentPage = 1;
 
   @override
-  ProfileState build() {
-    final authState = ref.watch(authProvider);
+ProfileState build() {
+  final authState = ref.watch(authProvider);
 
-    // ── Real datasource ───────────────────────────────────────
-    final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+  final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+  final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
-    // ── Mock datasource (no backend needed) ───────────────────
-    // final datasource = ProfileMockDatasource();
+  _getProfile = GetProfileUseCase(repository);
+  _updateProfile = UpdateProfileUseCase(repository);
+  _uploadAvatar = UploadAvatarUseCase(repository);
+  _deleteAvatar = DeleteAvatarUseCase(repository);
+  _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
+  _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
+  _followUser = FollowUserUseCase(repository);
+  _unfollowUser = UnfollowUserUseCase(repository);
+  _getLikedTracks = GetLikedTracksUseCase(repository);
 
-    final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
-
-    _getProfile = GetProfileUseCase(repository);
-    _updateProfile = UpdateProfileUseCase(repository);
-    _uploadAvatar = UploadAvatarUseCase(repository);
-    _deleteAvatar = DeleteAvatarUseCase(repository);
-    _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
-    _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
-    _followUser = FollowUserUseCase(repository);
-    _unfollowUser = UnfollowUserUseCase(repository);
-    _getLikedTracks = GetLikedTracksUseCase(repository);
-
-    // ── Auto load own profile on login ────────────────────────
-    if (authState is AuthAuthenticated) {
-      Future.microtask(() => loadProfile(userId: 'me'));
-    }
-
-    return const ProfileInitial();
+  if (authState is AuthAuthenticated) {
+    // Wait for token to be fully saved before loading profile
+    Future.delayed(const Duration(milliseconds: 500), () {
+      loadProfile(userId: 'me');
+    });
   }
+
+  return const ProfileInitial();
+}
 
   // ── Load profile ──────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
