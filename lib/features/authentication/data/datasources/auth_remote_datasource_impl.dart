@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
 import '../../../../core/network/api_client.dart';
-
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final ApiClient client;
 
@@ -22,13 +21,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
 
       final user = data['user'];
       return UserModel.fromJson({
-        'id': user['user_id'],
+        'id': user['user_id'].toString(),
         'email': user['email'],
         'display_name': user['display_name'],
         'is_email_verified': user['is_verified'],
@@ -79,10 +82,14 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       print('Data: ${response.data}');
       print('────────────────────────────────────────');
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
 
       return UserModel.fromJson({
-        'id': data['user_id'],
+        'id': data['user_id'].toString(),
         'email': data['email'],
         'display_name': data['display_name'],
         'is_email_verified': false,
@@ -109,13 +116,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
 
       final user = data['user'];
       return UserModel.fromJson({
-        'id': user['user_id'],
+        'id': user['user_id'].toString(),
         'email': user['email'],
         'display_name': user['display_name'],
         'is_email_verified': true,
@@ -142,13 +153,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      final data = response.data['data'];
+      final responseData = response.data is List
+          ? response.data[0]
+          : response.data;
+
+      final data = responseData['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
 
       final user = data['user'];
       return UserModel.fromJson({
-        'id': user['user_id'],
+        'id': user['user_id'].toString(),
         'email': user['email'],
         'display_name': user['display_name'],
         'is_email_verified': true,
@@ -214,7 +229,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
-  // ── Error handler ─────────────────────────────────
   void _handleDioError(DioException e) {
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;
