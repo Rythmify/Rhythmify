@@ -69,33 +69,64 @@ class _CreateAccountProfilePageState
   }
 
   void _onContinue() {
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_selectedGender == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select your gender')),
-        );
-        return;
-      }
-      if (_selectedYear == null ||
-          _selectedMonth == null ||
-          _selectedDay == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select your date of birth')),
-        );
-        return;
-      }
-
-      ref
-          .read(authProvider.notifier)
-          .signUpWithEmailAndPassword(
-            email: widget.email,
-            password: widget.password,
-            displayName: _displayNameController.text.trim(),
-            gender: _selectedGender!.toLowerCase(),
-            dateOfBirth: _formatDate(),
-          );
+  if (_formKey.currentState?.validate() ?? false) {
+    if (_selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your gender')),
+      );
+      return;
     }
+    if (_selectedYear == null ||
+        _selectedMonth == null ||
+        _selectedDay == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your date of birth')),
+      );
+      return;
+    }
+
+    // ── Age validation — must be 13 or older ─────────────────
+    final dob = DateTime(
+      int.parse(_selectedYear!),
+      _months.indexOf(_selectedMonth!) + 1,
+      int.parse(_selectedDay!),
+    );
+    final today = DateTime.now();
+    final age = today.year - dob.year -
+        ((today.month < dob.month ||
+                (today.month == dob.month && today.day < dob.day))
+            ? 1
+            : 0);
+
+    if (age < 13) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must be at least 13 years old to register'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (dob.isAfter(today)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Date of birth cannot be in the future'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    ref.read(authProvider.notifier).signUpWithEmailAndPassword(
+          email: widget.email,
+          password: widget.password,
+          displayName: _displayNameController.text.trim(),
+          gender: _selectedGender!.toLowerCase(),
+          dateOfBirth: _formatDate(),
+        );
   }
+}
 
   @override
   Widget build(BuildContext context) {
