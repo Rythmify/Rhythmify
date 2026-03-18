@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class ProfileEntity extends Equatable {
   final String id;
   final String displayName;
+  final String? username;
   final String? avatarUrl;
   final String? coverUrl;
   final String? city;
@@ -12,10 +13,12 @@ class ProfileEntity extends Equatable {
   final int followingCount;
   final int tracksCount;
   final bool isFollowing;
+  final bool isVerified;
 
   const ProfileEntity({
     required this.id,
     required this.displayName,
+    this.username,
     this.avatarUrl,
     this.coverUrl,
     this.city,
@@ -25,6 +28,7 @@ class ProfileEntity extends Equatable {
     required this.followingCount,
     required this.tracksCount,
     required this.isFollowing,
+    this.isVerified = false,
   });
 
   ProfileEntity copyWithFollowing({
@@ -34,6 +38,7 @@ class ProfileEntity extends Equatable {
     return ProfileEntity(
       id: id,
       displayName: displayName,
+      username: username,
       avatarUrl: avatarUrl,
       coverUrl: coverUrl,
       city: city,
@@ -43,6 +48,7 @@ class ProfileEntity extends Equatable {
       followingCount: followingCount,
       tracksCount: tracksCount,
       isFollowing: isFollowing,
+      isVerified: isVerified,
     );
   }
 
@@ -50,6 +56,7 @@ class ProfileEntity extends Equatable {
   List<Object?> get props => [
         id,
         displayName,
+        username,
         avatarUrl,
         coverUrl,
         city,
@@ -59,5 +66,6 @@ class ProfileEntity extends Equatable {
         followingCount,
         tracksCount,
         isFollowing,
+        isVerified,
       ];
 }

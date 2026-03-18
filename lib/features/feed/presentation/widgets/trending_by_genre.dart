@@ -4,6 +4,7 @@ import '../../presentation/providers/home_providers.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import 'dart:ui';
 
 final List<String> genres = [
   'Reggae',
@@ -18,15 +19,15 @@ final List<String> genres = [
 ];
 
 final List<Color> genreColors = [
-  Colors.green,
-  Colors.orange,
-  Colors.purple,
-  Colors.blue,
-  Colors.pink,
-  Colors.teal,
-  Colors.amber,
-  Colors.red,
-  Colors.indigo,
+  const Color.fromARGB(255, 28, 197, 22),
+  Colors.pink, //ok
+  Colors.purple, //ok
+  const Color.fromARGB(255, 4, 144, 208),
+  Colors.pink, //ok
+  const Color.fromARGB(255, 19, 45, 195), //ok
+  const Color.fromARGB(255, 187, 34, 149), //ok
+  const Color.fromARGB(255, 197, 18, 6), //ok
+  const Color.fromARGB(255, 19, 45, 195), //ok
 ];
 
 //Trending by genre section
@@ -134,7 +135,7 @@ class GenreTabView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
-      height: 110,
+      height: 250,
       child: AnimatedBuilder(
         animation: tabController,
         builder: (context, _) {
@@ -143,38 +144,69 @@ class GenreTabView extends ConsumerWidget {
 
           return Stack(
             children: [
-              //Dynamic orb background
+              // 1️⃣ Base background
+              Container(color: AppTheme.background),
+
+              // 2️⃣ BIG glow
               Container(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    center: const Alignment(-0.4, -0.1),
-                    radius: 0.4,
+                    center: const Alignment(-0.4, -0.3),
+                    radius: 0.49,
                     colors: [
-                      currentColor.withValues(alpha: 0.5),
-                      AppTheme.background,
+                      currentColor.withValues(alpha: 0.35),
+                      currentColor.withValues(alpha: 0.12),
+                      Colors.transparent,
                     ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
               ),
 
-              // TabBarView
-              TabBarView(
-                controller: tabController,
-                children: genres.map((genre) {
-                  final asyncTracks = ref.watch(trendingTracksProvider(genre));
+              // 3️⃣ SMALL glow
+              Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.2, -0.1),
+                    radius: 0.6,
+                    colors: [
+                      currentColor.withValues(alpha: 0.28),
+                      currentColor.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.4, 1.0],
+                  ),
+                ),
+              ),
 
-                  return asyncTracks.when(
-                    data: (tracks) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 25),
-                        child: _TrendingHorizontalColumns(tracks: tracks),
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Center(child: Text('Error: $e')),
-                  );
-                }).toList(),
+              // 4️⃣ Blur ONLY for TabBarView
+              ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                  child: Container(
+                    color: Colors.transparent,
+                    child: TabBarView(
+                      controller: tabController,
+                      children: genres.map((genre) {
+                        final asyncTracks = ref.watch(
+                          trendingTracksProvider(genre),
+                        );
+
+                        return asyncTracks.when(
+                          data: (tracks) {
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 30),
+                              child: _TrendingHorizontalColumns(tracks: tracks),
+                            );
+                          },
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (e, _) => Center(child: Text('Error: $e')),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
               ),
             ],
           );
@@ -183,7 +215,6 @@ class GenreTabView extends ConsumerWidget {
     );
   }
 }
-
 //Horizontal Columns (3 tracks per column)
 
 class _TrendingHorizontalColumns extends ConsumerWidget {
@@ -216,7 +247,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8),
 
                 child: SizedBox(
-                  width: 330,
+                  width: 340,
 
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,

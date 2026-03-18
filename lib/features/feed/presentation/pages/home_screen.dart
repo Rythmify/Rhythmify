@@ -12,6 +12,15 @@ import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_lik
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
 
+
+
+
+//imports for track upload added by hana
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
+
+
+
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   final jsonString = await rootBundle.loadString(
@@ -35,8 +44,43 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
-            onPressed: () {
-              context.push('/upload-track');
+
+            onPressed: () async{
+              try {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.audio,
+                  allowMultiple: false,
+                );
+
+                if (result == null || result.files.isEmpty) return;
+                final picked = result.files.first;
+                if (picked.path == null) return;
+
+                Duration duration = Duration.zero;
+                try {
+                  final player   = AudioPlayer();
+                  final detected = await player.setFilePath(picked.path!);
+                  duration       = detected ?? Duration.zero;
+                  await player.dispose();
+                } catch (_) {}
+
+                ref.read(uploadFormProvider.notifier).initDraft(
+                  artistId:       'dev_user_001',
+                  localAudioPath: picked.path!,
+                  duration:       duration,
+                  fileName:       picked.name,
+                );
+
+                if (context.mounted) context.push('/upload-track');
+
+              } catch (e) {
+                // Show exactly what error occurs
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              }
             },
           ),
           IconButton(

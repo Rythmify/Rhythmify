@@ -23,12 +23,30 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
+  late String _resolvedUserId;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        ref.read(profileProvider.notifier).loadProfile(userId: widget.userId));
+
+    final authState = ref.read(authProvider);
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+
+    // Use 'me' when viewing own profile
+    _resolvedUserId =
+        widget.userId == currentUserId || widget.userId == 'me'
+            ? 'me'
+            : widget.userId;
+
+    // Only load if viewing another user's profile
+    // For own profile the provider's build() handles it automatically
+    if (_resolvedUserId != 'me') {
+      Future.microtask(() => ref
+          .read(profileProvider.notifier)
+          .loadProfile(userId: _resolvedUserId));
+    }
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -36,7 +54,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         final state = ref.read(profileProvider);
         if (state is ProfileLoaded) {
           ref.read(profileProvider.notifier).loadLikedTracks(
-                userId: widget.userId,
+                userId: _resolvedUserId,
               );
         }
       }
@@ -61,9 +79,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final authState = ref.watch(authProvider);
-    final isOwnProfile = authState is AuthAuthenticated
-        ? authState.user.id == widget.userId
-        : false;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+    final isOwnProfile =
+        widget.userId == currentUserId || widget.userId == 'me';
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -101,7 +121,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 ElevatedButton(
                   onPressed: () => ref
                       .read(profileProvider.notifier)
-                      .loadProfile(userId: widget.userId),
+                      .loadProfile(userId: _resolvedUserId),
                   child: const Text('Retry'),
                 ),
               ],
@@ -170,7 +190,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 // ── Action buttons row ───────────────────────────────
                 Row(
                   children: [
-                    // Edit or Follow button
                     if (isOwnProfile)
                       GestureDetector(
                         onTap: () => context.push('/profile/edit'),
@@ -215,7 +234,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
                     const Spacer(),
 
-                    // Shuffle button
                     GestureDetector(
                       onTap: () {},
                       child: const Icon(
@@ -227,7 +245,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
                     const SizedBox(width: 16),
 
-                    // Play button
                     Container(
                       width: 48,
                       height: 48,

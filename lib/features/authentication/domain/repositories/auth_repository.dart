@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../entities/user_entity.dart';
 import '../../../../core/errors/failures.dart';
+import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> signInWithEmail({
@@ -12,6 +12,8 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    required String gender,
+    required String dateOfBirth,
   });
 
   Future<Either<Failure, UserEntity>> signInWithGoogle();
@@ -22,7 +24,5 @@ abstract class AuthRepository {
 
   Future<Either<Failure, void>> sendVerificationEmail();
 
-  Future<Either<Failure, void>> sendPasswordReset({
-    required String email,
-  });
+  Future<Either<Failure, void>> sendPasswordReset({required String email});
 }

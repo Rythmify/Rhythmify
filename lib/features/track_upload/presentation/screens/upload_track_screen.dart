@@ -1,11 +1,13 @@
+/// features/upload_track/presentation/screens/upload_track_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../providers/upload_track_provider.dart';
-import '../widgets/audio_picker_widget.dart';
-import '../widgets/cover_image_picker_widget.dart';
-import '../widgets/upload_progress_overlay.dart';
+import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
+import 'package:rythmify/features/track_upload/presentation/widgets/audio_picker_widget.dart';
+import 'package:rythmify/features/track_upload/presentation/widgets/upload_progress_overlay.dart';
+import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart';
 
 class UploadTrackScreen extends ConsumerStatefulWidget {
   const UploadTrackScreen({super.key});
@@ -20,19 +22,10 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
 
   late TabController _tabController;
 
-  // Hardcoded genres for now
-  // Replace with API call when backend is ready
   static const List<String> _genres = [
     'Electronic', 'Hip-Hop', 'Rock', 'Pop', 'Jazz',
     'Classical', 'R&B / Soul', 'Ambient', 'Folk',
     'Metal', 'Country', 'Reggae', 'Podcast', 'Other',
-  ];
-
-  // Hardcoded tags for now
-  // Replace with GET /tags when backend is ready
-  static const List<String> _availableTags = [
-    'chill', 'electronic', 'lofi', 'summer', 'vibes',
-    'instrumental', 'hiphop', 'beats', 'acoustic', 'live',
   ];
 
   @override
@@ -62,24 +55,21 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
           // ── Main content ──────────────────────────────────────────
           Column(
             children: [
-              // SoundCloud-style tab bar
               _buildTabBar(),
-
-              // Tab content
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    _TrackInfoTab(genres: _genres, availableTags: _availableTags),
-                    _AdvancedTab(),
-                    _PermissionsTab(),
+                    _TrackInfoTab(genres: _genres),
+                    const _AdvancedTab(),
+                    const _PermissionsTab(),
                   ],
                 ),
               ),
             ],
           ),
 
-          // ── Progress overlay (sits on top) ────────────────────────
+          // ── Progress overlay ──────────────────────────────────────
           if (state.draft != null)
             UploadProgressOverlay(
               onDismiss: () {
@@ -92,12 +82,17 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     );
   }
 
+  // ── AppBar ──────────────────────────────────────────────────────────────
+
   AppBar _buildAppBar(BuildContext context, UploadFormState state) {
     return AppBar(
       backgroundColor: AppTheme.background,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.close_rounded, color: AppTheme.appBarItems),
+        icon: const Icon(
+          Icons.close_rounded,
+          color: AppTheme.appBarItems,
+        ),
         onPressed: () {
           ref.read(uploadFormProvider.notifier).reset();
           context.pop();
@@ -105,31 +100,36 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       ),
       title: Text('Upload', style: AppTheme.appBarTitle),
       actions: [
-        // Save button in app bar — SoundCloud style
         Padding(
           padding: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
           child: TextButton(
             style: TextButton.styleFrom(
               backgroundColor: state.canSave
-                  ? AppTheme.primaryBrand
-                  : AppTheme.surface,
-              foregroundColor: state.canSave
                   ? Colors.white
-                  : AppTheme.textSecondary,
+                  : AppTheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
-            onPressed: state.canSave ? () => _handleSave(context) : null,
-            child: Text('Save', style: AppTheme.labelLarge.copyWith(
-              color: state.canSave ? Colors.white : AppTheme.textSecondary,
-            )),
+            onPressed: state.canSave
+                ? () => _handleSave(context)
+                : null,
+            child: Text(
+              'Save',
+              style: AppTheme.labelLarge.copyWith(
+                color: state.canSave
+                    ? Colors.black
+                    : AppTheme.textSecondary,
+              ),
+            ),
           ),
         ),
       ],
     );
   }
+
+  // ── Tab bar ─────────────────────────────────────────────────────────────
 
   Widget _buildTabBar() {
     return Container(
@@ -140,9 +140,9 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       ),
       child: TabBar(
         controller: _tabController,
-        indicatorColor: AppTheme.primaryBrand,
+        indicatorColor: Colors.white,
         indicatorWeight: 2,
-        labelColor: AppTheme.primaryBrand,
+        labelColor: Colors.white,
         unselectedLabelColor: AppTheme.textSecondary,
         labelStyle: AppTheme.labelLarge,
         unselectedLabelStyle: AppTheme.labelLarge,
@@ -155,18 +155,38 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     );
   }
 
+  // ── Save handler ─────────────────────────────────────────────────────────
+
   void _handleSave(BuildContext context) {
-    // TOdo: wire to upload usecase when backend is ready
-    // For now just show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppTheme.surface,
-        content: Text(
-          'Upload coming soon — backend not connected yet',
-          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-        ),
-      ),
-    );
+    final state = ref.read(uploadFormProvider);
+    final draft = state.draft;
+    if (draft == null) return;
+
+    // Store in mock store
+    UploadMockStore.add(MockTrackSubmission(
+      title:            draft.title         ?? '',
+      artist:           draft.artist        ?? '',
+      genre:            draft.genre,
+      tags:             draft.tags,
+      description:      draft.description,
+      caption:          draft.caption,
+      isPublic:         draft.isPublic,
+      localAudioPath:   draft.localAudioPath,
+      localArtworkPath: draft.localArtworkPath,
+      duration:         draft.duration,
+      submittedAt:      DateTime.now(),
+    ));
+
+    // Simulate upload progress for UI testing
+    _simulateUpload();
+  }
+
+  void _simulateUpload() async {
+    final notifier = ref.read(uploadFormProvider.notifier);
+    for (int i = 1; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      notifier.setUploadProgress(i / 10);
+    }
   }
 }
 
@@ -174,106 +194,166 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
 // TRACK INFO TAB
 // ══════════════════════════════════════════════════════════════════════════════
 
-class _TrackInfoTab extends ConsumerWidget {
+class _TrackInfoTab extends ConsumerStatefulWidget {
   final List<String> genres;
-  final List<String> availableTags;
 
-  const _TrackInfoTab({
-    required this.genres,
-    required this.availableTags,
-  });
+  const _TrackInfoTab({required this.genres});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(uploadFormProvider);
+  ConsumerState<_TrackInfoTab> createState() => _TrackInfoTabState();
+}
+
+class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
+
+  late TextEditingController _titleController;
+  late TextEditingController _artistController;
+  late TextEditingController _tagController;
+
+  @override
+  void initState() {
+    super.initState();
+    final draft = ref.read(uploadFormProvider).draft;
+    _titleController  = TextEditingController(text: draft?.title  ?? '');
+    _artistController = TextEditingController(text: draft?.artist ?? '');
+    _tagController    = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _artistController.dispose();
+    _tagController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state    = ref.watch(uploadFormProvider);
+    final draft    = state.draft;
     final notifier = ref.read(uploadFormProvider.notifier);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // ── Audio file card ───────────────────────────────────────
+          // ── Top: dashed frame + audio info ─────────────────────────
           const AudioPickerWidget(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
 
-          // ── Artwork + Title row (SoundCloud layout) ───────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Artwork picker
-              CoverImagePickerWidget(
-                onTap: () => _pickArtwork(context, ref),
-              ),
-              const SizedBox(width: 16),
+          // ── Divider ────────────────────────────────────────────────
+          const Divider(color: Colors.white12, height: 1),
+          const SizedBox(height: 24),
 
-              // Title field next to artwork
-              Expanded(
-                child: _FormField(
-                  label: 'Title',
-                  hint: 'Name your track',
-                  required: true,
-                  onChanged: notifier.setTitle,
-                ),
-              ),
-            ],
+          // ── Title ──────────────────────────────────────────────────
+          _FieldLabel(label: 'Title', required: true),
+          const SizedBox(height: 10),
+          _InputField(
+            controller: _titleController,
+            hint:       '',
+            onChanged:  notifier.setTitle,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // ── Artist ────────────────────────────────────────────────
-          _FormField(
-            label: 'Artist',
-            hint: 'Your artist name',
-            required: true,
-            onChanged: notifier.setArtist,
+          // ── Artist ─────────────────────────────────────────────────
+          _FieldLabel(label: 'Artist', required: true),
+          const SizedBox(height: 6),
+          Text(
+            'Add any other collaborators of the track',
+            style: AppTheme.bodyMedium,
           ),
-          const SizedBox(height: 20),
-
-          // ── Genre dropdown ────────────────────────────────────────
-          _SectionLabel(label: 'Genre'),
-          const SizedBox(height: 8),
-          _GenreDropdown(
-            genres: genres,
-            selectedGenre: state.draft?.genre,
-            onChanged: notifier.setGenre,
+          const SizedBox(height: 10),
+          _InputField(
+            controller: _artistController,
+            hint:       'Add any other collaborators of the track',
+            onChanged:  notifier.setArtist,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // ── Tags ──────────────────────────────────────────────────
-          _SectionLabel(label: 'Tags'),
-          const SizedBox(height: 8),
-          _TagsSection(
-            availableTags: availableTags,
-            selectedTags: state.draft?.tags ?? [],
-            onAdd: notifier.addTag,
-            onRemove: notifier.removeTag,
+          // ── Genre ──────────────────────────────────────────────────
+          _FieldLabel(label: 'Genre'),
+          const SizedBox(height: 6),
+          Text(
+            'Help fans discover your track',
+            style: AppTheme.bodyMedium,
           ),
-          const SizedBox(height: 20),
-
-          // ── Description ───────────────────────────────────────────
-          _FormField(
-            label: 'Description',
-            hint: 'Describe your track',
-            onChanged: notifier.setDescription,
-            maxLines: 4,
+          const SizedBox(height: 10),
+          _GenrePicker(
+            genres:        widget.genres,
+            selectedGenre: draft?.genre,
+            onChanged:     notifier.setGenre,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // ── Caption ───────────────────────────────────────────────
-          _FormField(
-            label: 'Caption',
-            hint: 'Add a short caption',
+          // ── Tags ───────────────────────────────────────────────────
+          _FieldLabel(label: 'Tags'),
+          const SizedBox(height: 6),
+          Text(
+            'Add tags to describe your track for reachability',
+            style: AppTheme.bodyMedium,
+          ),
+          const SizedBox(height: 10),
+          _TagsInput(
+            controller:   _tagController,
+            selectedTags: draft?.tags ?? [],
+            onAdd:        notifier.addTag,
+            onRemove:     notifier.removeTag,
+          ),
+          const SizedBox(height: 24),
+
+          // ── Description ────────────────────────────────────────────
+          _FieldLabel(label: 'Description'),
+          const SizedBox(height: 10),
+          _InputField(
+            hint:      'Add any details about your track for fans',
+            onChanged:  notifier.setDescription,
+            maxLines:   4,
+          ),
+          const SizedBox(height: 24),
+
+          // ── Caption ────────────────────────────────────────────────
+          _FieldLabel(label: 'Caption'),
+          const SizedBox(height: 10),
+          _InputField(
+            hint:     'Add any caption to your post (optional)',
             onChanged: notifier.setCaption,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // ── Privacy ───────────────────────────────────────────────
-          _SectionLabel(label: 'Privacy'),
-          const SizedBox(height: 8),
+          // ── Privacy ────────────────────────────────────────────────
+          _FieldLabel(label: 'Privacy'),
+          const SizedBox(height: 16),
           _PrivacySelector(
-            isPublic: state.draft?.isPublic ?? true,
+            isPublic:  draft?.isPublic ?? true,
             onChanged: notifier.setIsPublic,
+          ),
+          const SizedBox(height: 32),
+
+          // ── Save button ────────────────────────────────────────────
+          _SaveButton(
+            enabled: state.canSave,
+            onPressed: () {
+              final parentState = ref.read(uploadFormProvider);
+              final parentDraft = parentState.draft;
+              if (parentDraft == null) return;
+
+              UploadMockStore.add(MockTrackSubmission(
+                title:            parentDraft.title         ?? '',
+                artist:           parentDraft.artist        ?? '',
+                genre:            parentDraft.genre,
+                tags:             parentDraft.tags,
+                description:      parentDraft.description,
+                caption:          parentDraft.caption,
+                isPublic:         parentDraft.isPublic,
+                localAudioPath:   parentDraft.localAudioPath,
+                localArtworkPath: parentDraft.localArtworkPath,
+                duration:         parentDraft.duration,
+                submittedAt:      DateTime.now(),
+              ));
+
+              _simulateUpload();
+            },
           ),
           const SizedBox(height: 40),
         ],
@@ -281,72 +361,33 @@ class _TrackInfoTab extends ConsumerWidget {
     );
   }
 
-  void _pickArtwork(BuildContext context, WidgetRef ref) {
-    // Show bottom sheet to choose gallery or camera
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            // Handle bar
-            Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(
-                Icons.photo_library_outlined,
-                color: AppTheme.appBarItems,
-              ),
-              title: Text('Choose from gallery',
-                  style: AppTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                // TOdo: wire pick_cover_usecase when testing on device
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.camera_alt_outlined,
-                color: AppTheme.appBarItems,
-              ),
-              title: Text('Take a photo', style: AppTheme.bodyLarge),
-              onTap: () {
-                Navigator.pop(context);
-                // TOdo: wire pick_cover_usecase when testing on device
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
+  void _simulateUpload() async {
+    final notifier = ref.read(uploadFormProvider.notifier);
+    for (int i = 1; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      notifier.setUploadProgress(i / 10);
+    }
   }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ADVANCED TAB — UI placeholder
+// ADVANCED TAB
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _AdvancedTab extends StatelessWidget {
+  const _AdvancedTab();
+
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.tune_rounded,
-              color: AppTheme.textSecondary, size: 48),
+          Icon(
+            Icons.tune_rounded,
+            color: AppTheme.textSecondary,
+            size: 48,
+          ),
           const SizedBox(height: 16),
           Text('Advanced settings', style: AppTheme.titleMedium),
           const SizedBox(height: 8),
@@ -358,18 +399,23 @@ class _AdvancedTab extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PERMISSIONS TAB — UI placeholder
+// PERMISSIONS TAB
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _PermissionsTab extends StatelessWidget {
+  const _PermissionsTab();
+
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.lock_outline_rounded,
-              color: AppTheme.textSecondary, size: 48),
+          Icon(
+            Icons.lock_outline_rounded,
+            color: AppTheme.textSecondary,
+            size: 48,
+          ),
           const SizedBox(height: 16),
           Text('Permissions', style: AppTheme.titleMedium),
           const SizedBox(height: 8),
@@ -381,250 +427,172 @@ class _PermissionsTab extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// REUSABLE SMALL WIDGETS
+// REUSABLE WIDGETS
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Section label ─────────────────────────────────────────────────────────────
+// ── Field label ───────────────────────────────────────────────────────────────
 
-class _SectionLabel extends StatelessWidget {
+class _FieldLabel extends StatelessWidget {
   final String label;
   final bool required;
 
-  const _SectionLabel({required this.label, this.required = false});
+  const _FieldLabel({required this.label, this.required = false});
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        text: label,
-        style: AppTheme.labelLarge,
-        children: [
-          if (required)
-            TextSpan(
-              text: ' *',
-              style: AppTheme.labelLarge.copyWith(
-                color: AppTheme.primaryBrand,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Text field ────────────────────────────────────────────────────────────────
-
-class _FormField extends StatelessWidget {
-  final String label;
-  final String hint;
-  final ValueChanged<String> onChanged;
-  final bool required;
-  final int maxLines;
-
-  const _FormField({
-    required this.label,
-    required this.hint,
-    required this.onChanged,
-    this.required = false,
-    this.maxLines = 1,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _SectionLabel(label: label, required: required),
-        const SizedBox(height: 8),
-        TextField(
-          onChanged: onChanged,
-          maxLines: maxLines,
-          style: AppTheme.bodyLarge,
-          cursorColor: AppTheme.primaryBrand,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppTheme.bodyMedium,
-            filled: true,
-            fillColor: AppTheme.surface,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.white12),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.white12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: AppTheme.primaryBrand,
-                width: 1.5,
-              ),
+        Text(label, style: AppTheme.labelLarge),
+        if (required) ...[
+          const SizedBox(width: 3),
+          const Text(
+            '*',
+            style: TextStyle(
+              color:      Colors.red,
+              fontSize:   14,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
+        ],
       ],
     );
   }
 }
 
-// ── Genre dropdown ────────────────────────────────────────────────────────────
+// ── Input field ───────────────────────────────────────────────────────────────
 
-class _GenreDropdown extends StatelessWidget {
+class _InputField extends StatelessWidget {
+  final String hint;
+  final ValueChanged<String> onChanged;
+  final int maxLines;
+  final TextEditingController? controller;
+
+  const _InputField({
+    required this.hint,
+    required this.onChanged,
+    this.maxLines  = 1,
+    this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller:  controller,
+      onChanged:   onChanged,
+      maxLines:    maxLines,
+      style:       AppTheme.bodyLarge,
+      cursorColor: Colors.white,
+      decoration: InputDecoration(
+        hintText:  hint,
+        hintStyle: AppTheme.bodyMedium,
+        filled:    true,
+        fillColor: AppTheme.background,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 0,
+          vertical:   12,
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white, width: 1.5),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Genre picker ──────────────────────────────────────────────────────────────
+
+class _GenrePicker extends StatelessWidget {
   final List<String> genres;
   final String? selectedGenre;
   final ValueChanged<String> onChanged;
 
-  const _GenreDropdown({
+  const _GenrePicker({
     required this.genres,
     required this.selectedGenre,
     required this.onChanged,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context:         context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedGenre,
-          hint: Text('Select genre', style: AppTheme.bodyMedium),
-          isExpanded: true,
-          dropdownColor: AppTheme.surface,
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: AppTheme.textSecondary,
-          ),
-          items: genres.map((genre) {
-            return DropdownMenuItem(
-              value: genre,
-              child: Text(genre, style: AppTheme.bodyLarge),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-        ),
+      builder: (_) => ListView.builder(
+        itemCount: genres.length,
+        itemBuilder: (_, i) {
+          final genre      = genres[i];
+          final isSelected = genre == selectedGenre;
+          return ListTile(
+            title: Text(
+              genre,
+              style: TextStyle(
+                color:      isSelected ? Colors.white : Colors.grey,
+                fontWeight: isSelected
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+              ),
+            ),
+            trailing: isSelected
+                ? const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                  )
+                : null,
+            onTap: () {
+              onChanged(genre);
+              Navigator.pop(context);
+            },
+          );
+        },
       ),
     );
   }
-}
-
-// ── Tags section ──────────────────────────────────────────────────────────────
-
-class _TagsSection extends StatelessWidget {
-  final List<String> availableTags;
-  final List<String> selectedTags;
-  final ValueChanged<String> onAdd;
-  final ValueChanged<String> onRemove;
-
-  const _TagsSection({
-    required this.availableTags,
-    required this.selectedTags,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Tags not yet selected — shown as suggestions
-    final suggestions = availableTags
-        .where((tag) => !selectedTags.contains(tag))
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Selected tags — shown with × to remove
-        if (selectedTags.isNotEmpty) ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: selectedTags.map((tag) {
-              return _TagChip(
-                label: tag,
-                isSelected: true,
-                onTap: () => onRemove(tag),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 10),
-        ],
-
-        // Suggestion tags — shown as tappable
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: suggestions.map((tag) {
-            return _TagChip(
-              label: tag,
-              isSelected: false,
-              onTap: () => onAdd(tag),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-}
-
-class _TagChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _TagChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => _showPicker(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryBrand.withValues(alpha: 0.15)
-              : AppTheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? AppTheme.primaryBrand
-                : Colors.white24,
-            width: 1,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Colors.white24),
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: AppTheme.labelSmall.copyWith(
-                color: isSelected
-                    ? AppTheme.primaryBrand
-                    : AppTheme.textSecondary,
+            Expanded(
+              child: Text(
+                selectedGenre ?? 'Help fans discover your track',
+                style: TextStyle(
+                  color:    selectedGenre != null
+                      ? Colors.white
+                      : Colors.grey,
+                  fontSize: 14,
+                ),
               ),
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 4),
-              Icon(
-                Icons.close_rounded,
-                size: 12,
-                color: AppTheme.primaryBrand,
-              ),
-            ],
+            // Two arrows side by side
+            const Row(
+              children: [
+                Icon(
+                  Icons.keyboard_arrow_up_rounded,
+                  color: Colors.grey,
+                  size:  18,
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.grey,
+                  size:  18,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -632,7 +600,124 @@ class _TagChip extends StatelessWidget {
   }
 }
 
-// ── Privacy selector ──────────────────────────────────────────────────────────
+// ── Tags input ────────────────────────────────────────────────────────────────
+
+class _TagsInput extends StatelessWidget {
+  final TextEditingController controller;
+  final List<String> selectedTags;
+  final ValueChanged<String> onAdd;
+  final ValueChanged<String> onRemove;
+
+  const _TagsInput({
+    required this.controller,
+    required this.selectedTags,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final atLimit = selectedTags.length >= 10;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Input field
+        TextField(
+          controller:  controller,
+          enabled:     !atLimit,
+          style: const TextStyle(
+            color:    Colors.white,
+            fontSize: 14,
+          ),
+          cursorColor: Colors.white,
+          decoration: InputDecoration(
+            hintText: atLimit
+                ? 'Maximum 10 tags reached'
+                : 'Add tags to describe track for reachability',
+            hintStyle: const TextStyle(
+              color:    Colors.grey,
+              fontSize: 14,
+            ),
+            filled:    true,
+            fillColor: AppTheme.background,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 0,
+              vertical:   12,
+            ),
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white24),
+            ),
+            focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 1.5),
+            ),
+            disabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white12),
+            ),
+          ),
+          onSubmitted: (value) {
+            final tag = value.trim().toLowerCase();
+            if (tag.isEmpty) return;
+            if (atLimit)     return;
+            onAdd(tag);
+            controller.clear();
+          },
+        ),
+        const SizedBox(height: 12),
+
+        // Selected tags
+        if (selectedTags.isNotEmpty) ...[
+          Wrap(
+            spacing:    8,
+            runSpacing: 8,
+            children: selectedTags.map((tag) {
+              return GestureDetector(
+                onTap: () => onRemove(tag),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical:    6,
+                  ),
+                  decoration: BoxDecoration(
+                    color:        Colors.white12,
+                    borderRadius: BorderRadius.circular(20),
+                    border:       Border.all(color: Colors.white24),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        tag,
+                        style: const TextStyle(
+                          color:    Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white54,
+                        size:  12,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${selectedTags.length}/10 tags',
+            style: const TextStyle(
+              color:    Colors.grey,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
 
 class _PrivacySelector extends StatelessWidget {
   final bool isPublic;
@@ -645,31 +730,22 @@ class _PrivacySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Column(
-        children: [
-          _PrivacyOption(
-            title: 'Public',
-            subtitle: 'Everyone can hear this track',
-            icon: Icons.public_rounded,
-            isSelected: isPublic,
-            onTap: () => onChanged(true),
-          ),
-          Divider(height: 1, color: Colors.white12),
-          _PrivacyOption(
-            title: 'Unlisted',
-            subtitle: 'Only people with the link can hear it',
-            icon: Icons.link_rounded,
-            isSelected: !isPublic,
-            onTap: () => onChanged(false),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _PrivacyOption(
+          title:      'Public',
+          subtitle:   'Anyone can find this',
+          isSelected: isPublic,
+          onTap:      () => onChanged(true),
+        ),
+        const SizedBox(height: 20),
+        _PrivacyOption(
+          title:      'Unlisted (Private)',
+          subtitle:   'Anyone with private link can access',
+          isSelected: !isPublic,
+          onTap:      () => onChanged(false),
+        ),
+      ],
     );
   }
 }
@@ -677,14 +753,12 @@ class _PrivacySelector extends StatelessWidget {
 class _PrivacyOption extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _PrivacyOption({
     required this.title,
     required this.subtitle,
-    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
@@ -693,60 +767,98 @@ class _PrivacyOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        color: Colors.transparent,
-        child: Row(
-          children: [
-            Icon(icon,
-                color: isSelected
-                    ? AppTheme.primaryBrand
-                    : AppTheme.textSecondary,
-                size: 22),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTheme.labelLarge.copyWith(
-                      color: isSelected
-                          ? AppTheme.primaryBrand
-                          : AppTheme.textPrimary,
-                    ),
-                  ),
-                  Text(subtitle, style: AppTheme.labelSmall),
-                ],
-              ),
-            ),
-            // Radio indicator
-            Container(
-              width: 20,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Radio circle
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Container(
+              width:  20,
               height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected
-                      ? AppTheme.primaryBrand
-                      : Colors.white38,
+                  color: isSelected ? Colors.white : Colors.white38,
                   width: 2,
                 ),
               ),
               child: isSelected
                   ? Center(
                       child: Container(
-                        width: 10,
+                        width:  10,
                         height: 10,
                         decoration: const BoxDecoration(
-                          color: AppTheme.primaryBrand,
+                          color: Colors.white,
                           shape: BoxShape.circle,
                         ),
                       ),
                     )
                   : null,
             ),
-          ],
+          ),
+          const SizedBox(width: 14),
+          // Text
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color:      isSelected ? Colors.white : Colors.grey,
+                  fontSize:   14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color:    Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Save button ───────────────────────────────────────────────────────────────
+
+class _SaveButton extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  const _SaveButton({
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width:  double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: enabled ? Colors.white : AppTheme.surface,
+          foregroundColor: enabled ? Colors.black : Colors.grey,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        onPressed: enabled ? onPressed : null,
+        child: Text(
+          'Save',
+          style: TextStyle(
+            color:      enabled ? Colors.black : Colors.grey,
+            fontSize:   15,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

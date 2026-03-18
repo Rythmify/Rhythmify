@@ -5,6 +5,7 @@ class ApiClient {
   // Use your computer's IP for physical phone connection
   // Change this when we make it online
   static const String _baseUrl = 'http://192.168.100.10:8081/api/v1';
+
   static const String _tokenKey = 'access_token';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -16,30 +17,32 @@ class ApiClient {
         baseUrl: _baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
 
-    // Interceptor — attaches token + handles refresh automatically
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await getToken();
+          print('══════════════════════════════════════');
+          print('REQUEST URL: ${options.uri}');
+          print('TOKEN FROM STORAGE: $token');
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
+            print('AUTHORIZATION HEADER SET ✓');
+          } else {
+            print('NO TOKEN — request sent without auth ✗');
           }
+          print('══════════════════════════════════════');
           return handler.next(options);
         },
         onError: (error, handler) async {
-          // If token expired — silently refresh and retry
           if (error.response?.statusCode == 401) {
             final errorCode = error.response?.data['error']['code'];
             if (errorCode == 'AUTH_TOKEN_EXPIRED') {
               try {
                 final newToken = await _refreshToken();
-                // Retry original request with new token
                 error.requestOptions.headers['Authorization'] =
                     'Bearer $newToken';
                 final response = await dio.fetch(error.requestOptions);
@@ -56,7 +59,6 @@ class ApiClient {
     );
   }
 
-  // ── Token helpers ─────────────────────────────────
   Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
   }
@@ -69,9 +71,7 @@ class ApiClient {
     await _storage.delete(key: _tokenKey);
   }
 
-  // ── Silent token refresh ──────────────────────────
   Future<String> _refreshToken() async {
-    // Refresh token is sent automatically via HTTP-only cookie
     final response = await dio.post(
       '/auth/refresh',
       options: Options(extra: {'skipAuth': true}),
@@ -82,5 +82,4 @@ class ApiClient {
   }
 }
 
-// Single instance shared across the app
 final apiClient = ApiClient();

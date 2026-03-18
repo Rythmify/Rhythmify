@@ -20,7 +20,7 @@ class OnboardingPage extends StatelessWidget {
             ),
           ),
 
-          /// Bottom panel
+          // ── Bottom panel ─────────────────────────────
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -36,7 +36,7 @@ class OnboardingPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  /// Logo
+                  // ── Logo ─────────────────────────────
                   const Icon(
                     Icons.cloud,
                     color: Colors.black,
@@ -45,23 +45,27 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: 1),
 
-                  /// Title
-                        // Tagline
+                  // ── Tagline ───────────────────────────
                   Text(
                     'Where artists & fans connect.',
                     textAlign: TextAlign.center,
-                    style:
-                        AppTheme.headlineLarge.copyWith(color: Colors.black).copyWith(fontSize: 25, fontWeight: FontWeight.w300),
+                    style: AppTheme.headlineLarge
+                        .copyWith(color: Colors.black)
+                        .copyWith(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w300,
+                        ),
                   ),
 
                   const SizedBox(height: 32),
 
-                  /// Create account
+                  // ── Create account button ─────────────
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () => context.push('/sign-in'),
+                      onPressed: () =>
+                          context.push('/sign-in', extra: 'register'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
@@ -71,7 +75,7 @@ class OnboardingPage extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        "Create an account",
+                        'Create an account',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -82,12 +86,13 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  /// Login button
+                  // ── Log in button ─────────────────────
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () => context.push('/sign-in'),
+                      onPressed: () =>
+                          context.push('/sign-in', extra: 'login'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.6),
                         foregroundColor: Colors.black,
@@ -97,7 +102,7 @@ class OnboardingPage extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        "Log in",
+                        'Log in',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

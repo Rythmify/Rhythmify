@@ -41,29 +41,19 @@ class TrackListTile extends StatelessWidget {
             // ── Artwork ──────────────────────────────────────────────
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: track.artworkUrl.isNotEmpty
-                  ? (track.artworkUrl.startsWith('http') 
-                      ? CachedNetworkImage(
-                          imageUrl: track.artworkUrl,
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            width: 56,
-                            height: 56,
-                            color: AppTheme.surface,
-                          ),
-                          errorWidget: (context, url, error) => _placeholder(),
-                        )
-                      : Image.asset(
-                          track.artworkUrl,
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _placeholder(),
-                        ))
-                  : _placeholder(),
-            ),
+              child: CachedNetworkImage(
+                      imageUrl: track.artworkUrl!,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 56,
+                        height: 56,
+                        color: AppTheme.surface,
+                      ),
+                      errorWidget: (context, url, error) => _placeholder(),
+                    ),
+
 
             const SizedBox(width: 12),
 
