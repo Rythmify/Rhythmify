@@ -11,15 +11,11 @@ import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_lik
 
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
-
-
-
+import '../../../track_upload/presentation/providers/upload_track_provider.dart';
 
 //imports for track upload added by hana
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
-
-
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -45,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
 
-            onPressed: () async{
+            onPressed: () async {
               try {
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.audio,
@@ -58,27 +54,28 @@ class HomeScreen extends ConsumerWidget {
 
                 Duration duration = Duration.zero;
                 try {
-                  final player   = AudioPlayer();
+                  final player = AudioPlayer();
                   final detected = await player.setFilePath(picked.path!);
-                  duration       = detected ?? Duration.zero;
+                  duration = detected ?? Duration.zero;
                   await player.dispose();
                 } catch (_) {}
 
-                ref.read(uploadFormProvider.notifier).initDraft(
-                  artistId:       'dev_user_001',
-                  localAudioPath: picked.path!,
-                  duration:       duration,
-                  fileName:       picked.name,
-                );
+                ref
+                    .read(uploadFormProvider.notifier)
+                    .initDraft(
+                      artistId: 'dev_user_001',
+                      localAudioPath: picked.path!,
+                      duration: duration,
+                      fileName: picked.name,
+                    );
 
                 if (context.mounted) context.push('/upload-track');
-
               } catch (e) {
                 // Show exactly what error occurs
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               }
             },
