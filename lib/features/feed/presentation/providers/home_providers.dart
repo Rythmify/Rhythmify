@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/feed/domain/usecases/get_more__you_like.dart';
-
-import '../../../feed/data/datasources/home_datasource.dart';
+import '../../domain/usecases/get_more__you_like.dart';
+import '../../data/datasources/home_datasource.dart';
 import '../../data/repositories/home_repository_impl.dart';
-
 import '../../domain/usecases/get_trending_tracks.dart';
 import '../../domain/usecases/get_hot_tracks.dart';
 import '../../domain/usecases/get_mixed_playlists.dart';
 import '../../domain/usecases/get_discover_stations.dart';
-
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 //responsible for fetching all home-related data
 final datasourceProvider = Provider((ref) => HomeDatasource());
@@ -32,7 +29,6 @@ final getHotTracksProvider = Provider(
 );
 
 //Mixed For ...
-
 final getMixedPlaylistsProvider = Provider(
   (ref) => GetMixedPlaylists(ref.read(repositoryProvider)),
 );
@@ -51,12 +47,12 @@ final getMoreOfWhatYouLikeProvider = Provider(
 
 //trending tracks
 final trendingTracksProvider =
-    FutureProvider.family<List<TrackSummary>, String>((ref, genre) {
+    FutureProvider.family<List<Track>, String>((ref, genre) {
       return ref.read(getTrendingTracksProvider).call(genre);
     });
 
 ///hot tracks
-final hotTracksProvider = FutureProvider<List<TrackSummary>>((ref) {
+final hotTracksProvider = FutureProvider<List<Track>>((ref) {
   return ref.read(getHotTracksProvider).call();
 });
 

@@ -1,89 +1,135 @@
 class Track {
   final String id;
-  final String artistId;
+  final String userId;
   final String title;
   final String artist;
-  final String artworkUrl;
+  final String? description;   // "Heavy" data (Nullable)
+  final String? coverImage;
   final String audioUrl;
-  final String shareUrl;
+  final String? streamUrl;
+  final String? waveformUrl;
   final Duration duration;
-  final DateTime createdAt;
 
   final int playCount;
   final int likeCount;
-  final int repostCount;
   final int commentCount;
-
+  final int repostCount;
+  
   final bool isLiked;
   final bool isReposted;
   final bool isArtistFollowed;
   final List<String> tags;
-  final String? description;          // Nullable (no need in home page or similar pages)
-  final List<double>? waveformData;   // Nullable (no need in home page or similar pages)
+  
+  final List<double>? waveformData;   // "Heavy" data (Nullable)
+
+  final String? genre;
+  final String? artists;
+  final String? recordLabel;
+  final String? releaseDate;
+  final bool explicitContent;
+
+  final bool isTrending;
+  final bool isFeatured;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final String? status;
 
   const Track({
     required this.id,
-    required this.artistId,
+    required this.userId,
     required this.title,
     required this.artist,
-    required this.artworkUrl,
     required this.audioUrl,
-    required this.shareUrl,
     required this.duration,
     required this.createdAt,
+    this.description,
+    this.coverImage,
+    this.streamUrl,
+    this.waveformUrl,
     this.playCount = 0,
     this.likeCount = 0,
-    this.repostCount = 0,
     this.commentCount = 0,
+    this.repostCount = 0,
     this.isLiked = false,
     this.isReposted = false,
     this.isArtistFollowed = false,
     this.tags = const [],
-    this.description,
     this.waveformData,
+    this.genre,
+    this.artists,
+    this.recordLabel,
+    this.releaseDate,
+    this.explicitContent = false,
+    this.isTrending = false,
+    this.isFeatured = false,
+    this.updatedAt,
+    this.status,
   });
+
+  // Compatibility with older artworkUrl field
+  String get artworkUrl => coverImage ?? '';
 
   Track copyWith({
     String? id,
-    String? artistId,
+    String? userId,
     String? title,
     String? artist,
-    String? artworkUrl,
+    String? description,
+    String? coverImage,
     String? audioUrl,
-    String? shareUrl,
+    String? streamUrl,
+    String? waveformUrl,
     Duration? duration,
-    DateTime? createdAt,
     int? playCount,
     int? likeCount,
-    int? repostCount,
     int? commentCount,
+    int? repostCount,
     bool? isLiked,
     bool? isReposted,
     bool? isArtistFollowed,
     List<String>? tags,
-    String? description,
     List<double>? waveformData,
+    String? genre,
+    String? artists,
+    String? recordLabel,
+    String? releaseDate,
+    bool? explicitContent,
+    bool? isTrending,
+    bool? isFeatured,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? status,
   }) {
     return Track(
       id: id ?? this.id,
-      artistId: artistId ?? this.artistId,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       artist: artist ?? this.artist,
-      artworkUrl: artworkUrl ?? this.artworkUrl,
+      description: description ?? this.description,
+      coverImage: coverImage ?? this.coverImage,
       audioUrl: audioUrl ?? this.audioUrl,
-      shareUrl: shareUrl ?? this.shareUrl,
+      streamUrl: streamUrl ?? this.streamUrl,
+      waveformUrl: waveformUrl ?? this.waveformUrl,
       duration: duration ?? this.duration,
-      createdAt: createdAt ?? this.createdAt,
       playCount: playCount ?? this.playCount,
       likeCount: likeCount ?? this.likeCount,
-      repostCount: repostCount ?? this.repostCount,
       commentCount: commentCount ?? this.commentCount,
+      repostCount: repostCount ?? this.repostCount,
       isLiked: isLiked ?? this.isLiked,
       isReposted: isReposted ?? this.isReposted,
       isArtistFollowed: isArtistFollowed ?? this.isArtistFollowed,
       tags: tags ?? this.tags,
-      description: description ?? this.description,
       waveformData: waveformData ?? this.waveformData,
+      genre: genre ?? this.genre,
+      artists: artists ?? this.artists,
+      recordLabel: recordLabel ?? this.recordLabel,
+      releaseDate: releaseDate ?? this.releaseDate,
+      explicitContent: explicitContent ?? this.explicitContent,
+      isTrending: isTrending ?? this.isTrending,
+      isFeatured: isFeatured ?? this.isFeatured,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
     );
   }
 }

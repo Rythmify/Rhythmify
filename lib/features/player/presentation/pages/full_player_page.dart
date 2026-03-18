@@ -115,7 +115,7 @@ class FullPlayerPage extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const PlayerProgressBar(),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 40),
                   const FloatingCommentBar(),
                   const SizedBox(height: 40),
                   PlayerActionBar(trackId: summary.id),

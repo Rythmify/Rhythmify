@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 class TrackListTile extends StatelessWidget {
-  final TrackSummary track;
+  final Track track;
   final VoidCallback? onTap;
   final VoidCallback? onMoreTap;
 
@@ -53,7 +53,7 @@ class TrackListTile extends StatelessWidget {
                       ),
                       errorWidget: (context, url, error) => _placeholder(),
                     ),
-            ),
+
 
             const SizedBox(width: 12),
 

@@ -20,6 +20,7 @@ class AppTheme {
   static const Color instagram = Color(0xFFE1306C);
   static const Color sms = Color(0xFF2F80ED);
   static const Color shareCircle = Color.fromARGB(255, 58, 58, 58);
+    static const Color lighterSurface = Color.fromARGB(255, 46, 46, 46);
   static const Color iconBg = Color(0xFF121212);
   
   

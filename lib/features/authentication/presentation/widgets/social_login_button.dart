@@ -70,7 +70,7 @@ class SocialLoginButton extends StatelessWidget {
   Border? get _border {
     switch (provider) {
       case SocialProvider.google:
-        return Border.all(color: AppTheme.textSecondary.withOpacity(0.3));
+        return Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.3));
       default:
         return null;
     }

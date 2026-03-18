@@ -11,4 +11,8 @@ class Formatters {
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
     return count.toString();
   }
+
+  static String formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
 }

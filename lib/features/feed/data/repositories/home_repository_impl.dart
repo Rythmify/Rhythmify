@@ -1,5 +1,5 @@
 import '../../../feed/domain/repositories/home_repository.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../datasources/home_datasource.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
@@ -8,12 +8,12 @@ class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl(this.datasource);
 
   @override
-  Future<List<TrackSummary>> getTrendingTracks(String genre) {
+  Future<List<Track>> getTrendingTracks(String genre) {
     return datasource.getTrendingTracks(genre);
   }
 
   @override
-  Future<List<TrackSummary>> getHotTracks() {
+  Future<List<Track>> getHotTracks() {
     return datasource.getHotTracks();
   }
 

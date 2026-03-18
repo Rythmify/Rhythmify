@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 enum PlayerStatus { initial, loading, playing, paused, stopped, error }
 
 class AppPlayerState extends Equatable {
   final PlayerStatus status;
-  final TrackSummary? currentTrack;
+  final Track? currentTrack;
   final Duration position;
   final Duration bufferedPosition;
   final Duration duration;
@@ -24,7 +24,7 @@ class AppPlayerState extends Equatable {
 
   AppPlayerState copyWith({
     PlayerStatus? status,
-    TrackSummary? currentTrack,
+    Track? currentTrack,
     Duration? position,
     Duration? bufferedPosition,
     Duration? duration,

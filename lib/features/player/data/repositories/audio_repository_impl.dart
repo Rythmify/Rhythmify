@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:just_audio/just_audio.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/player_state.dart';
 import '../../domain/repositories/audio_repository.dart';
 import '../datasources/audio_handler.dart';
@@ -9,7 +9,7 @@ class AudioRepositoryImpl implements AudioRepository {
 
   final RythmifyAudioHandler _audioHandler;
   final _playerStateController = StreamController<AppPlayerState>.broadcast();
-  final _queueController = StreamController<List<TrackSummary>>.broadcast();
+  final _queueController = StreamController<List<Track>>.broadcast();
 
   AppPlayerState _currentState = const AppPlayerState();
 
@@ -97,19 +97,19 @@ class AudioRepositoryImpl implements AudioRepository {
   Stream<AppPlayerState> get playerStateStream => _playerStateController.stream;
 
   @override
-  Stream<List<TrackSummary>> get queueStream => _queueController.stream;
+  Stream<List<Track>> get queueStream => _queueController.stream;
 
   @override
   AppPlayerState get currentState => _currentState;
 
   @override
-  List<TrackSummary> get currentQueue => _audioHandler.currentQueue;
+  List<Track> get currentQueue => _audioHandler.currentQueue;
 
   @override
   Future<void> init() async {}
 
   @override
-  Future<void> loadQueue(List<TrackSummary> tracks, {int initialIndex = 0}) async
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async
   {
     _updateState(_currentState.copyWith(status: PlayerStatus.loading));
     await _audioHandler.loadQueue(tracks, initialIndex: initialIndex);
@@ -139,5 +139,18 @@ class AudioRepositoryImpl implements AudioRepository {
   @override
   Future<void> setLoopMode(String mode) async {
     _updateState(_currentState.copyWith(loopMode: mode));
+  }
+
+  @override
+  Future<void> updateTrackInfo(String id, Track updatedTrack) async {
+    await _audioHandler.updateTrackInfo(id, updatedTrack);
+    
+    // If the updated track is the current one, push a new state
+    if (_currentState.currentTrack?.id == id) {
+      _updateState(_currentState.copyWith(currentTrack: updatedTrack));
+    }
+    
+    // Also update the queue stream
+    _queueController.add(_audioHandler.currentQueue);
   }
 }

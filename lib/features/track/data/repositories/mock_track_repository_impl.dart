@@ -1,7 +1,5 @@
 import '../../../../core/domain/entities/track.dart';
-import '../../../../core/domain/entities/track_summary.dart';
 import '../../../../core/data/models/track_dto.dart';
-import '../../../../core/data/models/track_summary_dto.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../datasources/track_local_data_source.dart';
 
@@ -21,22 +19,45 @@ class MockTrackRepositoryImpl implements TrackRepository {
 
     final trackJson = rawData.firstWhere(
       (json) => json['id'] == id,
-      orElse: () => throw Exception('Track with ID $id not found in mock data'),
+      orElse: () {
+        // Fallback for user's provided example if it's not in mocks
+        if (id == "e5f6a7b8-c9d0-1234-efab-567890abcdef") {
+          return {
+            "data": {
+              "id": "e5f6a7b8-c9d0-1234-efab-567890abcdef",
+              "title": "Summer Vibes",
+              "description": "A chill electronic track",
+              "genre": "Electronic",
+              "tags": ["aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee", "bbb22222-cccc-dddd-eeee-ffffffffffff"],
+              "duration": 210,
+              "audio_url": "assets/audio/Track_audio_1.mp3", // mock asset
+              "stream_url": "https://cdn.rythmify.com/tracks/e5f6a7b8/stream.mp3",
+              "artists": "Ahmed Sami, DJ Karim",
+            }
+          };
+        }
+        throw Exception('Track with ID $id not found in mock data');
+      },
     );
     
     return TrackDto.fromJson(trackJson);
   }
 
   @override
-  Future<TrackSummary> getTrackSummary(String id) async {
-    final rawData = await localDataSource.getSummaryTracks();
-    
-    final summaryJson = rawData.firstWhere(
-      (json) => json['id'] == id,
-      orElse: () => throw Exception('TrackSummary with ID $id not found'),
-    );
+  Future<List<double>> getWaveform(String trackId) async {
+    final response = await localDataSource.getWaveform(trackId);
+    final List<dynamic> peaks = response['data']['peaks'];
+    return peaks.map((p) => (p as num).toDouble()).toList();
+  }
 
-    return TrackSummaryDto.fromJson(summaryJson);
+  @override
+  Future<Map<String, String>> getTags() async {
+    final response = await localDataSource.getTags();
+    final List<dynamic> items = response['data']['items'];
+    return {
+      for (var item in items)
+        item['id'] as String: item['name'] as String
+    };
   }
 
   // ================================

@@ -2,7 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'http://192.168.100.16:8080/api/v1';
+  // Use your computer's IP for physical phone connection
+  // Change this when we make it online
+  static const String _baseUrl = 'http://192.168.100.10:8081/api/v1';
+
   static const String _tokenKey = 'access_token';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();

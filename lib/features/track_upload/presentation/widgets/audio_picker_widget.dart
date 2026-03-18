@@ -100,7 +100,6 @@ Widget build(BuildContext context, WidgetRef ref) {
           artworkPath: draft.localArtworkPath,
         ),
       ),
-      const SizedBox(width: 14),
 
       // ── Audio name + progress button ──────────────────────────────
       Expanded(
@@ -116,6 +115,7 @@ Widget build(BuildContext context, WidgetRef ref) {
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
+
             ),
             const SizedBox(height: 4),
             Text(

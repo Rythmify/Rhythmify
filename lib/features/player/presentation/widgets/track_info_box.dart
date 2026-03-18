@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart'; 
 
 class TrackInfoBox extends StatelessWidget {
-  final TrackSummary summary;
+  final Track summary;
   final VoidCallback onNavigateBehindTrack;
 
   const TrackInfoBox({

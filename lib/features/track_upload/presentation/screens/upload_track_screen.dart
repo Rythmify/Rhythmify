@@ -719,8 +719,6 @@ class _TagsInput extends StatelessWidget {
   }
 }
 
-// ── Privacy selector ──────────────────────────────────────────────────────────
-
 class _PrivacySelector extends StatelessWidget {
   final bool isPublic;
   final ValueChanged<bool> onChanged;

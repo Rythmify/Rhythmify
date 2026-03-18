@@ -13,7 +13,7 @@ class MixedPlaylistsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text("Mixed For You", style: AppTheme.titleLarge),
         ),
@@ -24,18 +24,21 @@ class MixedPlaylistsSection extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text("Error: $e"),
           data: (items) {
+            final list = items as List;
+            if (list.isEmpty) return const SizedBox.shrink();
             return SizedBox(
               height: 160,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: items.length,
+                itemCount: list.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
+                  final item = list[index] as Map<String, dynamic>;
                   return MixedPlaylistCard(
-                    artists: items[index]['artists'],
-                    imagePath: items[index]['image'],
-                    mixLabel: items[index]['mixLabel'],
+                    artists: item['artists'] ?? '',
+                    imagePath: item['image'] ?? '',
+                    mixLabel: item['mixLabel'] ?? '',
                   );
                 },
               ),
@@ -77,11 +80,14 @@ class MixedPlaylistCard extends StatelessWidget {
                     color: Colors.grey,
                     width: 0.5, // very thin border
                   ),
-                  image: DecorationImage(
-                    image: AssetImage(imagePath),
-                    fit: BoxFit.cover,
-                  ),
+                  image: imagePath.isNotEmpty 
+                    ? DecorationImage(
+                        image: AssetImage(imagePath),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
                 ),
+                child: imagePath.isEmpty ? const Center(child: Icon(Icons.music_note)) : null,
               ),
 
               /// Mix label badge

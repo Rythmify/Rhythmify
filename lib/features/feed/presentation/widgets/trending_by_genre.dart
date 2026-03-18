@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/home_providers.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
@@ -54,14 +54,14 @@ class _TrendingByGenreState extends State<TrendingByGenre>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text("Trending by Genre", style: AppTheme.titleLarge),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
 
         GenreTabBar(tabController: _tabController),
 
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
 
         SizedBox(
           height: 250,
@@ -218,13 +218,13 @@ class GenreTabView extends ConsumerWidget {
 //Horizontal Columns (3 tracks per column)
 
 class _TrendingHorizontalColumns extends ConsumerWidget {
-  final List<TrackSummary> tracks;
+  final List<Track> tracks;
 
   const _TrendingHorizontalColumns({required this.tracks});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    List<List<TrackSummary>> chunks = [];
+    List<List<Track>> chunks = [];
 
     for (var i = 0; i < tracks.length; i += 3) {
       chunks.add(
@@ -274,7 +274,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    trailing: const Icon(Icons.more_horiz, color: Colors.white),
+                    trailing: const Icon(Icons.more_vert, color: Colors.white),
 
                     onTap: () {
                       final playerState = ref.read(playerStateProvider);

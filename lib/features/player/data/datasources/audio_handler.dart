@@ -1,11 +1,11 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../../../core/domain/entities/track_summary.dart';
+import '../../../../core/domain/entities/track.dart';
 
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
   
-  List<TrackSummary> _currentQueue = [];
+  List<Track> _currentQueue = [];
 
   RythmifyAudioHandler() { _init(); }
 
@@ -67,6 +67,30 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     });
   }
 
+  Future<void> updateTrackInfo(String id, Track updatedTrack) async {
+    final index = _currentQueue.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      _currentQueue[index] = updatedTrack;
+      
+      // If it's the currently playing track, update mediaItem to reflect new metadata
+      if (_player.currentIndex == index) {
+        mediaItem.add(MediaItem(
+          id: updatedTrack.id,
+          title: updatedTrack.title,
+          artist: updatedTrack.artist,
+          duration: updatedTrack.duration,
+          artUri: Uri.parse('asset:///${updatedTrack.artworkUrl}'),
+          displayDescription: updatedTrack.description,
+          genre: updatedTrack.genre,
+          extras: {
+            'artists': updatedTrack.artists,
+            'waveform': updatedTrack.waveformData,
+          },
+        ));
+      }
+    }
+  }
+
   // --- API for the Repository to use ---
   Stream<PlaybackEvent> get playbackEventStream => _player.playbackEventStream;
   Stream<Duration> get positionStream => _player.positionStream;
@@ -74,9 +98,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Stream<bool> get playingStream => _player.playingStream;
   bool get playing => _player.playing;
   ProcessingState get processingState => _player.processingState;
-  List<TrackSummary> get currentQueue => _currentQueue;
+  List<Track> get currentQueue => _currentQueue;
 
-  Future<void> loadQueue(List<TrackSummary> tracks, {int initialIndex = 0}) async {
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
     
     final audioSources = tracks.map((track) {
