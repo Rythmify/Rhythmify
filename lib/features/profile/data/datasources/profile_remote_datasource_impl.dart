@@ -1,0 +1,241 @@
+import 'package:dio/dio.dart';
+import '../../../../core/network/api_client.dart';
+import '../models/profile_model.dart';
+import '../models/track_model.dart';
+import 'profile_remote_datasource.dart';
+
+class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
+  final ApiClient client;
+
+  ProfileRemoteDatasourceImpl({required this.client});
+
+  @override
+  Future<ProfileModel> getProfile({required String userId}) async {
+    try {
+      // Use /users/me for own profile, /users/{id} for others
+      final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
+      final response = await client.dio.get(endpoint);
+
+      print('GET PROFILE RESPONSE: ${response.data}');
+      return ProfileModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      print('GET PROFILE ERROR ───────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ProfileModel> updateProfile({
+    required String displayName,
+    required String city,
+    required String country,
+    required String bio,
+  }) async {
+    try {
+      final response = await client.dio.patch(
+        '/users/me',
+        data: {
+          'display_name': displayName,
+          'city': city,
+          'country': country,
+          'bio': bio,
+        },
+      );
+
+      print('UPDATE PROFILE RESPONSE: ${response.data}');
+      return ProfileModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      print('UPDATE PROFILE ERROR ────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ProfileModel> uploadAvatar({required String filePath}) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(filePath),
+      });
+
+      final response = await client.dio.post(
+        '/users/me/avatar',
+        data: formData,
+      );
+
+      print('UPLOAD AVATAR RESPONSE: ${response.data}');
+      // Avatar upload returns {data: {profile_picture: url}}
+      // We need to reload the full profile after upload
+      return await getProfile(userId: 'me');
+    } on DioException catch (e) {
+      print('UPLOAD AVATAR ERROR ─────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteAvatar() async {
+    try {
+      await client.dio.delete('/users/me/avatar');
+    } on DioException catch (e) {
+      print('DELETE AVATAR ERROR ─────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
+    try {
+      final formData = FormData.fromMap({
+        'cover': await MultipartFile.fromFile(filePath),
+      });
+
+      final response = await client.dio.post(
+        '/users/me/cover',
+        data: formData,
+      );
+
+      print('UPLOAD COVER RESPONSE: ${response.data}');
+      // Reload full profile after cover upload
+      return await getProfile(userId: 'me');
+    } on DioException catch (e) {
+      print('UPLOAD COVER ERROR ──────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteCoverPhoto() async {
+    try {
+      await client.dio.delete('/users/me/cover');
+    } on DioException catch (e) {
+      print('DELETE COVER ERROR ──────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> followUser({required String userId}) async {
+    try {
+      await client.dio.post('/users/$userId/follow');
+    } on DioException catch (e) {
+      print('FOLLOW USER ERROR ───────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+    @override
+    Future<ProfileModel> getProfiletest({required String userId}) async {
+      try {
+        final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
+        final response = await client.dio.get(endpoint);
+
+        print('GET PROFILE RAW RESPONSE: ${response.data}');
+        print('DATA TYPE: ${response.data['data'].runtimeType}');
+        print('DATA VALUE: ${response.data['data']}');
+
+        return ProfileModel.fromJson(response.data['data']);
+      } on DioException catch (e) {
+        print('GET PROFILE ERROR: ${e.response?.data}');
+        _handleDioError(e);
+        rethrow;
+      }
+    }
+  @override
+  Future<void> unfollowUser({required String userId}) async {
+    try {
+      await client.dio.delete('/users/$userId/follow');
+    } on DioException catch (e) {
+      print('UNFOLLOW USER ERROR ─────────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<TrackModel>> getLikedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final response = await client.dio.get(
+        '/users/$userId/tracks',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+        },
+      );
+
+      print('GET LIKED TRACKS RESPONSE: ${response.data}');
+      final List<dynamic> tracks = response.data['data'];
+      return tracks.map((t) => TrackModel.fromJson(t)).toList();
+    } on DioException catch (e) {
+      print('GET LIKED TRACKS ERROR ──────────────────');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response data: ${e.response?.data}');
+      print('────────────────────────────────────────');
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  // ── Error handler ─────────────────────────────────
+  void _handleDioError(DioException e) {
+    final errorCode = e.response?.data?['error']?['code'] as String?;
+    final errorMessage = e.response?.data?['error']?['message'] as String?;
+
+    print('PROFILE ERROR CODE: $errorCode');
+    print('PROFILE ERROR MESSAGE: $errorMessage');
+
+    switch (errorCode) {
+      case 'RESOURCE_NOT_FOUND':
+        throw Exception('PROFILE_NOT_FOUND');
+      case 'RESOURCE_PRIVATE':
+        throw Exception('PROFILE_NOT_FOUND');
+      case 'UPLOAD_FILE_TOO_LARGE':
+        throw Exception('UPLOAD_FILE_TOO_LARGE');
+      case 'UPLOAD_INVALID_FILE_TYPE':
+        throw Exception('UPLOAD_INVALID_FILE_TYPE');
+      case 'PERMISSION_DENIED':
+        throw Exception('PERMISSION_DENIED');
+      case 'FOLLOW_SELF':
+        throw Exception('FOLLOW_SELF');
+      case 'RATE_LIMIT_EXCEEDED':
+        throw Exception('RATE_LIMIT_EXCEEDED');
+      case 'VALIDATION_FAILED':
+        throw Exception(errorMessage ?? 'VALIDATION_FAILED');
+      default:
+        throw Exception(errorMessage ?? 'Unknown error occurred');
+    }
+  }
+}

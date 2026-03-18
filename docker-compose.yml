@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  rythmify-api:
+    image: rodolpheche/json-server
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./db.json:/data/db.json
+    command: ["--watch", "/data/db.json", "--port", "3000", "--host", "0.0.0.0", "--delay", "1000"]

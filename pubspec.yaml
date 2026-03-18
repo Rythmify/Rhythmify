@@ -9,11 +9,29 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  file_picker: ^8.0.0
+  http: ^1.2.0
+  http_parser: ^4.0.2
+  mime: ^1.0.5
+  dio: ^5.7.0
+  flutter_secure_storage: ^9.2.2
+  
 
   # State Management & Dependency Injection
   flutter_riverpod: ^3.2.1
   equatable: ^2.0.8
 
+  # Profile
+  image_picker: ^1.1.2
+  share_plus: ^10.1.2
+
+  font_awesome_flutter: ^10.7.0
+  
+# Authentication
+  dartz: ^0.10.1
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.1
+  
   # Navigation & Routing
   go_router: ^16.1.0
 
@@ -43,6 +61,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.1
 
   flutter_lints: ^6.0.0
   riverpod_generator: ^4.0.3
@@ -58,3 +77,16 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    - assets/images/
+    - assets/mocks/
+    - assets/audio/
+
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#121212"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"

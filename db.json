@@ -1,0 +1,46 @@
+{
+  "tracks": [
+    {
+      "id": "t_001",
+      "user_id": "a_101",
+      "title": "Neon Nights",
+      "artist": "Synthwave Boy",
+      "description": "The ultimate retro-future synthwave experience with nostalgic analog textures.",
+      "cover_image": "assets/images/track_1.jpg",
+      "audio_url": "assets/audio/Track_audio_1.mp3",
+      "duration": 214,
+      "play_count": 1542000,
+      "like_count": 89000,
+      "comment_count": 1200,
+      "repost_count": 450,
+      "is_liked": true,
+      "is_reposted": false,
+      "is_artist_followed": true,
+      "tags": ["tag_1", "tag_2"],
+      "is_trending": true,
+      "is_featured": true,
+      "created_at": "2024-01-15T12:00:00Z",
+      "artists": "Synthwave Boy, Retro Guest",
+      "genre": "Synthwave",
+      "record_label": "Neon Records",
+      "release_date": "2024-01-01",
+      "explicit_content": false
+    }
+  ],
+  "waveforms": [
+    {
+      "id": "t_001",
+      "track_id": "t_001",
+      "peaks": [0, 0.12, 0.45, 0.78, 1, 0.63, 0.29, 0.05, 0.44, 0.88, 0.33, 0.11]
+    }
+  ],
+  "tags": {
+    "data": {
+      "items": [
+        {"id": "tag_1", "name": "chill"},
+        {"id": "tag_2", "name": "electronic"}
+      ]
+    },
+    "message": "Tags fetched successfully."
+  }
+}
