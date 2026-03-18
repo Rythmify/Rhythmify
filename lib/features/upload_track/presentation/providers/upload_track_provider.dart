@@ -4,12 +4,7 @@
 // Upload logic wired in later when backend is confirmed.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-
-
-
-
-
+import '../../domain/entities/track_draft.dart';
 
 // ── Upload form state ──────────────────────────────────────────────────────
 
@@ -62,29 +57,19 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
   // Called when user picks audio file
   void initDraft({
-  required String artistId,
-  required String localAudioPath,
-  required Duration duration,
-  required String fileName,
-}) {
-    // Remove file extension for title pre-fill
-    // "summer_vibes.mp3" → "summer_vibes"
-    final nameWithoutExtension = fileName.contains('.')
-        ? fileName.substring(0, fileName.lastIndexOf('.'))
-        : fileName;
-
+    required String artistId,
+    required String localAudioPath,
+    required Duration duration,
+    required String fileName,
+  }) {
     state = state.copyWith(
       draft: TrackDraft(
         artistId:       artistId,
         localAudioPath: localAudioPath,
         duration:       duration,
-        audioFileName: fileName,                // store original filename
-        title:          nameWithoutExtension,  // pre-filled
-        artist:         'Your Name',           // replace with real username when auth ready
       ),
-                      
     );
-   }
+  }
 
   // Form field updates
   void setTitle(String value) => _updateDraft(
@@ -118,23 +103,6 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   void removeArtwork() => _updateDraft(
     state.draft!.copyWith(clearArtwork: true),
   );
-  
-
-  //should be added here
-   //added recently 
-  void setUploadProgress(double progress) {
-  if (state.draft == null) return;
-  _updateDraft(
-    state.draft!.copyWith(
-      uploadProgress: progress,
-      status: progress >= 1.0
-          ? UploadStatus.success
-          : UploadStatus.uploading,
-    ),
-  );
-}
-
-
 
   void addTag(String tag) {
     if (state.draft == null) return;
@@ -160,8 +128,6 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   void _updateDraft(TrackDraft updated) {
     state = state.copyWith(draft: updated);
   }
-
-
 }
 
 // ── Provider ───────────────────────────────────────────────────────────────
@@ -170,5 +136,3 @@ final uploadFormProvider =
     NotifierProvider<UploadFormNotifier, UploadFormState>(
   UploadFormNotifier.new,
 );
-
-

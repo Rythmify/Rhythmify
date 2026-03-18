@@ -1,9 +1,6 @@
 enum UploadStatus { draft, uploading, success, error }
 
 class TrackDraft {
-
-  //added recently
-  final String? audioFileName; 
   // Known at creation
   final String artistId;
   final String localAudioPath;
@@ -24,7 +21,6 @@ class TrackDraft {
   final double uploadProgress;
 
   const TrackDraft({
-    this.audioFileName,
     required this.artistId,
     required this.localAudioPath,
     required this.duration,
@@ -41,9 +37,6 @@ class TrackDraft {
   });
 
   TrackDraft copyWith({
-    //added recently
-    String? audioFileName,
-
     String? artistId,
     String? localAudioPath,
     Duration? duration,
@@ -62,9 +55,6 @@ class TrackDraft {
     bool clearCaption = false,
   }) {
     return TrackDraft(
-      //added recently
-      audioFileName:    audioFileName  ?? this.audioFileName,
-      
       artistId:         artistId       ?? this.artistId,
       localAudioPath:   localAudioPath ?? this.localAudioPath,
       duration:         duration       ?? this.duration,

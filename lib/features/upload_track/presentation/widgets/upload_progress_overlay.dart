@@ -1,8 +1,10 @@
+/// features/upload_track/presentation/widgets/upload_progress_overlay.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/core/theme/app_theme.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/track_draft.dart';
+import '../providers/upload_track_provider.dart';
 
 class UploadProgressOverlay extends ConsumerWidget {
   final VoidCallback onDismiss;

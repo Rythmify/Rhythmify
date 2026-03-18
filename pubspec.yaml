@@ -15,6 +15,7 @@ dependencies:
   mime: ^1.0.5
   dio: ^5.7.0
   flutter_secure_storage: ^9.2.2
+  
 
   # State Management & Dependency Injection
   flutter_riverpod: ^3.2.1

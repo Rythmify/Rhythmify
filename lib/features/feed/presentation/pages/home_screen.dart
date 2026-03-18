@@ -10,9 +10,16 @@ import 'package:rythmify/features/feed/presentation/widgets/mixed_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/discover_with_stations.dart';
 import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_like.dart';
 
+
 // Import your entities, models, and widgets (adjust the relative paths if your folder structure differs slightly)
 import '../../../../core/domain/entities/track_summary.dart';
 import '../../../../core/data/models/track_summary_dto.dart';
+
+//imports for track upload added by hana
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
+
+
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<TrackSummary>>((ref) async {
@@ -39,16 +46,42 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_circle_up),
-            onPressed: () {
-              ref
-                  .read(uploadFormProvider.notifier)
-                  .initDraft(
-                    artistId: 'dev_user_001',
-                    localAudioPath: '/fake/path/summer_vibes.mp3',
-                    duration: const Duration(minutes: 3, seconds: 32),
-                    fileName: 'summer_vibes.mp3',
+            onPressed: () async{
+              try {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.audio,
+                  allowMultiple: false,
+                );
+
+                if (result == null || result.files.isEmpty) return;
+                final picked = result.files.first;
+                if (picked.path == null) return;
+
+                Duration duration = Duration.zero;
+                try {
+                  final player   = AudioPlayer();
+                  final detected = await player.setFilePath(picked.path!);
+                  duration       = detected ?? Duration.zero;
+                  await player.dispose();
+                } catch (_) {}
+
+                ref.read(uploadFormProvider.notifier).initDraft(
+                  artistId:       'dev_user_001',
+                  localAudioPath: picked.path!,
+                  duration:       duration,
+                  fileName:       picked.name,
+                );
+
+                if (context.mounted) context.push('/upload-track');
+
+              } catch (e) {
+                // Show exactly what error occurs
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
                   );
-              GoRouter.of(context).push('/upload-track');
+                }
+              }
             },
           ),
           IconButton(
