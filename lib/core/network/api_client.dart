@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'http://192.168.1.45:8080/api/v1';
+  static const String _baseUrl = 'http://192.168.100.16:8080/api/v1';
   static const String _tokenKey = 'access_token';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
