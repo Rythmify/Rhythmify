@@ -243,7 +243,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    trailing: const Icon(Icons.more_horiz, color: Colors.white),
+                    trailing: const Icon(Icons.more_vert, color: Colors.white),
 
                     onTap: () {
                       final playerState = ref.read(playerStateProvider);

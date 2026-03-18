@@ -43,34 +43,24 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
   Future<void> _updateTrackInBackground(String trackId) async {
     try {
-      // Trigger all background APIs at the exact same time
+      // Trigger background APIs concurrently
       final results = await Future.wait([
         ref.read(getTrackDetailsUseCaseProvider).call(trackId),
         ref.read(getWaveformUseCaseProvider).call(trackId),
-        ref.read(getTagsUseCaseProvider).call(),
       ]);
 
       final fullTrack = results[0] as Track;
       final waveform = results[1] as List<double>;
-      final tagsMap = results[2] as Map<String, String>;
 
-      // Map tag UUIDs to their names
-      final tagNames = fullTrack.tags
-          .map((tagId) => tagsMap[tagId] ?? tagId)
-          .toList();
-
-      // Merge data
+      // Since the backend now returns tag NAMES, we just merge directly
       final updatedTrack = fullTrack.copyWith(
         waveformData: waveform,
-        tags: tagNames,
       );
 
       // Phase 3: Update State Manager
       await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);
 
     } catch (e) {
-      // Handle background fetch error gracefully
-      // ignore: avoid_print
       print('Error updating track info in background: $e');
     }
   }
