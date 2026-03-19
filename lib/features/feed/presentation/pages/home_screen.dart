@@ -11,7 +11,6 @@ import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_lik
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
-import '../../../track_upload/presentation/providers/upload_track_provider.dart';
 
 //imports for track upload added by hana
 import 'package:file_picker/file_picker.dart';
