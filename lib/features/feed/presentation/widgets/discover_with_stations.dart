@@ -79,7 +79,7 @@ class StationCard extends StatelessWidget {
             key: Key('station_image_$artists'), //key for image
             children: [
               Container(
-                height: 130,
+                height: 120,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1),
                   border: Border.all(
@@ -87,7 +87,10 @@ class StationCard extends StatelessWidget {
                     width: 0.5, // very thin border
                   ),
                   image: DecorationImage(
-                    image: NetworkImage(imagePath),
+                    image: imagePath.isNotEmpty && imagePath.startsWith('http')
+                        ? NetworkImage(imagePath)
+                        : const AssetImage('assets/images/track_1.jpg')
+                              as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -131,7 +134,7 @@ class StationCard extends StatelessWidget {
             key: Key('station_artists_$artists'), //key for artists text
             'Based on$artists',
             style: const TextStyle(color: Colors.white70, fontSize: 12),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],

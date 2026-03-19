@@ -1,6 +1,8 @@
 // Copyright (c) 2026
 // SPDX-License-Identifier: MIT
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +18,11 @@ import 'package:rythmify/features/player/presentation/providers/player_dependenc
 import 'package:rythmify/core/domain/entities/track.dart';
 
 class _FakeAudioRepository implements AudioRepository {
-  const _FakeAudioRepository();
+  int loadQueueCallCount = 0;
+  int playCallCount = 0;
+  int pauseCallCount = 0;
+
+  _FakeAudioRepository();
 
   @override
   Stream<AppPlayerState> get playerStateStream =>
@@ -35,13 +41,19 @@ class _FakeAudioRepository implements AudioRepository {
   Future<void> init() async {}
 
   @override
-  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {}
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
+    loadQueueCallCount++;
+  }
 
   @override
-  Future<void> play() async {}
+  Future<void> play() async {
+    playCallCount++;
+  }
 
   @override
-  Future<void> pause() async {}
+  Future<void> pause() async {
+    pauseCallCount++;
+  }
 
   @override
   Future<void> seek(Duration position) async {}
@@ -115,6 +127,107 @@ class _FakeHomeDatasource extends HomeDatasource {
       moreOfWhatYouLike;
 }
 
+class _ErrorTrendingHomeDatasource extends _FakeHomeDatasource {
+  _ErrorTrendingHomeDatasource({
+    required List<Track> hotTracks,
+    required List<Map<String, dynamic>> mixedPlaylists,
+    required List<Map<String, dynamic>> stationPlaylists,
+    required List<Map<String, dynamic>> moreOfWhatYouLike,
+  }) : super(
+         trendingTracks: [],
+         hotTracks: hotTracks,
+         mixedPlaylists: mixedPlaylists,
+         stationPlaylists: stationPlaylists,
+         moreOfWhatYouLike: moreOfWhatYouLike,
+       );
+
+  @override
+  Future<List<Track>> getTrendingTracks(String genre) async {
+    throw Exception('Failed to load trending tracks');
+  }
+}
+
+class _ErrorHotHomeDatasource extends _FakeHomeDatasource {
+  _ErrorHotHomeDatasource({
+    required List<Track> trendingTracks,
+    required List<Map<String, dynamic>> mixedPlaylists,
+    required List<Map<String, dynamic>> stationPlaylists,
+    required List<Map<String, dynamic>> moreOfWhatYouLike,
+  }) : super(
+         trendingTracks: trendingTracks,
+         hotTracks: [],
+         mixedPlaylists: mixedPlaylists,
+         stationPlaylists: stationPlaylists,
+         moreOfWhatYouLike: moreOfWhatYouLike,
+       );
+
+  @override
+  Future<List<Track>> getHotTracks() async {
+    throw Exception('Failed to load hot tracks');
+  }
+}
+
+class _ErrorStationsHomeDatasource extends _FakeHomeDatasource {
+  _ErrorStationsHomeDatasource({
+    required List<Track> trendingTracks,
+    required List<Track> hotTracks,
+    required List<Map<String, dynamic>> mixedPlaylists,
+    required List<Map<String, dynamic>> moreOfWhatYouLike,
+  }) : super(
+         trendingTracks: trendingTracks,
+         hotTracks: hotTracks,
+         mixedPlaylists: mixedPlaylists,
+         stationPlaylists: [],
+         moreOfWhatYouLike: moreOfWhatYouLike,
+       );
+
+  @override
+  Future<List<Map<String, dynamic>>> getStationPlaylists() async {
+    throw Exception('Failed to load station playlists');
+  }
+}
+
+class _LoadingHomeDatasource extends HomeDatasource {
+  final Future<List<Track>> trendingTracksFuture;
+  final Future<List<Track>> hotTracksFuture;
+  final Future<List<Map<String, dynamic>>> mixedPlaylistsFuture;
+  final Future<List<Map<String, dynamic>>> stationPlaylistsFuture;
+  final Future<List<Map<String, dynamic>>> moreOfWhatYouLikeFuture;
+
+  _LoadingHomeDatasource({
+    required this.trendingTracksFuture,
+    required this.hotTracksFuture,
+    required this.mixedPlaylistsFuture,
+    required this.stationPlaylistsFuture,
+    required this.moreOfWhatYouLikeFuture,
+  });
+
+  @override
+  Future<List<Track>> getTrendingTracks(String genre) async {
+    return trendingTracksFuture;
+  }
+
+  @override
+  Future<List<Track>> getHotTracks() async {
+    return hotTracksFuture;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMixedPlaylists() async {
+    return mixedPlaylistsFuture;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getStationPlaylists() async {
+    return stationPlaylistsFuture;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async {
+    return moreOfWhatYouLikeFuture;
+  }
+}
+
 // Shared sample track across tests.
 final _testTrack = _makeTestTrack();
 
@@ -145,20 +258,25 @@ void main() {
     );
   });
 
-  Widget buildTestApp() {
-    final fakeDatasource = _FakeHomeDatasource(
-      trendingTracks: [_testTrack],
-      hotTracks: [_testTrack],
-      mixedPlaylists: const [
-        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
-      ],
-      stationPlaylists: const [
-        {'artists': 'station1', 'image': ''},
-      ],
-      moreOfWhatYouLike: const [
-        {'artists': 'artist1', 'image': ''},
-      ],
-    );
+  Widget buildTestApp({
+    AudioRepository? audioRepository,
+    HomeDatasource? datasource,
+  }) {
+    final fakeDatasource =
+        datasource ??
+        _FakeHomeDatasource(
+          trendingTracks: [_testTrack],
+          hotTracks: [_testTrack],
+          mixedPlaylists: const [
+            {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+          ],
+          stationPlaylists: const [],
+          moreOfWhatYouLike: const [
+            {'artists': 'artist1', 'image': ''},
+          ],
+        );
+
+    final fakeAudioRepository = audioRepository ?? _FakeAudioRepository();
 
     return ProviderScope(
       overrides: [
@@ -168,7 +286,7 @@ void main() {
         // Provide deterministic home feed data.
         datasourceProvider.overrideWithValue(fakeDatasource),
 
-        audioRepositoryProvider.overrideWithValue(const _FakeAudioRepository()),
+        audioRepositoryProvider.overrideWithValue(fakeAudioRepository),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -180,9 +298,15 @@ void main() {
 
     expect(find.byKey(const Key('home_scaffold')), findsOneWidget);
     expect(find.byKey(const Key('home_app_bar')), findsOneWidget);
-    expect(find.byKey(const Key('home_upload_button')), findsOneWidget);
-    expect(find.byKey(const Key('home_inbox_button')), findsOneWidget);
-    expect(find.byKey(const Key('home_notifications_button')), findsOneWidget);
+    expect(
+      find.byKey(const Key('home_upload_track_icon_button')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('home_inbox_icon_button')), findsOneWidget);
+    expect(
+      find.byKey(const Key('home_notifications_icon_button')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('home_scroll_view')), findsOneWidget);
 
     // Verify basic UI is present.
@@ -191,13 +315,16 @@ void main() {
 
     // Verify one of the genre tabs and the track card is present.
     expect(find.byKey(const Key('genre_tab_bar')), findsOneWidget);
-    expect(find.byKey(const Key('genre_tab_Reggae')), findsOneWidget);
-    expect(find.byKey(Key('trending_track_${_testTrack.id}')), findsOneWidget);
+    expect(
+      find.byKey(const Key('trending_by_genre_tab_reggae')),
+      findsOneWidget,
+    );
+    expect(find.byKey(Key('item_${_testTrack.id}')), findsOneWidget);
 
     // Verify the Hot For You card is shown and formatted properly.
     expect(find.byKey(Key('hot_track_card_${_testTrack.id}')), findsOneWidget);
-    expect(find.byKey(Key('hot_play_button_${_testTrack.id}')), findsOneWidget);
-    expect(find.text('1.2K people liked your track'), findsOneWidget);
+    expect(find.byKey(Key('hot_for_you_play_icon_button')), findsOneWidget);
+    expect(find.byKey(Key('hot_for_you_like_count_text')), findsOneWidget);
 
     // Scroll until the mixed playlists section becomes visible.
     await tester.dragUntilVisible(
@@ -245,13 +372,13 @@ void main() {
     );
 
     // Ensure navigation targets exist.
-    expect(find.byKey(const Key('station_card_station1')), findsOneWidget);
+    // (Station cards are only built when there are stations to display.)
   });
 
   testWidgets('tapping inbox button navigates to /home/inbox', (tester) async {
     await tester.pumpWidget(buildTestApp());
 
-    await tester.tap(find.byKey(const Key('home_inbox_button')));
+    await tester.tap(find.byKey(const Key('home_inbox_icon_button')));
     await tester.pumpAndSettle();
 
     expect(find.text('Inbox'), findsOneWidget);
@@ -262,9 +389,208 @@ void main() {
   ) async {
     await tester.pumpWidget(buildTestApp());
 
-    await tester.tap(find.byKey(const Key('home_notifications_button')));
+    await tester.tap(find.byKey(const Key('home_notifications_icon_button')));
     await tester.pumpAndSettle();
 
     expect(find.text('Notifications'), findsOneWidget);
+  });
+
+  testWidgets('hot for you play button triggers audio repository calls', (
+    tester,
+  ) async {
+    final fakeAudioRepo = _FakeAudioRepository();
+
+    await tester.pumpWidget(buildTestApp(audioRepository: fakeAudioRepo));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1.2K people liked your track'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hot_for_you_play_icon_button')));
+    await tester.pumpAndSettle();
+
+    expect(fakeAudioRepo.loadQueueCallCount, 1);
+    expect(fakeAudioRepo.playCallCount, 1);
+  });
+
+  testWidgets('shows error when trending tracks fail to load', (tester) async {
+    final errorDatasource = _ErrorTrendingHomeDatasource(
+      hotTracks: [_testTrack],
+      mixedPlaylists: const [
+        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+      ],
+      stationPlaylists: const [],
+      moreOfWhatYouLike: const [
+        {'artists': 'artist1', 'image': ''},
+      ],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: errorDatasource));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('trending_by_genre_error_text_reggae')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows error when hot for you fails to load', (tester) async {
+    final errorDatasource = _ErrorHotHomeDatasource(
+      trendingTracks: [_testTrack],
+      mixedPlaylists: const [
+        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+      ],
+      stationPlaylists: const [],
+      moreOfWhatYouLike: const [
+        {'artists': 'artist1', 'image': ''},
+      ],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: errorDatasource));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('hot_for_you_error_text')), findsOneWidget);
+  });
+
+  testWidgets('shows error when station playlists fail to load', (
+    tester,
+  ) async {
+    final errorDatasource = _ErrorStationsHomeDatasource(
+      trendingTracks: [_testTrack],
+      hotTracks: [_testTrack],
+      mixedPlaylists: const [
+        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+      ],
+      moreOfWhatYouLike: const [
+        {'artists': 'artist1', 'image': ''},
+      ],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: errorDatasource));
+    await tester.pumpAndSettle();
+
+    // Scroll to the stations section (it may be offscreen)
+    await tester.dragUntilVisible(
+      find.byKey(const Key('discover_stations_section')),
+      find.byKey(const Key('home_scroll_view')),
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('discover_with_stations_error_text')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('renders station cards when station playlists load', (
+    tester,
+  ) async {
+    final datasourceWithStations = _FakeHomeDatasource(
+      trendingTracks: [_testTrack],
+      hotTracks: [_testTrack],
+      mixedPlaylists: const [
+        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+      ],
+      // Use a local asset so tests don't require network access.
+      stationPlaylists: const [
+        {'artists': 'station1', 'image': 'assets/images/track_1.jpg'},
+      ],
+      moreOfWhatYouLike: const [
+        {'artists': 'artist1', 'image': ''},
+      ],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: datasourceWithStations));
+    await tester.pumpAndSettle();
+
+    // Scroll to the stations section and verify a station card is built.
+    await tester.dragUntilVisible(
+      find.byKey(const Key('discover_stations_section')),
+      find.byKey(const Key('home_scroll_view')),
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('station_card_container_station1')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows loading indicators while data is pending', (tester) async {
+    final trendingCompleter = Completer<List<Track>>();
+    final hotCompleter = Completer<List<Track>>();
+    final mixedCompleter = Completer<List<Map<String, dynamic>>>();
+    final stationsCompleter = Completer<List<Map<String, dynamic>>>();
+    final moreCompleter = Completer<List<Map<String, dynamic>>>();
+
+    final loadingDatasource = _LoadingHomeDatasource(
+      trendingTracksFuture: trendingCompleter.future,
+      hotTracksFuture: hotCompleter.future,
+      mixedPlaylistsFuture: mixedCompleter.future,
+      stationPlaylistsFuture: stationsCompleter.future,
+      moreOfWhatYouLikeFuture: moreCompleter.future,
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: loadingDatasource));
+
+    // Initial frame should show loading states.
+    await tester.pump();
+
+    expect(find.byKey(const Key('hot_for_you_loading')), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+    // Complete the futures so the test can finish cleanly.
+    trendingCompleter.complete([_testTrack]);
+    hotCompleter.complete([_testTrack]);
+    mixedCompleter.complete(const [
+      {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+    ]);
+    stationsCompleter.complete(const [
+      {'artists': 'station1', 'image': 'assets/images/track_1.jpg'},
+    ]);
+    moreCompleter.complete(const [
+      {'artists': 'artist1', 'image': ''},
+    ]);
+
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('does not render mixed playlist list when empty', (tester) async {
+    final emptyMixedDatasource = _FakeHomeDatasource(
+      trendingTracks: [_testTrack],
+      hotTracks: [_testTrack],
+      mixedPlaylists: const [],
+      stationPlaylists: const [],
+      moreOfWhatYouLike: const [
+        {'artists': 'artist1', 'image': ''},
+      ],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: emptyMixedDatasource));
+    await tester.pumpAndSettle();
+
+    // The horizontal list should not render when there are no mixed playlists.
+    expect(find.byKey(const Key('mixed_list_view')), findsNothing);
+  });
+
+  testWidgets('does not render more-of-what-you-like list when empty', (
+    tester,
+  ) async {
+    final emptyMoreDatasource = _FakeHomeDatasource(
+      trendingTracks: [_testTrack],
+      hotTracks: [_testTrack],
+      mixedPlaylists: const [
+        {'mixLabel': 'MIX 1', 'artists': 'artist1', 'image': ''},
+      ],
+      stationPlaylists: const [],
+      moreOfWhatYouLike: const [],
+    );
+
+    await tester.pumpWidget(buildTestApp(datasource: emptyMoreDatasource));
+    await tester.pumpAndSettle();
+
+    // The horizontal list should not render when there are no 'more of what you like' items.
+    expect(find.byKey(const Key('more_list_view')), findsNothing);
   });
 }
