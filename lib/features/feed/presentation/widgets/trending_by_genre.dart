@@ -261,11 +261,13 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
 
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        track.artworkUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
+                      child: SizedBox(
+                        child: Image.asset(
+                          track.artworkUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
 

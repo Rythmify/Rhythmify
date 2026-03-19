@@ -10,50 +10,54 @@ class DiscoverWithStationsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncStations = ref.watch(discoverStationsProvider);
 
-    return Column(
+    return Container(
       key: const Key(
         'discover_stations_section',
       ), //key for discover with stations
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Discover with Stations", style: AppTheme.titleLarge),
-        ),
-
-        const SizedBox(height: 15),
-
-        asyncStations.when(
-          loading: () => const Center(
-            key: Key('discover_stations_loading'),
-            child: CircularProgressIndicator(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text("Discover with Stations", style: AppTheme.titleLarge),
           ),
-          error: (e, _) => Text("Error: $e"),
-          data: (items) {
-            final stations = items as List<dynamic>;
-            return SizedBox(
-              height: 150,
-              child: ListView.separated(
-                key: const Key('stations_list_view'), //key for horizontal list
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: stations.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 15),
-                itemBuilder: (context, index) {
-                  final item = stations[index] as Map<String, dynamic>;
-                  return StationCard(
-                    key: Key(
-                      'station_card_${item['artists']}',
-                    ), //key for each station card
-                    artists: item['artists'] ?? '',
-                    imagePath: item['image'] ?? '',
-                  );
-                },
-              ),
-            );
-          },
-        ),
-      ],
+
+          const SizedBox(height: 15),
+
+          asyncStations.when(
+            loading: () => const Center(
+              key: Key('discover_stations_loading'),
+              child: CircularProgressIndicator(),
+            ),
+            error: (e, _) => Text("Error: $e"),
+            data: (items) {
+              final stations = items as List<dynamic>;
+              return SizedBox(
+                height: 150,
+                child: ListView.separated(
+                  key: const Key(
+                    'stations_list_view',
+                  ), //key for horizontal list
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: stations.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 15),
+                  itemBuilder: (context, index) {
+                    final item = stations[index] as Map<String, dynamic>;
+                    return StationCard(
+                      key: Key(
+                        'station_card_${item['artists']}',
+                      ), //key for each station card
+                      artists: item['artists'] ?? '',
+                      imagePath: item['image'] ?? '',
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
