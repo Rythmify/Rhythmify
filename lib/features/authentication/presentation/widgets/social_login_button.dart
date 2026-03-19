@@ -17,6 +17,7 @@ class SocialLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: Key('auth_social_${provider.name}_button'),
       onTap: onTap,
       child: Container(
         width: double.infinity,

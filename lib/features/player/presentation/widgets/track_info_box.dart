@@ -18,6 +18,7 @@ class TrackInfoBox extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
+          key: const Key('player_track_info_box_details_gesturedetector'),
           onTap: onNavigateBehindTrack,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -43,6 +44,7 @@ class TrackInfoBox extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         GestureDetector(
+          key: const Key('player_track_info_box_behind_track_gesturedetector'),
           onTap: onNavigateBehindTrack,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

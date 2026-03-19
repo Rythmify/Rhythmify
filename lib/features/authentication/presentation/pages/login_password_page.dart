@@ -56,6 +56,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
       appBar: AppBar(
         title: const Text('Sign in'),
         leading: IconButton(
+          key: const Key('authentication_login_password_back_icon_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
@@ -70,10 +71,15 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
               children: [
                 Text('Your email address', style: AppTheme.bodyMedium),
                 const SizedBox(height: 4),
-                Text(widget.email, style: AppTheme.bodyLarge),
+                Text(
+                  widget.email,
+                  key: const Key('authentication_login_password_email_display_text'),
+                  style: AppTheme.bodyLarge,
+                ),
                 const SizedBox(height: 24),
 
                 AuthTextField(
+                  key: const Key('authentication_login_password_auth_text_field'),
                   hint: 'Your password',
                   controller: _passwordController,
                   isPassword: true,
@@ -92,6 +98,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
+                    key: const Key('authentication_login_password_sign_in_elevated_button'),
                     onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
@@ -111,6 +118,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                 const SizedBox(height: 20),
 
                 GestureDetector(
+                  key: const Key('authentication_login_password_forgot_password_gesture_detector'),
                   onTap: () {},
                   child: Text(
                     'Forgot password?',

@@ -19,6 +19,7 @@ class PlayerControls extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center, 
         children: [
           IconButton(
+            key: const Key('player_controls_skip_previous_iconbutton'),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
@@ -28,6 +29,7 @@ class PlayerControls extends ConsumerWidget {
           const SizedBox(width: 60), 
           
           GestureDetector(
+            key: const Key('player_controls_toggle_play_pause_gesturedetector'),
             onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
             child: Container(
               width: 72,
@@ -39,10 +41,15 @@ class PlayerControls extends ConsumerWidget {
               child: isLoading
                   ? const Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                      child: CircularProgressIndicator(
+                        key: Key('player_controls_loading_indicator'),
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
                     )
                   : Icon(
                       isPlaying ? Icons.pause : Icons.play_arrow,
+                      key: const Key('player_controls_play_pause_icon'),
                       color: Colors.white,
                       size: 36,
                     ),
@@ -52,6 +59,7 @@ class PlayerControls extends ConsumerWidget {
           const SizedBox(width: 60), 
           
           IconButton(
+            key: const Key('player_controls_skip_next_iconbutton'),
             icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
             onPressed: () => ref.read(playerStateProvider.notifier).skipToNext(),
           ),

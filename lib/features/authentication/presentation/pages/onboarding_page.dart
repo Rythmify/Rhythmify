@@ -48,6 +48,7 @@ class OnboardingPage extends StatelessWidget {
                   // ── Tagline ───────────────────────────
                   Text(
                     'Where artists & fans connect.',
+                    key: const Key('authentication_tagline_text'),
                     textAlign: TextAlign.center,
                     style: AppTheme.headlineLarge
                         .copyWith(color: Colors.black)
@@ -64,6 +65,7 @@ class OnboardingPage extends StatelessWidget {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
+                      key: const Key('authentication_create_account_elevated_button'),
                       onPressed: () =>
                           context.push('/sign-in', extra: 'register'),
                       style: ElevatedButton.styleFrom(
@@ -91,6 +93,7 @@ class OnboardingPage extends StatelessWidget {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
+                      key: const Key('authentication_login_elevated_button'),
                       onPressed: () =>
                           context.push('/sign-in', extra: 'login'),
                       style: ElevatedButton.styleFrom(

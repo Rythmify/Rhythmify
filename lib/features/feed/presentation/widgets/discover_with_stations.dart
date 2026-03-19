@@ -25,19 +25,16 @@ class DiscoverWithStationsSection extends ConsumerWidget {
           const SizedBox(height: 15),
 
           asyncStations.when(
-            loading: () => const Center(
-              key: Key('discover_stations_loading'),
-              child: CircularProgressIndicator(),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Text(
+              "Error: $e",
+              key: const Key('discover_with_stations_error_text'),
             ),
-            error: (e, _) => Text("Error: $e"),
             data: (items) {
               final stations = items as List<dynamic>;
               return SizedBox(
                 height: 150,
                 child: ListView.separated(
-                  key: const Key(
-                    'stations_list_view',
-                  ), //key for horizontal list
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: stations.length,
@@ -46,8 +43,8 @@ class DiscoverWithStationsSection extends ConsumerWidget {
                     final item = stations[index] as Map<String, dynamic>;
                     return StationCard(
                       key: Key(
-                        'station_card_${item['artists']}',
-                      ), //key for each station card
+                        'discover_with_stations_item_${item['id'] ?? index}',
+                      ),
                       artists: item['artists'] ?? '',
                       imagePath: item['image'] ?? '',
                     );

@@ -22,14 +22,27 @@ class FloatingCommentBar extends StatelessWidget {
             Expanded(
               child: Text(
                 'Drop a comment...',
+                key: const Key('comments_comment_prompt_text'),
                 style: AppTheme.bodyNormal,
               ),
             ),
-            Text('🔥', style: TextStyle(fontSize: 20)),
+            Text(
+              '🔥',
+              key: const Key('comments_fire_emoji_text'),
+              style: TextStyle(fontSize: 20),
+            ),
             SizedBox(width: 24),
-            Text('👏', style: TextStyle(fontSize: 20)),
+            Text(
+              '👏',
+              key: const Key('comments_clap_emoji_text'),
+              style: TextStyle(fontSize: 20),
+            ),
             SizedBox(width: 24),
-            Text('🥺', style: TextStyle(fontSize: 20)),
+            Text(
+              '🥺',
+              key: const Key('comments_pleading_emoji_text'),
+              style: TextStyle(fontSize: 20),
+            ),
           ],
         ),
       ),

@@ -22,11 +22,11 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
         const SizedBox(height: 15),
 
         asyncMore.when(
-          loading: () => const Center(
-            key: Key('more_loading'),
-            child: CircularProgressIndicator(),
-          ), //key for loading
-          error: (e, _) => Text("Error: $e"),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Text(
+            "Error: $e",
+            key: const Key('more_of_what_you_like_error_text'),
+          ),
           data: (items) {
             final list = items as List;
             if (list.isEmpty) return const SizedBox.shrink();
@@ -41,9 +41,7 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = list[index] as Map<String, dynamic>;
                   return PlaylistSquareCard(
-                    key: Key(
-                      'more_card_${item['artists']}',
-                    ), //key for each card
+                    key: Key('item_$index'),
                     artists: item['artists'] ?? '',
                     imagePath: item['image'] ?? '',
                   );

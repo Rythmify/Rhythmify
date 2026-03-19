@@ -151,6 +151,7 @@ class _CreateAccountProfilePageState
       appBar: AppBar(
         title: const Text('Tell us more about you'),
         leading: IconButton(
+          key: const Key('authentication_create_account_profile_back_icon_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
@@ -165,6 +166,7 @@ class _CreateAccountProfilePageState
               children: [
                 // Display name
                 AuthTextField(
+                  key: const Key('authentication_create_account_profile_display_name_auth_text_field'),
                   hint: 'Display name',
                   controller: _displayNameController,
                   textInputAction: TextInputAction.done,
@@ -194,6 +196,7 @@ class _CreateAccountProfilePageState
                     Expanded(
                       flex: 3,
                       child: _buildDropdown(
+                        key: const Key('authentication_create_account_profile_month_dropdown_button'),
                         hint: 'Month',
                         value: _selectedMonth,
                         items: _months,
@@ -205,6 +208,7 @@ class _CreateAccountProfilePageState
                     Expanded(
                       flex: 2,
                       child: _buildDropdown(
+                        key: const Key('authentication_create_account_profile_day_dropdown_button'),
                         hint: 'Day',
                         value: _selectedDay,
                         items: List.generate(31, (i) => '${i + 1}'),
@@ -215,6 +219,7 @@ class _CreateAccountProfilePageState
                     Expanded(
                       flex: 2,
                       child: _buildDropdown(
+                        key: const Key('authentication_create_account_profile_year_dropdown_button'),
                         hint: 'Year',
                         value: _selectedYear,
                         items: List.generate(
@@ -238,6 +243,7 @@ class _CreateAccountProfilePageState
 
                 // Gender
                 _buildDropdown(
+                  key: const Key('authentication_create_account_profile_gender_dropdown_button'),
                   hint: 'Gender (required)',
                   value: _selectedGender,
                   items: _genders,
@@ -251,6 +257,7 @@ class _CreateAccountProfilePageState
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
+                    key: const Key('authentication_create_account_profile_continue_elevated_button'),
                     onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
@@ -277,6 +284,7 @@ class _CreateAccountProfilePageState
   }
 
   Widget _buildDropdown({
+    Key? key,
     required String hint,
     required String? value,
     required List<String> items,
@@ -290,6 +298,7 @@ class _CreateAccountProfilePageState
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
+          key: key,
           value: value,
           hint: Text(hint, style: AppTheme.bodyMedium),
           isExpanded: true,

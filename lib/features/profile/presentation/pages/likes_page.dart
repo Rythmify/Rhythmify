@@ -46,11 +46,13 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       appBar: AppBar(
         title: const Text('Likes'),
         leading: IconButton(
+          key: const Key('likes_back_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
+            key: const Key('likes_cast_button'),
             icon: const Icon(Icons.cast),
             onPressed: () {},
           ),
@@ -107,6 +109,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
         }
 
         return TrackListTile(
+          key: Key('item_${state.likedTracks[index].id}'),
           track: state.likedTracks[index],
         );
       },

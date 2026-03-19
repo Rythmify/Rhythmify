@@ -22,28 +22,24 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     return const AppPlayerState(); // Initial empty state
   }
 
-  // --- ACTIONS THE UI CAN TRIGGER ---
-
   Future<void> loadAndPlayQueue(List<Track> tracks, {int initialIndex = 0}) async {
     await ref.read(loadQueueUseCaseProvider).call(tracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }
 
-  /// Optimistic Loading Flow:
+  ///==========================================================================
+  ///  ----------------------- Optimistic Loading Flow -----------------------
   /// 1. Immediately starts buffering/playing with basic info.
   /// 2. Concurrently fetches full details, waveform, and tags in background.
   /// 3. Updates state once background calls resolve.
-  Future<void> playOptimistic(Track initialTrack) async {
-    // Phase 1: Immediate Playback (Optimistic)
-    await loadAndPlayQueue([initialTrack]);
+  ///==========================================================================
 
-    // Phase 2: Background Concurrent Updates
-    _updateTrackInBackground(initialTrack.id);
+  Future<void> playOptimistic(Track initialTrack) async {
+    await loadAndPlayQueue([initialTrack]);      // Immediate Playback
+    _updateTrackInBackground(initialTrack.id);   // Background Concurrent Updates
   }
 
   Future<void> _updateTrackInBackground(String trackId) async {
-    try {
-      // Trigger background APIs concurrently
       final results = await Future.wait([
         ref.read(getTrackDetailsUseCaseProvider).call(trackId),
         ref.read(getWaveformUseCaseProvider).call(trackId),
@@ -51,18 +47,10 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
       final fullTrack = results[0] as Track;
       final waveform = results[1] as List<double>;
-
-      // Since the backend now returns tag NAMES, we just merge directly
       final updatedTrack = fullTrack.copyWith(
         waveformData: waveform,
       );
-
-      // Phase 3: Update State Manager
-      await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);
-
-    } catch (e) {
-      print('Error updating track info in background: $e');
-    }
+      await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);    // Update State Manager
   }
 
   void togglePlayPause() {

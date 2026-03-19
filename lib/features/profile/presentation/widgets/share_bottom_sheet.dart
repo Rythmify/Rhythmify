@@ -75,6 +75,7 @@ class ShareBottomSheet extends StatelessWidget {
               children: [
                 _shareOption(
                   context,
+                  key: const Key('profile_share_message_button'),
                   icon: Icons.send,
                   label: 'Message',
                   onTap: () {
@@ -87,6 +88,7 @@ class ShareBottomSheet extends StatelessWidget {
 
                 _shareOption(
                   context,
+                  key: const Key('profile_share_copy_link_button'),
                   icon: Icons.copy,
                   label: 'Copy Link',
                   onTap: () {
@@ -108,6 +110,7 @@ class ShareBottomSheet extends StatelessWidget {
 
                 _shareOption(
                   context,
+                  key: const Key('profile_share_whatsapp_button'),
                   icon: FontAwesomeIcons.whatsapp,
                   label: 'WhatsApp',
                   iconColor: Colors.white,
@@ -122,6 +125,7 @@ class ShareBottomSheet extends StatelessWidget {
 
                      _shareOption(
                   context,
+                  key: const Key('profile_share_status_button'),
                   icon: FontAwesomeIcons.whatsapp,
                   label: 'status',
                   iconColor: Colors.white,
@@ -136,6 +140,7 @@ class ShareBottomSheet extends StatelessWidget {
                 
                 _shareOption(
                   context,
+                  key: const Key('profile_share_stories_button'),
                   icon: FontAwesomeIcons.instagram,
                   label: 'Stories',
                   iconColor: Colors.white,
@@ -147,6 +152,7 @@ class ShareBottomSheet extends StatelessWidget {
 
                 _shareOption(
                   context,
+                  key: const Key('profile_share_sms_button'),
                   icon: Icons.sms,
                   label: 'SMS',
                   iconColor: Colors.white,
@@ -158,6 +164,7 @@ class ShareBottomSheet extends StatelessWidget {
 
                 _shareOption(
                   context,
+                  key: const Key('profile_share_qr_code_button'),
                   icon: Icons.qr_code,
                   label: 'QR code',
                   onTap: () {},
@@ -176,6 +183,7 @@ class ShareBottomSheet extends StatelessWidget {
 
           /// ── View info ──────────────────────────────────────────
           GestureDetector(
+            key: const Key('profile_share_view_info_gesture'),
             onTap: () => Navigator.pop(context),
             child: Row(
               children: [
@@ -197,6 +205,7 @@ class ShareBottomSheet extends StatelessWidget {
   /// ── Share button widget ──────────────────────────────────────
   Widget _shareOption(
     BuildContext context, {
+    Key? key,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -204,6 +213,7 @@ class ShareBottomSheet extends StatelessWidget {
     Color? backgroundColor,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Column(
         children: [

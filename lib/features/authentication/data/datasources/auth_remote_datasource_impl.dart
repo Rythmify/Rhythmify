@@ -38,11 +38,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'token': token,
       });
     } on DioException catch (e) {
-      print('SIGN IN ERROR ──────────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -57,13 +52,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String dateOfBirth,
   }) async {
     try {
-      print('SIGN UP REQUEST ─────────────────────────');
-      print('Email: $email');
-      print('DisplayName: $displayName');
-      print('Gender: $gender');
-      print('DateOfBirth: $dateOfBirth');
-      print('URL: ${client.dio.options.baseUrl}/auth/register');
-      print('────────────────────────────────────────');
 
       final response = await client.dio.post(
         '/auth/register',
@@ -76,11 +64,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           'captcha_token': 'dev-bypass',
         },
       );
-
-      print('SIGN UP RESPONSE ────────────────────────');
-      print('Status: ${response.statusCode}');
-      print('Data: ${response.data}');
-      print('────────────────────────────────────────');
 
       final responseData = response.data is List
           ? response.data[0]
@@ -96,11 +79,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'token': null,
       });
     } on DioException catch (e) {
-      print('SIGN UP ERROR ───────────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -133,11 +111,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'token': token,
       });
     } on DioException catch (e) {
-      print('GOOGLE SIGN IN ERROR ────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -170,11 +143,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'token': token,
       });
     } on DioException catch (e) {
-      print('APPLE SIGN IN ERROR ─────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -186,11 +154,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       await client.dio.post('/auth/logout');
       await client.clearToken();
     } on DioException catch (e) {
-      print('SIGN OUT ERROR ──────────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -201,11 +164,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     try {
       await client.dio.post('/auth/resend-verification');
     } on DioException catch (e) {
-      print('VERIFICATION EMAIL ERROR ────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -219,11 +177,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         data: {'email': email},
       );
     } on DioException catch (e) {
-      print('PASSWORD RESET ERROR ────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }
@@ -232,9 +185,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   void _handleDioError(DioException e) {
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;
-
-    print('HANDLING ERROR CODE: $errorCode');
-    print('HANDLING ERROR MESSAGE: $errorMessage');
 
     switch (errorCode) {
       case 'AUTH_INVALID_CREDENTIALS':

@@ -20,26 +20,56 @@ class PlayerActionBar extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.favorite_border, color: Colors.white),
+              const Icon(
+                key: Key('player_action_bar_favorite_icon'),
+                Icons.favorite_border,
+                color: Colors.white,
+              ),
               const SizedBox(width: 6),
               trackAsync.when(
                 data: (track) => Text(
                   Formatters.formatCount(track.likeCount),
+                  key: const Key('player_action_bar_like_count_text'),
                   style: AppTheme.bodyNormal,
                 ),
                 loading: () => const SizedBox(
                   width: 10,
                   height: 10,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                error: (a,b) => const Text('0', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: CircularProgressIndicator(
+                    key: Key('player_action_bar_like_count_loading_indicator'),
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                error: (a, b) => const Text(
+                  '0',
+                  key: Key('player_action_bar_like_count_error_text'),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
             
           ),
-          const Icon(Icons.chat_bubble_outline, color: Colors.white),
-          const Icon(Icons.share_outlined, color: Colors.white),
-          const Icon(Icons.playlist_play, color: Colors.white),
-          const Icon(Icons.more_vert, color: Colors.white),
+          const Icon(
+            key: Key('player_action_bar_comment_icon'),
+            Icons.chat_bubble_outline,
+            color: Colors.white,
+          ),
+          const Icon(
+            key: Key('player_action_bar_share_icon'),
+            Icons.share_outlined,
+            color: Colors.white,
+          ),
+          const Icon(
+            key: Key('player_action_bar_playlist_icon'),
+            Icons.playlist_play,
+            color: Colors.white,
+          ),
+          const Icon(
+            key: Key('player_action_bar_more_icon'),
+            Icons.more_vert,
+            color: Colors.white,
+          ),
         ],
       ),
     );

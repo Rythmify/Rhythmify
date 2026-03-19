@@ -20,6 +20,7 @@ class MiniPlayer extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 11.0),
       child: GestureDetector(
+        key: const Key('player_mini_player_gesture_detector'),
         onTap: onTap,
         child: Container(
           height: 58,
@@ -48,12 +49,14 @@ class MiniPlayer extends ConsumerWidget {
                   children: [
                     Text(
                       track.title,
+                      key: const Key('player_mini_player_title_text'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTheme.miniPlayerFont1,
                     ),
                     Text(
                       track.artist,
+                      key: const Key('player_mini_player_artist_text'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTheme.miniPlayerFont2,
@@ -66,12 +69,14 @@ class MiniPlayer extends ConsumerWidget {
               //  Social Actions
               // ================
               IconButton(
+                key: const Key('player_mini_player_follow_icon_button'),
                 icon: Icon(track.isArtistFollowed ? Icons.person_add_alt_1 : Icons.person_add_alt), 
                 color: track.isArtistFollowed ? AppTheme.primaryBrand : Colors.white,
                 onPressed: () {
                 },
               ),
               IconButton(
+                key: const Key('player_mini_player_like_icon_button'),
                 icon: Icon(track.isLiked ? Icons.favorite : Icons.favorite_border),
                 color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
                 onPressed: () {

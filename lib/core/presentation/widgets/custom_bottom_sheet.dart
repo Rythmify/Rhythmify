@@ -49,6 +49,7 @@ class CustomBottomSheet {
                       spacing: 16,
                       children: [
                         IconButton(
+                          key: const Key('core_bottom_sheet_close_icon_button'),
                           icon: const Icon(Icons.close, color: AppTheme.textPrimary),
                           onPressed: () => Navigator.pop(context),
                           style: IconButton.styleFrom(

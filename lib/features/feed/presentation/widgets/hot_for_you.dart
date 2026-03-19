@@ -35,7 +35,11 @@ class HotForYouSection extends ConsumerWidget {
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
 
-          error: (e, _) => Text(e.toString(), style: AppTheme.bodyMedium),
+          error: (e, _) => Text(
+            e.toString(),
+            key: const Key('hot_for_you_error_text'),
+            style: AppTheme.bodyMedium,
+          ),
 
           data: (tracks) {
             if (tracks.isEmpty) {
@@ -128,6 +132,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                             children: [
                               Text(
                                 widget.track.title,
+                                key: const Key('hot_for_you_track_title_text'),
                                 style: AppTheme.bodyNormal,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -137,6 +142,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
                               Text(
                                 widget.track.artist,
+                                key: const Key('hot_for_you_track_artist_text'),
                                 style: AppTheme.bodyNormal.copyWith(
                                   color: AppTheme.semiWhite,
                                 ),
@@ -147,9 +153,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
                         // Play Button
                         IconButton(
-                          key: Key(
-                            'hot_play_button_${widget.track.id}',
-                          ), //key for play button
+                          key: const Key('hot_for_you_play_icon_button'),
                           iconSize: 60,
                           icon: Icon(
                             isPlaying && isThisTrack
@@ -186,10 +190,9 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         const SizedBox(width: 6),
 
                         Text(
-                          key: Key(
-                            'hot_track_likes_${widget.track.id}',
-                          ), //key for track likes
+                          //key for track likes
                           "${formatCount(widget.track.playCount)} people liked your track",
+                          key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.labelSmall,
                         ),
                       ],

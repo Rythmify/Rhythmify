@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
-import 'package:rythmify/features/messaging/presentation/pages/chat_screen.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/conversation_tile.dart';
 
 class InboxConversations extends StatelessWidget{
@@ -17,15 +17,15 @@ class InboxConversations extends StatelessWidget{
       itemCount: conversations.length,
       itemBuilder: (context, index) {
       final conv=conversations[index];
-      return ConversationTile(participantAvatar: conv.participantAvatar,
+      return ConversationTile(
+      key: Key('messaging_inbox_item_${conv.participantName}_tile'),
+      participantAvatar: conv.participantAvatar,
       participantName: conv.participantName,
       lastMessagePreview: conv.lastMessagePreview!,
       lastMessageDate: conv.lastMessageDate!,
       unreadCount: conv.unReadCount,
       onTap: (){
-        Navigator.push(context,
-        MaterialPageRoute(builder: (_)=>ChatScreen(conv: conv),
-        ));
+        context.go('/home/inbox/chat/${conv.conversationId}');
       },
       );
       },
