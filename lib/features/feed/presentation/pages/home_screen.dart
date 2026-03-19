@@ -8,7 +8,7 @@ import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/mixed_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/discover_with_stations.dart';
 import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_like.dart';
-
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
 

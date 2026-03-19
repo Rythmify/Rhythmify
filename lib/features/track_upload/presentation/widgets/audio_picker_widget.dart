@@ -1,5 +1,3 @@
-/// features/upload_track/presentation/widgets/audio_picker_widget.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -53,8 +53,7 @@ class TrackListTile extends StatelessWidget {
                       ),
                       errorWidget: (context, url, error) => _placeholder(),
                     ),
-
-
+                  ),
             const SizedBox(width: 12),
 
             // ── Title + meta ─────────────────────────────────────────
