@@ -23,6 +23,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
+  final Set<String> _markedAsRead = {};
 
   @override
   void initState() {
@@ -41,11 +42,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // Watch our required providers
     final myId = ref.watch(currentUserIdProvider);
     final msgProvider = ref.watch(messageProvider(widget.conv.conversationId));
-    final unreadmsgProvider = ref.watch(unreadProvider(widget.conv.conversationId));
+    
+    // Listen to unread messages to mark them as read
+    ref.listen(unreadProvider(widget.conv.conversationId), (previous, next) {
+      next.whenData((unreads) {
+        for (final unread in unreads) {
+          if (!_markedAsRead.contains(unread.messageId)) {
+            _markedAsRead.add(unread.messageId);
+            ref.read(markAsRead.notifier).markRead(
+                  msgId: unread.messageId,
+                  convId: unread.conversationId,
+                );
+          }
+        }
+      });
+    });
 
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
       backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
         title: Text(
@@ -56,18 +72,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: msgProvider.when(
         data: (msg) {
-          // Handle marking messages as read in the background
-          unreadmsgProvider.whenData((unreads) {
-            Future.microtask(() async {
-              for (final unread in unreads) {
-                await ref.read(markAsRead.notifier).markRead(
-                      msgId: unread.messageId,
-                      convId: unread.conversationId,
-                    );
-              }
-            });
-          });
-
           return Column(
             key: const Key('chat_main_column'),
             children: [
@@ -123,7 +127,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 65), // Spacing for Bottom Navigation Bar
+              const SizedBox(height: 10),  
             ],
           );
         },
