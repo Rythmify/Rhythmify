@@ -10,29 +10,38 @@ class InboxScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final convprovider=ref.watch(conversationProvider);
+    final convprovider = ref.watch(conversationProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inbox'),
         centerTitle: false,
       ),
-      body: convprovider.when(
-      data: (conversations){
-        return conversations.isEmpty?
-        const EmptyInbox()
-        :InboxConversations(conversations: conversations);
-      },
-      error: (error, stackTrace) => Center(
-        child: Text(
-          error.toString(),
-          key: const Key('inbox_error_text'),
-        )
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 130), // Space for player
+        child: convprovider.when(
+          data: (conversations) {
+            return conversations.isEmpty
+                ? const EmptyInbox()
+                : InboxConversations(conversations: conversations);
+          },
+          error: (error, stackTrace) => Center(
+            child: Text(
+              error.toString(),
+              key: const Key('inbox_error_text'),
+            ),
+          ),
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
-      loading: () => const Center(
-        child: CircularProgressIndicator(),)), 
-        floatingActionButton: const ComposeButton(
+      ),
+      floatingActionButton: const Padding(
+        padding: EdgeInsets.only(bottom: 130),
+        child: ComposeButton(
           key: Key('inbox_compose_button'),
-        )
+        ),
+      ),
     );
   }
 }
