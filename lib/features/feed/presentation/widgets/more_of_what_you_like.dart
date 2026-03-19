@@ -39,7 +39,7 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = list[index] as Map<String, dynamic>;
                   return PlaylistSquareCard(
-                    key: Key('item_${index}'),
+                    key: Key('item_$index'),
                     artists: item['artists'] ?? '',
                     imagePath: item['image'] ?? '',
                   );

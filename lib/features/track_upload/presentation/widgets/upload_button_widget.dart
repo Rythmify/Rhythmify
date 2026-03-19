@@ -101,7 +101,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
               ),
               child: const Text(
                 'Replace',
-                key: const Key('track_upload_replace_button_text'),
+                key: Key('track_upload_replace_button_text'),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,

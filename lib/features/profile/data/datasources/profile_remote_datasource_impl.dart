@@ -3,6 +3,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
+//import '../../../../core/data/models/track_dto.dart';
 
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final ApiClient client;
@@ -54,12 +55,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'avatar': await MultipartFile.fromFile(filePath),
       });
 
-      final response = await client.dio.post(
+      await client.dio.post(
         '/users/me/avatar',
         data: formData,
       );
-
-      print('UPLOAD AVATAR RESPONSE: ${response.data}');
 
       return await getProfile(userId: 'me');
     } on DioException catch (e) {
@@ -85,13 +84,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'cover': await MultipartFile.fromFile(filePath),
       });
 
-      final response = await client.dio.post(
+     await client.dio.post(
         '/users/me/cover',
         data: formData,
       );
-
-      print('UPLOAD COVER RESPONSE: ${response.data}');
-      // Reload full profile after cover upload
       return await getProfile(userId: 'me');
     } on DioException catch (e) {
       _handleDioError(e);
@@ -118,19 +114,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       rethrow;
     }
   }
-    @override
-    Future<ProfileModel> getProfiletest({required String userId}) async {
-      try {
-        final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
-        final response = await client.dio.get(endpoint);
 
-        return ProfileModel.fromJson(response.data['data']);
-      } on DioException catch (e) {
-
-        _handleDioError(e);
-        rethrow;
-      }
-    }
   @override
   Future<void> unfollowUser({required String userId}) async {
     try {
@@ -168,9 +152,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   void _handleDioError(DioException e) {
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;
-
-    print('PROFILE ERROR CODE: $errorCode');
-    print('PROFILE ERROR MESSAGE: $errorMessage');
 
     switch (errorCode) {
       case 'RESOURCE_NOT_FOUND':

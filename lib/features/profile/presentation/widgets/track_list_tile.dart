@@ -43,7 +43,7 @@ class TrackListTile extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: CachedNetworkImage(
-                      imageUrl: track.artworkUrl!,
+                      imageUrl: track.artworkUrl,
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,

@@ -38,11 +38,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'token': token,
       });
     } on DioException catch (e) {
-      print('SIGN IN ERROR ──────────────────────────');
-      print('Status code: ${e.response?.statusCode}');
-      print('Response data: ${e.response?.data}');
-      print('Error type: ${e.type}');
-      print('────────────────────────────────────────');
       _handleDioError(e);
       rethrow;
     }

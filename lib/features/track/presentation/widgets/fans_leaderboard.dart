@@ -21,7 +21,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
             Text("Fans Leaderboard", style: AppTheme.titleLarge),
             const SizedBox(width: 8),
             const Icon(
-              key: const Key('fans_leaderboard_info_icon'),
+              key: Key('fans_leaderboard_info_icon'),
               Icons.info_outline,
               size: 18,
               color: AppTheme.textSecondary,

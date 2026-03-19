@@ -248,7 +248,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         if (didPop) return;
 
         if (_hasChanges) {
-          final dialogResult = await showDialog<bool>(
+          await showDialog<bool>(
             context: context,
             builder: (_) => const UnsavedChangesDialog(),
           );
