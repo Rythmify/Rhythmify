@@ -43,6 +43,7 @@ class HomeScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
+            key: const Key('home_upload_track_icon_button'),
             icon: const Icon(Icons.arrow_circle_up),
 
             onPressed: () async{
@@ -84,12 +85,14 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            key: const Key('home_inbox_icon_button'),
             icon: const Icon(Icons.mail_outline),
             onPressed: () {
               context.push('/home/inbox');
             },
           ),
           IconButton(
+            key: const Key('home_notifications_icon_button'),
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
               context.push('/home/notifications');

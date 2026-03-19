@@ -23,11 +23,16 @@ class InboxScreen extends ConsumerWidget {
         :InboxConversations(conversations: conversations);
       },
       error: (error, stackTrace) => Center(
-        child: Text(error.toString())
+        child: Text(
+          error.toString(),
+          key: const Key('inbox_error_text'),
+        )
         ),
       loading: () => const Center(
         child: CircularProgressIndicator(),)), 
-        floatingActionButton: ComposeButton()
+        floatingActionButton: const ComposeButton(
+          key: Key('inbox_compose_button'),
+        )
     );
   }
 }

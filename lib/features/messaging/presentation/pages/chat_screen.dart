@@ -72,7 +72,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>{
             padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 12),
             itemBuilder: (context,index){
               final message=msg[index];
-              return MessageBubble(myId: myId,
+              return MessageBubble(
+              key: Key('item_${message.messageId}'),
+              myId: myId,
               senderId: message.senderId,
               sentAt: message.createdAt,
               userAvatar: widget.conv.participantAvatar,
@@ -84,11 +86,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>{
         ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Row(children: [
-          IconButton(onPressed: (){},
+          IconButton(
+            key: const Key('chat_add_icon_button'),
+            onPressed: (){},
           icon:const Icon(Icons.add,color:Colors.white)
           ),
           const SizedBox(width: 8),
           Expanded(child: MessageInputBubble(
+            key: const Key('chat_message_input_bubble'),
             controller: controller,
             onSubmitted: (text)async {
           if(controller.text.trim().isEmpty) return;
@@ -109,7 +114,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>{
         child: CircularProgressIndicator(),
       ),
       error: (error, stackTrace) => Center(
-        child: Text(error.toString()),
+        child: Text(
+          error.toString(),
+          key: const Key('chat_error_text'),
+        ),
       ),
       )
     );

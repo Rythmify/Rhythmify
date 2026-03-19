@@ -20,7 +20,12 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
           children: [
             Text("Fans Leaderboard", style: AppTheme.titleLarge),
             const SizedBox(width: 8),
-            const Icon(Icons.info_outline, size: 18, color: AppTheme.textSecondary),
+            const Icon(
+              key: const Key('fans_leaderboard_info_icon'),
+              Icons.info_outline,
+              size: 18,
+              color: AppTheme.textSecondary,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -98,6 +103,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
   Widget _buildSegmentText(String label, int index) {
     return Expanded(
       child: GestureDetector(
+        key: Key('fans_leaderboard_${label.toLowerCase()}_segment_gesture_detector'),
         onTap: () => setState(() => _selectedTab = index),
         behavior: HitTestBehavior.opaque,
         child: Container(

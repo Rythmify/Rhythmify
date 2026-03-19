@@ -74,6 +74,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
           // 2. Draggable Player (Behind the Nav Bar)
           if (hasTrack)
             DraggableScrollableSheet(
+              key: const Key('main_player_draggable_sheet'),
               controller: _draggableController,
               initialChildSize: currentMinSize,
               minChildSize: currentMinSize,
@@ -105,6 +106,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                                   child: IgnorePointer(
                                     ignoring: t < 0.5,
                                     child: FullPlayerPage(
+                                      key: const Key('main_full_player_page'),
                                       onCollapse: _collapsePlayer,
                                     ),
                                   ),
@@ -120,6 +122,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                                   child: Opacity(
                                     opacity: (1 - t * 5).clamp(0.0, 1.0),
                                     child: MiniPlayer(
+                                      key: const Key('main_mini_player_widget'),
                                       onTap: _expandPlayer,
                                     ),
                                   ),
@@ -158,7 +161,10 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                   ),
                 );
               },
-              child: BottomNavigation(navigationShell: widget.navigationShell),
+              child: BottomNavigation(
+                key: const Key('main_bottom_navigation_bar'),
+                navigationShell: widget.navigationShell
+              ),
             ),
           ),
         ],

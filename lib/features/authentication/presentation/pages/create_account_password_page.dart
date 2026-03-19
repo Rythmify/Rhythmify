@@ -44,6 +44,7 @@ class _CreateAccountPasswordPageState
       appBar: AppBar(
         title: const Text('Create an account'),
         leading: IconButton(
+          key: const Key('authentication_back_icon_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
@@ -65,6 +66,7 @@ class _CreateAccountPasswordPageState
 
                 // Password field
                 AuthTextField(
+                  key: const Key('authentication_password_text_field'),
                   hint: 'Choose a password (min. 8 characters)',
                   controller: _passwordController,
                   isPassword: true,
@@ -96,6 +98,7 @@ class _CreateAccountPasswordPageState
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
+                    key: const Key('authentication_continue_elevated_button'),
                     onPressed:
                         authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
@@ -116,6 +119,7 @@ class _CreateAccountPasswordPageState
                 const SizedBox(height: 20),
 
                 GestureDetector(
+                  key: const Key('authentication_help_gesture_detector'),
                   onTap: () {},
                   child: Text(
                     'Need help?',

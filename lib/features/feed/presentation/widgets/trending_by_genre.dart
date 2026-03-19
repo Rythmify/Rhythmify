@@ -97,6 +97,7 @@ class GenreTabBar extends StatelessWidget {
             final color = genreColors[index];
 
             return Tab(
+              key: Key('trending_by_genre_tab_${genres[index].toLowerCase().replaceAll(' ', '_')}'),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
@@ -201,7 +202,12 @@ class GenreTabView extends ConsumerWidget {
                           },
                           loading: () =>
                               const Center(child: CircularProgressIndicator()),
-                          error: (e, _) => Center(child: Text('Error: $e')),
+                          error: (e, _) => Center(
+                            child: Text(
+                              'Error: $e',
+                              key: Key('trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}'),
+                            ),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -250,6 +256,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                   width: 340,
 
                   child: ListTile(
+                    key: Key('item_${track.id}'),
                     contentPadding: EdgeInsets.zero,
 
                     leading: ClipRRect(

@@ -21,6 +21,7 @@ class MessageInputBubble extends StatelessWidget{
       ),
       alignment: Alignment.center,
       child: TextField(
+        key: const Key('messaging_message_input_text_field'),
         controller: controller,
         onSubmitted: onSubmitted,
         cursorColor: Colors.white,

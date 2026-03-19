@@ -22,6 +22,7 @@ class LibraryScreen extends ConsumerWidget {
         actions: [
           // ── GET PRO button ─────────────────────────────────────────
           TextButton(
+            key: const Key('library_get_pro_text_button'),
             onPressed: () {},
             child: Text(
               'GET PRO',
@@ -33,10 +34,15 @@ class LibraryScreen extends ConsumerWidget {
           ),
 
           // ── Cast button ────────────────────────────────────────────
-          IconButton(icon: const Icon(Icons.cast), onPressed: () {}),
+          IconButton(
+            key: const Key('library_cast_icon_button'),
+            icon: const Icon(Icons.cast),
+            onPressed: () {},
+          ),
 
           // ── Settings button ────────────────────────────────────────
           IconButton(
+            key: const Key('library_settings_icon_button'),
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/library/settings'),
           ),
@@ -45,6 +51,7 @@ class LibraryScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
+              key: const Key('library_profile_avatar_gesture_detector'),
               onTap: () => context.push('/profile/me'),
               child: CircleAvatar(
                 radius: 18,
@@ -105,6 +112,7 @@ class LibraryScreen extends ConsumerWidget {
     return Column(
       children: [
         GestureDetector(
+          key: Key('library_${label.toLowerCase().replaceAll(' ', '_')}_item_gesture_detector'),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),

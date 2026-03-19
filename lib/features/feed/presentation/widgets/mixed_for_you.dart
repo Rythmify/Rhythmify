@@ -22,7 +22,10 @@ class MixedPlaylistsSection extends ConsumerWidget {
 
         asyncMixedPlaylists.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text("Error: $e"),
+          error: (e, _) => Text(
+            "Error: $e",
+            key: const Key('mixed_for_you_error_text'),
+          ),
           data: (items) {
             final list = items as List;
             if (list.isEmpty) return const SizedBox.shrink();
@@ -36,6 +39,7 @@ class MixedPlaylistsSection extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = list[index] as Map<String, dynamic>;
                   return MixedPlaylistCard(
+                    key: Key('mixed_for_you_item_${item['id'] ?? index}'),
                     artists: item['artists'] ?? '',
                     imagePath: item['image'] ?? '',
                     mixLabel: item['mixLabel'] ?? '',

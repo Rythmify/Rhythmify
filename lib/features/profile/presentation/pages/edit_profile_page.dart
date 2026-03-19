@@ -149,6 +149,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         children: _countries.entries
             .map(
               (entry) => ListTile(
+                key: Key('item_${entry.value}'),
                 title: Text(entry.key, style: AppTheme.bodyLarge),
                 onTap: () {
                   setState(() {
@@ -187,6 +188,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             Text('Bio', style: AppTheme.titleMedium),
             const SizedBox(height: 12),
             TextField(
+              key: const Key('edit_profile_bio_textfield'),
               controller: _bioController,
               maxLines: 5,
               maxLength: 500,
@@ -202,6 +204,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                key: const Key('edit_profile_bio_done_button'),
                 onPressed: () {
                   setState(() => _hasChanges = true);
                   Navigator.pop(context);
@@ -259,6 +262,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         appBar: AppBar(
           title: const Text('Edit profile'),
           leading: IconButton(
+            key: const Key('edit_profile_back_button'),
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               final canLeave = await _onWillPop();
@@ -269,6 +273,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
+                key: const Key('edit_profile_save_button'),
                 onPressed: isSaving ? null : _onSave,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -314,7 +319,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ? Image.network(
                                   profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
+                                  errorBuilder: (a,b,c) =>
                                       const SizedBox(),
                                 )
                               : null,
@@ -323,6 +328,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           right: 12,
                           bottom: 12,
                           child: GestureDetector(
+                            key: const Key('edit_profile_pick_cover_gesture'),
                             onTap: _pickCoverPhoto,
                             child: Container(
                               padding: const EdgeInsets.all(8),
@@ -360,6 +366,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         children: [
                           // Display name
                           _buildField(
+                            key: const Key('edit_profile_name_textfield'),
                             label: 'Display Name',
                             controller: _displayNameController,
                             maxLength: 50,
@@ -369,6 +376,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           // City
                           _buildField(
+                            key: const Key('edit_profile_city_textfield'),
                             label: 'City',
                             controller: _cityController,
                             maxLength: 35,
@@ -378,6 +386,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           // Country
                           _buildChevronField(
+                            key: const Key('edit_profile_country_gesture'),
                             label: 'Country',
                             value: _selectedCountryDisplay.isEmpty
                                 ? 'Select country'
@@ -389,6 +398,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           // Bio
                           _buildChevronField(
+                            key: const Key('edit_profile_bio_gesture'),
                             label: 'Bio',
                             value: _bioController.text.isEmpty
                                 ? 'Bio'
@@ -406,6 +416,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   }
 
   Widget _buildField({
+    Key? key,
     required String label,
     required TextEditingController controller,
     required int maxLength,
@@ -421,6 +432,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             children: [
               Expanded(
                 child: TextField(
+                  key: key,
                   controller: controller,
                   maxLength: maxLength,
                   style: AppTheme.bodyLarge,
@@ -446,11 +458,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   }
 
   Widget _buildChevronField({
+    Key? key,
     required String label,
     required String value,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),

@@ -15,6 +15,7 @@ class CoverImagePickerWidget extends ConsumerWidget {
     final hasArtwork = draft?.localArtworkPath != null;
 
     return GestureDetector(
+      key: const Key('track_upload_cover_image_picker_gesture_detector'),
       onTap: onTap,
       child: Container(
         width: 100,

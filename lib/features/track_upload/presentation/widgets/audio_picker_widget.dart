@@ -35,6 +35,7 @@ class AudioPickerWidget extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ListTile(
+              key: const Key('track_upload_gallery_listtile'),
               leading: const Icon(
                 Icons.photo_library_outlined,
                 color: Colors.white70,
@@ -46,6 +47,7 @@ class AudioPickerWidget extends ConsumerWidget {
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
+              key: const Key('track_upload_camera_listtile'),
               leading: const Icon(
                 Icons.camera_alt_outlined,
                 color: Colors.white70,
@@ -128,7 +130,6 @@ Widget build(BuildContext context, WidgetRef ref) {
               buttonState: _getButtonState(draft.uploadProgress),
               progress:    draft.uploadProgress,
               onReplace:   () {
-                // TODO: wire replace audio usecase
               },
             ),
           ],

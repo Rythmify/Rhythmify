@@ -37,13 +37,21 @@ class ScrollingArtworkBackground extends ConsumerWidget {
           curve: Curves.easeInOut,
           child: Image.asset(
             artworkUrl,
+            key: const Key('player_scrolling_artwork_image'),
             height: MediaQuery.of(context).size.height,
             fit: BoxFit.fitHeight,
             alignment: Alignment(alignmentX, 0.0),
             errorBuilder: (context, error, stackTrace) => Container(
               width: MediaQuery.of(context).size.width,
               color: Colors.grey[900],
-              child: const Center(child: Icon(Icons.music_note, color: Colors.white24, size: 100)),
+              child: const Center(
+                child: Icon(
+                  Icons.music_note,
+                  key: Key('player_scrolling_artwork_error_icon'),
+                  color: Colors.white24,
+                  size: 100,
+                ),
+              ),
             ),
           ),
         ),

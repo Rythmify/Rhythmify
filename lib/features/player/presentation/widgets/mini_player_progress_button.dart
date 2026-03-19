@@ -22,6 +22,7 @@ class MiniPlayerProgressButton extends ConsumerWidget {
     }
 
     return GestureDetector(
+      key: const Key('player_mini_progress_button_toggle_play_pause_gesturedetector'),
       onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
       child: SizedBox(
         width: 40,
@@ -30,9 +31,10 @@ class MiniPlayerProgressButton extends ConsumerWidget {
           fit: StackFit.expand,
           children: [
             CircularProgressIndicator(
+              key: const Key('player_mini_progress_button_indicator'),
               value: progress,
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBrand), 
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryBrand), 
               backgroundColor: Colors.black87, 
             ),
             // The white play/pause button
@@ -45,6 +47,7 @@ class MiniPlayerProgressButton extends ConsumerWidget {
                 ),
                 child: Icon(
                   isPlaying ? Icons.pause : Icons.play_arrow,
+                  key: const Key('player_mini_progress_button_icon'),
                   color: Colors.black,
                   size: 24,
                 ),

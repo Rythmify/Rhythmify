@@ -16,12 +16,14 @@ class EmptyInbox extends StatelessWidget{
           children: [
               Text(
               'Message other fans and artists, and share your favourite tracks, playlists and uploads',
+              key: const Key('messaging_empty_inbox_message_text'),
               textAlign:TextAlign.center,
               style: MessagingThemes.inboxEmptyMsg,
               ),
             SizedBox(height: 12),
             Text(
               'Start a conversation by tapping the compose icon below.',
+              key: const Key('messaging_empty_inbox_instruction_text'),
               textAlign:TextAlign.center,
               style: MessagingThemes.inboxEmptysubMsg,
             )

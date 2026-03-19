@@ -17,7 +17,9 @@ class InboxConversations extends StatelessWidget{
       itemCount: conversations.length,
       itemBuilder: (context, index) {
       final conv=conversations[index];
-      return ConversationTile(participantAvatar: conv.participantAvatar,
+      return ConversationTile(
+      key: Key('messaging_inbox_item_${conv.participantName}_tile'),
+      participantAvatar: conv.participantAvatar,
       participantName: conv.participantName,
       lastMessagePreview: conv.lastMessagePreview!,
       lastMessageDate: conv.lastMessageDate!,

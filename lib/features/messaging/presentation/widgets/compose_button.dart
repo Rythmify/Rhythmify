@@ -8,6 +8,7 @@ class ComposeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      key: const Key('messaging_compose_floating_action_button'),
       backgroundColor: Colors.white,
       foregroundColor: Colors.black,
       onPressed: (){},

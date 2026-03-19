@@ -14,6 +14,7 @@ class Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasImg=img!=null&&img!.trim().isNotEmpty;
     return CircleAvatar(
+      key: const Key('messaging_user_avatar_circle_avatar'),
       radius: radius,
       backgroundColor: const Color(0xFF2B2B2B),
       backgroundImage: hasImg? NetworkImage(img!):null,

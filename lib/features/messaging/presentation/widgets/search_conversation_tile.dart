@@ -19,6 +19,7 @@ class SearchConversationTile extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      key: Key('messaging_search_conversation_item_${participantName}_list_tile'),
       tileColor: Colors.transparent,
       leading: Avatar(
         img: participantAvatar,
@@ -26,17 +27,23 @@ class SearchConversationTile extends StatelessWidget{
       ),
       title: Text(
         participantName,
+        key: Key('messaging_search_conversation_item_${participantName}_name_text'),
         style: MessagingThemes.searchPName,
         ),
       subtitle: Column(
         children: [
-          if(participantCountry!=null) Text(participantCountry!,style: MessagingThemes.searchPCountry,),
+          if(participantCountry!=null) Text(
+            participantCountry!,
+            key: Key('messaging_search_conversation_item_${participantName}_country_text'),
+            style: MessagingThemes.searchPCountry,
+          ),
           Row(
             children: [
               Icon(Icons.person,size: 14,color: Color(0xFFB3B3B3),),
               SizedBox(width: 4),
               Text(
                 '$participantfollowers Followers',
+                key: Key('messaging_search_conversation_item_${participantName}_followers_text'),
                 style: MessagingThemes.searchPCountry,
                 )
             ],

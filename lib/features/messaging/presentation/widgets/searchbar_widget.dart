@@ -21,6 +21,7 @@ class SearchBarWidget extends StatelessWidget{
             ),
             height: 48,
             child: TextField(
+                key: const Key('messaging_search_text_field'),
                 controller: controller,
                 onChanged: onChanged,
                 cursorColor: MessagingThemes.msgSearchCursorColor,
@@ -33,7 +34,9 @@ class SearchBarWidget extends StatelessWidget{
                     border: InputBorder.none,
                     isCollapsed: true,
                     prefixIcon: Icon(Icons.search),
-                    suffixIcon: IconButton(onPressed: controller.clear,
+                    suffixIcon: IconButton(
+                      key: const Key('messaging_search_clear_icon_button'),
+                      onPressed: controller.clear,
                       icon: Icon(Icons.close)
                     )
                 ),

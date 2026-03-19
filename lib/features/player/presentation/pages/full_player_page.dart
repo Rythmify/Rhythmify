@@ -27,7 +27,11 @@ class FullPlayerPage extends ConsumerWidget {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: Text("No track playing", style: TextStyle(color: Colors.white)),
+          child: Text(
+            "No track playing",
+            key: Key('player_full_page_no_track_text'),
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       );
     }
@@ -35,6 +39,7 @@ class FullPlayerPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
+        key: const Key('player_full_page_toggle_play_pause_gesturedetector'),
         // Tapping anywhere on the background toggles play/pause
         onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
         child: Stack(
@@ -81,6 +86,7 @@ class FullPlayerPage extends ConsumerWidget {
                         color: Colors.white,
                       ),
                     child: IconButton(
+                      key: const Key('player_full_page_collapse_iconbutton'),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 20),
@@ -94,6 +100,7 @@ class FullPlayerPage extends ConsumerWidget {
                     height: 40,
                     decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
                     child: IconButton(
+                      key: const Key('player_full_page_add_person_iconbutton'),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: const Icon(Icons.person_add_alt_1, color: Colors.black, size: 20),

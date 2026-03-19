@@ -25,11 +25,13 @@ class PlaybackOverlayControls extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildCircleControlButton(
+                      key: const Key('player_overlay_skip_previous_gesturedetector'),
                       icon: Icons.skip_previous,
                       onTap: () => ref.read(playerStateProvider.notifier).skipToPrevious(),
                     ),
                     const SizedBox(width: 32),
                     _buildCircleControlButton(
+                      key: const Key('player_overlay_play_pause_gesturedetector'),
                       icon: Icons.play_arrow,
                       size: 55,
                       iconSize: 35,
@@ -38,6 +40,7 @@ class PlaybackOverlayControls extends ConsumerWidget {
                     ),
                     const SizedBox(width: 32),
                     _buildCircleControlButton(
+                      key: const Key('player_overlay_skip_next_gesturedetector'),
                       icon: Icons.skip_next,
                       onTap: () => ref.read(playerStateProvider.notifier).skipToNext(),
                     ),
@@ -50,6 +53,7 @@ class PlaybackOverlayControls extends ConsumerWidget {
   }
 
   Widget _buildCircleControlButton({
+    Key? key,
     required IconData icon,
     required VoidCallback onTap,
     double size = 42,
@@ -57,6 +61,7 @@ class PlaybackOverlayControls extends ConsumerWidget {
     Color? color,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Container(
         width: size,

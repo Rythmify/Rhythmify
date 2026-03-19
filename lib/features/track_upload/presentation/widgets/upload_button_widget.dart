@@ -69,6 +69,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
     // ── STATE 3: Done ────────────────────────────────────────────────
     if (widget.buttonState == UploadButtonState.done) {
       return GestureDetector(
+        key: const Key('track_upload_replace_button_gesture_detector'),
         onTap: widget.onReplace,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -100,6 +101,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
               ),
               child: const Text(
                 'Replace',
+                key: const Key('track_upload_replace_button_text'),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,
@@ -142,6 +144,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
                     isProcessing
                         ? 'Preparing to process'
                         : 'Uploading ${(progress * 100).toInt()}%',
+                    key: const Key('track_upload_status_text'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 13,

@@ -29,6 +29,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      key: Key('auth_${widget.hint.toLowerCase().replaceAll(' ', '_')}_text_field'),
       controller: widget.controller,
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
@@ -75,6 +76,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
         ),
         suffixIcon: widget.isPassword
             ? IconButton(
+                key: const Key('auth_password_visibility_icon_button'),
                 icon: Icon(
                   _obscureText ? Icons.visibility_off : Icons.visibility,
                   color: AppTheme.textSecondary,

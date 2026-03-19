@@ -25,6 +25,7 @@ class UploadProgressOverlay extends ConsumerWidget {
     }
 
     return GestureDetector(
+      key: const Key('track_upload_progress_overlay_gesture_detector'),
       onTap: (isSuccess || isError) ? onDismiss : null,
       child: Container(
         color: Colors.black87,
@@ -42,7 +43,11 @@ class UploadProgressOverlay extends ConsumerWidget {
                 if (isUploading) ...[
                   _buildProgressRing(draft.uploadProgress),
                   const SizedBox(height: 20),
-                  Text('Uploading...', style: AppTheme.titleMedium),
+                  Text(
+                    'Uploading...',
+                    key: const Key('track_upload_progress_uploading_text'),
+                    style: AppTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Please keep the app open',
@@ -56,7 +61,11 @@ class UploadProgressOverlay extends ConsumerWidget {
                     color: AppTheme.primaryBrand,
                   ),
                   const SizedBox(height: 20),
-                  Text('Upload complete!', style: AppTheme.titleMedium),
+                  Text(
+                    'Upload complete!',
+                    key: const Key('track_upload_progress_success_text'),
+                    style: AppTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   Text('Your track is being processed',
                       style: AppTheme.bodyMedium),
@@ -71,7 +80,11 @@ class UploadProgressOverlay extends ConsumerWidget {
                     color: Colors.red,
                   ),
                   const SizedBox(height: 20),
-                  Text('Upload failed', style: AppTheme.titleMedium),
+                  Text(
+                    'Upload failed',
+                    key: const Key('track_upload_progress_error_text'),
+                    style: AppTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     state.errorMessage ?? 'Something went wrong.',
