@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
@@ -8,11 +7,14 @@ import '../../domain/usecases/sign_in_with_apple_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
-import '../../../../core/network/api_client.dart';
 import 'auth_state.dart';
 
-// ── Uncomment to use mock instead of real backend ─────────────
-// import '../../data/datasources/auth_mock_datasource.dart';
+// ── Uncomment to use Mock Data ─────────────
+import '../../data/datasources/auth_mock_datasource.dart';
+
+// ── Uncomment to use Real Data ─────────────
+//import '../../data/datasources/auth_remote_datasource_impl.dart';
+//import '../../../../core/network/api_client.dart';
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
@@ -29,8 +31,10 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    // ── Real datasource (backend must be running) ─────────────
-    final datasource = AuthRemoteDatasourceImpl(client: apiClient);
+    // ── Comment & Uncomment for datasource switching ─────────────
+    //final datasource = AuthRemoteDatasourceImpl(client: apiClient);
+    final datasource = AuthMockDatasource();
+
 
     final repository = AuthRepositoryImpl(remoteDatasource: datasource);
 

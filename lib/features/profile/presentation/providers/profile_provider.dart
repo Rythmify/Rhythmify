@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/profile_remote_datasource_impl.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
@@ -12,11 +11,15 @@ import '../../domain/usecases/unfollow_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/authentication/presentation/providers/auth_state.dart';
-import '../../../../core/network/api_client.dart';
 import 'profile_state.dart';
 
-// ── Switch to mock when backend is not available ──────────────
-// import '../../data/datasources/profile_mock_datasource.dart';
+// ── Uncomment to Switch to Mock Data ──────────────
+import '../../data/datasources/profile_mock_datasource.dart';
+
+// ── Uncomment to Switch to Real Data ──────────────
+//import '../../../../core/network/api_client.dart';
+//import '../../data/datasources/profile_remote_datasource_impl.dart';
+
 
 final profileProvider =
     NotifierProvider<ProfileNotifier, ProfileState>(() {
@@ -40,7 +43,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
 ProfileState build() {
   final authState = ref.watch(authProvider);
 
-  final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+  // ── Comment & Uncomment for datasource switching ─────────────
+  //final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+  final datasource = ProfileMockDatasource();
+
+
   final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
   _getProfile = GetProfileUseCase(repository);

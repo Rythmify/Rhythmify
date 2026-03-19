@@ -20,9 +20,11 @@ class MessageInputBubble extends StatelessWidget{
         borderRadius: BorderRadius.circular(26)
       ),
       alignment: Alignment.center,
-      child: TextField(
+      child: TextFormField(
+        key: const Key('messaging_message_input_text_field'),
         controller: controller,
-        onSubmitted: onSubmitted,
+        onFieldSubmitted: onSubmitted,
+        textInputAction: TextInputAction.send,
         cursorColor: Colors.white,
         style: const TextStyle(
           color: Colors.white,
@@ -35,7 +37,7 @@ class MessageInputBubble extends StatelessWidget{
             fontSize: 16
           ),
           border: InputBorder.none,
-          isCollapsed: true
+          contentPadding: EdgeInsets.symmetric(vertical: 12)
         ),
       ),
     );

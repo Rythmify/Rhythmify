@@ -21,12 +21,17 @@ class EmailVerificationDialog extends ConsumerWidget {
 
             const SizedBox(height: 16),
 
-            Text('Verify your email', style: AppTheme.titleLarge),
+            Text(
+              'Verify your email',
+              key: const Key('authentication_verify_email_title_text'),
+              style: AppTheme.titleLarge,
+            ),
 
             const SizedBox(height: 12),
 
             Text(
               'We sent a verification link to your email. Please check your inbox and verify before continuing.',
+              key: const Key('authentication_verify_email_description_text'),
               textAlign: TextAlign.center,
               style: AppTheme.bodyMedium,
             ),
@@ -38,6 +43,7 @@ class EmailVerificationDialog extends ConsumerWidget {
               width: double.infinity,
               height: 46,
               child: ElevatedButton(
+                key: const Key('authentication_resend_email_elevated_button'),
                 onPressed: () =>
                     ref.read(authProvider.notifier).sendEmailVerification(),
                 style: ElevatedButton.styleFrom(
@@ -55,6 +61,7 @@ class EmailVerificationDialog extends ConsumerWidget {
 
             // Dismiss button
             TextButton(
+              key: const Key('authentication_dismiss_text_button'),
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Dismiss',

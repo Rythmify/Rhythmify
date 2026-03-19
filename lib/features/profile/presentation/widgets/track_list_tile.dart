@@ -33,6 +33,7 @@ class TrackListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: Key('profile_track_item_${track.id}_gesture_detector'),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -42,7 +43,7 @@ class TrackListTile extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: CachedNetworkImage(
-                      imageUrl: track.artworkUrl!,
+                      imageUrl: track.artworkUrl,
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
@@ -53,8 +54,7 @@ class TrackListTile extends StatelessWidget {
                       ),
                       errorWidget: (context, url, error) => _placeholder(),
                     ),
-
-
+                  ),
             const SizedBox(width: 12),
 
             // ── Title + meta ─────────────────────────────────────────
@@ -119,6 +119,7 @@ class TrackListTile extends StatelessWidget {
 
             // ── More button ───────────────────────────────────────────
             IconButton(
+              key: Key('profile_track_item_${track.id}_more_icon_button'),
               onPressed: onMoreTap,
               icon: const Icon(
                 Icons.more_vert,

@@ -37,6 +37,7 @@ class TrackCard extends ConsumerWidget {
     final isThisTrackLoaded = currentPlayingId == track.id;
 
     return InkWell(
+      key: Key('track_card_${track.id}_inkwell'),
       onTap: () {
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
@@ -107,6 +108,7 @@ class TrackCard extends ConsumerWidget {
 
             // 4. Trailing More Icon
             IconButton(
+              key: Key('track_card_${track.id}_more_icon_button'),
               icon: const Icon(Icons.more_vert, color: Colors.grey),
               onPressed: () {
                 // Open bottom sheet in the future

@@ -87,6 +87,7 @@ class MessageBubble extends StatelessWidget{
                   ),
                   child: Text(
                     body??'',
+                    key: Key('messaging_message_bubble_item_${senderId}_${sentAt.millisecondsSinceEpoch}_body_text'),
                     style:const TextStyle(
                       color: Colors.white,
                       fontSize: 18
@@ -104,6 +105,7 @@ class MessageBubble extends StatelessWidget{
           ),
           child: Text(
             fixTime(sentAt),
+            key: Key('messaging_message_bubble_item_${senderId}_${sentAt.millisecondsSinceEpoch}_time_text'),
             style: const TextStyle(
               color:Colors.white70,
               fontSize: 12

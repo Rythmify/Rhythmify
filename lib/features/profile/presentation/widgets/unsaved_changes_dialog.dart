@@ -19,6 +19,7 @@ class UnsavedChangesDialog extends StatelessWidget {
           children: [
             Text(
               'Are you sure?',
+              key: const Key('profile_unsaved_changes_title_text'),
               style: AppTheme.titleLarge,
             ),
 
@@ -26,6 +27,7 @@ class UnsavedChangesDialog extends StatelessWidget {
 
             Text(
               'You have unsaved changes that will be lost',
+              key: const Key('profile_unsaved_changes_description_text'),
               style: AppTheme.bodyMedium,
             ),
 
@@ -35,6 +37,7 @@ class UnsavedChangesDialog extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: TextButton(
+                key: const Key('profile_unsaved_changes_discard_button'),
                 onPressed: () => Navigator.of(context).pop(true),
                 child: Text(
                   'DISCARD CHANGES',
@@ -50,6 +53,7 @@ class UnsavedChangesDialog extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: TextButton(
+                key: const Key('profile_unsaved_changes_continue_button'),
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
                   'CONTINUE EDITING',

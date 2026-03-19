@@ -25,16 +25,9 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await getToken();
-          print('══════════════════════════════════════');
-          print('REQUEST URL: ${options.uri}');
-          print('TOKEN FROM STORAGE: $token');
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
-            print('AUTHORIZATION HEADER SET ✓');
-          } else {
-            print('NO TOKEN — request sent without auth ✗');
           }
-          print('══════════════════════════════════════');
           return handler.next(options);
         },
         onError: (error, handler) async {

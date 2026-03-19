@@ -16,7 +16,9 @@ class SearchScreen extends ConsumerWidget {
       ),
       body:Column(
         children: [
-          SearchBar(controller: controller,onChanged:(value) {
+          SearchBar(
+            key: const Key('search_screen_new_message_search_bar'),
+            controller: controller,onChanged:(value) {
             
             },
           ),

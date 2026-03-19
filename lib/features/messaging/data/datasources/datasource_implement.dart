@@ -14,13 +14,6 @@ class DatasourceImplement implements DatasourceInterface{
   @override
   Future<List<ConversationModel>> getConversations() async {
     final response = await dio.get(ApiEndPoints.getConversations);
-
-    print('URL: ${response.realUri}');
-    print('status: ${response.statusCode}');
-    print('type: ${response.data.runtimeType}');
-    print('data: ${response.data}');
-
-    // 👇 PUT IT HERE
     if (response.data is! Map<String, dynamic>) {
       throw Exception(
         'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
@@ -38,11 +31,6 @@ class DatasourceImplement implements DatasourceInterface{
   @override
   Future<List<MessageModel>> getMessages({required String conversationId}) async {
     final response = await dio.get(ApiEndPoints.getMessages(conversationId));
-
-    print('type: ${response.data.runtimeType}');
-    print('data: ${response.data}');
-
-    // 👇 HERE TOO
     if (response.data is! Map<String, dynamic>) {
       throw Exception(
         'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',

@@ -19,6 +19,7 @@ class ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: const Key('profile_avatar_gesture'),
       onTap: onTap,
       child: Stack(
         children: [

@@ -44,6 +44,7 @@ class _PlayerScaffoldState extends ConsumerState<PlayerScaffold> {
             bottom: 0,
             height: 60,
             child: MiniPlayer(
+              key: const Key('core_mini_player_widget'),
               onTap: () => _openFullPlayer(context),
             ),
           ),

@@ -1,14 +1,3 @@
-/// Mock store — holds submitted track data in memory
-/// Replace with real repository when backend is ready
-///
-/// HOW TO USE:
-///   After save is pressed, data is stored here.
-///   Any screen can read UploadMockStore.submissions
-///   to see what was submitted.
-///
-///   Print it to console:
-///   print(UploadMockStore.submissions);
-
 class MockTrackSubmission {
   final String title;
   final String artist;
@@ -63,10 +52,6 @@ class UploadMockStore {
 
   static void add(MockTrackSubmission submission) {
     submissions.add(submission);
-    // Print to console so you can see it during testing
-    print('=== NEW TRACK SUBMITTED ===');
-    print(submission);
-    print('Total submissions: ${submissions.length}');
   }
 
   static void clear() => submissions.clear();

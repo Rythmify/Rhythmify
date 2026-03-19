@@ -89,15 +89,18 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         leading: IconButton(
+          key: const Key('public_profile_back_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
+            key: const Key('public_profile_cast_button'),
             icon: const Icon(Icons.cast),
             onPressed: () {},
           ),
           IconButton(
+            key: const Key('public_profile_more_button'),
             icon: const Icon(Icons.more_vert),
             onPressed: () {
               if (profileState is ProfileLoaded) {
@@ -119,6 +122,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 Text(message, style: AppTheme.bodyMedium),
                 const SizedBox(height: 16),
                 ElevatedButton(
+                  key: const Key('public_profile_retry_button'),
                   onPressed: () => ref
                       .read(profileProvider.notifier)
                       .loadProfile(userId: _resolvedUserId),
@@ -192,6 +196,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   children: [
                     if (isOwnProfile)
                       GestureDetector(
+                        key: const Key('public_profile_edit_gesture'),
                         onTap: () => context.push('/profile/edit'),
                         child: const Icon(
                           Icons.edit_outlined,
@@ -201,6 +206,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       )
                     else
                       GestureDetector(
+                        key: const Key('public_profile_follow_gesture'),
                         onTap: () {
                           if (state.profile.isFollowing) {
                             ref
@@ -235,6 +241,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     const Spacer(),
 
                     GestureDetector(
+                      key: const Key('public_profile_shuffle_gesture'),
                       onTap: () {},
                       child: const Icon(
                         Icons.shuffle,
@@ -246,6 +253,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     const SizedBox(width: 16),
 
                     Container(
+                      key: const Key('public_profile_play_button'),
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
@@ -306,6 +314,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       : const SizedBox.shrink();
                 }
                 return TrackListTile(
+                  key: Key('item_${state.likedTracks[index].id}'),
                   track: state.likedTracks[index],
                 );
               },

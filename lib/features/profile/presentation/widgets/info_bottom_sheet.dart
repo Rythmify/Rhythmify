@@ -34,7 +34,11 @@ class InfoBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Display name ──────────────────────────────────────────
-          Text(profile.displayName, style: AppTheme.titleLarge),
+          Text(
+            profile.displayName,
+            key: const Key('profile_info_name_text'),
+            style: AppTheme.titleLarge,
+          ),
 
           const SizedBox(height: 16),
 
@@ -52,6 +56,7 @@ class InfoBottomSheet extends StatelessWidget {
                   [profile.city, profile.country]
                       .where((e) => e != null && e.isNotEmpty)
                       .join(', '),
+                  key: const Key('profile_info_location_text'),
                   style: AppTheme.bodyMedium,
                 ),
               ],
@@ -61,18 +66,34 @@ class InfoBottomSheet extends StatelessWidget {
 
           // ── Bio ───────────────────────────────────────────────────
           if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-            Text(profile.bio!, style: AppTheme.bodyLarge),
+            Text(
+              profile.bio!,
+              key: const Key('profile_info_bio_text'),
+              style: AppTheme.bodyLarge,
+            ),
             const SizedBox(height: 16),
           ],
 
           // ── Stats ─────────────────────────────────────────────────
           Row(
             children: [
-              _statItem('${profile.followersCount}', 'Followers'),
+              _statItem(
+                '${profile.followersCount}',
+                'Followers',
+                key: const Key('profile_info_followers_stat'),
+              ),
               const SizedBox(width: 24),
-              _statItem('${profile.followingCount}', 'Following'),
+              _statItem(
+                '${profile.followingCount}',
+                'Following',
+                key: const Key('profile_info_following_stat'),
+              ),
               const SizedBox(width: 24),
-              _statItem('${profile.tracksCount}', 'Tracks'),
+              _statItem(
+                '${profile.tracksCount}',
+                'Tracks',
+                key: const Key('profile_info_tracks_stat'),
+              ),
             ],
           ),
 
@@ -82,8 +103,9 @@ class InfoBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _statItem(String count, String label) {
+  Widget _statItem(String count, String label, {Key? key}) {
     return Column(
+      key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(

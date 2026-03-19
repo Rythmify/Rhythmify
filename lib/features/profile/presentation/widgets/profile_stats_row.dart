@@ -26,6 +26,7 @@ class ProfileStatsRow extends StatelessWidget {
       children: [
         Text(
           '${_formatCount(followersCount)} Followers',
+          key: const Key('profile_stats_followers_text'),
           style: AppTheme.bodyMedium,
         ),
         Padding(
@@ -37,6 +38,7 @@ class ProfileStatsRow extends StatelessWidget {
         ),
         Text(
           '${_formatCount(followingCount)} Following',
+          key: const Key('profile_stats_following_text'),
           style: AppTheme.bodyMedium,
         ),
       ],

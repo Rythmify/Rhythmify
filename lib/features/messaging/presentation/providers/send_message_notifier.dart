@@ -19,8 +19,8 @@ class SendMessageNotifier extends StateNotifier<bool> {
     state=true;
     final uCase=SendMessageUsecase(repo: ref.read(repositoryprovider));
     await(uCase(conversationId,body));
-    ref.refresh(conversationProvider);
-    ref.refresh(messageProvider(conversationId));
+    ref.invalidate(conversationProvider);
+    ref.invalidate(messageProvider(conversationId));
     state=false;
   }
 

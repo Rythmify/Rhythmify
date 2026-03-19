@@ -8,7 +8,7 @@ import 'package:rythmify/features/feed/presentation/widgets/hot_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/mixed_for_you.dart';
 import 'package:rythmify/features/feed/presentation/widgets/discover_with_stations.dart';
 import 'package:rythmify/features/feed/presentation/widgets/more_of_what_you_like.dart';
-
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
 
@@ -43,6 +43,7 @@ class HomeScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
+            key: const Key('home_upload_track_icon_button'),
             icon: const Icon(Icons.arrow_circle_up),
 
             onPressed: () async{
@@ -84,12 +85,14 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            key: const Key('home_inbox_icon_button'),
             icon: const Icon(Icons.mail_outline),
             onPressed: () {
               context.push('/home/inbox');
             },
           ),
           IconButton(
+            key: const Key('home_notifications_icon_button'),
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
               context.push('/home/notifications');

@@ -9,11 +9,11 @@ class SentMessageRequestModel {
     this.trackId
   });
 
-  Map<String,dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     return {
-      'body':body,
-      'embedType':trackId,
-      'embedId':likedId
-    }..remove((key,value)=>value==null);
+      'body': body,
+      'embedType': trackId,
+      'embedId': likedId,
+    }..removeWhere((key, value) => value == null);
   }
 }

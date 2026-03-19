@@ -69,6 +69,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 // Title
                 Text(
                   'Sign in or create an account',
+                  key: const Key('auth_title_text'),
                   style: AppTheme.headlineLarge.copyWith(
                     fontWeight: FontWeight.w500,
                     fontSize: 28,
@@ -79,6 +80,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
                 // Terms text
                 RichText(
+                  key: const Key('auth_terms_and_privacy_text'),
                   text: TextSpan(
                     style: AppTheme.bodyMedium,
                     children: [
@@ -105,6 +107,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
                 // Social buttons
                 SocialLoginButton(
+                  key: const Key('auth_social_facebook_button'),
                   provider: SocialProvider.facebook,
                   onTap: () => ref
                       .read(authProvider.notifier)
@@ -112,6 +115,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
+                  key: const Key('auth_social_google_button'),
                   provider: SocialProvider.google,
                   onTap: () => ref
                       .read(authProvider.notifier)
@@ -119,6 +123,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
+                  key: const Key('auth_social_apple_button'),
                   provider: SocialProvider.apple,
                   onTap: () => ref
                       .read(authProvider.notifier)
@@ -128,12 +133,17 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 const SizedBox(height: 28),
 
                 // Divider
-                Text('Or with email', style: AppTheme.labelLarge),
+                Text(
+                  'Or with email', 
+                  key: const Key('auth_email_divider_text'),
+                  style: AppTheme.labelLarge
+                ),
 
                 const SizedBox(height: 12),
 
                 // Email field
                 AuthTextField(
+                  key: const Key('auth_email_text_field_container'),
                   hint: 'Your email address or profile URL',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -156,6 +166,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
+                    key: const Key('auth_continue_button'),
                     onPressed:
                         authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
@@ -177,6 +188,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
                 // Need help
                 GestureDetector(
+                  key: const Key('auth_need_help_button'),
                   onTap: () {},
                   child: Text(
                     'Need help?',

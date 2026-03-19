@@ -33,6 +33,7 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
         children: [
           Text(
             '${Formatters.formatDuration(Duration(milliseconds: currentPos.toInt()))}  |  ${Formatters.formatDuration(duration)}',
+            key: const Key('player_progress_bar_duration_text'),
             style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           ),
           SliderTheme(
@@ -44,6 +45,7 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
               inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
             ),
             child: Slider(
+              key: const Key('player_progress_bar_slider'),
               min: 0,
               max: maxDuration,
               value: currentPos,

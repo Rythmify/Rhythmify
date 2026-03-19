@@ -39,6 +39,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
+                        key: const Key('behind_the_track_back_icon_button'),
                         icon: const Icon(Icons.arrow_back, color: AppTheme.appBarItems),
                         onPressed: () => Navigator.pop(context),
                         style: IconButton.styleFrom(
@@ -48,6 +49,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                         ),
                       ),
                       IconButton(
+                        key: const Key('behind_the_track_cast_icon_button'),
                         icon: const Icon(Icons.cast, color: AppTheme.appBarItems),
                         onPressed: () {},
                         style: IconButton.styleFrom(
@@ -143,6 +145,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                       const Icon(Icons.more_vert, color: AppTheme.textSecondary),
                       const Spacer(),
                       GestureDetector(
+                        key: const Key('behind_the_track_play_pause_gesture_detector'),
                         onTap: () {
                           if (isThisTrack) {
                             ref.read(playerStateProvider.notifier).togglePlayPause();
@@ -183,6 +186,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                           style: AppTheme.bodyMedium.copyWith(color: Colors.white,),
                         ),
                         GestureDetector(
+                          key: const Key('behind_the_track_show_more_description_gesture_detector'),
                           onTap: () {
                             CustomBottomSheet.show(
                               context: context, 
@@ -216,9 +220,10 @@ class BehindTheTrackPage extends ConsumerWidget {
                       separatorBuilder: (context, index) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         return Container(
+                          key: Key('behind_the_track_tag_${track.tags[index]}'),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
@@ -251,6 +256,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                         ),
                       ),
                       OutlinedButton(
+                        key: const Key('behind_the_track_follow_outlined_button'),
                         onPressed: () {},
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppTheme.textSecondary),

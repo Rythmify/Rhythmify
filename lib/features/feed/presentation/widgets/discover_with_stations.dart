@@ -22,7 +22,10 @@ class DiscoverWithStationsSection extends ConsumerWidget {
 
         asyncStations.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text("Error: $e"),
+          error: (e, _) => Text(
+            "Error: $e",
+            key: const Key('discover_with_stations_error_text'),
+          ),
           data: (items) {
             final stations = items as List<dynamic>;
             return SizedBox(
@@ -35,6 +38,7 @@ class DiscoverWithStationsSection extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = stations[index] as Map<String, dynamic>;
                   return StationCard(
+                    key: Key('discover_with_stations_item_${item['id'] ?? index}'),
                     artists: item['artists'] ?? '',
                     imagePath: item['image'] ?? '',
                   );
