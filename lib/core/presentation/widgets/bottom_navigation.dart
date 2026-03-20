@@ -55,7 +55,7 @@ class BottomNavigation extends StatelessWidget {
     return Theme(
       data: Theme.of(context),
       child: BottomNavigationBar(
-
+      key: const Key('main_bottom_nav_bar'),
       backgroundColor: AppTheme.surface,          type: BottomNavigationBarType.fixed,
       currentIndex: navigationShell.currentIndex,   selectedItemColor: Colors.white,
       showSelectedLabels: true,                     unselectedItemColor: Colors.grey,
