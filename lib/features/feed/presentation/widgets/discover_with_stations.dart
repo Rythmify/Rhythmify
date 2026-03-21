@@ -11,10 +11,13 @@ class DiscoverWithStationsSection extends ConsumerWidget {
     final asyncStations = ref.watch(discoverStationsProvider);
 
     return Column(
+      key: const Key(
+        'discover_stations_section',
+      ), //key for discover with stations
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text("Discover with Stations", style: AppTheme.titleLarge),
         ),
 
@@ -27,20 +30,18 @@ class DiscoverWithStationsSection extends ConsumerWidget {
             key: const Key('discover_with_stations_error_text'),
           ),
           data: (items) {
-            final stations = items as List<dynamic>;
             return SizedBox(
-              height: 150,
+              height: 160,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: stations.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 15),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  final item = stations[index] as Map<String, dynamic>;
                   return StationCard(
-                    key: Key('discover_with_stations_item_${item['id'] ?? index}'),
-                    artists: item['artists'] ?? '',
-                    imagePath: item['image'] ?? '',
+                    key: Key('discover_with_stations_item_${items[index]}'),
+                    artists: items[index]['artists'],
+                    imagePath: items[index]['image'],
                   );
                 },
               ),
@@ -58,48 +59,86 @@ class StationCard extends StatelessWidget {
 
   const StationCard({
     super.key,
+
     required this.artists,
     required this.imagePath,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// Station Circle
-        Container(
-          width: 110,
-          height: 110,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF6C7C71),
-              width: 2,
-            ),
-            image: imagePath.isNotEmpty 
-              ? (imagePath.startsWith('http') 
-                  ? DecorationImage(image: NetworkImage(imagePath), fit: BoxFit.cover)
-                  : DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover))
-              : null,
+    return SizedBox(
+      width: 140,
+      child: Column(
+        key: Key(
+          'station_card_container_$artists',
+        ), //key for station card container
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Image + station badge
+          Stack(
+            key: Key('station_image_$artists'), //key for image
+            children: [
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(1),
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 0.5, // very thin border
+                  ),
+                  image: DecorationImage(
+                    image: imagePath.isNotEmpty && imagePath.startsWith('http')
+                        ? NetworkImage(imagePath)
+                        : const AssetImage('assets/images/track_1.jpg')
+                              as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+
+              /// Station badge
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "STATIONS",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+
+                    Text(
+                      artists,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          child: imagePath.isEmpty ? const Center(child: Icon(Icons.radio)) : null,
-        ),
 
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-        /// Artist names
-        SizedBox(
-          width: 110,
-          child: Text(
-            artists,
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
-            maxLines: 2,
-            textAlign: TextAlign.center,
+          /// Artist names under the card
+          Text(
+            key: Key('station_artists_$artists'), //key for artists text
+            'Based on$artists',
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

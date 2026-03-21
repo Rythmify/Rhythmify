@@ -11,9 +11,10 @@ class MixedPlaylistsSection extends ConsumerWidget {
     final asyncMixedPlaylists = ref.watch(mixedPlaylistsProvider);
 
     return Column(
+      key: const Key('mixed_for_you_section'), //KEY FOR mixed for you section
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text("Mixed For You", style: AppTheme.titleLarge),
         ),
@@ -22,16 +23,15 @@ class MixedPlaylistsSection extends ConsumerWidget {
 
         asyncMixedPlaylists.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text(
-            "Error: $e",
-            key: const Key('mixed_for_you_error_text'),
-          ),
+          error: (e, _) =>
+              Text("Error: $e", key: const Key('mixed_for_you_error_text')),
           data: (items) {
             final list = items as List;
             if (list.isEmpty) return const SizedBox.shrink();
             return SizedBox(
               height: 160,
               child: ListView.separated(
+                key: const Key('mixed_list_view'),
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: list.length,
@@ -69,6 +69,7 @@ class MixedPlaylistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: Key('mixed_card_container_$mixLabel'), //key for card root
       width: 140,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,6 +78,7 @@ class MixedPlaylistCard extends StatelessWidget {
           Stack(
             children: [
               Container(
+                key: Key('mixed_image_$mixLabel'), //key for image
                 height: 130,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1),
@@ -84,14 +86,16 @@ class MixedPlaylistCard extends StatelessWidget {
                     color: Colors.grey,
                     width: 0.5, // very thin border
                   ),
-                  image: imagePath.isNotEmpty 
-                    ? DecorationImage(
-                        image: AssetImage(imagePath),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                  image: imagePath.isNotEmpty
+                      ? DecorationImage(
+                          image: AssetImage(imagePath),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: imagePath.isEmpty ? const Center(child: Icon(Icons.music_note)) : null,
+                child: imagePath.isEmpty
+                    ? const Center(child: Icon(Icons.music_note))
+                    : null,
               ),
 
               /// Mix label badge
@@ -105,6 +109,7 @@ class MixedPlaylistCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
+                    key: Key('mixed_label_$mixLabel'), //key for  mixlabel
                     mixLabel,
                     style: const TextStyle(
                       color: Colors.white,
@@ -121,6 +126,7 @@ class MixedPlaylistCard extends StatelessWidget {
 
           /// Artist names under the card
           Text(
+            key: Key('mixed_artists_$mixLabel'), //key for artists text
             artists,
             style: const TextStyle(color: Colors.white70, fontSize: 12),
             maxLines: 2,
