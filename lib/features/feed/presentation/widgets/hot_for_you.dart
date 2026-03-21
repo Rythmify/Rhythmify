@@ -291,13 +291,33 @@ class FrostedGlassBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          color: Colors.black.withAlpha(150), // subtle tint
-          child: child,
+
+    return RepaintBoundary(
+      key: const Key('frosted_glass_repaint_boundary'),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: const SizedBox.shrink(),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(150), // subtle tint
+
+                border: Border.all(
+                  color: Colors.white.withAlpha(50), 
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: child,
+            ),
+          ],
         ),
       ),
     );
