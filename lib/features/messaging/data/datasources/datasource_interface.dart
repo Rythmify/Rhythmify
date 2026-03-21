@@ -1,5 +1,6 @@
 import 'package:rythmify/features/messaging/data/models/conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
+import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
 abstract class DatasourceInterface {
@@ -11,4 +12,6 @@ abstract class DatasourceInterface {
   Future<void> blockUser({required String userId});
   Future<void> unBlockUser({required String userId});
   Future<void> markMessagesAsRead({required String conversationId,required String messageId});
+  Future<List<PotentialConversationModel>> getFollowings(String myId);
+  Future<List<PotentialConversationModel>> getSearchedUsers(String query);
 }

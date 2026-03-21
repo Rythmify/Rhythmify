@@ -1,6 +1,7 @@
 import 'package:rythmify/features/messaging/data/datasources/datasource_interface.dart';
 import 'package:rythmify/features/messaging/data/models/conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
+import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
 class MockDatasourceImplement implements DatasourceInterface {
@@ -72,6 +73,30 @@ class MockDatasourceImplement implements DatasourceInterface {
     ],
   };
 
+  final List<PotentialConversationModel> _followings = [
+    PotentialConversationModel(
+      participantId: 'u4',
+      participantName: 'Omar',
+      followersCount: 320,
+      avatar: null,
+      location: null,
+    ),
+    PotentialConversationModel(
+      participantId: 'u5',
+      participantName: 'Layla',
+      followersCount: 870,
+      avatar: null,
+      location: null,
+    ),
+    PotentialConversationModel(
+      participantId: 'u6',
+      participantName: 'Karim',
+      followersCount: 150,
+      avatar: null,
+      location: null,
+    ),
+  ];
+
   @override
   Future<List<ConversationModel>> getConversations() async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -113,7 +138,7 @@ class MockDatasourceImplement implements DatasourceInterface {
         participantId: old.participantId,
         participantName: old.participantName,
         participantAvatar: old.participantAvatar,
-        lastMessagePreview: newMessage.body,
+        lastMessagePreview: newMessage.body??'',
         lastMessageDate: newMessage.createdAt,
         unReadCount: old.unReadCount,
       );
@@ -195,5 +220,20 @@ class MockDatasourceImplement implements DatasourceInterface {
         unReadCount: 0,
       );
     }
+  }
+
+  @override
+  Future<List<PotentialConversationModel>> getFollowings(String myId) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return List.from(_followings);
+  }
+
+  @override
+  Future<List<PotentialConversationModel>> getSearchedUsers(String query) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (query.trim().isEmpty) return [];
+    return _followings
+        .where((u) => u.participantName.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 }

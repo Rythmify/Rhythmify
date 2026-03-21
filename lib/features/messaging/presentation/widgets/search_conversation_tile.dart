@@ -7,19 +7,22 @@ class SearchConversationTile extends StatelessWidget{
   final int participantfollowers;
   final String? participantAvatar;
   final String? participantCountry;
+  final VoidCallback? onTap;
 
   const SearchConversationTile({
     super.key,
     this.participantAvatar,
     required this.participantName,
     required this.participantfollowers,
-    this.participantCountry
+    this.participantCountry,
+    this.onTap
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       key: Key('messaging_search_conversation_item_${participantName}_list_tile'),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
       tileColor: Colors.transparent,
       leading: Avatar(
         img: participantAvatar,

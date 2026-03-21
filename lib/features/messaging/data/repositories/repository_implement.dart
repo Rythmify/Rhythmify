@@ -2,6 +2,7 @@ import 'package:rythmify/features/messaging/data/datasources/datasource_interfac
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
+import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
 import 'package:rythmify/features/messaging/domain/repositories/messaging_repository.dart';
 
 class RepositoryImplement implements MessagingRepository{
@@ -50,5 +51,15 @@ class RepositoryImplement implements MessagingRepository{
   @override
   Future<int> getUnReadCount(){
     return dataSource.getUnreadCount();
+  }
+
+  @override
+  Future<List<PotentialConversation>> getFollowings(String myId){
+    return dataSource.getFollowings(myId);
+  }
+
+  @override
+  Future<List<PotentialConversation>> getSearchedUsers(String query){
+    return dataSource.getSearchedUsers(query);
   }
 }

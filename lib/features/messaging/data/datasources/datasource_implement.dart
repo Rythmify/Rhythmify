@@ -3,6 +3,7 @@ import 'package:rythmify/features/messaging/data/datasources/api_endpoints.dart'
 import 'package:rythmify/features/messaging/data/datasources/datasource_interface.dart';
 import 'package:rythmify/features/messaging/data/models/conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
+import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
 class DatasourceImplement implements DatasourceInterface{
@@ -21,7 +22,7 @@ class DatasourceImplement implements DatasourceInterface{
     }
 
   final body = response.data as Map<String, dynamic>;
-  final List data = body['data'];
+  final List data = body['data']['items'];
 
   return data
       .map((e) => ConversationModel.fromJson(e as Map<String, dynamic>))
@@ -31,7 +32,11 @@ class DatasourceImplement implements DatasourceInterface{
 
   @override
   Future<List<MessageModel>> getMessages({required String conversationId}) async {
-    final response = await dio.get(ApiEndPoints.getMessages(conversationId));
+    final response = await dio.get(ApiEndPoints.getConversation(conversationId));
+
+    print('type: ${response.data.runtimeType}');
+    print('data: ${response.data}');
+
     if (response.data is! Map<String, dynamic>) {
       throw Exception(
         'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
@@ -60,18 +65,18 @@ class DatasourceImplement implements DatasourceInterface{
     final response = await dio.post(
       ApiEndPoints.newConversation,
       data: {
-        'participant_id': participantId,
+        'recipient_id': participantId,
       },
     );
     return ConversationModel.fromJson(
-      response.data['data'] as Map<String,dynamic>
+      response.data['data']['conversation'] as Map<String,dynamic>
     );
   }
 
   @override
   Future<int> getUnreadCount() async{
     final response=await dio.get(ApiEndPoints.getUnreadCount);
-    return int.tryParse(response.data['data'].toString()) ?? 0;
+    return response.data['data']['unread_count'] as int;
   }
 
   @override
@@ -91,5 +96,25 @@ class DatasourceImplement implements DatasourceInterface{
       'is_read':true,
     }
     );
+  }
+
+  @override
+  Future<List<PotentialConversationModel>> getFollowings(String myId) async{
+    final response=await dio.get(ApiEndPoints.getFollowings(myId));
+    final body=response.data;
+    final List data=body['data']['items'];
+    return data
+      .map((e)=>PotentialConversationModel.fromJson(e as Map<String,dynamic>))
+      .toList();
+  }
+
+  @override
+  Future<List<PotentialConversationModel>> getSearchedUsers(String query)async{
+    final response=await dio.get(ApiEndPoints.getSearchedUsers(query));
+    final body=response.data;
+    final List data=body['data']['users'];
+    return data
+      .map((e)=>PotentialConversationModel.fromJson(e as Map<String,dynamic>))
+      .toList();
   }
 }

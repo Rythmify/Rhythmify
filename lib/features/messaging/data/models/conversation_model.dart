@@ -6,8 +6,8 @@ class ConversationModel extends Conversation {
     required super.participantId,
     required super.participantName,
     super.participantAvatar,
-    super.lastMessagePreview,
-    super.lastMessageDate,
+    required super.lastMessagePreview,
+    required super.lastMessageDate,
     required super.unReadCount
   });
 
@@ -18,9 +18,7 @@ class ConversationModel extends Conversation {
     participantName: json['participant']['display_name'],
     participantAvatar: json['participant']?['profile_picture'],
     lastMessagePreview: json['last_message']?['body'],
-    lastMessageDate: json['last_message']!=null?
-      DateTime.parse(json['last_message']['created_at'])
-      :null,
+    lastMessageDate: DateTime.parse(json['last_message']['created_at']),
     unReadCount: int.tryParse(json['unread_count'].toString()) ?? 0);
   }
 

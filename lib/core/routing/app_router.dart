@@ -30,6 +30,8 @@ import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
+// messaging imports
+import '../../features/messaging/presentation/pages/search_screen.dart' as messaging;
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
@@ -131,6 +133,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                           return ChatScreen(conv: conv);
                         },
                       ),
+                      GoRoute(
+                        path: 'search',
+                        builder:(context, state) => const messaging.SearchScreen(),
+                      )
                     ],
                   ),
                   GoRoute(
