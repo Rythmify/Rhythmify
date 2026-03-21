@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_followings_provider.dart';
@@ -58,9 +59,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final query=ref.watch(queryProvider);
     final followings=ref.watch(getFollowingsProvider);
     final searchedUsers=ref.watch(getSearchedUsersProvider(query));
+    final followingList=followings.whenOrNull(data:(d) =>d)??[];
 
     final List<PotentialConversation> searched=_searchBody(
-      followings: followings.whenOrNull(data:(d) =>d)??[],
+      followings: followingList,
       searchedUsers: searchedUsers.whenOrNull(data:(d) =>d)??[],
       query: query
     );
@@ -85,7 +87,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Expanded(
             child: query.isEmpty?
               followings.when(
-              data: (s)=>SearchBody(users: s),
+              data: (_)=>followingList.isEmpty
+                ?Text('Start typing to sind artists and fans on SoundCloud',
+                key: const Key('messaging_empty_Search_users_text'),
+                textAlign:TextAlign.center,
+                style: MessagingThemes.inboxEmptyMsg, //same theme as the emptyInbox msg
+                )
+                :SearchBody(users: followingList),
               error: (e,_)=>Center(child: Text(e.toString())),
               loading:()=> const Center(child: CircularProgressIndicator())
             ):

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/avatar.dart';
+import 'package:rythmify/features/messaging/presentation/widgets/search_message_widget.dart';
 
 class SearchConversationTile extends StatelessWidget{
   final String participantName;
@@ -22,6 +23,7 @@ class SearchConversationTile extends StatelessWidget{
   Widget build(BuildContext context) {
     return ListTile(
       key: Key('messaging_search_conversation_item_${participantName}_list_tile'),
+      onTap:onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
       tileColor: Colors.transparent,
       leading: Avatar(
@@ -34,6 +36,7 @@ class SearchConversationTile extends StatelessWidget{
         style: MessagingThemes.searchPName,
         ),
       subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if(participantCountry!=null) Text(
             participantCountry!,
@@ -53,7 +56,10 @@ class SearchConversationTile extends StatelessWidget{
           )
         ],
       ),
-      //
+      trailing: SearchMessageWidget(
+        key: Key('messaging_search_conversation_item_${participantName}_Message_button'),
+        onPressed: onTap,
+      ),
     );
   }
 }

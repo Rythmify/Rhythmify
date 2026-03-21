@@ -11,11 +11,15 @@ import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.
 import 'package:rythmify/features/messaging/presentation/widgets/message_input_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  final Conversation conv;
+  final Conversation? conv;
+  final String? newParticipantName;
+  final String? newParticipantId;
 
   const ChatScreen({
     super.key,
-    required this.conv,
+    this.conv,
+    this.newParticipantName,
+    this.newParticipantId
   });
 
   @override
@@ -43,13 +47,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     
     final myId=ref.watch(currentUserIdProvider);
 
-    final msgProvider=ref.watch(
-      messageProvider(widget.conv.conversationId),
-    );
+    final msgProvider= widget.conv!=null?
+    ref.watch(
+      messageProvider(widget.conv!.conversationId),
+    )
+    :null;
 
-    final unreadMsgProvider=ref.watch(
-      unreadProvider(widget.conv.conversationId),
-    );
+    final unreadMsgProvider=widget.conv!=null?
+    ref.watch(
+      unreadProvider(widget.conv!.conversationId),
+    )
+    :null;
 
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
@@ -58,16 +66,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
         title: Text(
-          widget.conv.participantName,
+          widget.conv?.participantName??widget.newParticipantName??'',
           key: const Key('chat_participant_name_text'),
         ),
         backgroundColor: Colors.black,
       ),
-      body:msgProvider.when(
+      body:widget.conv==null
+      ?_blanckChatPage()
+      :msgProvider!.when(
         data:(msg){
-          unreadMsgProvider.whenData((unreads){
+          unreadMsgProvider!.whenData((unreads){
             Future.microtask(() async{
-            final unreads=await ref.read(unreadProvider(widget.conv.conversationId).future);
+            final unreads=await ref.read(unreadProvider(widget.conv!.conversationId).future);
             for(final unread in unreads){
               await ref.read(markAsRead.notifier).markRead(
                 msgId:unread.messageId,
@@ -88,14 +98,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               return MessageBubble(myId: myId,
               senderId: message.senderId,
               sentAt: message.createdAt,
-              userAvatar: widget.conv.participantAvatar,
+              userAvatar: widget.conv!.participantAvatar,
               body: message.body);
             }
           
           )
          
         ),
-        Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        //Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+         Padding(padding: EdgeInsets.only(left:16,right:16,top:8,bottom: MediaQuery.of(context).padding.bottom+80),
         child: Row(children: [
           IconButton(onPressed: (){},
           icon:const Icon(Icons.add,color:Colors.white)
@@ -106,7 +117,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onSubmitted: (text)async {
           if(controller.text.trim().isEmpty) return;
           await ref.read(sendMessageProvider.notifier).sendMessage(
-            conversationId:widget.conv.conversationId,
+            conversationId:widget.conv!.conversationId,
             body:text.trim()
           );
           
@@ -127,4 +138,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       )
     );
   }
+  Widget _blanckChatPage(){
+  return Column(
+    children: [
+      Expanded(child: const SizedBox()),
+      ///Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      Padding(padding: EdgeInsets.only(left:16,right:16,top:8,bottom: MediaQuery.of(context).padding.bottom+80),
+        child: Row(children: [
+          IconButton(onPressed: (){},
+          icon:const Icon(Icons.add,color:Colors.white)
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: MessageInputBubble(
+            controller: controller,
+            onSubmitted: (text)async {
+          if(controller.text.trim().isEmpty) return;
+          await ref.read(sendMessageProvider.notifier).sendMessage(
+            newParticipantId: widget.newParticipantId,
+            body:text.trim()
+          );
+          
+          controller.clear();
+      },
+      ),)
+              ],),
+              )
+          ],
+        );
+      }
 }
+

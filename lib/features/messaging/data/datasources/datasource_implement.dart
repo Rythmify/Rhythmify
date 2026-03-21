@@ -61,11 +61,17 @@ class DatasourceImplement implements DatasourceInterface{
   }
 
   @override
-  Future<ConversationModel> newConversation({required String participantId}) async{
+  Future<ConversationModel> newConversation({required String participantId,
+    String? body,
+    String? trackId,
+    String? playlistId}) async{
     final response = await dio.post(
       ApiEndPoints.newConversation,
       data: {
         'recipient_id': participantId,
+        if(body!=null)'body':body,
+        if(trackId!=null) 'track_id':trackId,
+        if(playlistId!=null) 'playlist_id':playlistId,
       },
     );
     return ConversationModel.fromJson(

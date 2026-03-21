@@ -6,7 +6,7 @@ import 'package:rythmify/features/messaging/domain/entities/potential_conversati
 abstract class MessagingRepository {
   Future<List<Conversation>> getConversations();
   Future<List<Message>> getMessages(String conversationId);
-  Future<Conversation> startConversation(String participantId);
+  Future<Conversation> startConversation(String participantId,String? body,String? trackId,String? playlistId);
   Future<Message> sendMessage(String conversationId,String body);
   Future<void> blockUser(String participantId);
   Future<void> unBlockUser(String participantId);

@@ -12,7 +12,7 @@ class PotentialConversationModel extends PotentialConversation{
   factory PotentialConversationModel.fromJson(Map<String,dynamic> json)
   {
     return PotentialConversationModel(
-      participantId: json['id'],
+      participantId: json['id']?? json['user_id'],
       participantName: json['display_name'],
       followersCount: json['follower_count'],
       avatar: json['avatar'],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 
 import '../presentation/scaffold/main_app_scaffold.dart';
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -124,14 +125,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                     routes: [
                       GoRoute(
                         path: 'chat/:chatId',
-                        builder: (context, state) {
-                          final chatId = state.pathParameters['chatId']!;
-                          final conv = mockConversations.firstWhere(
-                            (c) => c.conversationId == chatId,
-                          );
+///mock datasources     // builder: (context, state) {
+                        //   final chatId = state.pathParameters['chatId']!;
+                        //   final conv = mockConversations.firstWhere(
+                        //     (c) => c.conversationId == chatId,
+                        //   );
 
+                        //   return ChatScreen(conv: conv);
+                        // },
+                        builder:(context,state){
+                          final conv= state.extra as Conversation;
                           return ChatScreen(conv: conv);
-                        },
+                        }
                       ),
                       GoRoute(
                         path: 'search',

@@ -23,8 +23,13 @@ class RepositoryImplement implements MessagingRepository{
   }
 
   @override
-  Future<Conversation> startConversation(String participantId){
-    return dataSource.newConversation(participantId: participantId);
+  Future<Conversation> startConversation(String participantId,String? body,String? trackId,String? playlistId){
+    return dataSource.newConversation(
+      participantId: participantId,
+      body: body,
+      trackId: trackId,
+      playlistId: playlistId
+      );
   }
 
   @override

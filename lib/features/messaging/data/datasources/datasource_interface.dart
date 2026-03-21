@@ -7,7 +7,7 @@ abstract class DatasourceInterface {
   Future<List<ConversationModel>> getConversations();
   Future<List<MessageModel>> getMessages({ required String conversationId });
   Future<MessageModel> sendMessage({required String conversationId,required SentMessageRequestModel requestContent});
-  Future<ConversationModel> newConversation({required String participantId});
+  Future<ConversationModel> newConversation({required String participantId, String? body,String? trackId, String? playlistId});
   Future<int> getUnreadCount();
   Future<void> blockUser({required String userId});
   Future<void> unBlockUser({required String userId});
