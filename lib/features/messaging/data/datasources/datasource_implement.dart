@@ -87,7 +87,7 @@ class DatasourceImplement implements DatasourceInterface{
 
   @override
   Future<void> blockUser({required String userId})async{
-    await dio.post(ApiEndPoints.blockUser(userId));
+    await dio.delete(ApiEndPoints.blockUser(userId));
   }
 
   @override

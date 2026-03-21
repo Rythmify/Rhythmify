@@ -22,37 +22,37 @@ class MessageBubble extends StatelessWidget{
     });
 
     bool get isMe=>(senderId==myId);
-    String fixTime(DateTime date)
+String fixTime(DateTime date)
   {
     final duration=DateTime.now().difference(date);
 
-    if(duration.inDays>365)
+    if(duration.inDays>=365)
     {
-      return '${duration.inDays~/365}years ago';
+      return '${duration.inDays~/365} years ago';
     }
-    else if(duration.inDays>30)
+    else if(duration.inDays>=30)
     {
-      return '${duration.inDays~/30}months ago';
+      return '${duration.inDays~/30} months ago';
     }
-    else if(duration.inDays>7)
+    else if(duration.inDays>=7)
     {
-      return '${duration.inDays~/7}weeks ago';
+      return '${duration.inDays~/7} weaks ago';
     }
-    else if(duration.inHours>24)
+    else if(duration.inDays>=1)
     {
-      return '${duration.inHours~/24}days ago';
+      return '${duration.inDays~/1} days ago';
     }
-    else if(duration.inMinutes>60)
+    else if(duration.inHours>=1)
     {
-      return '${duration.inMinutes~/60}hours ago';
+      return '${duration.inHours~/1} hours ago';
     }
-    else if(duration.inSeconds>60)
+    else if(duration.inMinutes>=1)
     {
-      return '${duration.inSeconds~/60}minuites ago';
+      return '${duration.inMinutes~/1} mminutes ago';
     }
     else 
     {
-      return '${duration.inSeconds}seconds ago';
+      return '${duration.inSeconds} seconds ago';
     }
   }
 

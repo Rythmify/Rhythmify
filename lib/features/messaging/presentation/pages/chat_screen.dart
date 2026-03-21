@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
@@ -153,12 +154,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             controller: controller,
             onSubmitted: (text)async {
           if(controller.text.trim().isEmpty) return;
-          await ref.read(sendMessageProvider.notifier).sendMessage(
+          final newConv = await ref.read(sendMessageProvider.notifier).sendMessage(
             newParticipantId: widget.newParticipantId,
             body:text.trim()
           );
           
           controller.clear();
+          if(newConv!=null && context.mounted)
+          {
+            context.go('/home/inbox/chat/${newConv.conversationId}',extra:newConv);
+          }
       },
       ),)
               ],),

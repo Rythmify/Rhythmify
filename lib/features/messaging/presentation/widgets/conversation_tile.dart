@@ -24,29 +24,29 @@ class ConversationTile extends StatelessWidget{
   {
     final duration=DateTime.now().difference(date);
 
-    if(duration.inDays>365)
+    if(duration.inDays>=365)
     {
       return '${duration.inDays~/365}y';
     }
-    else if(duration.inDays>30)
+    else if(duration.inDays>=30)
     {
       return '${duration.inDays~/30}mo';
     }
-    else if(duration.inDays>7)
+    else if(duration.inDays>=7)
     {
       return '${duration.inDays~/7}w';
     }
-    else if(duration.inHours>24)
+    else if(duration.inDays>=1)
     {
-      return '${duration.inHours~/24}d';
+      return '${duration.inDays~/1}d';
     }
-    else if(duration.inMinutes>60)
+    else if(duration.inHours>=1)
     {
-      return '${duration.inMinutes~/60}h';
+      return '${duration.inHours~/1}h';
     }
-    else if(duration.inSeconds>60)
+    else if(duration.inMinutes>=1)
     {
-      return '${duration.inSeconds~/60}m';
+      return '${duration.inMinutes~/1}m';
     }
     else 
     {
