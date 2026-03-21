@@ -20,6 +20,8 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
+const bool useProfileMockData = false;
+
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });
@@ -41,9 +43,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
   ProfileState build() {
     final authState = ref.watch(authProvider);
 
-    // ── Comment & Uncomment for datasource switching ─────────────
-    final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
-    //final datasource = ProfileMockDatasource();
+    // ── Datasource selected by useProfileMockData flag ────
+    final datasource = useProfileMockData
+        ? ProfileMockDatasource()
+        : ProfileRemoteDatasourceImpl(client: apiClient);
 
     final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
@@ -58,7 +61,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _getLikedTracks = GetLikedTracksUseCase(repository);
 
     if (authState is AuthAuthenticated) {
-      // Wait for token to be fully saved before loading profile
       Future.delayed(const Duration(milliseconds: 500), () {
         loadProfile(userId: 'me');
       });
@@ -160,10 +162,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadAvatar(filePath: filePath);
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(profile: profile, isSaving: false),
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (
+      profile,
+    ) {
+      state = current.copyWith(profile: profile, isSaving: false);
+      // ── Reload full profile to get new avatar URL ────
+      loadProfile(userId: 'me');
+    });
   }
 
   // ── Delete avatar ─────────────────────────────────────────
@@ -174,16 +179,17 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteAvatar();
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (_) => state = current.copyWith(
+    result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
+      state = current.copyWith(
         profile: current.profile.copyWithFollowing(
           isFollowing: current.profile.isFollowing,
           followersCount: current.profile.followersCount,
         ),
         isSaving: false,
-      ),
-    );
+      );
+      // ── Reload full profile after delete ─────────────
+      loadProfile(userId: 'me');
+    });
   }
 
   // ── Upload cover photo ────────────────────────────────────
@@ -194,10 +200,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadCoverPhoto(filePath: filePath);
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(profile: profile, isSaving: false),
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (
+      profile,
+    ) {
+      state = current.copyWith(profile: profile, isSaving: false);
+      // ── Reload full profile to get new cover URL ─────
+      loadProfile(userId: 'me');
+    });
   }
 
   // ── Delete cover photo ────────────────────────────────────
@@ -208,10 +217,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteCoverPhoto();
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (_) => state = current.copyWith(isSaving: false),
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
+      state = current.copyWith(isSaving: false);
+      // ── Reload full profile after delete ─────────────
+      loadProfile(userId: 'me');
+    });
   }
 
   // ── Follow user ───────────────────────────────────────────
