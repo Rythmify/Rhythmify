@@ -17,12 +17,10 @@ import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 
 // ── Uncomment to Switch to Real Data ──────────────
-//import '../../../../core/network/api_client.dart';
-//import '../../data/datasources/profile_remote_datasource_impl.dart';
+import '../../../../core/network/api_client.dart';
+import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-
-final profileProvider =
-    NotifierProvider<ProfileNotifier, ProfileState>(() {
+final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });
 
@@ -40,47 +38,43 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _currentPage = 1;
 
   @override
-ProfileState build() {
-  final authState = ref.watch(authProvider);
+  ProfileState build() {
+    final authState = ref.watch(authProvider);
 
-  // ── Comment & Uncomment for datasource switching ─────────────
-  //final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
-  final datasource = ProfileMockDatasource();
+    // ── Comment & Uncomment for datasource switching ─────────────
+    final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
+    //final datasource = ProfileMockDatasource();
 
+    final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
-  final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
+    _getProfile = GetProfileUseCase(repository);
+    _updateProfile = UpdateProfileUseCase(repository);
+    _uploadAvatar = UploadAvatarUseCase(repository);
+    _deleteAvatar = DeleteAvatarUseCase(repository);
+    _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
+    _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
+    _followUser = FollowUserUseCase(repository);
+    _unfollowUser = UnfollowUserUseCase(repository);
+    _getLikedTracks = GetLikedTracksUseCase(repository);
 
-  _getProfile = GetProfileUseCase(repository);
-  _updateProfile = UpdateProfileUseCase(repository);
-  _uploadAvatar = UploadAvatarUseCase(repository);
-  _deleteAvatar = DeleteAvatarUseCase(repository);
-  _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
-  _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
-  _followUser = FollowUserUseCase(repository);
-  _unfollowUser = UnfollowUserUseCase(repository);
-  _getLikedTracks = GetLikedTracksUseCase(repository);
+    if (authState is AuthAuthenticated) {
+      // Wait for token to be fully saved before loading profile
+      Future.delayed(const Duration(milliseconds: 500), () {
+        loadProfile(userId: 'me');
+      });
+    }
 
-  if (authState is AuthAuthenticated) {
-    // Wait for token to be fully saved before loading profile
-    Future.delayed(const Duration(milliseconds: 500), () {
-      loadProfile(userId: 'me');
-    });
+    return const ProfileInitial();
   }
-
-  return const ProfileInitial();
-}
 
   // ── Load profile ──────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
-    result.fold(
-      (failure) => state = ProfileError(failure.message),
-      (profile) {
-        state = ProfileLoaded(profile: profile);
-        loadLikedTracks(userId: userId, refresh: true);
-      },
-    );
+    result.fold((failure) => state = ProfileError(failure.message), (profile) {
+      state = ProfileLoaded(profile: profile);
+      loadLikedTracks(userId: userId, refresh: true);
+    });
   }
 
   // ── Load liked tracks with pagination ─────────────────────
@@ -113,9 +107,7 @@ ProfileState build() {
     result.fold(
       (failure) {
         if (state is ProfileLoaded) {
-          state = (state as ProfileLoaded).copyWith(
-            isLoadingTracks: false,
-          );
+          state = (state as ProfileLoaded).copyWith(isLoadingTracks: false);
         }
       },
       (tracks) {
@@ -156,10 +148,7 @@ ProfileState build() {
 
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) => state = current.copyWith(profile: profile, isSaving: false),
     );
   }
 
@@ -173,10 +162,7 @@ ProfileState build() {
     final result = await _uploadAvatar(filePath: filePath);
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) => state = current.copyWith(profile: profile, isSaving: false),
     );
   }
 
@@ -210,10 +196,7 @@ ProfileState build() {
     final result = await _uploadCoverPhoto(filePath: filePath);
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) => state = current.copyWith(profile: profile, isSaving: false),
     );
   }
 
@@ -244,10 +227,7 @@ ProfileState build() {
     );
 
     final result = await _followUser(userId: userId);
-    result.fold(
-      (failure) => state = current,
-      (_) {},
-    );
+    result.fold((failure) => state = current, (_) {});
   }
 
   // ── Unfollow user ─────────────────────────────────────────
@@ -263,9 +243,6 @@ ProfileState build() {
     );
 
     final result = await _unfollowUser(userId: userId);
-    result.fold(
-      (failure) => state = current,
-      (_) {},
-    );
+    result.fold((failure) => state = current, (_) {});
   }
 }
