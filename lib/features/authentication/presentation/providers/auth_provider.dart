@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/datasources/auth_mock_datasource.dart';
+import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/models/user_model.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
@@ -7,14 +10,10 @@ import '../../domain/usecases/sign_in_with_apple_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
+import '../../../../core/network/api_client.dart';
 import 'auth_state.dart';
 
-// ── Uncomment to use Mock Data ─────────────
-import '../../data/datasources/auth_mock_datasource.dart';
-
-// ── Uncomment to use Real Data ─────────────
-//import '../../data/datasources/auth_remote_datasource_impl.dart';
-//import '../../../../core/network/api_client.dart';
+const bool useMockData = false;
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
@@ -31,10 +30,10 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    // ── Comment & Uncomment for datasource switching ─────────────
-    //final datasource = AuthRemoteDatasourceImpl(client: apiClient);
-    final datasource = AuthMockDatasource();
-
+    // ── Datasource selected by useMockData flag above ─────
+    final datasource = useMockData
+        ? AuthMockDatasource()
+        : AuthRemoteDatasourceImpl(client: apiClient);
 
     final repository = AuthRepositoryImpl(remoteDatasource: datasource);
 
@@ -46,7 +45,42 @@ class AuthNotifier extends Notifier<AuthState> {
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
 
-    return const AuthInitial();
+    // ── Check existing auth on app start ──────────────────
+    Future.microtask(() => checkAuthStatus());
+
+    return const AuthLoading();
+  }
+
+  Future<void> checkAuthStatus() async {
+    // Mock mode — skip token check, go straight to unauthenticated
+    if (useMockData) {
+      state = const AuthUnauthenticated();
+      return;
+    }
+
+    final token = await apiClient.getToken();
+    if (token == null) {
+      state = const AuthUnauthenticated();
+      return;
+    }
+
+    // Token exists — verify it by calling /users/me
+    try {
+      final response = await apiClient.dio.get('/users/me');
+      final data = response.data['data'];
+      final user = UserModel.fromJson({
+        'id': data['id'],
+        'email': data['email'],
+        'display_name': data['display_name'],
+        'is_email_verified': data['is_verified'] ?? true,
+        'token': token,
+      });
+      state = AuthAuthenticated(user);
+    } catch (e) {
+      // Token invalid or expired — clear and go to onboarding
+      await apiClient.clearToken();
+      state = const AuthUnauthenticated();
+    }
   }
 
   Future<void> signInWithEmailAndPassword({
@@ -103,18 +137,15 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> signOutUser() async {
     state = const AuthLoading();
     final result = await _signOut();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (_) => state = const AuthUnauthenticated(),
-    );
+    result.fold((failure) => state = AuthError(failure.message), (_) async {
+      await apiClient.clearToken();
+      state = const AuthUnauthenticated();
+    });
   }
 
   Future<void> sendEmailVerification() async {
     final result = await _sendVerificationEmail();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (_) {},
-    );
+    result.fold((failure) => state = AuthError(failure.message), (_) {});
   }
 
   Future<void> resetPassword({required String email}) async {
