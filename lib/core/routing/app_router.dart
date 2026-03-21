@@ -8,12 +8,15 @@ import '../../features/authentication/presentation/pages/onboarding_page.dart';
 import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+import '../../features/authentication/presentation/pages/login_password_page.dart';
+import '../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../features/authentication/presentation/providers/auth_state.dart';
+import '../../features/authentication/presentation/pages/splash_screen.dart';
 
 //  Profile imports
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
-import '../../features/authentication/presentation/pages/login_password_page.dart';
 
 //  Feed imports
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -61,77 +64,117 @@ final _searchTabKey = GlobalKey<NavigatorState>(debugLabel: 'searchTab');
 final _libraryTabKey = GlobalKey<NavigatorState>(debugLabel: 'libraryTab');
 final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 
+// ── Container ref for redirect logic ─────────────────────
+late ProviderContainer _container;
+
+void initRouter(ProviderContainer container) {
+  _container = container;
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
+  // ── Listen to auth state changes to refresh router ────
+  ref.listen(authProvider, (_, __) {});
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/onboarding',
+    initialLocation: '/splash',
+
+    // ── Redirect logic based on auth state ───────────────
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+
+      final isAuthRoute =
+          state.matchedLocation == '/onboarding' ||
+          state.matchedLocation == '/sign-in' ||
+          state.matchedLocation.startsWith('/login') ||
+          state.matchedLocation.startsWith('/create-account');
+
+      // Still loading — do not redirect
+      if (authState is AuthLoading) return null;
+
+      // Not logged in — send to onboarding
+      if (authState is AuthUnauthenticated || authState is AuthInitial) {
+        if (!isAuthRoute) return '/onboarding';
+        return null;
+      }
+
+      // Logged in — redirect away from auth pages
+      if (authState is AuthAuthenticated) {
+        if (isAuthRoute) return '/home';
+        return null;
+      }
+
+      return null;
+    },
 
     routes: [
-      //  Profile routes  
-    // ── Auth routes ──────────────────────────────────────────
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingPage(),
-    ),
-    GoRoute(
-      path: '/sign-in',
-      builder: (context, state) {
-        final mode = state.extra as String? ?? 'login';
-        return SignInPage(mode: mode);
-      },
-    ),
-    GoRoute(
-      path: '/login/password',
-      builder: (context, state) {
-        final email = state.extra as String;
-        return LoginPasswordPage(email: email);
-      },
-    ),
-    GoRoute(
-      path: '/create-account/password',
-      builder: (context, state) {
-        final email = state.extra as String;
-        return CreateAccountPasswordPage(email: email);
-      },
-    ),
-    GoRoute(
-      path: '/create-account/profile',
-      builder: (context, state) {
-        final data = state.extra as Map<String, dynamic>;
-        return CreateAccountProfilePage(
-          email: data['email'] as String,
-          password: data['password'] as String,
-        );
-      },
-    ),
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      // ── Auth routes ──────────────────────────────────────
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: '/sign-in',
+        builder: (context, state) {
+          final mode = state.extra as String? ?? 'login';
+          return SignInPage(mode: mode);
+        },
+      ),
+      GoRoute(
+        path: '/login/password',
+        builder: (context, state) {
+          final email = state.extra as String;
+          return LoginPasswordPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/create-account/password',
+        builder: (context, state) {
+          final email = state.extra as String;
+          return CreateAccountPasswordPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/create-account/profile',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>;
+          return CreateAccountProfilePage(
+            email: data['email'] as String,
+            password: data['password'] as String,
+          );
+        },
+      ),
 
-    // ── Profile routes ───────────────────────────────────────
-    // CRITICAL: /profile/edit MUST be before /profile/:userId
-    GoRoute(
-      path: '/profile/edit',
-      builder: (context, state) => const EditProfilePage(),
-    ),
-    GoRoute(
-      path: '/profile/:userId',
-      builder: (context, state) {
-        final userId = state.pathParameters['userId']!;
-        return PublicProfilePage(userId: userId);
-      },
-    ),
-    GoRoute(
-      path: '/profile/:userId/likes',
-      builder: (context, state) {
-        final userId = state.pathParameters['userId']!;
-        return LikesPage(userId: userId);
-      },
-    ),
+      // ── Profile routes ───────────────────────────────────
+      // CRITICAL: /profile/edit MUST be before /profile/:userId
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/profile/:userId',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return PublicProfilePage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/likes',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return LikesPage(userId: userId);
+        },
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
-
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -140,7 +183,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const HomeScreen(),
                 routes: [
                   GoRoute(
-                    path: 'inbox', 
+                    path: 'inbox',
                     builder: (context, state) => const InboxScreen(),
                     routes: [
                       GoRoute(
@@ -150,7 +193,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                           final conv = mockConversations.firstWhere(
                             (c) => c.conversationId == chatId,
                           );
-
                           return ChatScreen(conv: conv);
                         },
                       ),
@@ -171,7 +213,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          
+
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
@@ -181,12 +223,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'behind-the-track/:trackId',
-                    name: 'behindTheTrack', // <-- Add this exact name!
+                    name: 'behindTheTrack',
                     builder: (context, state) {
                       final trackId = state.pathParameters['trackId']!;
                       return BehindTheTrackPage(trackId: trackId);
                     },
-                  )
+                  ),
                 ],
               ),
             ],
@@ -222,13 +264,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
                   ),
-
-                  //// this is dumy to be removed later
                   GoRoute(
                     path: 'playlist',
                     builder: (context, state) => const PlaylistScreen(),
                   ),
-
                   GoRoute(
                     path: 'behind-the-track/:trackId',
                     builder: (context, state) {
@@ -261,33 +300,35 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      
+
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
       ),
       GoRoute(
-      parentNavigatorKey: _rootNavigatorKey, // uses root navigator
-      path: '/upload-track',
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const UploadTrackScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // Slides up from bottom — exactly like SoundCloud
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1), // starts from bottom
-              end: Offset.zero,          // ends at normal position
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            )),
-            child: child,
-          );
-        },
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/upload-track',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const UploadTrackScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            );
+          },
+        ),
       ),
-    ),
     ],
   );
 });
