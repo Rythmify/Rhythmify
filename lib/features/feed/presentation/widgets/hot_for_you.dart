@@ -21,6 +21,7 @@ class HotForYouSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncHotTracks = ref.watch(hotTracksProvider);
     return Column(
+      key: const Key('hot_for_you_section'), //key for hot fpr you section
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -30,6 +31,7 @@ class HotForYouSection extends ConsumerWidget {
 
         asyncHotTracks.when(
           loading: () => const Center(
+            key: Key('hot_for_you_loading'), //loading state key
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
 
@@ -99,6 +101,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
+        key: Key('hot_track_card_${widget.track.id}'), //hot track card key
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey, width: 0.5),
 
@@ -187,6 +190,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         const SizedBox(width: 6),
 
                         Text(
+                          //key for track likes
                           "${formatCount(widget.track.playCount)} people liked your track",
                           key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.labelSmall,
@@ -204,6 +208,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
   //cd+track design
   Widget buildAlbum() {
     return SizedBox(
+      key: Key('hot_album_${widget.track.id}'), //key for track+cd
       width: 100,
       height: 70,
       child: Stack(

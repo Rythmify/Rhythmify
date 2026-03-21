@@ -51,6 +51,7 @@ class _TrendingByGenreState extends State<TrendingByGenre>
   @override
   Widget build(BuildContext context) {
     return Column(
+      key: const Key('trending_by_genre_section'), //key for whole section
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -84,6 +85,7 @@ class GenreTabBar extends StatelessWidget {
       animation: tabController,
       builder: (context, _) {
         return TabBar(
+          key: const Key('genre_tab_bar'), //tabbar key
           controller: tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -97,7 +99,9 @@ class GenreTabBar extends StatelessWidget {
             final color = genreColors[index];
 
             return Tab(
-              key: Key('trending_by_genre_tab_${genres[index].toLowerCase().replaceAll(' ', '_')}'),
+              key: Key(
+                'trending_by_genre_tab_${genres[index].toLowerCase().replaceAll(' ', '_')}',
+              ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
@@ -187,6 +191,7 @@ class GenreTabView extends ConsumerWidget {
                   child: Container(
                     color: Colors.transparent,
                     child: TabBarView(
+                      key: const Key('genre_tab_view'), //key for genre tab view
                       controller: tabController,
                       children: genres.map((genre) {
                         final asyncTracks = ref.watch(
@@ -205,7 +210,9 @@ class GenreTabView extends ConsumerWidget {
                           error: (e, _) => Center(
                             child: Text(
                               'Error: $e',
-                              key: Key('trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}'),
+                              key: Key(
+                                'trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}',
+                              ),
                             ),
                           ),
                         );
@@ -261,11 +268,13 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
 
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        track.artworkUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
+                      child: SizedBox(
+                        child: Image.asset(
+                          track.artworkUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
 

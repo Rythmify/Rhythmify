@@ -43,18 +43,15 @@ class TrackListTile extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: CachedNetworkImage(
-                      imageUrl: track.artworkUrl,
-                      width: 56,
-                      height: 56,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 56,
-                        height: 56,
-                        color: AppTheme.surface,
-                      ),
-                      errorWidget: (context, url, error) => _placeholder(),
-                    ),
-                  ),
+                imageUrl: track.artworkUrl,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    Container(width: 56, height: 56, color: AppTheme.surface),
+                errorWidget: (context, url, error) => _placeholder(),
+              ),
+            ),
             const SizedBox(width: 12),
 
             // ── Title + meta ─────────────────────────────────────────
@@ -89,20 +86,14 @@ class TrackListTile extends StatelessWidget {
                         style: AppTheme.labelSmall,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '·',
-                        style: AppTheme.labelSmall,
-                      ),
+                      Text('·', style: AppTheme.labelSmall),
                       const SizedBox(width: 8),
                       Text(
                         _formatDuration(track.duration.inSeconds),
                         style: AppTheme.labelSmall,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '·',
-                        style: AppTheme.labelSmall,
-                      ),
+                      Text('·', style: AppTheme.labelSmall),
                       const SizedBox(width: 8),
                       Icon(
                         Icons.favorite,

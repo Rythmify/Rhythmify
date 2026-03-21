@@ -12,14 +12,9 @@ import 'package:rythmify/features/track_upload/presentation/providers/upload_tra
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
 
-
-
-
 //imports for track upload added by hana
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
-
-
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -38,7 +33,9 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      key: const Key('home_scaffold'), //  Screen key
       appBar: AppBar(
+        key: const Key('home_app_bar'), // AppBar key
         title: const Text('Home'),
         centerTitle: false,
         actions: [
@@ -46,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
             key: const Key('home_upload_track_icon_button'),
             icon: const Icon(Icons.arrow_circle_up),
 
-            onPressed: () async{
+            onPressed: () async {
               try {
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.audio,
@@ -59,27 +56,28 @@ class HomeScreen extends ConsumerWidget {
 
                 Duration duration = Duration.zero;
                 try {
-                  final player   = AudioPlayer();
+                  final player = AudioPlayer();
                   final detected = await player.setFilePath(picked.path!);
-                  duration       = detected ?? Duration.zero;
+                  duration = detected ?? Duration.zero;
                   await player.dispose();
                 } catch (_) {}
 
-                ref.read(uploadFormProvider.notifier).initDraft(
-                  artistId:       'dev_user_001',
-                  localAudioPath: picked.path!,
-                  duration:       duration,
-                  fileName:       picked.name,
-                );
+                ref
+                    .read(uploadFormProvider.notifier)
+                    .initDraft(
+                      artistId: 'dev_user_001',
+                      localAudioPath: picked.path!,
+                      duration: duration,
+                      fileName: picked.name,
+                    );
 
                 if (context.mounted) context.push('/upload-track');
-
               } catch (e) {
                 // Show exactly what error occurs
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               }
             },
@@ -101,6 +99,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
+        key: const Key('home_scroll_view'), // ✅ Scrollable area
         padding: const EdgeInsets.only(bottom: 150),
         children: [
           const SizedBox(height: 16),
