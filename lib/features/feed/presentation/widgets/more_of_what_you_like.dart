@@ -11,6 +11,7 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
     final asyncMore = ref.watch(moreOfWhatYouLikeProvider);
 
     return Column(
+      key: const Key('more_of_what_you_like_section'), //key for whole section
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -32,6 +33,7 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
             return SizedBox(
               height: 180,
               child: ListView.separated(
+                key: const Key('more_list_view'), //key for horizontal list
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: list.length,
@@ -66,32 +68,40 @@ class PlaylistSquareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: Key('more_card_container_$artists'), //key forcard root
       width: 140,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// Square Artwork
           Container(
+            key: Key('more_image_$artists'), //key for image
             height: 140,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(1),
-              border: Border.all(
-                color: const Color(0xFF6C7C71),
-                width: 0.5,
-              ),
-              image: imagePath.isNotEmpty 
-                ? (imagePath.startsWith('http') 
-                    ? DecorationImage(image: NetworkImage(imagePath), fit: BoxFit.cover)
-                    : DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover))
-                : null,
+              border: Border.all(color: const Color(0xFF6C7C71), width: 0.5),
+              image: imagePath.isNotEmpty
+                  ? (imagePath.startsWith('http')
+                        ? DecorationImage(
+                            image: NetworkImage(imagePath),
+                            fit: BoxFit.cover,
+                          )
+                        : DecorationImage(
+                            image: AssetImage(imagePath),
+                            fit: BoxFit.cover,
+                          ))
+                  : null,
             ),
-            child: imagePath.isEmpty ? const Center(child: Icon(Icons.playlist_play)) : null,
+            child: imagePath.isEmpty
+                ? const Center(child: Icon(Icons.playlist_play))
+                : null,
           ),
 
           const SizedBox(height: 8),
 
           /// Artist names
           Text(
+            key: Key('more_artists_$artists'), //key for artists text
             artists,
             style: const TextStyle(color: Colors.white70, fontSize: 12),
             maxLines: 2,
