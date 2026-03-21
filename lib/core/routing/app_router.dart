@@ -1,34 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../presentation/scaffold/main_app_scaffold.dart';
-import '../../features/feed/presentation/pages/home_screen.dart';
-import '../../features/feed/presentation/pages/feed_screen.dart';
-import '../../features/search/presentation/pages/search_screen.dart';
-import '../../features/library/presentation/pages/library_screen.dart';
-import '../../features/premium/presentation/pages/upgrade_screen.dart';
-import '../../features/messaging/presentation/pages/inbox_screen.dart';
-import '../../features/messaging/presentation/pages/chat_screen.dart';
-import '../../features/notifications/presentation/pages/notifications_screen.dart';
-import '../../features/settings/presentation/pages/settings_screen.dart';
-import '../../features/playlist/presentation/pages/playlist_screen.dart';
-
-import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
-import '../../features/player/presentation/pages/full_player_page.dart';
-import '../../features/track/presentation/pages/behind_the_track.dart';
 
 //  Auth imports
 import '../../features/authentication/presentation/pages/onboarding_page.dart';
 import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+
 //  Profile imports
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
-import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
+
+//  Feed imports
+import '../../features/feed/presentation/pages/home_screen.dart';
+import '../../features/feed/presentation/pages/feed_screen.dart';
+
+//  Track imports
+import '../../features/track/presentation/pages/behind_the_track.dart';
+
+//  Player imports
+import '../../features/player/presentation/pages/full_player_page.dart';
+
+//  Messaging imports
+import '../../features/messaging/presentation/pages/inbox_screen.dart';
+import '../../features/messaging/presentation/pages/chat_screen.dart';
+import '../../features/messaging/data/repositories/mock_conversations.dart';
+
+//  Track_upload imports
+import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
+
+//  Playlist imports
+import '../../features/playlist/presentation/pages/playlist_screen.dart';
+
+//  Settings imports
+import '../../features/settings/presentation/pages/settings_screen.dart';
+
+//  Library imports
+import '../../features/library/presentation/pages/library_screen.dart';
+
+//  Search imports
+import '../../features/search/presentation/pages/search_screen.dart';
+
+//  Notifications imports
+import '../../features/notifications/presentation/pages/notifications_screen.dart';
+
+//  Premium imports
+import '../../features/premium/presentation/pages/upgrade_screen.dart';
+
+///----------------------------------------------------------------------------------------------///
 
 // Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
