@@ -3,8 +3,8 @@ class Conversation{
    final String participantId;
    final String participantName;
    final String? participantAvatar;
-   final String? lastMessagePreview;
-   final DateTime? lastMessageDate;
+   final String lastMessagePreview;
+   final DateTime lastMessageDate;
    final int unReadCount;
    
    Conversation({
@@ -12,8 +12,8 @@ class Conversation{
     required this.participantId,
     required this.participantName,
     this.participantAvatar,
-    this.lastMessagePreview,
-    this.lastMessageDate,
+    required this.lastMessagePreview,
+    required this.lastMessageDate,
     required this.unReadCount
    });
 }

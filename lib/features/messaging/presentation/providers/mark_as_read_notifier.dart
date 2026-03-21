@@ -18,8 +18,7 @@ class MarkAsReadNotifier extends StateNotifier<bool> {
     state =true;
     final uCase=MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
     await uCase(msgId,convId);
-    ref.invalidate(conversationProvider);
-    ref.invalidate(messageProvider(convId));
+    ref.refresh(messageProvider(convId));
     state=false;
   }
 }

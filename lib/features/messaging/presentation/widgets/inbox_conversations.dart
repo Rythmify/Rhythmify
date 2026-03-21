@@ -25,7 +25,9 @@ class InboxConversations extends StatelessWidget{
       lastMessageDate: conv.lastMessageDate!,
       unreadCount: conv.unReadCount,
       onTap: (){
-        context.go('/home/inbox/chat/${conv.conversationId}');
+        //context.go('/home/inbox/chat/${conv.conversationId}');
+        context.go('/home/inbox/chat/${conv.conversationId}',
+        extra: conv);
       },
       );
       },

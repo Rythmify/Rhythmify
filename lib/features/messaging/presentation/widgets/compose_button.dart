@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ComposeButton extends StatelessWidget {
+  final VoidCallback? onPressed;
   const ComposeButton({
-    super.key
+    super.key,
+    this.onPressed
   });
 
   @override
@@ -11,7 +13,7 @@ class ComposeButton extends StatelessWidget {
       key: const Key('messaging_compose_floating_action_button'),
       backgroundColor: Colors.white,
       foregroundColor: Colors.black,
-      onPressed: (){},
+      onPressed: onPressed,
       shape: const CircleBorder(),
       child: const Icon(Icons.edit_outlined),
     );

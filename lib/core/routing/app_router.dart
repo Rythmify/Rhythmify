@@ -145,15 +145,23 @@ final routerProvider = Provider<GoRouter>((ref) {
                     routes: [
                       GoRoute(
                         path: 'chat/:chatId',
-                        builder: (context, state) {
-                          final chatId = state.pathParameters['chatId']!;
-                          final conv = mockConversations.firstWhere(
-                            (c) => c.conversationId == chatId,
-                          );
+///mock datasources     // builder: (context, state) {
+                        //   final chatId = state.pathParameters['chatId']!;
+                        //   final conv = mockConversations.firstWhere(
+                        //     (c) => c.conversationId == chatId,
+                        //   );
 
+                        //   return ChatScreen(conv: conv);
+                        // },
+                        builder:(context,state){
+                          final conv= state.extra as Conversation;
                           return ChatScreen(conv: conv);
-                        },
+                        }
                       ),
+                      GoRoute(
+                        path: 'search',
+                        builder:(context, state) => const messaging.SearchScreen(),
+                      )
                     ],
                   ),
                   GoRoute(

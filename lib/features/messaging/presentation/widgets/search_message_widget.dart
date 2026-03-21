@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SearchMessageWidget extends StatelessWidget {
+  final VoidCallback? onPressed;
   const SearchMessageWidget({
-    super.key
+    super.key,
+    this.onPressed
   });
 
   @override
