@@ -4,13 +4,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/feed/presentation/pages/home_screen.dart';
 import 'package:rythmify/features/feed/data/datasources/home_datasource.dart';
-import 'package:rythmify/features/feed/domain/repositories/home_repository.dart';
 import 'package:rythmify/features/feed/presentation/providers/home_providers.dart';
 import 'package:rythmify/features/player/domain/entities/player_state.dart';
 import 'package:rythmify/features/player/domain/repositories/audio_repository.dart';
@@ -129,17 +127,13 @@ class _FakeHomeDatasource extends HomeDatasource {
 
 class _ErrorTrendingHomeDatasource extends _FakeHomeDatasource {
   _ErrorTrendingHomeDatasource({
-    required List<Track> hotTracks,
-    required List<Map<String, dynamic>> mixedPlaylists,
-    required List<Map<String, dynamic>> stationPlaylists,
-    required List<Map<String, dynamic>> moreOfWhatYouLike,
+    required super.hotTracks,
+    required super.mixedPlaylists,
+    required super.stationPlaylists,
+    required super.moreOfWhatYouLike,
   }) : super(
-         trendingTracks: [],
-         hotTracks: hotTracks,
-         mixedPlaylists: mixedPlaylists,
-         stationPlaylists: stationPlaylists,
-         moreOfWhatYouLike: moreOfWhatYouLike,
-       );
+          trendingTracks: [],
+        );
 
   @override
   Future<List<Track>> getTrendingTracks(String genre) async {
@@ -149,17 +143,13 @@ class _ErrorTrendingHomeDatasource extends _FakeHomeDatasource {
 
 class _ErrorHotHomeDatasource extends _FakeHomeDatasource {
   _ErrorHotHomeDatasource({
-    required List<Track> trendingTracks,
-    required List<Map<String, dynamic>> mixedPlaylists,
-    required List<Map<String, dynamic>> stationPlaylists,
-    required List<Map<String, dynamic>> moreOfWhatYouLike,
+    required super.trendingTracks,
+    required super.mixedPlaylists,
+    required super.stationPlaylists,
+    required super.moreOfWhatYouLike,
   }) : super(
-         trendingTracks: trendingTracks,
-         hotTracks: [],
-         mixedPlaylists: mixedPlaylists,
-         stationPlaylists: stationPlaylists,
-         moreOfWhatYouLike: moreOfWhatYouLike,
-       );
+          hotTracks: [],
+        );
 
   @override
   Future<List<Track>> getHotTracks() async {
@@ -169,17 +159,13 @@ class _ErrorHotHomeDatasource extends _FakeHomeDatasource {
 
 class _ErrorStationsHomeDatasource extends _FakeHomeDatasource {
   _ErrorStationsHomeDatasource({
-    required List<Track> trendingTracks,
-    required List<Track> hotTracks,
-    required List<Map<String, dynamic>> mixedPlaylists,
-    required List<Map<String, dynamic>> moreOfWhatYouLike,
+    required super.trendingTracks,
+    required super.hotTracks,
+    required super.mixedPlaylists,
+    required super.moreOfWhatYouLike,
   }) : super(
-         trendingTracks: trendingTracks,
-         hotTracks: hotTracks,
-         mixedPlaylists: mixedPlaylists,
-         stationPlaylists: [],
-         moreOfWhatYouLike: moreOfWhatYouLike,
-       );
+          stationPlaylists: [],
+        );
 
   @override
   Future<List<Map<String, dynamic>>> getStationPlaylists() async {
