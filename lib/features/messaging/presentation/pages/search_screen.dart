@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
-import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_followings_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_searched_users_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/search_query_provider.dart';

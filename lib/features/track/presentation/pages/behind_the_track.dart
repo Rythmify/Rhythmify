@@ -223,12 +223,12 @@ class BehindTheTrackPage extends ConsumerWidget {
                           key: Key('behind_the_track_tag_${track.tags[index]}'),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withValues(alpha: 0.7),
+                            color: const Color.fromARGB(255, 104, 69, 131).withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             "#${track.tags[index]}",
-                            style: AppTheme.titleLarge.copyWith(color: Colors.white,fontSize:15),
+                            style: AppTheme.titleLarge.copyWith(color: Colors.white, fontSize:15),
                           ),
                         );
                       },
