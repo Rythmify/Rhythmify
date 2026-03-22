@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'package:audio_service/audio_service.dart';
@@ -10,6 +11,9 @@ late AudioHandler globalAudioHandler;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Initialize Firebase ───────────────────────────────
+  await Firebase.initializeApp();
 
   globalAudioHandler = await AudioService.init(
     builder: () => RythmifyAudioHandler(),
@@ -24,7 +28,9 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        audioHandlerProvider.overrideWithValue(globalAudioHandler as RythmifyAudioHandler),
+        audioHandlerProvider.overrideWithValue(
+          globalAudioHandler as RythmifyAudioHandler,
+        ),
       ],
       child: const RythmifyApp(),
     ),
@@ -36,13 +42,12 @@ class RythmifyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Rythmify',
-      theme: AppTheme.darkTheme, 
+      theme: AppTheme.darkTheme,
       routerConfig: router,
     );
   }
