@@ -8,36 +8,43 @@ class ConversationModel extends Conversation {
     super.participantAvatar,
     required super.lastMessagePreview,
     required super.lastMessageDate,
-    required super.unReadCount
+    required super.unReadCount,
   });
 
-  factory ConversationModel.fromJson(Map<String,dynamic> json)
-  {
-    return ConversationModel(conversationId: json['id'],
-    participantId: json['participant']['id'],
-    participantName: json['participant']['display_name'],
-    participantAvatar: json['participant']?['profile_picture'],
-    lastMessagePreview: json['last_message']?['body'],
-    lastMessageDate: DateTime.parse(json['last_message']['created_at']),
-    unReadCount: int.tryParse(json['unread_count'].toString()) ?? 0);
+  factory ConversationModel.fromJson(Map<String, dynamic> json) {
+
+    final participant = json['participant'] as Map<String, dynamic>? ?? {};
+    final lastMessage = json['last_message'] as Map<String, dynamic>? ?? {};
+
+    return ConversationModel(
+      conversationId: json['id'] ?? '', 
+      participantId: participant['id'] ?? '',
+      participantName: participant['display_name'] ?? 'Unknown',
+      participantAvatar: participant['profile_picture'],
+      lastMessagePreview: lastMessage['body'] ?? '',
+      lastMessageDate: lastMessage['created_at'] != null 
+          ? DateTime.tryParse(lastMessage['created_at']) ?? DateTime.now()
+          : DateTime.now(),
+          
+      unReadCount: json['unread_count'] as int? ?? 0,
+    );
   }
 
-  Map<String,dynamic> toJson()
-  {
-    return{
-      'id':conversationId,
-      'participant':{
-        'id':participantId,
-        'display_name':participantName,
-        'profile_picture':participantAvatar
+  Map<String, dynamic> toJson() {
+    return {
+      'id': conversationId,
+      'participant': {
+        'id': participantId,
+        'display_name': participantName,
+        'profile_picture': participantAvatar,
       },
-      'last_message': lastMessagePreview!=null?
-      {
-        'body':lastMessagePreview,
-        'created_at':lastMessageDate?.toIso8601String()
-      }
-      :null,
-      'unread_count':unReadCount
+      'last_message': lastMessagePreview.isNotEmpty 
+          ? {
+              'body': lastMessagePreview,
+              'created_at': lastMessageDate.toIso8601String(),
+            }
+          : null,
+      'unread_count': unReadCount,
     };
   }
 }

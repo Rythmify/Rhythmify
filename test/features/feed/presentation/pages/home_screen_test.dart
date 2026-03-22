@@ -238,17 +238,11 @@ class _ErrorMoreOfWhatYouLikeDatasource extends _FakeHomeDatasource {
 
 class _ErrorMixedPlaylistsDatasource extends _FakeHomeDatasource {
   _ErrorMixedPlaylistsDatasource({
-    required List<Track> trendingTracks,
-    required List<Track> hotTracks,
-    required List<Map<String, dynamic>> stationPlaylists,
-    required List<Map<String, dynamic>> moreOfWhatYouLike,
-  }) : super(
-         trendingTracks: trendingTracks,
-         hotTracks: hotTracks,
-         mixedPlaylists: [],
-         stationPlaylists: stationPlaylists,
-         moreOfWhatYouLike: moreOfWhatYouLike,
-       );
+    required super.trendingTracks,
+    required super.hotTracks,
+    required super.stationPlaylists,
+    required super.moreOfWhatYouLike,
+  }) : super(mixedPlaylists: [],);
 
   @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async {

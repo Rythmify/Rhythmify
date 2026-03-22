@@ -28,7 +28,8 @@ import '../../features/player/presentation/pages/full_player_page.dart';
 //  Messaging imports
 import '../../features/messaging/presentation/pages/inbox_screen.dart';
 import '../../features/messaging/presentation/pages/chat_screen.dart';
-import '../../features/messaging/data/repositories/mock_conversations.dart';
+import '../../features/messaging/presentation/pages/search_screen.dart' as messaging;
+import '../../features/messaging/domain/entities/conversation.dart';
 
 //  Track_upload imports
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
