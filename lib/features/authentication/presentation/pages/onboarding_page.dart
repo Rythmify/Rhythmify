@@ -12,7 +12,6 @@ class OnboardingPage extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Layer 1: Full screen background art ──────────
           Image.asset(
             'assets/images/onboarding_art.jpg',
             width: double.infinity,
@@ -20,8 +19,6 @@ class OnboardingPage extends StatelessWidget {
             fit: BoxFit.fitWidth,
             alignment: Alignment.topCenter,
           ),
-
-          // ── Layer 2: Second art behind blob ──────────────
           Align(
             alignment: Alignment.bottomCenter,
             child: Transform.translate(
@@ -33,13 +30,10 @@ class OnboardingPage extends StatelessWidget {
               ),
             ),
           ),
-
-          // ── Layer 3: Blob + content on top ───────────────
           Align(
             alignment: Alignment.bottomCenter,
             child: Stack(
               children: [
-                // ── Blob PNG ──────────────────────────────
                 Positioned.fill(
                   child: Transform.scale(
                     scale: 1.5,
@@ -52,15 +46,12 @@ class OnboardingPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // ── Content ───────────────────────────────
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 1, 24, 60),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // ── Logo ────────────────────────────
                       Transform.translate(
                       offset: const Offset(0, -20),
                       child: const Icon(Icons.cloud, color: Colors.black, size: 60),
@@ -68,8 +59,6 @@ class OnboardingPage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 1),
-
-                      // ── Tagline ──────────────────────────
                       Text(
                         'Where artists & fans connect.',
                         textAlign: TextAlign.center,
@@ -82,8 +71,6 @@ class OnboardingPage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 44.5),
-
-                      // ── Create account button ────────────
                       SizedBox(
                         width: 265,
                         height: 40,
@@ -109,8 +96,6 @@ class OnboardingPage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 10),
-
-                      // ── Log in button ────────────────────
                       SizedBox(
                         width: 265,
                         height: 40,

@@ -8,7 +8,7 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
-  final String mode; // 'login' or 'register'
+  final String mode; 
 
   const SignInPage({super.key, this.mode = 'login'});
 
@@ -66,7 +66,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
                 Text(
                   'Sign in or create an account',
                   key: const Key('auth_title_text'),
@@ -77,8 +76,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 16),
-
-                // Terms text
                 RichText(
                   key: const Key('auth_terms_and_privacy_text'),
                   text: TextSpan(
@@ -104,8 +101,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 28),
-
-                // Social buttons
                 SocialLoginButton(
                   key: const Key('auth_social_facebook_button'),
                   provider: SocialProvider.facebook,
@@ -131,8 +126,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 28),
-
-                // Divider
                 Text(
                   'Or with email', 
                   key: const Key('auth_email_divider_text'),
@@ -140,8 +133,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 12),
-
-                // Email field
                 AuthTextField(
                   key: const Key('auth_email_text_field_container'),
                   hint: 'Your email address or profile URL',
@@ -160,8 +151,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 16),
-
-                // Continue button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -185,8 +174,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
 
                 const SizedBox(height: 20),
-
-                // Need help
                 GestureDetector(
                   key: const Key('auth_need_help_button'),
                   onTap: () {},

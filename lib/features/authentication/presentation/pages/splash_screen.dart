@@ -16,7 +16,6 @@ class SplashScreen extends ConsumerWidget {
       } else if (next is AuthUnauthenticated) {
         context.go('/onboarding');
       }
-      // AuthLoading — stay on splash
     });
 
     return Scaffold(
@@ -25,7 +24,6 @@ class SplashScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ── Logo ─────────────────────────────────────
             const Icon(Icons.cloud, color: AppTheme.primaryBrand, size: 80),
             const SizedBox(height: 24),
             Text(
@@ -35,7 +33,6 @@ class SplashScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 48),
-            // ── Loading indicator ─────────────────────────
             const CircularProgressIndicator(
               color: AppTheme.primaryBrand,
               strokeWidth: 2,
