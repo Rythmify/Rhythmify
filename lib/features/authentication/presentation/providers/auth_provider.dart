@@ -13,6 +13,7 @@ import '../../domain/usecases/send_password_reset_usecase.dart';
 import '../../../../core/network/api_client.dart';
 import 'auth_state.dart';
 
+
 const bool useMockData = false;
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
@@ -30,6 +31,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
+    // ── Datasource selected by useMockData flag above ─────
     final datasource = useMockData
         ? AuthMockDatasource()
         : AuthRemoteDatasourceImpl(client: apiClient);
@@ -43,24 +45,39 @@ class AuthNotifier extends Notifier<AuthState> {
     _signOut = SignOutUseCase(repository);
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
+
+    // ── Check existing auth on app start ──────────────────
     Future.microtask(() => checkAuthStatus());
 
     return const AuthLoading();
   }
 
+  // ── Check if user is already logged in ───────────────────
   Future<void> checkAuthStatus() async {
+    print('CHECK AUTH STATUS STARTED');
+
     if (useMockData) {
+      print('MOCK MODE — setting unauthenticated');
       state = const AuthUnauthenticated();
       return;
     }
 
-    final token = await apiClient.getToken();
-    if (token == null) {
-      state = const AuthUnauthenticated();
-      return;
-    }
     try {
+      // ── Wrap getToken in try-catch to handle corrupted storage ──
+      final token = await apiClient.getToken();
+      print('TOKEN FROM STORAGE: $token');
+
+      if (token == null) {
+        print('NO TOKEN — setting unauthenticated');
+        state = const AuthUnauthenticated();
+        return;
+      }
+
+      // ── Token exists — verify with backend ────────────────
+      print('TOKEN EXISTS — calling /users/me');
       final response = await apiClient.dio.get('/users/me');
+      print('USERS/ME RESPONSE: ${response.data}');
+
       final data = response.data['data'];
       final user = UserModel.fromJson({
         'id': data['id'],
@@ -69,8 +86,12 @@ class AuthNotifier extends Notifier<AuthState> {
         'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
+
+      print('SETTING AUTH AUTHENTICATED: ${user.email}');
       state = AuthAuthenticated(user);
     } catch (e) {
+      // ── Handles BadPaddingException and any other errors ──
+      print('ERROR IN CHECK AUTH: $e');
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }
@@ -130,15 +151,21 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> signOutUser() async {
     state = const AuthLoading();
     final result = await _signOut();
-    result.fold((failure) => state = AuthError(failure.message), (_) async {
-      await apiClient.clearToken();
-      state = const AuthUnauthenticated();
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (_) async {
+        await apiClient.clearToken();
+        state = const AuthUnauthenticated();
+      },
+    );
   }
 
   Future<void> sendEmailVerification() async {
     final result = await _sendVerificationEmail();
-    result.fold((failure) => state = AuthError(failure.message), (_) {});
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (_) {},
+    );
   }
 
   Future<void> resetPassword({required String email}) async {
