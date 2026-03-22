@@ -32,11 +32,13 @@ class SearchBarWidget extends StatelessWidget{
                 ),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    isCollapsed: true,
                     prefixIcon: Icon(Icons.search),
                     suffixIcon: IconButton(
                       key: const Key('messaging_search_clear_icon_button'),
-                      onPressed: controller.clear,
+                      onPressed: (){
+                        controller.clear();
+                        onChanged?.call('');
+                      },
                       icon: Icon(Icons.close)
                     )
                 ),

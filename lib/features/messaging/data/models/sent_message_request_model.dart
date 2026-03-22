@@ -1,19 +1,19 @@
 class SentMessageRequestModel {
   final String? body;
   final String? trackId;
-  final String? likedId;
+  final String? playlistId;
 
   SentMessageRequestModel({
     this.body,
-    this.likedId,
-    this.trackId
+    this.trackId,
+    this.playlistId
   });
 
   Map<String, dynamic> toJson() {
     return {
       'body': body,
-      'embedType': trackId,
-      'embedId': likedId,
+      'track_id': trackId,
+      'playlistId': playlistId,
     }..removeWhere((key, value) => value == null);
   }
 }

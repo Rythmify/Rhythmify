@@ -193,9 +193,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                           final conv = mockConversations.firstWhere(
                             (c) => c.conversationId == chatId,
                           );
+
                           return ChatScreen(conv: conv);
-                        },
+                        }
                       ),
+                      GoRoute(
+                        path: 'search',
+                        builder:(context, state) => const messaging.SearchScreen(),
+                      )
                     ],
                   ),
                   GoRoute(

@@ -8,8 +8,8 @@ class StartConversationUsecase {
     required this.repo
   });
 
-  Future<Conversation> call(String participantId)
+  Future<Conversation> call(String participantId,{String? body,String? trackId,String? playlistId})
   {
-    return repo.startConversation(participantId);
+    return repo.startConversation(participantId,body,trackId,playlistId);
   }
 }
