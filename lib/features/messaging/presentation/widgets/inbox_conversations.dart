@@ -21,8 +21,8 @@ class InboxConversations extends StatelessWidget{
       key: Key('messaging_inbox_item_${conv.participantName}_tile'),
       participantAvatar: conv.participantAvatar,
       participantName: conv.participantName,
-      lastMessagePreview: conv.lastMessagePreview!,
-      lastMessageDate: conv.lastMessageDate!,
+      lastMessagePreview: conv.lastMessagePreview,
+      lastMessageDate: conv.lastMessageDate,
       unreadCount: conv.unReadCount,
       onTap: (){
         //context.go('/home/inbox/chat/${conv.conversationId}');

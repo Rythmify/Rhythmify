@@ -29,7 +29,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
-  final Set<String> _markedAsRead = {};
 
   @override
   void initState() {
@@ -85,7 +84,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 convId:unread.conversationId
               );
               await Future.delayed(const Duration(microseconds: 500));
-              ref.refresh(conversationProvider);
+              ref.invalidate(conversationProvider);
             }
           });
           });
@@ -158,11 +157,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             newParticipantId: widget.newParticipantId,
             body:text.trim()
           );
-          
           controller.clear();
-          if(newConv!=null && context.mounted)
-          {
-            context.go('/home/inbox/chat/${newConv.conversationId}',extra:newConv);
+
+          if (!mounted) return; 
+
+          if (newConv != null) {
+            context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
           }
       },
       ),)

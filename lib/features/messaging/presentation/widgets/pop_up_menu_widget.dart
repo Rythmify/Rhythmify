@@ -5,7 +5,7 @@ import 'package:rythmify/features/messaging/presentation/widgets/confirn_block_w
 
 class PopUpMenuWidget extends ConsumerWidget {
   final String participantId;
-  PopUpMenuWidget({
+  const PopUpMenuWidget({
     super.key,
     required this.participantId
   });
@@ -25,7 +25,7 @@ class PopUpMenuWidget extends ConsumerWidget {
             await ref.read(blockUserProvider.notifier).blockUser(participantId: participantId);
           }
         }
-        else if (value == 'report'){}//TODO
+        else if (value == 'report'){}
       },
       itemBuilder: (context)=>[
         const PopupMenuItem(

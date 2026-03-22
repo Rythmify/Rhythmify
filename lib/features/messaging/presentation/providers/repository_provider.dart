@@ -9,7 +9,7 @@ import 'package:rythmify/features/messaging/data/datasources/datasource_implemen
 
 //________ Uncomment to use mock data _______
 //import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
-import 'package:dio/dio.dart';
+
 
 // Change this to switch modes
 const bool useMockData = true; 
