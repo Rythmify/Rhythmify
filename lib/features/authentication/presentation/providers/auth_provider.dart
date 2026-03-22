@@ -30,7 +30,6 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    // ── Datasource selected by useMockData flag above ─────
     final datasource = useMockData
         ? AuthMockDatasource()
         : AuthRemoteDatasourceImpl(client: apiClient);
@@ -44,15 +43,12 @@ class AuthNotifier extends Notifier<AuthState> {
     _signOut = SignOutUseCase(repository);
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
-
-    // ── Check existing auth on app start ──────────────────
     Future.microtask(() => checkAuthStatus());
 
     return const AuthLoading();
   }
 
   Future<void> checkAuthStatus() async {
-    // Mock mode — skip token check, go straight to unauthenticated
     if (useMockData) {
       state = const AuthUnauthenticated();
       return;
@@ -63,8 +59,6 @@ class AuthNotifier extends Notifier<AuthState> {
       state = const AuthUnauthenticated();
       return;
     }
-
-    // Token exists — verify it by calling /users/me
     try {
       final response = await apiClient.dio.get('/users/me');
       final data = response.data['data'];
@@ -77,7 +71,6 @@ class AuthNotifier extends Notifier<AuthState> {
       });
       state = AuthAuthenticated(user);
     } catch (e) {
-      // Token invalid or expired — clear and go to onboarding
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }
