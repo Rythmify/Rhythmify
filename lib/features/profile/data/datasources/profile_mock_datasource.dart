@@ -4,7 +4,6 @@ import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
 
 class ProfileMockDatasource implements ProfileRemoteDatasource {
-  // ── Mock Profiles ─────────────────────────────────────────────────────
   static const _mockProfiles = [
     {
       'id': 'user-001',
@@ -85,8 +84,6 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       'is_following': false,
     },
   ];
-
-  // ── Mock Tracks ───────────────────────────────────────────────────────
   static const _mockTracks = [
     {
       'id': 'track-001',

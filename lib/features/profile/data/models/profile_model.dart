@@ -18,18 +18,13 @@ class ProfileModel extends ProfileEntity {
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
-    // ── Handle both public and own profile response shapes ────
     final id = json['id'] as String? ?? '';
     final displayName = json['display_name'] as String? ?? '';
     final username = json['username'] as String?;
-
-    // API uses profile_picture for avatar and cover_photo for cover
     final avatarUrl = json['profile_picture'] as String?
         ?? json['avatar_url'] as String?;
     final coverUrl = json['cover_photo'] as String?
         ?? json['cover_url'] as String?;
-
-    // API returns city and country separately
     final city = json['city'] as String?;
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;

@@ -12,11 +12,7 @@ import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/authentication/presentation/providers/auth_state.dart';
 import 'profile_state.dart';
-
-// ── Uncomment to Switch to Mock Data ──────────────
 import '../../data/datasources/profile_mock_datasource.dart';
-
-// ── Uncomment to Switch to Real Data ──────────────
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
@@ -42,8 +38,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
   @override
   ProfileState build() {
     final authState = ref.watch(authProvider);
-
-    // ── Datasource selected by useProfileMockData flag ────
     final datasource = useProfileMockData
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);
@@ -68,8 +62,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     return const ProfileInitial();
   }
-
-  // ── Load profile ──────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
@@ -78,8 +70,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
       loadLikedTracks(userId: userId, refresh: true);
     });
   }
-
-  // ── Load liked tracks with pagination ─────────────────────
   Future<void> loadLikedTracks({
     required String userId,
     bool refresh = false,
@@ -128,8 +118,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
       },
     );
   }
-
-  // ── Update profile ────────────────────────────────────────
   Future<void> updateProfile({
     required String displayName,
     required String city,
@@ -153,8 +141,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
       (profile) => state = current.copyWith(profile: profile, isSaving: false),
     );
   }
-
-  // ── Upload avatar ─────────────────────────────────────────
   Future<void> uploadAvatar({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -166,12 +152,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       profile,
     ) {
       state = current.copyWith(profile: profile, isSaving: false);
-      // ── Reload full profile to get new avatar URL ────
       loadProfile(userId: 'me');
     });
   }
-
-  // ── Delete avatar ─────────────────────────────────────────
   Future<void> deleteAvatar() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -187,12 +170,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
         ),
         isSaving: false,
       );
-      // ── Reload full profile after delete ─────────────
       loadProfile(userId: 'me');
     });
   }
 
-  // ── Upload cover photo ────────────────────────────────────
   Future<void> uploadCoverPhoto({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -204,12 +185,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       profile,
     ) {
       state = current.copyWith(profile: profile, isSaving: false);
-      // ── Reload full profile to get new cover URL ─────
       loadProfile(userId: 'me');
     });
   }
-
-  // ── Delete cover photo ────────────────────────────────────
   Future<void> deleteCoverPhoto() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -219,12 +197,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     final result = await _deleteCoverPhoto();
     result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
       state = current.copyWith(isSaving: false);
-      // ── Reload full profile after delete ─────────────
       loadProfile(userId: 'me');
     });
   }
-
-  // ── Follow user ───────────────────────────────────────────
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -240,7 +215,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold((failure) => state = current, (_) {});
   }
 
-  // ── Unfollow user ─────────────────────────────────────────
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;

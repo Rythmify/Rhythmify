@@ -364,7 +364,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Display name
                           _buildField(
                             key: const Key('edit_profile_name_textfield'),
                             label: 'Display Name',
@@ -374,7 +373,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           const Divider(color: AppTheme.surface, height: 1),
 
-                          // City
                           _buildField(
                             key: const Key('edit_profile_city_textfield'),
                             label: 'City',
@@ -384,7 +382,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           const Divider(color: AppTheme.surface, height: 1),
 
-                          // Country
                           _buildChevronField(
                             key: const Key('edit_profile_country_gesture'),
                             label: 'Country',
@@ -396,7 +393,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                           const Divider(color: AppTheme.surface, height: 1),
 
-                          // Bio
                           _buildChevronField(
                             key: const Key('edit_profile_bio_gesture'),
                             label: 'Bio',

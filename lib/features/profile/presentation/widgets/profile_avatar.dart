@@ -23,7 +23,6 @@ class ProfileAvatar extends StatelessWidget {
       onTap: onTap,
       child: Stack(
         children: [
-          // ── Avatar circle ──────────────────────────────────────────
           CircleAvatar(
             radius: radius,
             backgroundColor: AppTheme.surface,
@@ -39,7 +38,6 @@ class ProfileAvatar extends StatelessWidget {
                 : null,
           ),
 
-          // ── Camera icon overlay (edit mode only) ───────────────────
           if (showCameraIcon)
             Positioned(
               bottom: 0,

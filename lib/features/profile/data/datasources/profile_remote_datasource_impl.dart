@@ -177,10 +177,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       rethrow;
     }
   }
-
-  // ── Error handler ─────────────────────────────────
   void _handleDioError(DioException e) {
-    // HTML response means routing/connection issue
     final contentType = e.response?.headers.value('content-type') ?? '';
     if (contentType.contains('text/html')) {
       throw Exception('Cannot connect to backend. Check IP and server status.');
