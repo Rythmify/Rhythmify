@@ -55,7 +55,7 @@ class TrackInfoBox extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.bar_chart, color: AppTheme.semiWhite, size: 16),
+                Icon(Icons.music_note , color: AppTheme.semiWhite, size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Behind this track',
