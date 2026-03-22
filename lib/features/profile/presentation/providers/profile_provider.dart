@@ -12,17 +12,18 @@ import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/authentication/presentation/providers/auth_state.dart';
 import 'profile_state.dart';
-
-// ── Uncomment to Switch to Mock Data ──────────────
 import '../../data/datasources/profile_mock_datasource.dart';
+import '../../../../core/network/api_client.dart';
+import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-// ── Uncomment to Switch to Real Data ──────────────
-//import '../../../../core/network/api_client.dart';
-//import '../../data/datasources/profile_remote_datasource_impl.dart';
+// ╔══════════════════════════════════════════════════════╗
+// ║         DATASOURCE SWITCH — CHANGE HERE ONLY         ║
+// ║   true  = Mock data  (no backend needed)             ║
+// ║   false = Real data  (backend must be running)       ║
+// ╚══════════════════════════════════════════════════════╝
+const bool useProfileMockData = false;
 
-
-final profileProvider =
-    NotifierProvider<ProfileNotifier, ProfileState>(() {
+final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });
 
@@ -40,37 +41,41 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _currentPage = 1;
 
   @override
-ProfileState build() {
-  final authState = ref.watch(authProvider);
+  ProfileState build() {
+    // ── Safe auth state read — never throws ──────────────
+    AuthState? authState;
+    try {
+      authState = ref.watch(authProvider);
+    } catch (e) {
+      print('PROFILE PROVIDER: authProvider error — $e');
+      authState = const AuthUnauthenticated();
+    }
 
-  // ── Comment & Uncomment for datasource switching ─────────────
-  //final datasource = ProfileRemoteDatasourceImpl(client: apiClient);
-  final datasource = ProfileMockDatasource();
+    final datasource = useProfileMockData
+        ? ProfileMockDatasource()
+        : ProfileRemoteDatasourceImpl(client: apiClient);
 
+    final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
 
-  final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
+    _getProfile = GetProfileUseCase(repository);
+    _updateProfile = UpdateProfileUseCase(repository);
+    _uploadAvatar = UploadAvatarUseCase(repository);
+    _deleteAvatar = DeleteAvatarUseCase(repository);
+    _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
+    _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
+    _followUser = FollowUserUseCase(repository);
+    _unfollowUser = UnfollowUserUseCase(repository);
+    _getLikedTracks = GetLikedTracksUseCase(repository);
 
-  _getProfile = GetProfileUseCase(repository);
-  _updateProfile = UpdateProfileUseCase(repository);
-  _uploadAvatar = UploadAvatarUseCase(repository);
-  _deleteAvatar = DeleteAvatarUseCase(repository);
-  _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
-  _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
-  _followUser = FollowUserUseCase(repository);
-  _unfollowUser = UnfollowUserUseCase(repository);
-  _getLikedTracks = GetLikedTracksUseCase(repository);
+    if (authState is AuthAuthenticated) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        loadProfile(userId: 'me');
+      });
+    }
 
-  if (authState is AuthAuthenticated) {
-    // Wait for token to be fully saved before loading profile
-    Future.delayed(const Duration(milliseconds: 500), () {
-      loadProfile(userId: 'me');
-    });
+    return const ProfileInitial();
   }
 
-  return const ProfileInitial();
-}
-
-  // ── Load profile ──────────────────────────────────────────
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
@@ -83,7 +88,6 @@ ProfileState build() {
     );
   }
 
-  // ── Load liked tracks with pagination ─────────────────────
   Future<void> loadLikedTracks({
     required String userId,
     bool refresh = false,
@@ -113,9 +117,7 @@ ProfileState build() {
     result.fold(
       (failure) {
         if (state is ProfileLoaded) {
-          state = (state as ProfileLoaded).copyWith(
-            isLoadingTracks: false,
-          );
+          state = (state as ProfileLoaded).copyWith(isLoadingTracks: false);
         }
       },
       (tracks) {
@@ -135,7 +137,6 @@ ProfileState build() {
     );
   }
 
-  // ── Update profile ────────────────────────────────────────
   Future<void> updateProfile({
     required String displayName,
     required String city,
@@ -163,7 +164,6 @@ ProfileState build() {
     );
   }
 
-  // ── Upload avatar ─────────────────────────────────────────
   Future<void> uploadAvatar({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -173,14 +173,13 @@ ProfileState build() {
     final result = await _uploadAvatar(filePath: filePath);
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) {
+        state = current.copyWith(profile: profile, isSaving: false);
+        loadProfile(userId: 'me');
+      },
     );
   }
 
-  // ── Delete avatar ─────────────────────────────────────────
   Future<void> deleteAvatar() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -190,17 +189,19 @@ ProfileState build() {
     final result = await _deleteAvatar();
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (_) => state = current.copyWith(
-        profile: current.profile.copyWithFollowing(
-          isFollowing: current.profile.isFollowing,
-          followersCount: current.profile.followersCount,
-        ),
-        isSaving: false,
-      ),
+      (_) {
+        state = current.copyWith(
+          profile: current.profile.copyWithFollowing(
+            isFollowing: current.profile.isFollowing,
+            followersCount: current.profile.followersCount,
+          ),
+          isSaving: false,
+        );
+        loadProfile(userId: 'me');
+      },
     );
   }
 
-  // ── Upload cover photo ────────────────────────────────────
   Future<void> uploadCoverPhoto({required String filePath}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -210,14 +211,13 @@ ProfileState build() {
     final result = await _uploadCoverPhoto(filePath: filePath);
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) {
+        state = current.copyWith(profile: profile, isSaving: false);
+        loadProfile(userId: 'me');
+      },
     );
   }
 
-  // ── Delete cover photo ────────────────────────────────────
   Future<void> deleteCoverPhoto() async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -227,11 +227,13 @@ ProfileState build() {
     final result = await _deleteCoverPhoto();
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (_) => state = current.copyWith(isSaving: false),
+      (_) {
+        state = current.copyWith(isSaving: false);
+        loadProfile(userId: 'me');
+      },
     );
   }
 
-  // ── Follow user ───────────────────────────────────────────
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -244,13 +246,9 @@ ProfileState build() {
     );
 
     final result = await _followUser(userId: userId);
-    result.fold(
-      (failure) => state = current,
-      (_) {},
-    );
+    result.fold((failure) => state = current, (_) {});
   }
 
-  // ── Unfollow user ─────────────────────────────────────────
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -263,9 +261,6 @@ ProfileState build() {
     );
 
     final result = await _unfollowUser(userId: userId);
-    result.fold(
-      (failure) => state = current,
-      (_) {},
-    );
+    result.fold((failure) => state = current, (_) {});
   }
 }

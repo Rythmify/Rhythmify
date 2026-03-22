@@ -32,8 +32,6 @@ class ProfileLoaded extends ProfileState {
     this.isSaving = false,
   });
 
-  // copyWith lets us update only specific fields
-  // without recreating the entire state from scratch
   ProfileLoaded copyWith({
     ProfileEntity? profile,
     List<Track>? likedTracks,

@@ -9,112 +9,120 @@ class OnboardingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: Column(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          // ── Top artwork section ──────────────────────
-          Expanded(
-            child: Image.asset(
-              'assets/images/onboarding_art.jpg',
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+          Image.asset(
+            'assets/images/onboarding_art.jpg',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
           ),
-
-          // ── Bottom panel ─────────────────────────────
           Align(
             alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 5, 24, 40),
-              decoration: const BoxDecoration(
-                color: Color(0xFF5A86D6),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
+            child: Transform.translate(
+              offset: const Offset(0, 100),
+              child: Image.asset(
+                'assets/images/onboarding_art.jpg',
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Transform.scale(
+                    scale: 1.5,
+                    child: Transform.translate(
+                      offset: const Offset(0, 10),
+                      child: Image.asset(
+                        'assets/images/onboarding_blob.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // ── Logo ─────────────────────────────
-                  const Icon(
-                    Icons.cloud,
-                    color: Colors.black,
-                    size: 70,
-                  ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24, 1, 24, 60),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform.translate(
+                      offset: const Offset(0, -20),
+                      child: const Icon(Icons.cloud, color: Colors.black, size: 60),
+                     
+                      ),
 
-                  const SizedBox(height: 1),
+                      const SizedBox(height: 1),
+                      Text(
+                        'Where artists & fans connect.',
+                        textAlign: TextAlign.center,
+                        style: AppTheme.headlineLarge
+                            .copyWith(color: Colors.black)
+                            .copyWith(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w200,
+                            ),
+                      ),
 
-                  // ── Tagline ───────────────────────────
-                  Text(
-                    'Where artists & fans connect.',
-                    key: const Key('authentication_tagline_text'),
-                    textAlign: TextAlign.center,
-                    style: AppTheme.headlineLarge
-                        .copyWith(color: Colors.black)
-                        .copyWith(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w300,
-                        ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // ── Create account button ─────────────
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      key: const Key('authentication_create_account_elevated_button'),
-                      onPressed: () =>
-                          context.push('/sign-in', extra: 'register'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
+                      const SizedBox(height: 44.5),
+                      SizedBox(
+                        width: 265,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              context.push('/sign-in', extra: 'register'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                          ),
+                          child: const Text(
+                            'Create an account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Create an account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 14),
-
-                  // ── Log in button ─────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      key: const Key('authentication_login_elevated_button'),
-                      onPressed: () =>
-                          context.push('/sign-in', extra: 'login'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.6),
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: 265,
+                        height: 40,
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              context.push('/sign-in', extra: 'login'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.6),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                          ),
+                          child: const Text(
+                            'Log in',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Log in',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

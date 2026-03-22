@@ -20,7 +20,6 @@ class LibraryScreen extends ConsumerWidget {
         title: const Text('Library'),
         centerTitle: false,
         actions: [
-          // ── GET PRO button ─────────────────────────────────────────
           TextButton(
             key: const Key('library_get_pro_text_button'),
             onPressed: () {},
@@ -32,22 +31,16 @@ class LibraryScreen extends ConsumerWidget {
               ),
             ),
           ),
-
-          // ── Cast button ────────────────────────────────────────────
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
             onPressed: () {},
           ),
-
-          // ── Settings button ────────────────────────────────────────
           IconButton(
             key: const Key('library_settings_icon_button'),
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/library/settings'),
           ),
-
-          // ── Profile avatar button ──────────────────────────────────
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
@@ -71,7 +64,6 @@ class LibraryScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Library items ──────────────────────────────────────────
             _libraryItem(
               context,
               label: 'Your likes',
@@ -88,14 +80,31 @@ class LibraryScreen extends ConsumerWidget {
             _libraryItem(context, label: 'Your insights', onTap: () {}),
 
             const SizedBox(height: 16),
-
-            // ── Logged in as ───────────────────────────────────────────
             if (currentUserEmail.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   'Logged in as $currentUserEmail',
                   style: AppTheme.labelSmall,
+                ),
+              ),
+            if (currentUserEmail.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        ref.read(authProvider.notifier).signOutUser(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('DEV LOGOUT'),
+                  ),
                 ),
               ),
           ],
@@ -112,7 +121,9 @@ class LibraryScreen extends ConsumerWidget {
     return Column(
       children: [
         GestureDetector(
-          key: Key('library_${label.toLowerCase().replaceAll(' ', '_')}_item_gesture_detector'),
+          key: Key(
+            'library_${label.toLowerCase().replaceAll(' ', '_')}_item_gesture_detector',
+          ),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),

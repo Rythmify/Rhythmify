@@ -251,8 +251,6 @@ class _CreateAccountProfilePageState
                 ),
 
                 const SizedBox(height: 32),
-
-                // Continue button
                 SizedBox(
                   width: double.infinity,
                   height: 50,

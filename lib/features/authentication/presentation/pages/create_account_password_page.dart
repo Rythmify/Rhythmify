@@ -57,14 +57,11 @@ class _CreateAccountPasswordPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Email display
                 Text('Your email address', style: AppTheme.bodyMedium),
                 const SizedBox(height: 4),
                 Text(widget.email, style: AppTheme.bodyLarge),
 
                 const SizedBox(height: 24),
-
-                // Password field
                 AuthTextField(
                   key: const Key('authentication_password_text_field'),
                   hint: 'Choose a password (min. 8 characters)',
@@ -92,8 +89,6 @@ class _CreateAccountPasswordPageState
                 ),
 
                 const SizedBox(height: 50),
-
-                // Continue button
                 SizedBox(
                   width: double.infinity,
                   height: 50,

@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
 import '../../../../core/network/api_client.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final ApiClient client;
 
@@ -84,32 +87,70 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+
+@override
+Future<UserModel> signInWithGoogle() async {
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+    if (googleUser == null) {
+      throw Exception('Google sign in cancelled');
+    }
+
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    final firebaseUser =
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+    final idToken = await firebaseUser.user!.getIdToken();
+
+    print('GOOGLE ID TOKEN: $idToken');
+
+    final response = await client.dio.post(
+      '/auth/google',
+      data: {'id_token': idToken},
+    );
+
+    print('GOOGLE AUTH RESPONSE: ${response.data}');
+
+    final data = response.data['data'];
+    final token = data['access_token'] as String;
+    await client.saveToken(token);
+
+    final user = data['user'];
+    return UserModel.fromJson({
+      'id': user['user_id'],
+      'email': user['email'],
+      'display_name': user['display_name'],
+      'is_email_verified': user['is_verified'] ?? true,
+      'token': token,
+    });
+  } on DioException catch (e) {
+    print('GOOGLE SIGN IN ERROR: ${e.response?.statusCode}');
+    print('GOOGLE SIGN IN ERROR DATA: ${e.response?.data}');
+    _handleDioError(e);
+    rethrow;
+  } catch (e) {
+    print('GOOGLE SIGN IN EXCEPTION: $e');
+    throw Exception(e.toString());
+  }
+}
+
   @override
-  Future<UserModel> signInWithGoogle() async {
+  Future<bool> checkEmailExists(String email) async {
     try {
       final response = await client.dio.post(
-        '/auth/google',
-        data: {
-          'id_token': 'GOOGLE_ID_TOKEN_HERE',
-        },
+        '/auth/check-email',
+        data: {'email': email},
       );
 
-      final responseData = response.data is List
-          ? response.data[0]
-          : response.data;
-
-      final data = responseData['data'];
-      final token = data['access_token'] as String;
-      await client.saveToken(token);
-
-      final user = data['user'];
-      return UserModel.fromJson({
-        'id': user['user_id'].toString(),
-        'email': user['email'],
-        'display_name': user['display_name'],
-        'is_email_verified': true,
-        'token': token,
-      });
+      return response.data['exists']; // true or false
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

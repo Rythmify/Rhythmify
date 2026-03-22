@@ -37,8 +37,6 @@ class EmailVerificationDialog extends ConsumerWidget {
             ),
 
             const SizedBox(height: 24),
-
-            // Resend button
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -58,8 +56,6 @@ class EmailVerificationDialog extends ConsumerWidget {
             ),
 
             const SizedBox(height: 12),
-
-            // Dismiss button
             TextButton(
               key: const Key('authentication_dismiss_text_button'),
               onPressed: () => Navigator.of(context).pop(),
