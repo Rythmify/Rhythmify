@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
@@ -10,6 +11,7 @@ import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 
 class PublicProfilePage extends ConsumerStatefulWidget {
   final String userId;
@@ -30,29 +32,23 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     super.initState();
 
     final authState = ref.read(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
 
-    // Use 'me' when viewing own profile
     _resolvedUserId =
         widget.userId == currentUserId || widget.userId == 'me'
             ? 'me'
             : widget.userId;
 
-    // Only load if viewing another user's profile
-    // For own profile the provider's build() handles it automatically
-    if (_resolvedUserId != 'me') {
-      Future.microtask(() => ref
-          .read(profileProvider.notifier)
-          .loadProfile(userId: _resolvedUserId));
-    }
+    // Always explicitly trigger load
+    Future.microtask(() =>
+        ref.read(profileProvider.notifier).loadProfile(userId: _resolvedUserId));
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        final state = ref.read(profileProvider);
-        if (state is ProfileLoaded) {
+        final s = ref.read(profileProvider);
+        if (s is ProfileLoaded) {
           ref.read(profileProvider.notifier).loadLikedTracks(
                 userId: _resolvedUserId,
               );
@@ -79,9 +75,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
@@ -225,7 +220,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary
+                                  .withValues(alpha: 0.5),
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -300,6 +296,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
+                // ── Loading spinner at the bottom ──────────────────
                 if (index == state.likedTracks.length) {
                   return state.isLoadingTracks
                       ? const Padding(
@@ -313,9 +310,21 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         )
                       : const SizedBox.shrink();
                 }
+
+                final track = state.likedTracks[index];
+
                 return TrackListTile(
-                  key: Key('item_${state.likedTracks[index].id}'),
-                  track: state.likedTracks[index],
+                  key: Key('item_${track.id}'),
+                  track: track,
+                  // ── Tap → play this track immediately ─────────────
+                  onTap: () {
+                    ref
+                        .read(playerStateProvider.notifier)
+                        .playOptimistic(track);
+                  },
+                  onMoreTap: () {
+                    // TODO: open track options bottom sheet
+                  },
                 );
               },
               childCount: state.likedTracks.length + 1,

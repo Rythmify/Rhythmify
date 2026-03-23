@@ -16,12 +16,7 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-// ╔══════════════════════════════════════════════════════╗
-// ║         DATASOURCE SWITCH — CHANGE HERE ONLY         ║
-// ║   true  = Mock data  (no backend needed)             ║
-// ║   false = Real data  (backend must be running)       ║
-// ╚══════════════════════════════════════════════════════╝
-const bool useProfileMockData = false;
+const bool useProfileMockData = true;
 
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
@@ -67,11 +62,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _unfollowUser = UnfollowUserUseCase(repository);
     _getLikedTracks = GetLikedTracksUseCase(repository);
 
-    if (authState is AuthAuthenticated) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        loadProfile(userId: 'me');
-      });
-    }
+    // ── NO auto-load here — initState in each page controls loading ──
 
     return const ProfileInitial();
   }

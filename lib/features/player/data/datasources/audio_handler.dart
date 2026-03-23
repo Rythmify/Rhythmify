@@ -10,10 +10,6 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   RythmifyAudioHandler() { _init(); }
 
   Future<void> _init() async {
-
-    /// Broadcast player state changes to the OS
-    /// Ex: Lock screen, Bluetooth cars, etc.
-  
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
       playbackState.add(playbackState.value.copyWith(
