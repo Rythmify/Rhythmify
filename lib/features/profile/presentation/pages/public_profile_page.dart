@@ -56,7 +56,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       }
     });
   }
-
   @override
   void dispose() {
     _scrollController.dispose();

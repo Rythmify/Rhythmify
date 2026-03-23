@@ -49,6 +49,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     );
   }
 
+
   @override
   Future<UserModel> signUpWithEmail({
     required String email,
@@ -93,7 +94,6 @@ class AuthMockDatasource implements AuthRemoteDatasource {
       token: 'mock-jwt-token-$newId',
     );
   }
-
   @override
   Future<UserModel> signInWithGoogle() async {
     await Future.delayed(const Duration(seconds: 1));
