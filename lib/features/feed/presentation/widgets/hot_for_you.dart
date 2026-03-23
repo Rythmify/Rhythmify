@@ -183,17 +183,20 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                       children: [
                         const Icon(
                           Icons.favorite,
-                          color: AppTheme.primaryBrand,
-                          size: 16,
+                          color: AppTheme.semiWhite,
+                          size: 18,
                         ),
 
                         const SizedBox(width: 6),
 
                         Text(
                           //key for track likes
-                          "${formatCount(widget.track.playCount)} people liked your track",
+                          "${formatCount(widget.track.likeCount)} people liked your track",
                           key: const Key('hot_for_you_like_count_text'),
-                          style: AppTheme.labelSmall,
+                          style: AppTheme.bodyNormal.copyWith(
+                            fontSize: 12,
+                            color: AppTheme.semiWhite,
+                          ),
                         ),
                       ],
                     ),

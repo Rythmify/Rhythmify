@@ -14,7 +14,7 @@ import '../../../../core/network/api_client.dart';
 import 'auth_state.dart';
 
 
-const bool useMockData = false;
+const bool useMockData = true;
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
@@ -54,10 +54,10 @@ class AuthNotifier extends Notifier<AuthState> {
 
   // ── Check if user is already logged in ───────────────────
   Future<void> checkAuthStatus() async {
-    print('CHECK AUTH STATUS STARTED');
+    
 
     if (useMockData) {
-      print('MOCK MODE — setting unauthenticated');
+      
       state = const AuthUnauthenticated();
       return;
     }
@@ -65,18 +65,18 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       // ── Wrap getToken in try-catch to handle corrupted storage ──
       final token = await apiClient.getToken();
-      print('TOKEN FROM STORAGE: $token');
+      
 
       if (token == null) {
-        print('NO TOKEN — setting unauthenticated');
+        
         state = const AuthUnauthenticated();
         return;
       }
 
       // ── Token exists — verify with backend ────────────────
-      print('TOKEN EXISTS — calling /users/me');
+      
       final response = await apiClient.dio.get('/users/me');
-      print('USERS/ME RESPONSE: ${response.data}');
+      
 
       final data = response.data['data'];
       final user = UserModel.fromJson({
@@ -87,11 +87,11 @@ class AuthNotifier extends Notifier<AuthState> {
         'token': token,
       });
 
-      print('SETTING AUTH AUTHENTICATED: ${user.email}');
+      
       state = AuthAuthenticated(user);
     } catch (e) {
       // ── Handles BadPaddingException and any other errors ──
-      print('ERROR IN CHECK AUTH: $e');
+      
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }

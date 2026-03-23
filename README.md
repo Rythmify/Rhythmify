@@ -64,8 +64,17 @@ lib/
     ├── authentication/
     ├── player/
     ├── track_upload/
+    ├── track/
     ├── feed/
-    └── ... (others)
+    ├── comments/
+    ├── messaging/
+    ├── notifications/
+    ├── profile/
+    ├── playlist/
+    ├── library/
+    ├── search/
+    ├── settings/
+    └── premium/
 ```
 
 Each feature module is further divided into `data`, `domain`, and `presentation` layers to maintain strict separation of concerns.
