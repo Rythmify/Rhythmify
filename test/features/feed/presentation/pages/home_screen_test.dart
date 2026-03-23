@@ -132,6 +132,7 @@ Track _makeTestTrack({
   String title = 'Test Track',
   String artist = 'Test Artist',
   int playCount = 1200,
+  int likeCount = 0,
 }) {
   return Track(
     id: id,
@@ -143,6 +144,7 @@ Track _makeTestTrack({
     createdAt: DateTime.utc(2020, 1, 1),
     coverImage: 'assets/images/track_1.jpg',
     playCount: playCount,
+    likeCount: likeCount,
   );
 }
 
@@ -292,7 +294,7 @@ class _LoadingHomeDatasource extends HomeDatasource {
 }
 
 // Shared sample track across tests.
-final _testTrack = _makeTestTrack();
+final _testTrack = _makeTestTrack(likeCount: 1200);
 
 void main() {
   late GoRouter router;
@@ -960,7 +962,7 @@ void main() {
       id: 'test_track',
       title: 'Summer Vibes',
       artist: 'John Doe',
-      playCount: 5600,
+      likeCount: 5600,
     );
 
     final datasource = _FakeHomeDatasource(
@@ -1205,10 +1207,10 @@ void main() {
     expect(find.text('Great Band'), findsOneWidget);
   });
 
-  testWidgets('hot for you track formatting shows K suffix for play count', (
+  testWidgets('hot for you track formatting shows K suffix for like count', (
     tester,
   ) async {
-    final track = _makeTestTrack(playCount: 2500);
+    final track = _makeTestTrack(likeCount: 2500);
 
     final datasource = _FakeHomeDatasource(
       trendingTracks: [_testTrack],
