@@ -47,7 +47,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     try {
       authState = ref.watch(authProvider);
     } catch (e) {
-      print('PROFILE PROVIDER: authProvider error — $e');
+      
       authState = const AuthUnauthenticated();
     }
 
