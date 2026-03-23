@@ -13,13 +13,13 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<ProfileModel> getProfile({required String userId}) async {
     try {
       final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
-      print('GET PROFILE ENDPOINT: $endpoint');
+      
       final response = await client.dio.get(endpoint);
-      print('GET PROFILE RESPONSE: ${response.data}');
+      
       return ProfileModel.fromJson(response.data['data']);
     } on DioException catch (e) {
-      print('GET PROFILE ERROR: ${e.response?.statusCode}');
-      print('GET PROFILE ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -42,11 +42,11 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
           'bio': bio,
         },
       );
-      print('UPDATE PROFILE RESPONSE: ${response.data}');
+      
       return ProfileModel.fromJson(response.data['data']);
     } on DioException catch (e) {
-      print('UPDATE PROFILE ERROR: ${e.response?.statusCode}');
-      print('UPDATE PROFILE ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -55,7 +55,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadAvatar({required String filePath}) async {
     try {
-      print('UPLOADING AVATAR FROM: $filePath');
+      
       final formData = FormData.fromMap({
         'avatar': await MultipartFile.fromFile(filePath),
       });
@@ -64,16 +64,16 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         '/users/me/avatar',
         data: formData,
       );
-      print('UPLOAD AVATAR RESPONSE: ${uploadResponse.data}');
-      print('UPLOAD AVATAR STATUS: ${uploadResponse.statusCode}');
+      
+      
 
       // Reload full profile to get updated avatar URL
       final profile = await getProfile(userId: 'me');
-      print('RELOADED PROFILE AVATAR URL: ${profile.avatarUrl}');
+      
       return profile;
     } on DioException catch (e) {
-      print('UPLOAD AVATAR ERROR: ${e.response?.statusCode}');
-      print('UPLOAD AVATAR ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -83,10 +83,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<void> deleteAvatar() async {
     try {
       await client.dio.delete('/users/me/avatar');
-      print('DELETE AVATAR SUCCESS');
+      
     } on DioException catch (e) {
-      print('DELETE AVATAR ERROR: ${e.response?.statusCode}');
-      print('DELETE AVATAR ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -95,7 +95,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
     try {
-      print('UPLOADING COVER FROM: $filePath');
+      
       final formData = FormData.fromMap({
         'cover': await MultipartFile.fromFile(filePath),
       });
@@ -104,16 +104,16 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         '/users/me/cover',
         data: formData,
       );
-      print('UPLOAD COVER RESPONSE: ${uploadResponse.data}');
-      print('UPLOAD COVER STATUS: ${uploadResponse.statusCode}');
+      
+      
 
       // Reload full profile to get updated cover URL
       final profile = await getProfile(userId: 'me');
-      print('RELOADED PROFILE COVER URL: ${profile.coverUrl}');
+      
       return profile;
     } on DioException catch (e) {
-      print('UPLOAD COVER ERROR: ${e.response?.statusCode}');
-      print('UPLOAD COVER ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -123,10 +123,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<void> deleteCoverPhoto() async {
     try {
       await client.dio.delete('/users/me/cover');
-      print('DELETE COVER SUCCESS');
+      
     } on DioException catch (e) {
-      print('DELETE COVER ERROR: ${e.response?.statusCode}');
-      print('DELETE COVER ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -137,8 +137,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       await client.dio.post('/users/$userId/follow');
     } on DioException catch (e) {
-      print('FOLLOW USER ERROR: ${e.response?.statusCode}');
-      print('FOLLOW USER ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -149,8 +149,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       await client.dio.delete('/users/$userId/follow');
     } on DioException catch (e) {
-      print('UNFOLLOW USER ERROR: ${e.response?.statusCode}');
-      print('UNFOLLOW USER ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }
@@ -167,12 +167,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         '/users/$userId/tracks',
         queryParameters: {'page': page, 'limit': limit},
       );
-      print('GET LIKED TRACKS RESPONSE: ${response.data}');
+      
       final List<dynamic> tracks = response.data['data'];
       return tracks.map((t) => TrackModel.fromJson(t)).toList();
     } on DioException catch (e) {
-      print('GET LIKED TRACKS ERROR: ${e.response?.statusCode}');
-      print('GET LIKED TRACKS ERROR DATA: ${e.response?.data}');
+      
+      
       _handleDioError(e);
       rethrow;
     }

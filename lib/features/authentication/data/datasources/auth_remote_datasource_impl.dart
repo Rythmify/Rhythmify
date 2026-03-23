@@ -110,14 +110,11 @@ Future<UserModel> signInWithGoogle() async {
 
     final idToken = await firebaseUser.user!.getIdToken();
 
-    print('GOOGLE ID TOKEN: $idToken');
 
     final response = await client.dio.post(
       '/auth/google',
       data: {'id_token': idToken},
     );
-
-    print('GOOGLE AUTH RESPONSE: ${response.data}');
 
     final data = response.data['data'];
     final token = data['access_token'] as String;
@@ -132,12 +129,12 @@ Future<UserModel> signInWithGoogle() async {
       'token': token,
     });
   } on DioException catch (e) {
-    print('GOOGLE SIGN IN ERROR: ${e.response?.statusCode}');
-    print('GOOGLE SIGN IN ERROR DATA: ${e.response?.data}');
+    
+    
     _handleDioError(e);
     rethrow;
   } catch (e) {
-    print('GOOGLE SIGN IN EXCEPTION: $e');
+    
     throw Exception(e.toString());
   }
 }
