@@ -11,8 +11,8 @@ import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../features/profile/data/datasources/profile_mock_datasource.dart';
 import 'auth_state.dart';
-
 
 const bool useMockData = true;
 
@@ -31,7 +31,6 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    // ── Datasource selected by useMockData flag above ─────
     final datasource = useMockData
         ? AuthMockDatasource()
         : AuthRemoteDatasourceImpl(client: apiClient);
@@ -46,13 +45,11 @@ class AuthNotifier extends Notifier<AuthState> {
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
 
-    // ── Check existing auth on app start ──────────────────
     Future.microtask(() => checkAuthStatus());
 
     return const AuthLoading();
   }
 
-  // ── Check if user is already logged in ───────────────────
   Future<void> checkAuthStatus() async {
     
 
@@ -63,7 +60,6 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     try {
-      // ── Wrap getToken in try-catch to handle corrupted storage ──
       final token = await apiClient.getToken();
       
 
@@ -73,8 +69,6 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      // ── Token exists — verify with backend ────────────────
-      
       final response = await apiClient.dio.get('/users/me');
       
 
@@ -86,7 +80,6 @@ class AuthNotifier extends Notifier<AuthState> {
         'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
-
       
       state = AuthAuthenticated(user);
     } catch (e) {
@@ -105,7 +98,13 @@ class AuthNotifier extends Notifier<AuthState> {
     final result = await _signInWithEmail(email: email, password: password);
     result.fold(
       (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(user),
+      (user) {
+        // ── Tell profile mock which user just logged in ──
+        if (useMockData) {
+          ProfileMockDatasource.setCurrentUser(user.id);
+        }
+        state = AuthAuthenticated(user);
+      },
     );
   }
 
@@ -126,7 +125,13 @@ class AuthNotifier extends Notifier<AuthState> {
     );
     result.fold(
       (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(user),
+      (user) {
+        // ── Tell profile mock which user just registered ──
+        if (useMockData) {
+          ProfileMockDatasource.setCurrentUser(user.id);
+        }
+        state = AuthAuthenticated(user);
+      },
     );
   }
 
@@ -135,7 +140,12 @@ class AuthNotifier extends Notifier<AuthState> {
     final result = await _signInWithGoogle();
     result.fold(
       (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(user),
+      (user) {
+        if (useMockData) {
+          ProfileMockDatasource.setCurrentUser(user.id);
+        }
+        state = AuthAuthenticated(user);
+      },
     );
   }
 
@@ -144,7 +154,12 @@ class AuthNotifier extends Notifier<AuthState> {
     final result = await _signInWithApple();
     result.fold(
       (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(user),
+      (user) {
+        if (useMockData) {
+          ProfileMockDatasource.setCurrentUser(user.id);
+        }
+        state = AuthAuthenticated(user);
+      },
     );
   }
 

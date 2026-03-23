@@ -1,43 +1,26 @@
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
+import 'package:rythmify/features/profile/data/datasources/profile_mock_datasource.dart';
 
 class AuthMockDatasource implements AuthRemoteDatasource {
-  static const _mockUsers = [
+  static final List<Map<String, dynamic>> _mockUsers = [
     {
       'email': 'karim@rythmify.com',
-      'password': 'karim123',
+      'password': 'Karim123!',
       'id': 'user-001',
       'display_name': 'KarimWI',
     },
     {
       'email': 'bassel@rythmify.com',
-      'password': 'bassel123',
+      'password': 'Bassel123!',
       'id': 'user-002',
       'display_name': 'Bassel Alaa',
     },
     {
-      'email': 'mohammed@rythmify.com',
-      'password': 'mohammed123',
-      'id': 'user-003',
-      'display_name': 'Mohammed Al Abasy',
-    },
-    {
       'email': 'rana@rythmify.com',
-      'password': 'rana123',
+      'password': 'Rana1234!',
       'id': 'user-004',
       'display_name': 'Rana Elgharabawy',
-    },
-    {
-      'email': 'h@rythmify.com',
-      'password': 'h123456',
-      'id': 'user-005',
-      'display_name': '~H',
-    },
-    {
-      'email': 'sohaila@rythmify.com',
-      'password': 'sohaila123',
-      'id': 'user-006',
-      'display_name': '~sohaila',
     },
   ];
 
@@ -76,20 +59,38 @@ class AuthMockDatasource implements AuthRemoteDatasource {
   }) async {
     await Future.delayed(const Duration(seconds: 1));
 
+    // ── Check if email already exists ─────────────────
     final exists = _mockUsers.any(
       (u) => u['email'] == email.trim().toLowerCase(),
     );
+    if (exists) throw Exception('AUTH_EMAIL_ALREADY_EXISTS');
 
-    if (exists) {
-      throw Exception('AUTH_EMAIL_ALREADY_EXISTS');
-    }
+    // ── Generate new user ID ──────────────────────────
+    final newId = 'user-${DateTime.now().millisecondsSinceEpoch}';
+
+    // ── Add to mock users list ────────────────────────
+    _mockUsers.add({
+      'email': email.trim().toLowerCase(),
+      'password': password,
+      'id': newId,
+      'display_name': displayName,
+    });
+
+    // ── Add to mock profiles ──────────────────────────
+    ProfileMockDatasource.addDynamicProfile(
+      id: newId,
+      displayName: displayName,
+      email: email,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+    );
 
     return UserModel(
-      id: 'user-001',
+      id: newId,
       email: email,
       displayName: displayName,
-      isEmailVerified: false,
-      token: 'mock-jwt-token-new',
+      isEmailVerified: true,
+      token: 'mock-jwt-token-$newId',
     );
   }
 
@@ -133,8 +134,6 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     final exists = _mockUsers.any(
       (u) => u['email'] == email.trim().toLowerCase(),
     );
-    if (!exists) {
-      throw Exception('AUTH_INVALID_CREDENTIALS');
-    }
+    if (!exists) throw Exception('AUTH_INVALID_CREDENTIALS');
   }
 }
