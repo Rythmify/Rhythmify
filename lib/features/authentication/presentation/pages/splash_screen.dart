@@ -22,7 +22,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (mounted) {
         final authState = ref.read(authProvider);
         if (authState is AuthLoading) {
-          print('SPLASH TIMEOUT — forcing navigation to onboarding');
+          
           context.go('/onboarding');
         }
       }
@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      print('SPLASH AUTH STATE CHANGED: $next');
+      
       if (next is AuthAuthenticated) {
         context.go('/home');
       } else if (next is AuthUnauthenticated) {
@@ -41,7 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
 
     final authState = ref.watch(authProvider);
-    print('SPLASH CURRENT STATE: $authState');
+    
 
     return Scaffold(
       backgroundColor: AppTheme.background,

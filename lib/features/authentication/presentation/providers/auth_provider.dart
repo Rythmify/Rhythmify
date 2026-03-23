@@ -51,27 +51,26 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> checkAuthStatus() async {
-    print('CHECK AUTH STATUS STARTED');
+    
 
     if (useMockData) {
-      print('MOCK MODE — setting unauthenticated');
+      
       state = const AuthUnauthenticated();
       return;
     }
 
     try {
       final token = await apiClient.getToken();
-      print('TOKEN FROM STORAGE: $token');
+      
 
       if (token == null) {
-        print('NO TOKEN — setting unauthenticated');
+        
         state = const AuthUnauthenticated();
         return;
       }
 
-      print('TOKEN EXISTS — calling /users/me');
       final response = await apiClient.dio.get('/users/me');
-      print('USERS/ME RESPONSE: ${response.data}');
+      
 
       final data = response.data['data'];
       final user = UserModel.fromJson({
@@ -81,16 +80,11 @@ class AuthNotifier extends Notifier<AuthState> {
         'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
-
-      // ── Sync profile mock datasource with logged-in user ──
-      if (useMockData) {
-        ProfileMockDatasource.setCurrentUser(user.id);
-      }
-
-      print('SETTING AUTH AUTHENTICATED: ${user.email}');
+      
       state = AuthAuthenticated(user);
     } catch (e) {
-      print('ERROR IN CHECK AUTH: $e');
+      // ── Handles BadPaddingException and any other errors ──
+      
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }
