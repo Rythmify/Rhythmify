@@ -60,7 +60,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'avatar': await MultipartFile.fromFile(filePath),
       });
 
-      final uploadResponse = await client.dio.post(
+      await client.dio.post(
         '/users/me/avatar',
         data: formData,
       );
@@ -100,7 +100,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'cover': await MultipartFile.fromFile(filePath),
       });
 
-      final uploadResponse = await client.dio.post(
+      await client.dio.post(
         '/users/me/cover',
         data: formData,
       );

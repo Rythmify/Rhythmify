@@ -8,6 +8,39 @@ import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/unsaved_changes_dialog.dart';
 
+/// A full-screen page for editing the authenticated user's profile.
+///
+/// Accessible via:
+/// - [PublicProfilePage] edit icon → `context.push('/profile/edit')`
+/// - GoRouter route `/profile/edit`
+///
+/// **Route ordering**: `/profile/edit` MUST be declared BEFORE
+/// `/profile/:userId` in [app_router.dart]. If the order is reversed,
+/// GoRouter will match `/profile/edit` as `/profile/:userId` with
+/// `userId = 'edit'`, causing the backend to return
+/// `invalid input syntax for type uuid: edit`.
+///
+/// ### Editable fields
+/// - **Display name** (max 50 chars) — inline [TextField]
+/// - **City** (max 35 chars) — inline [TextField]
+/// - **Country** — bottom-sheet country picker ([_showCountryPicker])
+///   stores an ISO alpha-2 code internally but displays the full name.
+/// - **Bio** — bottom-sheet multi-line editor ([_showBioEditor])
+///
+/// ### Media uploads
+/// - **Avatar** — tapping [ProfileAvatar] opens the gallery via
+///   [ImagePicker] and calls [ProfileNotifier.uploadAvatar].
+/// - **Cover photo** — tapping the cover area camera icon opens the
+///   gallery and calls [ProfileNotifier.uploadCoverPhoto].
+///
+/// ### Unsaved changes guard
+/// When back navigation is triggered and [_hasChanges] is `true`, an
+/// [UnsavedChangesDialog] is shown. Uses [PopScope] to intercept the
+/// system back gesture/button.
+///
+/// ### Save feedback
+/// A [SnackBar] is shown after a successful save. [ProfileNotifier.isSaving]
+/// drives the button spinner.
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
@@ -20,10 +53,22 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _cityController = TextEditingController();
   final _bioController = TextEditingController();
 
+  /// The ISO alpha-2 country code sent to the API (e.g. `'EG'`).
   String _selectedCountry = '';
+
+  /// The full country name shown in the UI (e.g. `'Egypt'`).
   String _selectedCountryDisplay = '';
+
+  /// Whether the user has made any changes since the page was opened.
+  ///
+  /// Used by [PopScope] to decide whether to show [UnsavedChangesDialog].
   bool _hasChanges = false;
 
+  /// Map of display name → ISO alpha-2 code for the country picker.
+  ///
+  /// Covers the most common countries for Rythmify's target market.
+  /// The picker stores [_selectedCountry] as ISO code and
+  /// [_selectedCountryDisplay] as the full name.
   final Map<String, String> _countries = {
     'Egypt': 'EG',
     'Palestine': 'PS',
@@ -62,6 +107,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _bioController.addListener(_onChanged);
   }
 
+  /// Populates text controllers and country fields from the current [ProfileLoaded] state.
+  ///
+  /// Performs a reverse lookup on [_countries] to translate the stored
+  /// ISO code back to the full country display name.
   void _loadCurrentValues() {
     final state = ref.read(profileProvider);
     if (state is ProfileLoaded) {
@@ -69,7 +118,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       _cityController.text = state.profile.city ?? '';
       _bioController.text = state.profile.bio ?? '';
 
-      // country from API is ISO code — find display name
       final countryCode = state.profile.country ?? '';
       _selectedCountry = countryCode;
       _selectedCountryDisplay = _countries.entries
@@ -81,6 +129,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
   }
 
+  /// Marks [_hasChanges] as `true` when any text field changes.
+  ///
+  /// Wrapped in an `if (!_hasChanges)` guard to call [setState] only once.
   void _onChanged() {
     if (!_hasChanges) setState(() => _hasChanges = true);
   }
@@ -93,6 +144,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     super.dispose();
   }
 
+  /// Shows [UnsavedChangesDialog] and returns the user's decision.
+  ///
+  /// Returns `true` if the user chose to discard changes (safe to navigate
+  /// away). Returns `false` if they chose to continue editing.
   Future<bool> _onWillPop() async {
     if (!_hasChanges) return true;
     final result = await showDialog<bool>(
@@ -102,6 +157,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     return result ?? false;
   }
 
+  /// Opens the image gallery and uploads the selected image as the avatar.
+  ///
+  /// Uses [ImagePicker] with a 512×512 max size and 85% quality.
+  /// Calls [ProfileNotifier.uploadAvatar] with the selected file path.
   Future<void> _pickAvatar() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
@@ -115,6 +174,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
   }
 
+  /// Opens the image gallery and uploads the selected image as the cover photo.
+  ///
+  /// Uses [ImagePicker] with max width 1200px and 85% quality.
+  /// Calls [ProfileNotifier.uploadCoverPhoto] with the selected file path.
   Future<void> _pickCoverPhoto() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
@@ -127,17 +190,23 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     }
   }
 
+  /// Dispatches the save operation with current field values.
+  ///
+  /// Sends [_selectedCountry] (ISO code) as the country, not the
+  /// display name. Called by the Save button in the AppBar.
   void _onSave() {
-    ref
-        .read(profileProvider.notifier)
-        .updateProfile(
+    ref.read(profileProvider.notifier).updateProfile(
           displayName: _displayNameController.text.trim(),
           city: _cityController.text.trim(),
-          country: _selectedCountry, // sends ISO code to API
+          country: _selectedCountry,
           bio: _bioController.text.trim(),
         );
   }
 
+  /// Shows a bottom sheet with a scrollable country list.
+  ///
+  /// On selection, updates [_selectedCountry] (ISO code) and
+  /// [_selectedCountryDisplay] (full name), and sets [_hasChanges] to `true`.
   void _showCountryPicker() {
     showModalBottomSheet(
       context: context,
@@ -166,6 +235,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     );
   }
 
+  /// Shows a bottom sheet with a multi-line [TextField] for editing the bio.
+  ///
+  /// The sheet adjusts for the keyboard using [MediaQuery.viewInsets].
+  /// Changes to the bio controller are reflected via the existing
+  /// [_onChanged] listener.
   void _showBioEditor() {
     showModalBottomSheet(
       context: context,
@@ -230,6 +304,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final profileState = ref.watch(profileProvider);
     final isSaving = profileState is ProfileLoaded && profileState.isSaving;
 
+    // Listen for successful save and show SnackBar
     ref.listen(profileProvider, (previous, next) {
       if (previous is ProfileLoaded &&
           previous.isSaving &&
@@ -246,15 +321,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       canPop: !_hasChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-
         if (_hasChanges) {
-          await showDialog<bool>(
+          final shouldPop = await showDialog<bool>(
             context: context,
             builder: (_) => const UnsavedChangesDialog(),
           );
-
-          if (result == true && context.mounted) context.pop();
-
+          if ((shouldPop ?? false) && context.mounted) context.pop();
         }
       },
       child: Scaffold(
@@ -303,12 +375,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         ),
         body: profileState is! ProfileLoaded
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+                child:
+                    CircularProgressIndicator(color: AppTheme.primaryBrand),
               )
             : SingleChildScrollView(
                 child: Column(
                   children: [
-                    // ── Cover photo ──────────────────────────────────
+                    // Cover photo + avatar overlap stack
                     Stack(
                       children: [
                         Container(
@@ -319,7 +392,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ? Image.network(
                                   profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (a,b,c) =>
+                                  errorBuilder: (a, b, c) =>
                                       const SizedBox(),
                                 )
                               : null,
@@ -328,12 +401,14 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           right: 12,
                           bottom: 12,
                           child: GestureDetector(
-                            key: const Key('edit_profile_pick_cover_gesture'),
+                            key: const Key(
+                                'edit_profile_pick_cover_gesture'),
                             onTap: _pickCoverPhoto,
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.background.withValues(alpha: 0.7),
+                                color: AppTheme.background
+                                    .withValues(alpha: 0.7),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -365,34 +440,31 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildField(
-                            key: const Key('edit_profile_name_textfield'),
+                            key: const Key(
+                                'edit_profile_name_textfield'),
                             label: 'Display Name',
                             controller: _displayNameController,
                             maxLength: 50,
                           ),
-
                           const Divider(color: AppTheme.surface, height: 1),
-
                           _buildField(
-                            key: const Key('edit_profile_city_textfield'),
+                            key: const Key(
+                                'edit_profile_city_textfield'),
                             label: 'City',
                             controller: _cityController,
                             maxLength: 35,
                           ),
-
                           const Divider(color: AppTheme.surface, height: 1),
-
                           _buildChevronField(
-                            key: const Key('edit_profile_country_gesture'),
+                            key: const Key(
+                                'edit_profile_country_gesture'),
                             label: 'Country',
                             value: _selectedCountryDisplay.isEmpty
                                 ? 'Select country'
                                 : _selectedCountryDisplay,
                             onTap: _showCountryPicker,
                           ),
-
                           const Divider(color: AppTheme.surface, height: 1),
-
                           _buildChevronField(
                             key: const Key('edit_profile_bio_gesture'),
                             label: 'Bio',
@@ -411,6 +483,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     );
   }
 
+  /// Builds an inline [TextField] row with a character counter.
+  ///
+  /// [label] — the field label shown above the text field.
+  /// [controller] — the [TextEditingController] for this field.
+  /// [maxLength] — character limit shown in the counter.
   Widget _buildField({
     Key? key,
     required String label,
@@ -453,6 +530,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     );
   }
 
+  /// Builds a tappable row that opens a bottom-sheet editor or picker.
+  ///
+  /// Used for Country and Bio fields that require a custom input UI.
+  ///
+  /// [label] — the field label shown above the value.
+  /// [value] — the current value or placeholder text.
+  /// [onTap] — the callback that opens the picker/editor.
   Widget _buildChevronField({
     Key? key,
     required String label,
