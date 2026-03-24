@@ -11,7 +11,6 @@ import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../../player/presentation/providers/player_provider.dart';
 
 class PublicProfilePage extends ConsumerStatefulWidget {
   final String userId;
@@ -311,9 +310,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 onTap: () {
                   ref.read(playerStateProvider.notifier).playOptimistic(track);
                 },
-                onMoreTap: () {
-                  // TODO: open track options bottom sheet
-                },
+                onMoreTap: () {},
               );
             }, childCount: state.likedTracks.length + 1),
           ),
