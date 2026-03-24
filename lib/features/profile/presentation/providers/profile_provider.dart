@@ -9,8 +9,6 @@ import '../../domain/usecases/delete_cover_photo_usecase.dart';
 import '../../domain/usecases/follow_user_usecase.dart';
 import '../../domain/usecases/unfollow_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
-import '../../../../features/authentication/presentation/providers/auth_provider.dart';
-import '../../../../features/authentication/presentation/providers/auth_state.dart';
 import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';

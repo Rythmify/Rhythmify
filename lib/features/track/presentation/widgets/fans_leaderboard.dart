@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// [FansLeaderboard] displays a ranked list of the most active fans for a track.
+///
+/// It features a tabbed interface to switch between different engagement
+/// categories (e.g., top contributors, recent activity).
 class FansLeaderboard extends StatefulWidget {
   const FansLeaderboard({super.key});
 

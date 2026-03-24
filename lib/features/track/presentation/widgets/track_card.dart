@@ -5,10 +5,12 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 
-// ===================
-//  TRACK CARD WIDGET
-// ===================
-
+/// [TrackCard] is a UI component that displays a summary of a track.
+///
+/// It provides information such as the track's title, artist, and playback stats,
+/// and allows the user to interact with the track (e.g., play/pause).
+///
+/// Depends on [playerStateProvider].
 class TrackCard extends ConsumerWidget {
   final Track track;
 

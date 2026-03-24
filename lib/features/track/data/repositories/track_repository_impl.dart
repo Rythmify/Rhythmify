@@ -3,6 +3,11 @@ import '../../../../core/data/models/track_dto.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../datasources/track_remote_data_source.dart';
 
+/// [TrackRepositoryImpl] is the concrete implementation of [TrackRepository].
+///
+/// It coordinates data retrieval and mutation operations by delegating to
+/// the [TrackRemoteDataSource]. It is responsible for mapping raw data
+/// (DTOs) from the data source into domain entities ([Track]).
 class TrackRepositoryImpl implements TrackRepository {
   final TrackRemoteDataSource remoteDataSource;
 
@@ -40,17 +45,16 @@ class TrackRepositoryImpl implements TrackRepository {
 
   @override
   Future<void> toggleLike(String id, bool isCurrentlyLiked) async {
-    // Assuming POST /tracks/{id}/like
-    // await remoteDataSource.client.dio.post('/tracks/$id/like');
+    // Implementation for remote like toggle
   }
 
   @override
   Future<void> toggleRepost(String id, bool isCurrentlyReposted) async {
-    // Assuming POST /tracks/{id}/repost
+    // Implementation for remote repost toggle
   }
 
   @override
   Future<void> recordPlay(String id) async {
-    // Assuming POST /tracks/{id}/play
+    // Implementation for remote play recording
   }
 }
