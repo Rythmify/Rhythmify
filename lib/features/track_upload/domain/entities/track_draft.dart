@@ -1,8 +1,24 @@
+/// Domain Entity: TrackDraft
+///
+/// Represents a temporary track being prepared for upload.
+///
+/// This entity holds all metadata and file references required
+/// before sending the track to the backend.
+///
+/// Responsibilities:
+/// - Store audio file path, duration, and metadata
+/// - Track upload state (status + progress)
+/// - Provide immutable updates using copyWith()
+///
+/// Notes:
+/// - This is NOT the final Track entity (handled in M9)
+/// - This is only used during the upload process
 enum UploadStatus { draft, uploading, success, error }
 
 class TrackDraft {
+
   //added recently
-  final String? audioFileName;
+  final String? audioFileName; 
   // Known at creation
   final String artistId;
   final String localAudioPath;
@@ -11,13 +27,13 @@ class TrackDraft {
   // Filled on form screen
   final String? title;
   final String? artist;
-  final String? genre; // ← NEW: single genre selection
+  final String? genre;           // ← NEW: single genre selection
   final String? localArtworkPath;
   final String? description;
-  final String? caption; // ← NEW: short optional caption
+  final String? caption;         // ← NEW: short optional caption
 
   // Has defaults
-  final List<String> tags; // multiple tag selections
+  final List<String> tags;       // multiple tag selections
   final bool isPublic;
   final UploadStatus status;
   final double uploadProgress;
@@ -62,29 +78,32 @@ class TrackDraft {
   }) {
     return TrackDraft(
       //added recently
-      audioFileName: audioFileName ?? this.audioFileName,
-
-      artistId: artistId ?? this.artistId,
-      localAudioPath: localAudioPath ?? this.localAudioPath,
-      duration: duration ?? this.duration,
-      title: title ?? this.title,
-      artist: artist ?? this.artist,
-      genre: genre ?? this.genre,
+      audioFileName:    audioFileName  ?? this.audioFileName,
+      
+      artistId:         artistId       ?? this.artistId,
+      localAudioPath:   localAudioPath ?? this.localAudioPath,
+      duration:         duration       ?? this.duration,
+      title:            title          ?? this.title,
+      artist:           artist         ?? this.artist,
+      genre:            genre          ?? this.genre,
       localArtworkPath: clearArtwork
-          ? null
-          : localArtworkPath ?? this.localArtworkPath,
-      description: clearDescription ? null : description ?? this.description,
-      caption: clearCaption ? null : caption ?? this.caption,
-      tags: tags ?? this.tags,
-      isPublic: isPublic ?? this.isPublic,
-      status: status ?? this.status,
-      uploadProgress: uploadProgress ?? this.uploadProgress,
+                          ? null
+                          : localArtworkPath ?? this.localArtworkPath,
+      description:      clearDescription
+                          ? null
+                          : description ?? this.description,
+      caption:          clearCaption
+                          ? null
+                          : caption ?? this.caption,
+      tags:             tags           ?? this.tags,
+      isPublic:         isPublic       ?? this.isPublic,
+      status:           status         ?? this.status,
+      uploadProgress:   uploadProgress ?? this.uploadProgress,
     );
   }
 
   @override
-  String toString() =>
-      'TrackDraft('
+  String toString() => 'TrackDraft('
       'title: $title, '
       'artist: $artist, '
       'genre: $genre, '
