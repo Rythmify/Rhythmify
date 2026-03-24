@@ -11,6 +11,11 @@ import 'package:rythmify/features/messaging/presentation/providers/conversations
 import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_input_bubble.dart';
 
+/// A screen that displays the chat conversation between users.
+///
+/// This screen handles fetching and displaying messages, marking them as read,
+/// and sending new messages. It supports both existing conversations and
+/// starting new ones with a participant.
 class ChatScreen extends ConsumerStatefulWidget {
   final Conversation? conv;
   final String? newParticipantName;

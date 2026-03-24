@@ -67,12 +67,6 @@ final _searchTabKey = GlobalKey<NavigatorState>(debugLabel: 'searchTab');
 final _libraryTabKey = GlobalKey<NavigatorState>(debugLabel: 'libraryTab');
 final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 
-// ── Container ref for redirect logic ─────────────────────
-late ProviderContainer _container;
-
-void initRouter(ProviderContainer container) {
-  _container = container;
-}
 
 final routerProvider = Provider<GoRouter>((ref) {
   // ── Listen to auth state changes to refresh router ────

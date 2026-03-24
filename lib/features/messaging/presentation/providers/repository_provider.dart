@@ -1,18 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-
 import 'package:rythmify/features/messaging/data/repositories/repository_implement.dart';
 import 'package:rythmify/features/messaging/domain/repositories/messaging_repository.dart';
-
-//________ Uncomment to use real data _______
-//import 'package:rythmify/features/messaging/data/datasources/datasource_implement.dart';
-
-//________ Uncomment to use mock data _______
+import 'package:rythmify/features/messaging/data/datasources/datasource_implement.dart';
 import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
 
-// Change this to switch modes
+/// toggle between mock data and real API
 const bool useMockData = true;
 
+/// Provider for the [MessagingRepository] implementation.
+///
+/// This provider initializes the [MessagingRepository] by configuring the
+/// necessary data source (either [MockDatasourceImplement] or [DatasourceImplement])
+/// based on the [useMockData] flag, and sets up the HTTP client ([Dio]).
+///
+/// It interacts with the [Data] layer to provide a concrete repository instance
+/// to the rest of the application.
 final repositoryprovider = Provider<MessagingRepository>((ref) {
   final dio = Dio(
     BaseOptions(
@@ -21,9 +24,10 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
     ),
   );
 
-  //______ Comment and Uncomment to Switch the datasource_____
-  //final datasource = DatasourceImplement(dio: dio);
-  final datasource = MockDatasourceImplement();
+  // Automatically switch datasources based on the boolean flag
+  final datasource = useMockData 
+      ? MockDatasourceImplement() 
+      : DatasourceImplement(dio: dio);
 
   return RepositoryImplement(dataSource: datasource);
 });

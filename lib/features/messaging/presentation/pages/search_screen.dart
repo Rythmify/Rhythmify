@@ -8,6 +8,10 @@ import 'package:rythmify/features/messaging/presentation/providers/search_query_
 import 'package:rythmify/features/messaging/presentation/widgets/search_body.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/searchbar_widget.dart';
 
+/// A screen for searching users to start a new conversation.
+///
+/// It displays a search bar and shows following users by default,
+/// allowing the user to search for other artists and fans to message.
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 

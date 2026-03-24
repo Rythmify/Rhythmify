@@ -3,6 +3,13 @@ import 'package:rythmify/features/messaging/domain/entities/potential_conversati
 import 'package:rythmify/features/messaging/domain/usecases/get_searched_users_usecase.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
+/// Provider for searching users based on a [query] string.
+///
+/// This provider uses [GetSearchedUsersUsecase] to filter potential chat 
+/// participants matching the provided query. Returns an empty list if 
+/// the query is empty.
+///
+/// Depends on [repositoryprovider].
 final getSearchedUsersProvider =
     FutureProvider.family<List<PotentialConversation>, String>((
       ref,

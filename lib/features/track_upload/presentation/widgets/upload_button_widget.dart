@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+
+enum UploadButtonState { uploading, processing, done }
+
 /// Widget: UploadButtonWidget
 ///
 /// Animated button displaying upload progress.
@@ -9,9 +13,7 @@
 ///
 /// Notes:
 /// - Uses AnimationController for smooth transitions
-import 'package:flutter/material.dart';
 
-enum UploadButtonState { uploading, processing, done }
 
 class UploadButtonWidget extends StatefulWidget {
   final UploadButtonState buttonState;

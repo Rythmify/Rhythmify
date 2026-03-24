@@ -1,3 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/features/track_upload/data/datasources/upload_track_remote_datasource.dart';
+import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
+
+
 /// Provider: UploadFormNotifier & UploadFormState
 ///
 /// Manages all UI state for the Upload Track feature.
@@ -17,13 +24,6 @@
 // For now: form state only.
 // Upload logic wired in later when backend is confirmed.
 
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/track_upload/data/datasources/upload_track_remote_datasource.dart';
-import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
 
 // ── Upload form state ──────────────────────────────────────────────────────
 

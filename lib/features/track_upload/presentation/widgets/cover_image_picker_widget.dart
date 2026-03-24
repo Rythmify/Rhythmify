@@ -1,3 +1,10 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
+
+
 /// Widget: CoverImagePickerWidget
 ///
 /// Displays and allows selection of track artwork.
@@ -8,11 +15,6 @@
 ///
 /// Notes:
 /// - Reads artwork path from UploadFormProvider
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/core/theme/app_theme.dart';
-import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 
 class CoverImagePickerWidget extends ConsumerWidget {
   final VoidCallback onTap;

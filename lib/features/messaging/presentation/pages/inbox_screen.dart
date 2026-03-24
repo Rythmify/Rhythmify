@@ -6,6 +6,10 @@ import 'package:rythmify/features/messaging/presentation/widgets/empty_inbox.dar
 import 'package:rythmify/features/messaging/presentation/widgets/inbox_conversations.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
 
+/// A screen that displays the list of user conversations (inbox).
+///
+/// It shows existing conversations or an empty state if none exist.
+/// It also provides a button to compose a new message by searching for users.
 class InboxScreen extends ConsumerWidget {
   const InboxScreen({super.key});
 

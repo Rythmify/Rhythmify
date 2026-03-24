@@ -7,11 +7,26 @@ import 'package:rythmify/features/messaging/presentation/providers/conversations
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
+/// Notifier that manages the state of sending a message or starting a conversation.
+///
+/// The state ([bool]) represents whether a message is currently being sent 
+/// (`true` for loading, `false` otherwise).
+///
+/// Depends on [repositoryprovider], [conversationProvider], and [messageProvider].
 class SendMessageNotifier extends StateNotifier<bool> {
   final Ref ref;
 
   SendMessageNotifier({required this.ref}) : super(false);
 
+  /// Sends a message within an existing conversation or starts a new one.
+  ///
+  /// If [conversationId] is provided, it uses [SendMessageUsecase] to send the message.
+  /// Otherwise, it uses [StartConversationUsecase] with [newParticipantId].
+  ///
+  /// Side effects:
+  /// - Updates the local state to `true` during the operation.
+  /// - Invalidates [conversationProvider] and [messageProvider] upon success to trigger UI updates.
+  /// - Syncs with the [RemoteDataSource] via the repository.
   Future<Conversation?> sendMessage({
     required String body,
     String? conversationId,

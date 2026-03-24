@@ -6,7 +6,12 @@ import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
+/// Concrete implementation of [DatasourceInterface] using the Dio HTTP client.
+///
+/// This class handles all remote messaging operations by making asynchronous 
+/// requests to the specified [ApiEndPoints].
 class DatasourceImplement implements DatasourceInterface {
+  /// The Dio HTTP client used for making network requests.
   final Dio dio;
   DatasourceImplement({required this.dio});
 

@@ -1,19 +1,44 @@
+/// A utility class that defines all API endpoints for messaging-related operations.
+///
+/// This class provides constant strings and static methods to construct 
+/// the necessary URL paths for communication with the remote server.
 class ApiEndPoints {
   ApiEndPoints._();
 
+  /// Endpoint to retrieve all conversations for the current user.
   static const String getConversations = '/messages/conversations';
+
+  /// Returns the endpoint to retrieve details for a specific [conversationId].
   static String getConversation(String conversationId) =>
       '/messages/conversations/$conversationId';
+
+  /// Returns the endpoint to retrieve messages for a specific [conversationId].
   static String getMessages(String conversationId) =>
       '/messages/conversations/$conversationId/messages';
+
+  /// Returns the endpoint to send a message within a specific [conversationId].
   static String sendMessage(String conversationId) =>
       '/messages/conversations/$conversationId/messages';
+
+  /// Endpoint to initiate a new conversation.
   static const String newConversation = '/messages/new';
+
+  /// Endpoint to retrieve the total count of unread messages.
   static const String getUnreadCount = '/messages/unread-count';
+
+  /// Returns the endpoint to block a specific user by their [userId].
   static String blockUser(String userId) => '/messages/block/$userId';
+
+  /// Returns the endpoint to unblock a specific user by their [userId].
   static String unBlockUser(String userId) => '/messages/block/$userId';
+
+  /// Returns the endpoint to mark a specific [messageId] as read in a [conversationId].
   static String markMessagesAsRead(String conversationId, String messageId) =>
       '/messages/conversations/$conversationId/messages/$messageId/read';
+
+  /// Returns the endpoint to retrieve the list of users followed by [userId].
   static String getFollowings(String userId) => '/users/$userId/following';
+
+  /// Returns the endpoint to search for users based on a [query].
   static String getSearchedUsers(String query) => '/search?q=$query&type=users';
 }
