@@ -1,3 +1,15 @@
+/// Widget: UploadProgressOverlay
+///
+/// Displays upload progress, success, or error feedback.
+///
+/// Responsibilities:
+/// - Show circular progress indicator during upload
+/// - Display success confirmation
+/// - Display error message on failure
+///
+/// Notes:
+/// - Blocks UI interaction while uploading
+/// - Dismissible after success or error
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/core/theme/app_theme.dart';

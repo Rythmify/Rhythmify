@@ -1,7 +1,24 @@
+/// Provider: UploadFormNotifier & UploadFormState
+///
+/// Manages all UI state for the Upload Track feature.
+///
+/// Responsibilities:
+/// - Store and update track draft data
+/// - Handle form inputs (title, artist, genre, etc.)
+/// - Manage upload process and progress
+/// - Communicate with domain layer via UploadTrackUseCase
+/// - Handle success and error states
+///
+/// Notes:
+/// - Uses Riverpod Notifier for state management
+/// - Acts as the bridge between UI and business logic
+
 // Manages all state for the upload track screen.
 // For now: form state only.
 // Upload logic wired in later when backend is confirmed.
 
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/track_upload/data/datasources/upload_track_remote_datasource.dart';
 import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
@@ -82,7 +99,6 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
     );
   }
 
-  // Form field updates
   void setTitle(String value) =>
       _updateDraft(state.draft!.copyWith(title: value));
 
@@ -107,8 +123,6 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   void removeArtwork() =>
       _updateDraft(state.draft!.copyWith(clearArtwork: true));
 
-  //should be added here
-  //added recently
   void setUploadProgress(double progress) {
     if (state.draft == null) return;
     _updateDraft(

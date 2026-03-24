@@ -1,3 +1,14 @@
+/// Widget: UploadButtonWidget
+///
+/// Animated button displaying upload progress.
+///
+/// Responsibilities:
+/// - Show upload progress visually
+/// - Animate progress changes
+/// - Display completion state with replace option
+///
+/// Notes:
+/// - Uses AnimationController for smooth transitions
 import 'package:flutter/material.dart';
 
 enum UploadButtonState { uploading, processing, done }

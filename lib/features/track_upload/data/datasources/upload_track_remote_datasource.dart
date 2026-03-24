@@ -1,3 +1,18 @@
+/// Data Source: UploadTrackRemoteDataSource
+///
+/// Handles all remote API operations related to track upload.
+///
+/// Responsibilities:
+/// - Fetch available tags from backend (/tags)
+/// - Upload track data and files to backend (/tracks)
+/// - Build multipart/form-data requests
+/// - Track upload progress
+/// - Handle and map HTTP errors
+///
+/// Notes:
+/// - Uses Dio for HTTP requests
+/// - Uses MultipartFile for sending audio and image files
+/// - Does NOT return domain entities, only data models
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
@@ -5,6 +20,8 @@ import 'package:rythmify/core/network/api_client.dart';
 import '../models/upload_response_model.dart';
 
 class UploadTrackRemoteDataSource {
+  // Uses the shared ApiClient your team leader built
+  // Auth token is attached automatically — you don't touch it here
   final Dio _dio = apiClient.dio;
 
   // ── Fetch Tags ─────────────────────────────────────────────────────────────
@@ -61,21 +78,6 @@ class UploadTrackRemoteDataSource {
         ),
       };
 
-      // --- DEBUG PRINTS FOR TESTING ---
-      print('--+-- [UPLOAD] Preparing to send to DB...');
-      print('--+-- Audio File: ${audioFile.path}');
-      print('--+-- Metadata (JSON-like):');
-      print({
-        'title': title,
-        'artist': artist,
-        'genre': genre,
-        'description': description,
-        'caption': caption,
-        'tags': tags,
-        'is_public': isPublic,
-      });
-      // --------------------------------
-
       // Add optional fields only if they have values
       if (description != null && description.isNotEmpty) {
         fields['description'] = description;
@@ -101,10 +103,6 @@ class UploadTrackRemoteDataSource {
       final response = await _dio.post(
         '/tracks',
         data: formData,
-        options: Options(
-          contentType: Headers
-              .multipartFormDataContentType, // Forces multipart instead of JSON
-        ),
         onSendProgress: (sent, total) {
           if (total > 0 && onProgress != null) {
             final progress = (sent / total).clamp(0.0, 1.0);
@@ -112,8 +110,6 @@ class UploadTrackRemoteDataSource {
           }
         },
       );
-
-      print('--- [SERVER RESPONSE]: ${response.data}');
 
       return UploadResponseModel.fromJson(
         response.data as Map<String, dynamic>,
@@ -126,15 +122,10 @@ class UploadTrackRemoteDataSource {
   // ── Error handler ──────────────────────────────────────────────────────────
 
   Exception _handleError(DioException e) {
-    print('----[NETWORK ERROR DIAGNOSTIC]:');
-    print('   - Type: ${e.type}');
-    print('   - Message: ${e.message}');
-    print('   - Error Object: ${e.error}');
-    print('   - URL: ${e.requestOptions.baseUrl}${e.requestOptions.path}');
-
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
 
+    // Try to extract message from server response
     final message =
         data?['error']?['message'] ??
         data?['message'] ??

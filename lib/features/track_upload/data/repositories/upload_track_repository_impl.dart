@@ -1,3 +1,16 @@
+/// Repository Implementation: UploadTrackRepositoryImpl
+///
+/// Implements UploadTrackRepository using remote data source.
+///
+/// Responsibilities:
+/// - Call remote API via UploadTrackRemoteDataSource
+/// - Convert API responses into domain-friendly results
+/// - Map exceptions to Failure objects
+///
+/// Notes:
+/// - Acts as a bridge between Domain and Data layers
+/// - Ensures domain layer does not depend on Dio or API details
+
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:rythmify/core/error/failures.dart';

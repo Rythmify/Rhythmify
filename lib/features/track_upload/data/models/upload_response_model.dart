@@ -1,3 +1,15 @@
+/// Data Model: UploadResponseModel
+///
+/// Represents the server response after uploading a track.
+///
+/// Responsibilities:
+/// - Parse JSON response from POST /tracks
+/// - Extract track ID and status
+///
+/// Notes:
+/// - Handles different response shapes from backend
+/// - Only includes minimal data required by Upload module
+/// - Full Track model is handled by M9 module
 class UploadResponseModel {
   final String id;
   final String status; // "processing" initially

@@ -1,3 +1,18 @@
+/// Domain Entity: TrackDraft
+///
+/// Represents a temporary track being prepared for upload.
+///
+/// This entity holds all metadata and file references required
+/// before sending the track to the backend.
+///
+/// Responsibilities:
+/// - Store audio file path, duration, and metadata
+/// - Track upload state (status + progress)
+/// - Provide immutable updates using copyWith()
+///
+/// Notes:
+/// - This is NOT the final Track entity (handled in M9)
+/// - This is only used during the upload process
 enum UploadStatus { draft, uploading, success, error }
 
 class TrackDraft {

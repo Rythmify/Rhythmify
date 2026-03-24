@@ -1,3 +1,16 @@
+/// Screen: UploadTrackScreen
+///
+/// Main UI for uploading tracks.
+///
+/// Responsibilities:
+/// - Display upload form (tabs: Track Info, Advanced, Permissions)
+/// - Collect user input (title, artist, tags, etc.)
+/// - Trigger upload process via provider
+/// - Display upload progress overlay
+///
+/// Notes:
+/// - Uses TabBar for multi-step form
+/// - Uses Riverpod for state management
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

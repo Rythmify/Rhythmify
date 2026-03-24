@@ -1,5 +1,29 @@
+/// UseCase: UploadTrackUseCase
+///
+/// Handles the full track upload process.
+///
+/// Responsibilities:
+/// - Validate track data before upload
+/// - Prepare audio and artwork files
+/// - Call repository to perform upload
+///
+/// Flow:
+/// 1. Validate TrackDraft fields
+/// 2. Convert paths to File objects
+/// 3. Trigger upload via repository
+///
+/// Returns:
+/// - Track ID on success
+/// - Failure on error
+///
+/// Notes:
+/// - Contains business validation rules
+/// - Acts as the main entry point for uploading
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:rythmify/core/error/failures.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
 import 'package:rythmify/core/error/failures.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';

@@ -1,3 +1,19 @@
+/// UseCase: PickCoverUseCase
+///
+/// Handles selecting a cover image from camera or gallery.
+///
+/// Responsibilities:
+/// - Open image picker
+/// - Compress and resize image
+/// - Validate file existence
+///
+/// Returns:
+/// - File on success
+/// - Failure on error or cancellation
+///
+/// Notes:
+/// - Uses image_picker package
+/// - Optimizes image size for upload performance
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';

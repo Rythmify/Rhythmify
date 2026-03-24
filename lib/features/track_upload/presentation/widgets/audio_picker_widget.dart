@@ -1,3 +1,14 @@
+/// Widget: AudioPickerWidget
+///
+/// Displays selected audio file information and artwork picker.
+///
+/// Responsibilities:
+/// - Show audio file name and duration
+/// - Allow user to pick cover image
+/// - Display upload progress button
+///
+/// Notes:
+/// - Interacts with UploadFormProvider to update artwork
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
