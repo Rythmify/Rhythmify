@@ -1,9 +1,8 @@
 
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
-import '../entities/track_draft.dart';
-
+import 'package:rythmify/core/error/failures.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 abstract class UploadTrackRepository {
   /// Fetches available tags from GET /tags
   Future<Either<Failure, List<String>>> fetchTags();

@@ -3,8 +3,13 @@
 // For now: form state only.
 // Upload logic wired in later when backend is confirmed.
 
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/features/track_upload/data/datasources/upload_track_remote_datasource.dart';
+import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
 
 
 
@@ -135,6 +140,55 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 }
 
 
+//added in backend integration phase
+Future<void> startUpload({
+  required WidgetRef ref,
+  required void Function(String trackId) onSuccess,
+  required void Function(String error) onError,
+}) async {
+  final draft = state.draft;
+  if (draft == null) return;
+
+  // Set status to uploading
+  _updateDraft(draft.copyWith(
+    status:         UploadStatus.uploading,
+    uploadProgress: 0.0,
+  ));
+
+  // Get the usecase
+  final useCase = ref.read(uploadUseCaseProvider);
+
+  // Call usecase with draft and progress callback
+  final result = await useCase(
+    draft:      draft,
+    onProgress: (progress) {
+      if (state.draft == null) return;
+      _updateDraft(state.draft!.copyWith(
+        uploadProgress: progress,
+      ));
+    },
+  );
+
+  // Handle result
+  result.fold(
+    (failure) {
+      if (state.draft == null) return;
+      _updateDraft(state.draft!.copyWith(
+        status: UploadStatus.error,
+      ));
+      onError(failure.message);
+    },
+    (trackId) {
+      if (state.draft == null) return;
+      _updateDraft(state.draft!.copyWith(
+        status:         UploadStatus.success,
+        uploadProgress: 1.0,
+      ));
+      onSuccess(trackId);
+    },
+  );
+}
+
 
   void addTag(String tag) {
     if (state.draft == null) return;
@@ -169,6 +223,26 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 final uploadFormProvider =
     NotifierProvider<UploadFormNotifier, UploadFormState>(
   UploadFormNotifier.new,
+);
+
+// ── Infrastructure providers ───────────────────────────────────────────────
+// These wire the datasource → repository → usecase together
+// ApiClient handles auth automatically — no token injection needed here
+
+final _uploadDataSourceProvider = Provider<UploadTrackRemoteDataSource>(
+  (_) => UploadTrackRemoteDataSource(),
+);
+
+final _uploadRepositoryProvider = Provider<UploadTrackRepositoryImpl>(
+  (ref) => UploadTrackRepositoryImpl(
+    dataSource: ref.watch(_uploadDataSourceProvider),
+  ),
+);
+
+final uploadUseCaseProvider = Provider<UploadTrackUseCase>(
+  (ref) => UploadTrackUseCase(
+    ref.watch(_uploadRepositoryProvider),
+  ),
 );
 
 
