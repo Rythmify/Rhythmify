@@ -54,6 +54,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ? ref.watch(unreadProvider(widget.conv!.conversationId))
         : null;
 
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
       backgroundColor: Colors.black,
@@ -92,9 +94,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     Expanded(
                       child: ListView.builder(
                         itemCount: msg.length,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 12,
+                          bottom: 150,
                         ),
                         itemBuilder: (context, index) {
                           final message = msg[index];
@@ -108,13 +112,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         },
                       ),
                     ),
-                    //Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     Padding(
                       padding: EdgeInsets.only(
                         left: 16,
                         right: 16,
                         top: 8,
-                        bottom: MediaQuery.of(context).padding.bottom + 80,
+                        bottom: isKeyboardOpen ? 10 : 80, // 85 (NavBar) + 16
                       ),
                       child: Row(
                         children: [
@@ -154,17 +157,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _blanckChatPage() {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Column(
       children: [
         Expanded(child: const SizedBox()),
-
-        ///Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         Padding(
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
             top: 8,
-            bottom: MediaQuery.of(context).padding.bottom + 80,
+            bottom: isKeyboardOpen ? 16 : 101, // 85 (NavBar) + 16
           ),
           child: Row(
             children: [
