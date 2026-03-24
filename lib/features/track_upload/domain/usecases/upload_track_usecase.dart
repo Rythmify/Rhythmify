@@ -58,11 +58,9 @@ class UploadTrackUseCase {
     return repository.uploadTrack(
       draft: draft,
       audioFile: audioFile,
-      draft: draft,
-      audioFile: audioFile,
       artworkFile: artworkFile,
       onProgress: onProgress,
-      onProgress: onProgress,
+
     );
   }
 
