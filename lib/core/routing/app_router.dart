@@ -32,7 +32,8 @@ import '../../features/player/presentation/pages/full_player_page.dart';
 //  Messaging imports
 import '../../features/messaging/presentation/pages/inbox_screen.dart';
 import '../../features/messaging/presentation/pages/chat_screen.dart';
-import '../../features/messaging/presentation/pages/search_screen.dart' as messaging;
+import '../../features/messaging/presentation/pages/search_screen.dart'
+    as messaging;
 
 //  Track_upload imports
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
@@ -74,7 +75,7 @@ void initRouter(ProviderContainer container) {
 
 final routerProvider = Provider<GoRouter>((ref) {
   // ── Listen to auth state changes to refresh router ────
-  ref.listen(authProvider, (a,b) {});
+  ref.listen(authProvider, (a, b) {});
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -196,12 +197,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                           );
 
                           return ChatScreen(conv: conv);
-                        }
+                        },
                       ),
                       GoRoute(
                         path: 'search',
-                        builder:(context, state) => const messaging.SearchScreen(),
-                      )
+                        builder: (context, state) =>
+                            const messaging.SearchScreen(),
+                      ),
                     ],
                   ),
                   GoRoute(

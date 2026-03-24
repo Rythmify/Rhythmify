@@ -12,20 +12,19 @@ class ConversationModel extends Conversation {
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
-
     final participant = json['participant'] as Map<String, dynamic>? ?? {};
     final lastMessage = json['last_message'] as Map<String, dynamic>? ?? {};
 
     return ConversationModel(
-      conversationId: json['id'] ?? '', 
+      conversationId: json['id'] ?? '',
       participantId: participant['id'] ?? '',
       participantName: participant['display_name'] ?? 'Unknown',
       participantAvatar: participant['profile_picture'],
       lastMessagePreview: lastMessage['body'] ?? '',
-      lastMessageDate: lastMessage['created_at'] != null 
+      lastMessageDate: lastMessage['created_at'] != null
           ? DateTime.tryParse(lastMessage['created_at']) ?? DateTime.now()
           : DateTime.now(),
-          
+
       unReadCount: json['unread_count'] as int? ?? 0,
     );
   }
@@ -38,7 +37,7 @@ class ConversationModel extends Conversation {
         'display_name': participantName,
         'profile_picture': participantAvatar,
       },
-      'last_message': lastMessagePreview.isNotEmpty 
+      'last_message': lastMessagePreview.isNotEmpty
           ? {
               'body': lastMessagePreview,
               'created_at': lastMessageDate.toIso8601String(),

@@ -11,17 +11,24 @@ class ScrollingArtworkBackground extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watches the position, duration and status
-    final position = ref.watch(playerStateProvider.select((state) => state.position));
-    final duration = ref.watch(playerStateProvider.select((state) => state.duration));
-    final status = ref.watch(playerStateProvider.select((state) => state.status));
+    final position = ref.watch(
+      playerStateProvider.select((state) => state.position),
+    );
+    final duration = ref.watch(
+      playerStateProvider.select((state) => state.duration),
+    );
+    final status = ref.watch(
+      playerStateProvider.select((state) => state.status),
+    );
 
-    final bool isPaused = status == PlayerStatus.paused || status == PlayerStatus.initial;
+    final bool isPaused =
+        status == PlayerStatus.paused || status == PlayerStatus.initial;
 
     double progress = 0.0;
     if (duration.inMilliseconds > 0) {
       progress = position.inMilliseconds / duration.inMilliseconds;
     }
-    
+
     // Maps progress (0.0 to 1.0) to Alignment (-1.0 to 1.0)
     final double alignmentX = -1.0 + (progress * 2.0);
 

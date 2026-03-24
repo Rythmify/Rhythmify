@@ -31,17 +31,21 @@ class TrackModel extends Track {
   factory TrackModel.fromJson(Map<String, dynamic> json) {
     return TrackModel(
       id: json['id'] as String? ?? '',
-      userId: json['user']?['id'] as String? ?? json['user_id'] as String? ?? '',
+      userId:
+          json['user']?['id'] as String? ?? json['user_id'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      artist: json['user']?['display_name'] as String? ?? json['artist'] as String? ?? '',
-      audioUrl: json['stream_url'] as String? ?? json['audio_url'] as String? ?? '',
-      duration: Duration(
-        seconds: json['duration'] as int? ?? 0,
-      ),
-      createdAt: json['created_at'] != null 
-          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now() 
+      artist:
+          json['user']?['display_name'] as String? ??
+          json['artist'] as String? ??
+          '',
+      audioUrl:
+          json['stream_url'] as String? ?? json['audio_url'] as String? ?? '',
+      duration: Duration(seconds: json['duration'] as int? ?? 0),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
           : DateTime.now(),
-      coverImage: json['artwork_url'] as String? ?? json['cover_image'] as String?,
+      coverImage:
+          json['artwork_url'] as String? ?? json['cover_image'] as String?,
       description: json['description'] as String?,
       playCount: json['play_count'] as int? ?? 0,
       likeCount: json['like_count'] as int? ?? 0,

@@ -1,7 +1,6 @@
 import '../../../../core/domain/entities/track.dart';
 
 abstract class TrackRepository {
-
   //=========================
   //   --- Fetching Data ---
   //=========================
@@ -27,5 +26,4 @@ abstract class TrackRepository {
 
   /// Tells the backend that the track was played (increments playCount).
   Future<void> recordPlay(String id);
-  
 }

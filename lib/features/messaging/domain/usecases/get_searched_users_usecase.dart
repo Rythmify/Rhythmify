@@ -3,12 +3,9 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 
 class GetSearchedUsersUsecase {
   final MessagingRepository repo;
-  GetSearchedUsersUsecase({
-    required this.repo
-  });
+  GetSearchedUsersUsecase({required this.repo});
 
-  Future<List<PotentialConversation>> call(String query)
-  {
+  Future<List<PotentialConversation>> call(String query) {
     return repo.getSearchedUsers(query);
   }
 }

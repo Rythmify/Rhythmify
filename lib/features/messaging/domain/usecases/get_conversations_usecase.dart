@@ -4,12 +4,9 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 class GetConversationsUsecase {
   final MessagingRepository repo;
 
-  GetConversationsUsecase({
-    required this.repo
-  });
+  GetConversationsUsecase({required this.repo});
 
-  Future<List<Conversation>> call()
-  {
+  Future<List<Conversation>> call() {
     return repo.getConversations();
   }
 }

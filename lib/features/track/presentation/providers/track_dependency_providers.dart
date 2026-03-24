@@ -29,7 +29,7 @@ final trackRemoteDataSourceProvider = Provider<TrackRemoteDataSource>((ref) {
 /// Toggle this to switch between Mock and Real API
 const bool _useMock = true;
 
-/// Provides the Repository. 
+/// Provides the Repository.
 final trackRepositoryProvider = Provider<TrackRepository>((ref) {
   if (_useMock) {
     final localDataSource = ref.watch(trackLocalDataSourceProvider);

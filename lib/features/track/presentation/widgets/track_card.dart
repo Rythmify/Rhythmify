@@ -60,7 +60,9 @@ class TrackCard extends ConsumerWidget {
                 fit: BoxFit.cover,
                 // Fallback icon in case the mock image isn't in the assets folder yet
                 errorBuilder: (context, error, stackTrace) => Container(
-                  width: 65, height: 56, color: Colors.grey[800],
+                  width: 65,
+                  height: 56,
+                  color: Colors.grey[800],
                   child: const Icon(Icons.music_note, color: Colors.grey),
                 ),
               ),
@@ -85,16 +87,13 @@ class TrackCard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  
+
                   // Artist
                   Text(
                     track.artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
                   ),
                   const SizedBox(height: 4),
 
@@ -133,7 +132,10 @@ class TrackCard extends ConsumerWidget {
         const SizedBox(width: 4),
         Text(
           isPlaying ? 'Now Playing' : 'Paused',
-          style: TextStyle(color:isPlaying ? AppTheme.primaryBrand : Colors.grey, fontSize: 13),
+          style: TextStyle(
+            color: isPlaying ? AppTheme.primaryBrand : Colors.grey,
+            fontSize: 13,
+          ),
         ),
       ],
     );
@@ -159,8 +161,8 @@ class TrackCard extends ConsumerWidget {
         ),
         if (track.isLiked) ...[
           const SizedBox(width: 8),
-          const Icon(Icons.favorite, color: AppTheme.primaryBrand , size: 14),
-        ]
+          const Icon(Icons.favorite, color: AppTheme.primaryBrand, size: 14),
+        ],
       ],
     );
   }
