@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
-
 /// Represents an authenticated user in the Rythmify system.
-///
 /// This is the core domain entity for a user. It contains the identity
 /// information returned after a successful login or registration.
 /// It extends [Equatable] so two [UserEntity] instances with the same
@@ -17,19 +15,16 @@ class UserEntity extends Equatable {
   final String displayName;
 
   /// Whether the user has verified their email address.
-  ///
   /// Users who have not verified their email may be restricted from
   /// certain features depending on backend policy.
   final bool isEmailVerified;
 
   /// The JWT access token issued by the backend after authentication.
-  ///
   /// May be `null` after registration (before the user has logged in),
   /// or when the token has been cleared on sign-out.
   final String? token;
 
   /// Creates a [UserEntity] with the required identity fields.
-  ///
   /// [id] and [email] are always required. [token] is optional and
   /// may be `null` immediately after registration.
   const UserEntity({
@@ -41,8 +36,8 @@ class UserEntity extends Equatable {
   });
 
   /// The list of fields used by [Equatable] to determine equality.
-  ///
   /// Two [UserEntity] instances are equal if all of these fields match.
+
   @override
   List<Object?> get props => [id, email, displayName, isEmailVerified, token];
 }

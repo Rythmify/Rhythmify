@@ -3,17 +3,15 @@ import '../../../../core/errors/failures.dart';
 import '../entities/user_entity.dart';
 
 /// Defines the contract for all authentication operations in Rythmify.
-///
 /// This abstract class sits in the domain layer and has no knowledge of
 /// how data is fetched or stored. Concrete implementations live in the
 /// data layer (e.g. [AuthRepositoryImpl]).
-///
 /// All methods return [Either] from the `dartz` package:
 /// - [Left] wraps a [Failure] describing what went wrong.
 /// - [Right] wraps the successful result.
+
 abstract class AuthRepository {
   /// Signs in an existing user with their email address and password.
-  ///
   /// Returns [Right] with a [UserEntity] on success.
   /// Returns [Left] with [InvalidCredentialsFailure] if the credentials
   /// are incorrect, or [EmailNotVerifiedFailure] if the account is
@@ -27,7 +25,6 @@ abstract class AuthRepository {
   });
 
   /// Registers a new user account with email and password.
-  ///
   /// Returns [Right] with a [UserEntity] on success.
   /// Returns [Left] with [EmailAlreadyInUseFailure] if the email is
   /// already registered.
@@ -37,6 +34,7 @@ abstract class AuthRepository {
   /// [displayName] — the name shown publicly across the app.
   /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
+  
   Future<Either<Failure, UserEntity>> signUpWithEmail({
     required String email,
     required String password,
@@ -46,7 +44,7 @@ abstract class AuthRepository {
   });
 
   /// Signs in using a Google account via Firebase OAuth.
-  ///
+  /// 
   /// Returns [Right] with a [UserEntity] on success.
   /// Returns [Left] with an appropriate [Failure] if the sign-in
   /// is cancelled or fails.
@@ -79,5 +77,6 @@ abstract class AuthRepository {
   /// exists for the given [email].
   ///
   /// [email] — the email address associated with the account to reset.
+  
   Future<Either<Failure, void>> sendPasswordReset({required String email});
 }

@@ -4,7 +4,6 @@ import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
 /// Use case that signs in a user using their Apple ID via Firebase OAuth.
-///
 /// Delegates to [AuthRepository.signInWithApple].
 class SignInWithAppleUseCase {
   /// The repository used to perform Apple sign-in.

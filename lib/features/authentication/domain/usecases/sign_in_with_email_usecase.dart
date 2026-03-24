@@ -6,6 +6,7 @@ import '../repositories/auth_repository.dart';
 ///
 /// Delegates to [AuthRepository.signInWithEmail] and propagates the
 /// [Either] result directly to the caller (presentation layer).
+
 class SignInWithEmailUseCase {
   /// The repository used to perform the sign-in operation.
   final AuthRepository repository;
