@@ -53,17 +53,7 @@ class TrackCard extends ConsumerWidget {
             // 1. Artwork Image (Rounded Square)
             ClipRRect(
               borderRadius: BorderRadius.circular(6.0),
-              child: Image.asset(
-                track.artworkUrl,
-                width: 65,
-                height: 65,
-                fit: BoxFit.cover,
-                // Fallback icon in case the mock image isn't in the assets folder yet
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 65, height: 56, color: Colors.grey[800],
-                  child: const Icon(Icons.music_note, color: Colors.grey),
-                ),
-              ),
+              child: _buildArtwork(track.artworkUrl),
             ),
             const SizedBox(width: 14),
 
@@ -162,6 +152,35 @@ class TrackCard extends ConsumerWidget {
           const Icon(Icons.favorite, color: AppTheme.primaryBrand , size: 14),
         ]
       ],
+    );
+  }
+
+  Widget _buildArtwork(String url) {
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        width: 65,
+        height: 65,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
+    } else {
+      return Image.asset(
+        url,
+        width: 65,
+        height: 65,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
+    }
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 65,
+      height: 65,
+      color: Colors.grey[800],
+      child: const Icon(Icons.music_note, color: Colors.grey),
     );
   }
 }

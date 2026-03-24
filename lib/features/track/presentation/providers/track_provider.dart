@@ -6,3 +6,8 @@ final trackDetailsProvider = FutureProvider.family<Track, String>((ref, trackId)
   final getTrackDetails = ref.watch(getTrackDetailsUseCaseProvider);
   return await getTrackDetails.call(trackId);
 });
+
+final allTracksProvider = FutureProvider<List<Track>>((ref) async {
+  final getTracks = ref.watch(getTracksUseCaseProvider);
+  return await getTracks.call();
+});

@@ -9,6 +9,9 @@ abstract class TrackRepository {
   /// Fetches track data (including waveformData and description if available)
   Future<Track> getTrackDetails(String id);
 
+  /// Fetches all tracks
+  Future<List<Track>> getTracks();
+
   /// Fetches waveform peaks for a specific track
   Future<List<double>> getWaveform(String trackId);
 

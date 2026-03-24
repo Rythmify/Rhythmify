@@ -14,7 +14,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../features/profile/data/datasources/profile_mock_datasource.dart';
 import 'auth_state.dart';
 
-const bool useMockData = true;
+const bool useMockData = false;
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();

@@ -156,25 +156,20 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
   // ── Save handler ─────────────────────────────────────────────────────────
 
   void _handleSave(BuildContext context) {
-    final state = ref.read(uploadFormProvider);
-    final draft = state.draft;
-    if (draft == null) return;
+     final state = ref.read(uploadFormProvider);
+  if (state.draft == null) return;
 
-    // Store in mock store
-    UploadMockStore.add(MockTrackSubmission(
-      title:            draft.title         ?? '',
-      artist:           draft.artist        ?? '',
-      genre:            draft.genre,
-      tags:             draft.tags,
-      description:      draft.description,
-      caption:          draft.caption,
-      isPublic:         draft.isPublic,
-      localAudioPath:   draft.localAudioPath,
-      localArtworkPath: draft.localArtworkPath,
-      duration:         draft.duration,
-      submittedAt:      DateTime.now(),
-    ));
-
+  ref.read(uploadFormProvider.notifier).startUpload(
+    ref: ref,
+    onSuccess: (trackId) {
+      debugPrint('=== UPLOAD SUCCESS === Track ID: $trackId');
+      // Overlay shows success automatically via draft.status
+    },
+    onError: (error) {
+      debugPrint('=== UPLOAD FAILED === $error');
+      // Overlay shows error automatically via draft.status
+    },
+  );
     // Simulate upload progress for UI testing
     _simulateUpload();
   }
