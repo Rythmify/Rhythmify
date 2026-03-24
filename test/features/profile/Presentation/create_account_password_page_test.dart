@@ -14,7 +14,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/create-account/password',
-            builder: (a,b) => const ProviderScope(
+            builder: (a, b) => const ProviderScope(
               child: CreateAccountPasswordPage(email: 'test@test.com'),
             ),
           ),

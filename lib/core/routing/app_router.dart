@@ -210,10 +210,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                           }
 
                           // Fallback to searching mock data if no extra provided
-                          final conv = mockConversations.cast<Conversation?>().firstWhere(
-                            (c) => c?.conversationId == chatId,
-                            orElse: () => null,
-                          );
+                          final conv = mockConversations
+                              .cast<Conversation?>()
+                              .firstWhere(
+                                (c) => c?.conversationId == chatId,
+                                orElse: () => null,
+                              );
 
                           return ChatScreen(conv: conv);
                         },

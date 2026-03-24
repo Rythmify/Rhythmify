@@ -102,16 +102,22 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   /// Exposes the playback event stream from [AudioPlayer].
   Stream<PlaybackEvent> get playbackEventStream => _player.playbackEventStream;
+
   /// Exposes the current position stream from [AudioPlayer].
   Stream<Duration> get positionStream => _player.positionStream;
+
   /// Exposes the current index stream from [AudioPlayer].
   Stream<int?> get currentIndexStream => _player.currentIndexStream;
+
   /// Exposes the playing status stream from [AudioPlayer].
   Stream<bool> get playingStream => _player.playingStream;
+
   /// Returns whether audio is currently playing.
   bool get playing => _player.playing;
+
   /// Returns the current [ProcessingState] of the player.
   ProcessingState get processingState => _player.processingState;
+
   /// Returns the current local queue of tracks.
   List<Track> get currentQueue => _currentQueue;
 
@@ -121,8 +127,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
     final audioSources = tracks.map((track) {
       final url = track.audioUrl;
-      if (url.startsWith('assets/'))
-      {
+      if (url.startsWith('assets/')) {
         return AudioSource.asset(url, tag: track.id);
       } else {
         return AudioSource.uri(Uri.parse(url), tag: track.id);

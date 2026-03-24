@@ -5,16 +5,21 @@ import '../../../../core/domain/entities/track.dart';
 enum PlayerStatus {
   /// Initial state before any track is loaded.
   initial,
+
   /// Audio is being buffered or loaded.
   loading,
+
   /// Audio is currently playing.
   playing,
+
   /// Audio is paused.
   paused,
+
   /// Playback has stopped or finished.
   stopped,
+
   /// An error occurred during playback.
-  error
+  error,
 }
 
 /// Represents the global state of the audio player, including current track,
@@ -25,16 +30,22 @@ enum PlayerStatus {
 class AppPlayerState extends Equatable {
   /// The current status of the player.
   final PlayerStatus status;
+
   /// The currently active track, if any.
   final Track? currentTrack;
+
   /// The current playback position.
   final Duration position;
+
   /// The current buffered position.
   final Duration bufferedPosition;
+
   /// The total duration of the current track.
   final Duration duration;
+
   /// Whether shuffle mode is currently active.
   final bool isShuffleModeEnabled;
+
   /// The current loop mode (e.g., 'off', 'all', 'one').
   final String loopMode;
 

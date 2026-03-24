@@ -68,9 +68,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     final fullTrack = results[0] as Track;
     final waveform = results[1] as List<double>;
     final updatedTrack = fullTrack.copyWith(waveformData: waveform);
-    await ref
-        .read(updateTrackInfoUseCaseProvider)
-        .call(trackId, updatedTrack);
+    await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);
   }
 
   /// Toggles between playing and paused states.

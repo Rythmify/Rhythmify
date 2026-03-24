@@ -54,9 +54,7 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 6,
-              ),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               activeTrackColor: AppTheme.primaryBrand,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
