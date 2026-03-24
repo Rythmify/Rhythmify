@@ -60,7 +60,6 @@ class UploadTrackUseCase {
       audioFile: audioFile,
       artworkFile: artworkFile,
       onProgress: onProgress,
-
     );
   }
 

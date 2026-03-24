@@ -32,4 +32,3 @@ abstract class UploadTrackRepository {
     void Function(double progress)? onProgress,
   });
 }
-

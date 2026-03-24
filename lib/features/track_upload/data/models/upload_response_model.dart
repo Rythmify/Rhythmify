@@ -15,7 +15,6 @@ class UploadResponseModel {
   final String status; // "processing" initially
 
   const UploadResponseModel({required this.id, required this.status});
- 
 
   factory UploadResponseModel.fromJson(Map<String, dynamic> json) {
     // Server might wrap response in a 'track' key or return directly
