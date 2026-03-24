@@ -7,7 +7,6 @@ import 'package:rythmify/features/track_upload/presentation/widgets/audio_picker
 import 'package:rythmify/features/track_upload/presentation/widgets/upload_progress_overlay.dart';
 import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart';
 
-
 /// Screen: UploadTrackScreen
 ///
 /// Main UI for uploading tracks.

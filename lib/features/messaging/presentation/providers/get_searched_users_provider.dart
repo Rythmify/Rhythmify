@@ -5,8 +5,8 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 /// Provider for searching users based on a [query] string.
 ///
-/// This provider uses [GetSearchedUsersUsecase] to filter potential chat 
-/// participants matching the provided query. Returns an empty list if 
+/// This provider uses [GetSearchedUsersUsecase] to filter potential chat
+/// participants matching the provided query. Returns an empty list if
 /// the query is empty.
 ///
 /// Depends on [repositoryprovider].

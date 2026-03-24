@@ -5,7 +5,7 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 /// Notifier that manages the state of blocking a user.
 ///
-/// The state ([bool]) represents whether a block operation is currently 
+/// The state ([bool]) represents whether a block operation is currently
 /// in progress (`true` for loading, `false` otherwise).
 ///
 /// Depends on [repositoryprovider].

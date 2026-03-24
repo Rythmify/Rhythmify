@@ -6,7 +6,7 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 /// Notifier that manages the state of marking messages as read.
 ///
-/// The state ([bool]) represents whether an operation to mark a message as read 
+/// The state ([bool]) represents whether an operation to mark a message as read
 /// is currently in progress (`true` for loading, `false` otherwise).
 ///
 /// Depends on [repositoryprovider] and [messageProvider].

@@ -5,7 +5,7 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 /// Provider for fetching the list of [Message]s in a specific conversation.
 ///
-/// This provider uses the [GetMessagesUsecase] to retrieve historical messages 
+/// This provider uses the [GetMessagesUsecase] to retrieve historical messages
 /// from the [MessagingRepository].
 ///
 /// Depends on [repositoryprovider].

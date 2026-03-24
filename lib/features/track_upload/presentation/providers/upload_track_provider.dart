@@ -4,7 +4,6 @@ import 'package:rythmify/features/track_upload/data/repositories/upload_track_re
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
 
-
 /// Provider: UploadFormNotifier & UploadFormState
 ///
 /// Manages all UI state for the Upload Track feature.
@@ -23,7 +22,6 @@ import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usec
 // Manages all state for the upload track screen.
 // For now: form state only.
 // Upload logic wired in later when backend is confirmed.
-
 
 // ── Upload form state ──────────────────────────────────────────────────────
 

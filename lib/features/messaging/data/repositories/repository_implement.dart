@@ -7,7 +7,7 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 
 /// Concrete implementation of [MessagingRepository] that coordinates data access.
 ///
-/// This repository acts as a mediator between the domain layer and the 
+/// This repository acts as a mediator between the domain layer and the
 /// [DatasourceInterface], handling data transformation and business logic delegation.
 class RepositoryImplement implements MessagingRepository {
   /// The data source used to fetch and persist messaging data.

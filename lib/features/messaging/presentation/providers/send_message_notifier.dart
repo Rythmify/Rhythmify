@@ -9,7 +9,7 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 /// Notifier that manages the state of sending a message or starting a conversation.
 ///
-/// The state ([bool]) represents whether a message is currently being sent 
+/// The state ([bool]) represents whether a message is currently being sent
 /// (`true` for loading, `false` otherwise).
 ///
 /// Depends on [repositoryprovider], [conversationProvider], and [messageProvider].

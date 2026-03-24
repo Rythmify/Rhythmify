@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/track_upload/presentation/widgets/upload_button_widget.dart';
 
-
 /// Widget: AudioPickerWidget
 ///
 /// Displays selected audio file information and artwork picker.

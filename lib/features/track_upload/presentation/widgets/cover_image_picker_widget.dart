@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 
-
 /// Widget: CoverImagePickerWidget
 ///
 /// Displays and allows selection of track artwork.

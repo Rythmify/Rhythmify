@@ -4,7 +4,6 @@ import 'package:mime/mime.dart';
 import 'package:rythmify/core/network/api_client.dart';
 import '../models/upload_response_model.dart';
 
-
 /// Data Source: UploadTrackRemoteDataSource
 ///
 /// Handles all remote API operations related to track upload.

@@ -17,7 +17,6 @@ import 'package:rythmify/features/track_upload/presentation/providers/upload_tra
 /// - Blocks UI interaction while uploading
 /// - Dismissible after success or error
 
-
 class UploadProgressOverlay extends ConsumerWidget {
   final VoidCallback onDismiss;
 

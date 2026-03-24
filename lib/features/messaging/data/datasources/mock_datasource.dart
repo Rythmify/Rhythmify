@@ -6,7 +6,7 @@ import 'package:rythmify/features/messaging/data/models/sent_message_request_mod
 
 /// Mock implementation of [DatasourceInterface] for testing and development.
 ///
-/// This class provides simulated messaging data and delayed responses to mimic 
+/// This class provides simulated messaging data and delayed responses to mimic
 /// network latency without making actual API calls.
 class MockDatasourceImplement implements DatasourceInterface {
   /// Internal storage for simulated users.

@@ -25,8 +25,8 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
   );
 
   // Automatically switch datasources based on the boolean flag
-  final datasource = useMockData 
-      ? MockDatasourceImplement() 
+  final datasource = useMockData
+      ? MockDatasourceImplement()
       : DatasourceImplement(dio: dio);
 
   return RepositoryImplement(dataSource: datasource);

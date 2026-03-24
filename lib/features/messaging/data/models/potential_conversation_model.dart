@@ -2,7 +2,7 @@ import 'package:rythmify/features/messaging/domain/entities/potential_conversati
 
 /// Data model representing a [PotentialConversation].
 ///
-/// This class extends [PotentialConversation] and provides methods for JSON 
+/// This class extends [PotentialConversation] and provides methods for JSON
 /// deserialization to interact with the [RemoteDataSource].
 class PotentialConversationModel extends PotentialConversation {
   PotentialConversationModel({

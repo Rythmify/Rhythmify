@@ -1,6 +1,6 @@
 /// A utility class that defines all API endpoints for messaging-related operations.
 ///
-/// This class provides constant strings and static methods to construct 
+/// This class provides constant strings and static methods to construct
 /// the necessary URL paths for communication with the remote server.
 class ApiEndPoints {
   ApiEndPoints._();

@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../core/errors/failures.dart';
 
-
 /// UseCase: PickAudioUseCase
 ///
 /// Handles selecting an audio file from the user's device.
@@ -21,7 +20,6 @@ import '../../../../core/errors/failures.dart';
 /// Notes:
 /// - Uses FilePicker for file selection
 /// - Uses just_audio to detect duration
-
 
 /// Result returned when user successfully picks an audio file
 class PickedAudio {
