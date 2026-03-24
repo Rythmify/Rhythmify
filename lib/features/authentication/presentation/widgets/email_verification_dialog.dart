@@ -3,7 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
+/// A dialog informing the user that email verification is required.
+///
+/// Displays an instruction message and provides two actions:
+/// - "Resend email" → calls [AuthNotifier.sendEmailVerification]
+/// - "Dismiss" → closes the dialog
+///
+/// Typically shown after registration when the backend requires
+/// email verification before the user can log in.
 class EmailVerificationDialog extends ConsumerWidget {
+  /// Creates an [EmailVerificationDialog].
   const EmailVerificationDialog({super.key});
 
   @override
@@ -21,25 +30,21 @@ class EmailVerificationDialog extends ConsumerWidget {
               color: AppTheme.primaryBrand,
               size: 48,
             ),
-
             const SizedBox(height: 16),
-
             Text(
               'Verify your email',
               key: const Key('authentication_verify_email_title_text'),
               style: AppTheme.titleLarge,
             ),
-
             const SizedBox(height: 12),
-
             Text(
               'We sent a verification link to your email. Please check your inbox and verify before continuing.',
               key: const Key('authentication_verify_email_description_text'),
               textAlign: TextAlign.center,
               style: AppTheme.bodyMedium,
             ),
-
             const SizedBox(height: 24),
+            // Resend verification email button
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -57,8 +62,8 @@ class EmailVerificationDialog extends ConsumerWidget {
                 child: Text('Resend email', style: AppTheme.labelLarge),
               ),
             ),
-
             const SizedBox(height: 12),
+            // Dismiss button
             TextButton(
               key: const Key('authentication_dismiss_text_button'),
               onPressed: () => Navigator.of(context).pop(),

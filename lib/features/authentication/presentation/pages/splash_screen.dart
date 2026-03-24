@@ -5,7 +5,17 @@ import '../../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
+/// The splash screen displayed when the app first launches.
+///
+/// Listens to [authProvider] and automatically navigates the user to
+/// the appropriate screen:
+/// - [AuthAuthenticated] → `/home`
+/// - [AuthUnauthenticated] → `/onboarding`
+///
+/// Includes a 5-second safety timeout to prevent being stuck on the
+/// splash screen if the auth check hangs.
 class SplashScreen extends ConsumerStatefulWidget {
+  /// Creates a [SplashScreen].
   const SplashScreen({super.key});
 
   @override
@@ -17,7 +27,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     super.initState();
 
-    // ── Safety timeout — if stuck for 5 seconds go to onboarding
+    // Safety timeout — if auth check is still loading after 5 seconds,
+    // force navigation to onboarding to avoid the user being stuck.
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         final authState = ref.read(authProvider);
@@ -30,6 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for auth state changes and navigate accordingly.
     ref.listen(authProvider, (previous, next) {
       if (next is AuthAuthenticated) {
         context.go('/home');
@@ -38,7 +50,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     });
 
-    final authState = ref.watch(authProvider);
+    ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,

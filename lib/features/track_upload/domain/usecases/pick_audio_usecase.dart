@@ -82,8 +82,17 @@ class PickAudioUseCase {
           duration: duration,
         ),
       );
+      return Right(
+        PickedAudio(
+          file: file,
+          fileName: picked.name,
+          localPath: picked.path!,
+          duration: duration,
+        ),
+      );
     } catch (e) {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
 }
+

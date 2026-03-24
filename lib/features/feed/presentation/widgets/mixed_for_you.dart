@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../presentation/providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../providers/home_providers.dart';
 
+/// Widget that renders the "Mixed For You" section.
+///
+/// This widget:
+/// - Observes [mixedPlaylistsProvider]
+/// - Displays loading indicator during data fetch
+/// - Displays error message if fetching fails
+/// - Displays a horizontal list of mixed playlist cards when data is available
 class MixedPlaylistsSection extends ConsumerWidget {
   const MixedPlaylistsSection({super.key});
 
+  /// Builds the Mixed For You section UI.
+  ///
+  /// Parameters:
+  /// - context: Build context used for rendering UI
+  /// - ref: Riverpod reference used to watch providers
+  ///
+  /// Returns:
+  /// - A widget containing title, loading/error state, and playlist cards
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncMixedPlaylists = ref.watch(mixedPlaylistsProvider);
@@ -54,9 +69,22 @@ class MixedPlaylistsSection extends ConsumerWidget {
   }
 }
 
+/// Card widget representing a mixed playlist recommendation.
+///
+/// Each card displays:
+/// - Playlist cover image
+/// - Mix label badge (e.g., genre or category)
+/// - Artist names associated with the playlist
+///
+/// This widget is purely presentational and does not manage state.
 class MixedPlaylistCard extends StatelessWidget {
+  /// Label describing the type of mix (e.g., genre or theme).
   final String mixLabel;
+
+  /// Artist names included in the playlist.
   final String artists;
+
+  /// Image asset path representing playlist artwork.
   final String imagePath;
 
   const MixedPlaylistCard({
@@ -66,6 +94,13 @@ class MixedPlaylistCard extends StatelessWidget {
     required this.imagePath,
   });
 
+  /// Builds the UI for a single mixed playlist card.
+  ///
+  /// Parameters:
+  /// - context: Build context for rendering UI
+  ///
+  /// Returns:
+  /// - A styled playlist card widget containing image, badge, and text
   @override
   Widget build(BuildContext context) {
     return SizedBox(

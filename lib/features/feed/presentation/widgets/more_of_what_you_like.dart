@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../presentation/providers/home_providers.dart';
+import '../providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// Widget that renders the "More of what you like" section.
+///
+/// This widget:
+/// - Watches [moreOfWhatYouLikeProvider]
+/// - Displays loading indicator while fetching data
+/// - Displays error message if fetching fails
+/// - Displays a horizontal list of playlist cards when data is available
 class MoreOfWhatYouLikeSection extends ConsumerWidget {
   const MoreOfWhatYouLikeSection({super.key});
 
+  /// Builds the More of what you like section UI.
+  ///
+  /// Parameters:
+  /// - context: Build context for rendering widgets
+  /// - ref: Riverpod reference used to watch providers
+  ///
+  /// Returns:
+  /// - A widget containing title, loading/error state, and playlist cards
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncMore = ref.watch(moreOfWhatYouLikeProvider);
@@ -55,8 +70,18 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
   }
 }
 
+/// Card widget representing a square playlist recommendation.
+///
+/// Each card displays:
+/// - Playlist artwork (network or asset image)
+/// - Artist names associated with the playlist
+///
+/// This widget is purely presentational and does not manage state.
 class PlaylistSquareCard extends StatelessWidget {
+  /// Artist name(s) associated with this playlist.
   final String artists;
+
+  /// Image URL or asset path for playlist artwork.
   final String imagePath;
 
   const PlaylistSquareCard({
@@ -65,6 +90,13 @@ class PlaylistSquareCard extends StatelessWidget {
     required this.imagePath,
   });
 
+  /// Builds the UI for a square playlist card.
+  ///
+  /// Parameters:
+  /// - context: Build context used for rendering UI
+  ///
+  /// Returns:
+  /// - A styled playlist card widget containing image and text
   @override
   Widget build(BuildContext context) {
     return SizedBox(

@@ -6,11 +6,15 @@ import '../../data/repositories/mock_track_repository_impl.dart';
 import '../../data/repositories/track_repository_impl.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../../domain/usecases/get_track_details.dart';
+import '../../domain/usecases/get_tracks.dart';
 import '../../domain/usecases/get_waveform.dart';
 import '../../domain/usecases/get_tags.dart';
 import '../../domain/usecases/toggle_like.dart';
 import '../../domain/usecases/toggle_repost.dart';
 import '../../domain/usecases/record_play.dart';
+
+/// Toggle this to switch between Mock and Real API
+const bool _useMock = false;
 
 // ============================================
 //  --- Data Source & Repository Providers ---
@@ -25,9 +29,6 @@ final trackLocalDataSourceProvider = Provider<TrackLocalDataSource>((ref) {
 final trackRemoteDataSourceProvider = Provider<TrackRemoteDataSource>((ref) {
   return TrackRemoteDataSourceImpl(apiClient);
 });
-
-/// Toggle this to switch between Mock and Real API
-const bool _useMock = true;
 
 /// Provides the Repository.
 final trackRepositoryProvider = Provider<TrackRepository>((ref) {
@@ -46,6 +47,10 @@ final trackRepositoryProvider = Provider<TrackRepository>((ref) {
 
 final getTrackDetailsUseCaseProvider = Provider<GetTrackDetails>((ref) {
   return GetTrackDetails(ref.watch(trackRepositoryProvider));
+});
+
+final getTracksUseCaseProvider = Provider<GetTracks>((ref) {
+  return GetTracks(ref.watch(trackRepositoryProvider));
 });
 
 final getWaveformUseCaseProvider = Provider<GetWaveform>((ref) {

@@ -2,12 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../core/theme/app_theme.dart';
 
+/// A circular avatar widget used across profile screens.
+///
+/// Displays the user's profile picture from a network URL using
+/// [CachedNetworkImage]. Falls back to a person icon when no
+/// [avatarUrl] is provided or if the image fails to load.
+///
+/// Optionally shows a camera icon overlay when [showCameraIcon] is
+/// `true` — used on the [EditProfilePage] to indicate tappability.
+///
+/// Example usage:
+/// ```dart
+/// ProfileAvatar(
+///   avatarUrl: 'https://cdn.rythmify.com/avatars/user.jpg',
+///   radius: 60,
+///   showCameraIcon: true,
+///   onTap: _pickAvatar,
+/// )
+/// ```
 class ProfileAvatar extends StatelessWidget {
+  /// The network URL of the user's profile picture.
+  ///
+  /// If `null`, a default person icon is shown instead.
   final String? avatarUrl;
+
+  /// The radius of the circular avatar in logical pixels.
+  ///
+  /// Defaults to `60`.
   final double radius;
+
+  /// Whether to show a camera icon overlay in the bottom-right corner.
+  ///
+  /// Used on [EditProfilePage] to signal that the avatar is tappable.
+  /// Defaults to `false`.
   final bool showCameraIcon;
+
+  /// Callback invoked when the avatar is tapped.
+  ///
+  /// Only active when wrapped in a [GestureDetector].
   final VoidCallback? onTap;
 
+  /// Creates a [ProfileAvatar].
   const ProfileAvatar({
     super.key,
     this.avatarUrl,
@@ -37,7 +72,7 @@ class ProfileAvatar extends StatelessWidget {
                   )
                 : null,
           ),
-
+          // Camera icon overlay for edit mode
           if (showCameraIcon)
             Positioned(
               bottom: 0,

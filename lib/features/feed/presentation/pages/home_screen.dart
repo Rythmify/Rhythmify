@@ -27,22 +27,69 @@ final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   return jsonList.map((json) => TrackDto.fromJson(json)).toList();
 });
 
+/// Home screen of the application feed.
+///
+/// This screen acts as the main entry point of the user experience after login.
+/// It is part of the **Presentation Layer** and is responsible for displaying
+/// multiple personalized and discovery-based music sections such as trending tracks,
+/// curated playlists, and recommended content.
+///
+/// It also provides user actions such as:
+/// - Uploading a new track
+/// - Navigating to inbox
+/// - Navigating to notifications
+///
+/// This widget interacts with:
+/// - Riverpod providers (state management)
+/// - Use cases indirectly via providers
+/// - File picker and audio processing utilities
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
+  /// Builds the UI of the Home screen.
+  ///
+  /// This method constructs the main scaffold containing:
+  /// - AppBar with navigation and upload actions
+  /// - Scrollable feed composed of multiple music discovery sections
+  ///
+  /// Parameters:
+  /// - [context]: Build context used for navigation and UI rendering
+  /// - [ref]: Riverpod reference used to interact with providers
+  ///
+  /// Returns:
+  /// - A fully rendered [Scaffold] widget representing the Home screen UI
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      key: const Key('home_scaffold'), //  Screen key
+      key: const Key('home_scaffold'),
       appBar: AppBar(
-        key: const Key('home_app_bar'), // AppBar key
+        key: const Key('home_app_bar'),
         title: const Text('Home'),
         centerTitle: false,
+
+        /// Action buttons for user interactions such as uploading tracks,
+        /// opening inbox, and viewing notifications.
         actions: [
           IconButton(
             key: const Key('home_upload_track_icon_button'),
             icon: const Icon(Icons.arrow_circle_up),
 
+            /// Handles audio file selection and prepares it for upload.
+            ///
+            /// Workflow:
+            /// 1. Opens file picker restricted to audio files
+            /// 2. Extracts selected file path and metadata
+            /// 3. Determines audio duration using local player
+            /// 4. Initializes upload draft via Riverpod provider
+            /// 5. Navigates to upload screen if successful
+            ///
+            /// Parameters:
+            /// - Uses [context] for navigation and UI feedback
+            /// - Uses [ref] to update upload state in presentation layer
+            ///
+            /// Output:
+            /// - Initializes upload state in provider
+            /// - Navigates to '/upload-track' route on success
             onPressed: () async {
               try {
                 final result = await FilePicker.platform.pickFiles(
@@ -73,7 +120,7 @@ class HomeScreen extends ConsumerWidget {
 
                 if (context.mounted) context.push('/upload-track');
               } catch (e) {
-                // Show exactly what error occurs
+                /// Displays error feedback if file selection or processing fails.
                 if (context.mounted) {
                   ScaffoldMessenger.of(
                     context,
@@ -82,6 +129,8 @@ class HomeScreen extends ConsumerWidget {
               }
             },
           ),
+
+          /// Navigates user to inbox/messages screen.
           IconButton(
             key: const Key('home_inbox_icon_button'),
             icon: const Icon(Icons.mail_outline),
@@ -89,6 +138,8 @@ class HomeScreen extends ConsumerWidget {
               context.push('/home/inbox');
             },
           ),
+
+          /// Navigates user to notifications screen.
           IconButton(
             key: const Key('home_notifications_icon_button'),
             icon: const Icon(Icons.notifications_none),
@@ -98,19 +149,39 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
+
+      /// Main scrollable feed containing multiple music discovery sections.
+      ///
+      /// Each section represents a modular UI component responsible for
+      /// displaying a specific type of recommendation or content grouping.
       body: ListView(
-        key: const Key('home_scroll_view'), // ✅ Scrollable area
+        key: const Key('home_scroll_view'),
         padding: const EdgeInsets.only(bottom: 150),
+
         children: [
           const SizedBox(height: 16),
+
+          /// Displays trending tracks grouped by genre.
           TrendingByGenre(),
+
           const SizedBox(height: 24),
+
+          /// Displays personalized "Hot For You" recommendations.
           HotForYouSection(),
+
           const SizedBox(height: 40),
+
+          /// Displays mixed playlist recommendations.
           MixedPlaylistsSection(),
+
           const SizedBox(height: 40),
+
+          /// Displays discovery-based station suggestions.
           DiscoverWithStationsSection(),
+
           const SizedBox(height: 40),
+
+          /// Displays additional personalized music suggestions.
           MoreOfWhatYouLikeSection(),
         ],
       ),

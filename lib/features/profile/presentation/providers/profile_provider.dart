@@ -16,7 +16,7 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-const bool useProfileMockData = true;
+const bool useProfileMockData = false;
 
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
@@ -37,14 +37,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   @override
   ProfileState build() {
-    // ── Safe auth state read — never throws ──────────────
-    AuthState? authState;
-    try {
-      authState = ref.watch(authProvider);
-    } catch (e) {
-      authState = const AuthUnauthenticated();
-    }
-
     final datasource = useProfileMockData
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);

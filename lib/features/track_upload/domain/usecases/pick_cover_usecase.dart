@@ -29,6 +29,10 @@ class PickCoverUseCase {
         imageQuality: 85, // compress to 85%
         maxWidth: 1000, // max 1000px wide
         maxHeight: 1000, // max 1000px tall
+        source: source,
+        imageQuality: 85, // compress to 85%
+        maxWidth: 1000, // max 1000px wide
+        maxHeight: 1000, // max 1000px tall
       );
 
       // User cancelled
@@ -48,3 +52,4 @@ class PickCoverUseCase {
     }
   }
 }
+

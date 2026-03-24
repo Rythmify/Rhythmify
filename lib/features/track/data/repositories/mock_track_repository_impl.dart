@@ -47,6 +47,14 @@ class MockTrackRepositoryImpl implements TrackRepository {
   }
 
   @override
+  Future<List<Track>> getTracks() async {
+    final rawData = await localDataSource.getSummaryTracks();
+    return rawData
+        .map((json) => TrackDto.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
   Future<List<double>> getWaveform(String trackId) async {
     final response = await localDataSource.getWaveform(trackId);
     final List<dynamic> peaks = response['data']['peaks'];

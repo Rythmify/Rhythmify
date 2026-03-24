@@ -6,8 +6,22 @@ import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 
+/// The password creation screen for new user registration.
+///
+/// Receives the user's [email] from [SignInPage] and prompts them
+/// to create a password that meets the platform's security requirements:
+/// - Minimum 8 characters
+/// - At least one uppercase letter
+/// - At least one lowercase letter
+/// - At least one number
+///
+/// On valid input, navigates to `/create-account/profile` passing
+/// both email and password.
 class CreateAccountPasswordPage extends ConsumerStatefulWidget {
+  /// The email address entered on the previous [SignInPage].
   final String email;
+
+  /// Creates a [CreateAccountPasswordPage] with the given [email].
   const CreateAccountPasswordPage({super.key, required this.email});
 
   @override
@@ -26,6 +40,13 @@ class _CreateAccountPasswordPageState
     super.dispose();
   }
 
+  /// Validates the password and navigates to the profile creation step.
+  ///
+  /// Password requirements:
+  /// - At least 8 characters
+  /// - Contains uppercase letter
+  /// - Contains lowercase letter
+  /// - Contains a digit
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
       context.push(
@@ -60,7 +81,6 @@ class _CreateAccountPasswordPageState
                 Text('Your email address', style: AppTheme.bodyMedium),
                 const SizedBox(height: 4),
                 Text(widget.email, style: AppTheme.bodyLarge),
-
                 const SizedBox(height: 24),
                 AuthTextField(
                   key: const Key('authentication_password_text_field'),
@@ -87,7 +107,6 @@ class _CreateAccountPasswordPageState
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 50),
                 SizedBox(
                   width: double.infinity,
@@ -111,9 +130,7 @@ class _CreateAccountPasswordPageState
                         : Text('Continue', style: AppTheme.labelLarge),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 GestureDetector(
                   key: const Key('authentication_help_gesture_detector'),
                   onTap: () {},

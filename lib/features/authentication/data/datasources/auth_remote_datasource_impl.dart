@@ -5,11 +5,39 @@ import '../../../../core/network/api_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Real HTTP implementation of [AuthRemoteDatasource].
+///
+/// Makes all network requests via the [ApiClient] Dio instance.
+/// Communicates with the custom Node.js REST API at
+/// `{baseUrl}/auth/*`.
+///
+/// All methods throw typed [Exception]s on failure (not [Either]).
+/// The repository implementation ([AuthRepositoryImpl]) catches these
+/// and maps them to the appropriate [Failure] subclass.
+///
+/// **Note**: [checkEmailExists] is present here but is NOT declared
+/// on the [AuthRemoteDatasource] interface. It is a supplementary method
+/// added directly to this implementation. Callers must use the concrete
+/// type to access it.
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
+  /// The API client used to make authenticated HTTP requests.
   final ApiClient client;
 
+  /// Creates an [AuthRemoteDatasourceImpl] with the given [client].
   AuthRemoteDatasourceImpl({required this.client});
 
+  /// Signs in an existing user via `POST /auth/login`.
+  ///
+  /// Sends `identifier` (email) and `password` in the request body.
+  /// On success, saves the returned JWT token via [ApiClient.saveToken]
+  /// and returns a [UserModel].
+  ///
+  /// Throws typed [Exception]s via [_handleDioError] on failure:
+  /// - `AUTH_INVALID_CREDENTIALS` — wrong email or password.
+  /// - `AUTH_EMAIL_NOT_VERIFIED` — account not yet verified.
+  ///
+  /// [email] — the user's registered email address.
+  /// [password] — the user's plain-text password.
   @override
   Future<UserModel> signInWithEmail({
     required String email,
@@ -43,6 +71,25 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Registers a new user account via `POST /auth/register`.
+  ///
+  /// Sends `email`, `password`, `display_name`, `gender`,
+  /// `date_of_birth`, and `captcha_token` (currently `'dev-bypass'`
+  /// for development — coordinate with Bassel before production).
+  ///
+  /// Parses `user_id` (not `id`) from the response per the API spec.
+  /// Returns a [UserModel] with `token: null` (token is only issued
+  /// after email verification + login).
+  ///
+  /// Throws typed [Exception]s on failure, including:
+  /// - `AUTH_EMAIL_ALREADY_EXISTS` — email already registered.
+  /// - `VALIDATION_FAILED` — request body failed server-side validation.
+  ///
+  /// [email] — the new user's email address.
+  /// [password] — the desired password.
+  /// [displayName] — the public display name.
+  /// [gender] — lowercase gender string (e.g. `'male'`).
+  /// [dateOfBirth] — formatted as `YYYY-MM-DD`.
   @override
   Future<UserModel> signUpWithEmail({
     required String email,
@@ -83,6 +130,18 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Signs in using Google OAuth via Firebase + `POST /auth/google`.
+  ///
+  /// Flow:
+  /// 1. Launches Google sign-in via [GoogleSignIn].
+  /// 2. Obtains Firebase credential from [GoogleSignInAuthentication].
+  /// 3. Signs into Firebase with the credential.
+  /// 4. Gets the Firebase ID token.
+  /// 5. Sends the ID token to `POST /auth/google`.
+  /// 6. Saves the returned JWT and returns a [UserModel].
+  ///
+  /// Throws an [Exception] with the cancellation or error message if
+  /// any step fails.
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
@@ -131,21 +190,35 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
-  @override
+  /// Checks whether an email address is already registered.
+  ///
+  /// Calls `POST /auth/check-email` with the given [email].
+  /// Returns `true` if the email is taken, `false` otherwise.
+  ///
+  /// **Note**: This method is NOT declared on the [AuthRemoteDatasource]
+  /// interface — it exists only on this concrete implementation.
+  /// Callers must use [AuthRemoteDatasourceImpl] directly to call it.
+  ///
+  /// [email] — the email address to check.
   Future<bool> checkEmailExists(String email) async {
     try {
       final response = await client.dio.post(
         '/auth/check-email',
         data: {'email': email},
       );
-
-      return response.data['exists']; // true or false
+      return response.data['exists'] as bool;
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
     }
   }
 
+  /// Signs in using Apple ID via `POST /auth/apple`.
+  ///
+  /// Currently sends a hardcoded placeholder `id_token`. Wire up
+  /// real Apple Sign-In before production.
+  ///
+  /// Saves the returned JWT and returns a [UserModel].
   @override
   Future<UserModel> signInWithApple() async {
     try {
@@ -176,6 +249,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Signs out the current user via `POST /auth/logout`.
+  ///
+  /// Also clears the stored JWT via [ApiClient.clearToken].
   @override
   Future<void> signOut() async {
     try {
@@ -187,6 +263,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Sends an email verification link via `POST /auth/resend-verification`.
   @override
   Future<void> sendVerificationEmail() async {
     try {
@@ -197,6 +274,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Sends a password reset email via `POST /auth/forgot-password`.
+  ///
+  /// [email] — the email address of the account to reset.
   @override
   Future<void> sendPasswordReset({required String email}) async {
     try {
@@ -207,6 +287,21 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
   }
 
+  /// Maps a [DioException] to a typed [Exception] with a known error code.
+  ///
+  /// Reads `response.data['error']['code']` and
+  /// `response.data['error']['message']` from the backend error response.
+  /// Falls back to the message field or `'Unknown error occurred'` when
+  /// the code is not in the known list.
+  ///
+  /// Known codes mapped:
+  /// - `AUTH_INVALID_CREDENTIALS`
+  /// - `AUTH_EMAIL_NOT_VERIFIED`
+  /// - `AUTH_EMAIL_ALREADY_EXISTS`
+  /// - `AUTH_ACCOUNT_SUSPENDED`
+  /// - `AUTH_REFRESH_TOKEN_INVALID`
+  /// - `RATE_LIMIT_EXCEEDED`
+  /// - `VALIDATION_FAILED`
   void _handleDioError(DioException e) {
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;

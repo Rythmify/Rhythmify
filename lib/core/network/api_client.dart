@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
@@ -15,11 +16,25 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 15), // Increase timeout
+        receiveTimeout: const Duration(seconds: 15),
         headers: {'Content-Type': 'application/json'},
       ),
     );
+
+    // --- ADDING VERBOSE NETWORK LOGS ---
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: true,
+          responseBody: true,
+          error: true,
+        ),
+      );
+    }
+    // ------------------------------------
 
     dio.interceptors.add(
       InterceptorsWrapper(

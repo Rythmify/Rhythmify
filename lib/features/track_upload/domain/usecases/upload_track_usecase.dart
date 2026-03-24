@@ -24,6 +24,9 @@ import 'package:dartz/dartz.dart';
 import 'package:rythmify/core/error/failures.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
+import 'package:rythmify/core/error/failures.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
 
 class UploadTrackUseCase {
   final UploadTrackRepository repository;
@@ -55,7 +58,10 @@ class UploadTrackUseCase {
     return repository.uploadTrack(
       draft: draft,
       audioFile: audioFile,
+      draft: draft,
+      audioFile: audioFile,
       artworkFile: artworkFile,
+      onProgress: onProgress,
       onProgress: onProgress,
     );
   }
