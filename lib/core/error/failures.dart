@@ -35,20 +35,20 @@ class UnexpectedFailure extends Failure {
 // Upload limit reached (403 from server — 20 uploads/hour)
 class UploadLimitFailure extends Failure {
   const UploadLimitFailure([
-    super.message = 'Upload limit reached. Try again later.'
+    super.message = 'Upload limit reached. Try again later.',
   ]);
 }
 
 // File over 100MB (413 from server)
 class FileTooLargeFailure extends Failure {
   const FileTooLargeFailure([
-    super.message = 'File is too large. Maximum size is 100MB.'
+    super.message = 'File is too large. Maximum size is 100MB.',
   ]);
 }
 
 // Wrong file format (415 from server)
 class UnsupportedFileFailure extends Failure {
   const UnsupportedFileFailure([
-    super.message = 'File format not supported. Use MP3, WAV, FLAC or AAC.'
+    super.message = 'File format not supported. Use MP3, WAV, FLAC or AAC.',
   ]);
 }

@@ -254,7 +254,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           );
 
           if (result == true && context.mounted) context.pop();
-
         }
       },
       child: Scaffold(
@@ -319,8 +318,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ? Image.network(
                                   profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (a,b,c) =>
-                                      const SizedBox(),
+                                  errorBuilder: (a, b, c) => const SizedBox(),
                                 )
                               : null,
                         ),
@@ -333,7 +331,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.background.withValues(alpha: 0.7),
+                                color: AppTheme.background.withValues(
+                                  alpha: 0.7,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(

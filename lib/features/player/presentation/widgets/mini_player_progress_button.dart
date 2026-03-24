@@ -10,19 +10,27 @@ class MiniPlayerProgressButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watches the rapidly changing timer
-    final position = ref.watch(playerStateProvider.select((state) => state.position));
-    final duration = ref.watch(playerStateProvider.select((state) => state.duration));
-    final status = ref.watch(playerStateProvider.select((state) => state.status));
+    final position = ref.watch(
+      playerStateProvider.select((state) => state.position),
+    );
+    final duration = ref.watch(
+      playerStateProvider.select((state) => state.duration),
+    );
+    final status = ref.watch(
+      playerStateProvider.select((state) => state.status),
+    );
 
     final isPlaying = status == PlayerStatus.playing;
-    
+
     double progress = 0.0;
     if (duration.inMilliseconds > 0) {
       progress = position.inMilliseconds / duration.inMilliseconds;
     }
 
     return GestureDetector(
-      key: const Key('player_mini_progress_button_toggle_play_pause_gesturedetector'),
+      key: const Key(
+        'player_mini_progress_button_toggle_play_pause_gesturedetector',
+      ),
       onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
       child: SizedBox(
         width: 40,
@@ -34,12 +42,14 @@ class MiniPlayerProgressButton extends ConsumerWidget {
               key: const Key('player_mini_progress_button_indicator'),
               value: progress,
               strokeWidth: 3,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryBrand), 
-              backgroundColor: Colors.black87, 
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppTheme.primaryBrand,
+              ),
+              backgroundColor: Colors.black87,
             ),
             // The white play/pause button
             Padding(
-              padding: const EdgeInsets.all(1.5), 
+              padding: const EdgeInsets.all(1.5),
               child: Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,

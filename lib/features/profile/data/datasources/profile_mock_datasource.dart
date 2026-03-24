@@ -4,7 +4,6 @@ import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
 
 class ProfileMockDatasource implements ProfileRemoteDatasource {
-
   // ── Base mock profiles ────────────────────────────────
   static final List<Map<String, dynamic>> _mockProfiles = [
     {
@@ -15,7 +14,8 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       'cover_url': 'https://picsum.photos/seed/karim/1500/500',
       'city': 'Giza',
       'country': 'EG',
-      'bio': 'Music producer from Egypt. Into beats, basslines, and everything in between.',
+      'bio':
+          'Music producer from Egypt. Into beats, basslines, and everything in between.',
       'followers_count': 1240,
       'following_count': 380,
       'tracks_count': 14,

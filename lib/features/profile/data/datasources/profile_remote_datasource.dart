@@ -2,9 +2,7 @@ import '../models/profile_model.dart';
 import '../models/track_model.dart';
 
 abstract class ProfileRemoteDatasource {
-  Future<ProfileModel> getProfile({
-    required String userId,
-  });
+  Future<ProfileModel> getProfile({required String userId});
 
   Future<ProfileModel> updateProfile({
     required String displayName,
@@ -13,25 +11,17 @@ abstract class ProfileRemoteDatasource {
     required String bio,
   });
 
-  Future<ProfileModel> uploadAvatar({
-    required String filePath,
-  });
+  Future<ProfileModel> uploadAvatar({required String filePath});
 
   Future<void> deleteAvatar();
 
-  Future<ProfileModel> uploadCoverPhoto({
-    required String filePath,
-  });
+  Future<ProfileModel> uploadCoverPhoto({required String filePath});
 
   Future<void> deleteCoverPhoto();
 
-  Future<void> followUser({
-    required String userId,
-  });
+  Future<void> followUser({required String userId});
 
-  Future<void> unfollowUser({
-    required String userId,
-  });
+  Future<void> unfollowUser({required String userId});
 
   Future<List<TrackModel>> getLikedTracks({
     required String userId,

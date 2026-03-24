@@ -30,7 +30,6 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
         ),
         const SizedBox(height: 16),
         Container(
-          
           width: double.infinity,
           decoration: const BoxDecoration(
             color: AppTheme.lighterSurface,
@@ -55,7 +54,9 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                         alignment: _selectedTab == 0
                             ? Alignment.centerLeft
                             : Alignment.centerRight,
-                        duration: const Duration(milliseconds: 200), // Animation speed
+                        duration: const Duration(
+                          milliseconds: 200,
+                        ), // Animation speed
                         curve: Curves.easeInOut,
                         child: FractionallySizedBox(
                           widthFactor: 0.5,
@@ -63,7 +64,9 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                             margin: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: AppTheme.textPrimary, width: 0.8),
+                                color: AppTheme.textPrimary,
+                                width: 0.8,
+                              ),
                               borderRadius: BorderRadius.circular(20),
                               color: AppTheme.lighterSurface,
                             ),
@@ -82,15 +85,21 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text("Top fans based on listening activity", style: AppTheme.labelSmall),
+              Text(
+                "Top fans based on listening activity",
+                style: AppTheme.labelSmall,
+              ),
               const SizedBox(height: 32),
-              
+
               // List View (Empty for now)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40.0),
-                child: Text("No fan activity yet", style: TextStyle(color: AppTheme.textSecondary)),
+                child: Text(
+                  "No fan activity yet",
+                  style: TextStyle(color: AppTheme.textSecondary),
+                ),
               ),
-              
+
               const SizedBox(height: 40),
             ],
           ),
@@ -103,7 +112,9 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
   Widget _buildSegmentText(String label, int index) {
     return Expanded(
       child: GestureDetector(
-        key: Key('fans_leaderboard_${label.toLowerCase()}_segment_gesture_detector'),
+        key: Key(
+          'fans_leaderboard_${label.toLowerCase()}_segment_gesture_detector',
+        ),
         onTap: () => setState(() => _selectedTab = index),
         behavior: HitTestBehavior.opaque,
         child: Container(

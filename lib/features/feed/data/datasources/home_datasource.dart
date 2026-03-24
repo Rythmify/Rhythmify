@@ -11,9 +11,7 @@ class HomeDatasource {
 
     final List<dynamic> jsonList = json.decode(jsonString);
 
-    final tracks = jsonList
-        .map((json) => TrackDto.fromJson(json))
-        .toList();
+    final tracks = jsonList.map((json) => TrackDto.fromJson(json)).toList();
 
     // since mock JSON has no genre field yet,
     // we just return all tracks for now

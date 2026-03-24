@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../track/presentation/providers/track_provider.dart';
-import '../../../../core/theme/app_theme.dart'; 
+import '../../../../core/theme/app_theme.dart';
 
 class PlayerActionBar extends ConsumerWidget {
   final String trackId;
@@ -44,11 +44,13 @@ class PlayerActionBar extends ConsumerWidget {
                 error: (a, b) => const Text(
                   '0',
                   key: Key('player_action_bar_like_count_error_text'),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
-            
           ),
           const Icon(
             key: Key('player_action_bar_comment_icon'),

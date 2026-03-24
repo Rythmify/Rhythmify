@@ -26,7 +26,7 @@ class BehindTheTrackPage extends ConsumerWidget {
         data: (track) => SafeArea(
           child: SingleChildScrollView(
             // Removed horizontal padding here
-            padding: const EdgeInsets.symmetric(vertical: 0), 
+            padding: const EdgeInsets.symmetric(vertical: 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -40,7 +40,10 @@ class BehindTheTrackPage extends ConsumerWidget {
                     children: [
                       IconButton(
                         key: const Key('behind_the_track_back_icon_button'),
-                        icon: const Icon(Icons.arrow_back, color: AppTheme.appBarItems),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: AppTheme.appBarItems,
+                        ),
                         onPressed: () => Navigator.pop(context),
                         style: IconButton.styleFrom(
                           backgroundColor: AppTheme.surface,
@@ -50,7 +53,10 @@ class BehindTheTrackPage extends ConsumerWidget {
                       ),
                       IconButton(
                         key: const Key('behind_the_track_cast_icon_button'),
-                        icon: const Icon(Icons.cast, color: AppTheme.appBarItems),
+                        icon: const Icon(
+                          Icons.cast,
+                          color: AppTheme.appBarItems,
+                        ),
                         onPressed: () {},
                         style: IconButton.styleFrom(
                           backgroundColor: AppTheme.surface,
@@ -78,19 +84,17 @@ class BehindTheTrackPage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(9),
                           color: Colors.grey[900],
                         ),
-                        child:ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          track.artworkUrl,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            track.artworkUrl,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                      ),
-                      
-                      
+
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -98,28 +102,62 @@ class BehindTheTrackPage extends ConsumerWidget {
                           children: [
                             Text(track.title, style: AppTheme.titleLarge),
                             const SizedBox(height: 2),
-                            Text(track.artist, style: AppTheme.bodyMedium.copyWith(fontSize: 14, color: Colors.white70)),
+                            Text(
+                              track.artist,
+                              style: AppTheme.bodyMedium.copyWith(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
                             const SizedBox(height: 4),
 
                             Row(
                               children: [
-                                const Icon(Icons.play_arrow, size: 20, color: AppTheme.semiWhite),
+                                const Icon(
+                                  Icons.play_arrow,
+                                  size: 20,
+                                  color: AppTheme.semiWhite,
+                                ),
                                 const SizedBox(width: 4),
-                                Text(Formatters.formatCount(track.playCount), style: AppTheme.labelSmall.copyWith(fontSize: 12,color: AppTheme.semiWhite)),
+                                Text(
+                                  Formatters.formatCount(track.playCount),
+                                  style: AppTheme.labelSmall.copyWith(
+                                    fontSize: 12,
+                                    color: AppTheme.semiWhite,
+                                  ),
+                                ),
                                 const SizedBox(width: 6),
-                                const Text("•", style: TextStyle(color: AppTheme.semiWhite)),
+                                const Text(
+                                  "•",
+                                  style: TextStyle(color: AppTheme.semiWhite),
+                                ),
                                 const SizedBox(width: 6),
-                                Text(Formatters.formatDuration(track.duration), style: AppTheme.labelSmall.copyWith(fontSize: 12,color: AppTheme.semiWhite)),
+                                Text(
+                                  Formatters.formatDuration(track.duration),
+                                  style: AppTheme.labelSmall.copyWith(
+                                    fontSize: 12,
+                                    color: AppTheme.semiWhite,
+                                  ),
+                                ),
                                 const SizedBox(width: 6),
-                                const Text("•", style: TextStyle(color: AppTheme.semiWhite)),
+                                const Text(
+                                  "•",
+                                  style: TextStyle(color: AppTheme.semiWhite),
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   Formatters.formatDate(
-                                    track.releaseDate != null 
-                                        ? DateTime.tryParse(track.releaseDate!) ?? track.createdAt 
-                                        : track.createdAt
-                                  ), 
-                                  style: AppTheme.labelSmall.copyWith(fontSize: 12,color: AppTheme.semiWhite)
+                                    track.releaseDate != null
+                                        ? DateTime.tryParse(
+                                                track.releaseDate!,
+                                              ) ??
+                                              track.createdAt
+                                        : track.createdAt,
+                                  ),
+                                  style: AppTheme.labelSmall.copyWith(
+                                    fontSize: 12,
+                                    color: AppTheme.semiWhite,
+                                  ),
                                 ),
                               ],
                             ),
@@ -136,21 +174,39 @@ class BehindTheTrackPage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      _buildActionButton(Icons.favorite_border, Formatters.formatCount(track.likeCount)),
+                      _buildActionButton(
+                        Icons.favorite_border,
+                        Formatters.formatCount(track.likeCount),
+                      ),
                       const SizedBox(width: 20),
-                      _buildActionButton(Icons.comment_outlined, Formatters.formatCount(track.commentCount)),
+                      _buildActionButton(
+                        Icons.comment_outlined,
+                        Formatters.formatCount(track.commentCount),
+                      ),
                       const SizedBox(width: 20),
-                      _buildActionButton(Icons.repeat, Formatters.formatCount(track.repostCount)),
+                      _buildActionButton(
+                        Icons.repeat,
+                        Formatters.formatCount(track.repostCount),
+                      ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.more_vert, color: AppTheme.textSecondary),
+                      const Icon(
+                        Icons.more_vert,
+                        color: AppTheme.textSecondary,
+                      ),
                       const Spacer(),
                       GestureDetector(
-                        key: const Key('behind_the_track_play_pause_gesture_detector'),
+                        key: const Key(
+                          'behind_the_track_play_pause_gesture_detector',
+                        ),
                         onTap: () {
                           if (isThisTrack) {
-                            ref.read(playerStateProvider.notifier).togglePlayPause();
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .togglePlayPause();
                           } else {
-                            ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+                            ref
+                                .read(playerStateProvider.notifier)
+                                .loadAndPlayQueue([track]);
                           }
                         },
                         child: Container(
@@ -161,8 +217,10 @@ class BehindTheTrackPage extends ConsumerWidget {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isPlaying && isThisTrack ? Icons.pause : Icons.play_arrow, 
-                            color: AppTheme.background, 
+                            isPlaying && isThisTrack
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                            color: AppTheme.background,
                             size: 36,
                           ),
                         ),
@@ -173,7 +231,8 @@ class BehindTheTrackPage extends ConsumerWidget {
                 const SizedBox(height: 26),
 
                 // Description Section
-                if (track.description != null && track.description!.isNotEmpty) ...[
+                if (track.description != null &&
+                    track.description!.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -183,14 +242,18 @@ class BehindTheTrackPage extends ConsumerWidget {
                           track.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTheme.bodyMedium.copyWith(color: Colors.white,),
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                         GestureDetector(
-                          key: const Key('behind_the_track_show_more_description_gesture_detector'),
+                          key: const Key(
+                            'behind_the_track_show_more_description_gesture_detector',
+                          ),
                           onTap: () {
                             CustomBottomSheet.show(
-                              context: context, 
-                              title: "Description", 
+                              context: context,
+                              title: "Description",
                               content: track.description!,
                             );
                           },
@@ -217,18 +280,30 @@ class BehindTheTrackPage extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       scrollDirection: Axis.horizontal,
                       itemCount: track.tags.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 8),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         return Container(
                           key: Key('behind_the_track_tag_${track.tags[index]}'),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 104, 69, 131).withValues(alpha: 0.7),
+                            color: const Color.fromARGB(
+                              255,
+                              104,
+                              69,
+                              131,
+                            ).withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             "#${track.tags[index]}",
-                            style: AppTheme.titleLarge.copyWith(color: Colors.white, fontSize:15),
+                            style: AppTheme.titleLarge.copyWith(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
                           ),
                         );
                       },
@@ -243,27 +318,43 @@ class BehindTheTrackPage extends ConsumerWidget {
                     children: [
                       const CircleAvatar(
                         radius: 24,
-                        backgroundImage: AssetImage('assets/images/track_1.jpg'), // change to user profile
+                        backgroundImage: AssetImage(
+                          'assets/images/track_1.jpg',
+                        ), // change to user profile
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("User Display Name", style: AppTheme.titleLarge.copyWith(fontSize: 16)),
-                            Text("user city and country", style: AppTheme.labelSmall),
+                            Text(
+                              "User Display Name",
+                              style: AppTheme.titleLarge.copyWith(fontSize: 16),
+                            ),
+                            Text(
+                              "user city and country",
+                              style: AppTheme.labelSmall,
+                            ),
                           ],
                         ),
                       ),
                       OutlinedButton(
-                        key: const Key('behind_the_track_follow_outlined_button'),
+                        key: const Key(
+                          'behind_the_track_follow_outlined_button',
+                        ),
                         onPressed: () {},
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppTheme.textSecondary),
                           shape: const StadiumBorder(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                         ),
-                        child: const Text("Follow", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Follow",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -275,14 +366,18 @@ class BehindTheTrackPage extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: FansLeaderboard(),
                 ),
-                
+
                 const SizedBox(height: 155), // Space for player
               ],
             ),
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
-        error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
+        error: (err, stack) => Center(
+          child: Text('Error: $err', style: const TextStyle(color: Colors.red)),
+        ),
       ),
     );
   }
@@ -292,7 +387,13 @@ class BehindTheTrackPage extends ConsumerWidget {
       children: [
         Icon(icon, color: AppTheme.textPrimary, size: 24),
         const SizedBox(width: 8),
-        Text(value, style: AppTheme.labelLarge.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: AppTheme.labelLarge.copyWith(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }

@@ -53,9 +53,12 @@ class OnboardingPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Transform.translate(
-                      offset: const Offset(0, -20),
-                      child: const Icon(Icons.cloud, color: Colors.black, size: 60),
-                     
+                        offset: const Offset(0, -20),
+                        child: const Icon(
+                          Icons.cloud,
+                          color: Colors.black,
+                          size: 60,
+                        ),
                       ),
 
                       const SizedBox(height: 1),

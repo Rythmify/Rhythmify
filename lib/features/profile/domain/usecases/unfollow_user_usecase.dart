@@ -7,9 +7,7 @@ class UnfollowUserUseCase {
 
   UnfollowUserUseCase(this.repository);
 
-  Future<Either<Failure, void>> call({
-    required String userId,
-  }) {
+  Future<Either<Failure, void>> call({required String userId}) {
     return repository.unfollowUser(userId: userId);
   }
 }

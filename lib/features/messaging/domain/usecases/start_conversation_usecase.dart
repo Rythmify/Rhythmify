@@ -4,12 +4,14 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 class StartConversationUsecase {
   final MessagingRepository repo;
 
-  StartConversationUsecase({
-    required this.repo
-  });
+  StartConversationUsecase({required this.repo});
 
-  Future<Conversation> call(String participantId,{String? body,String? trackId,String? playlistId})
-  {
-    return repo.startConversation(participantId,body,trackId,playlistId);
+  Future<Conversation> call(
+    String participantId, {
+    String? body,
+    String? trackId,
+    String? playlistId,
+  }) {
+    return repo.startConversation(participantId, body, trackId, playlistId);
   }
 }

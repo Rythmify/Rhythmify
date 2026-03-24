@@ -17,15 +17,21 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
   @override
   Widget build(BuildContext context) {
     // Watch the global position and duration
-    final position = ref.watch(playerStateProvider.select((state) => state.position));
-    final duration = ref.watch(playerStateProvider.select((state) => state.duration));
+    final position = ref.watch(
+      playerStateProvider.select((state) => state.position),
+    );
+    final duration = ref.watch(
+      playerStateProvider.select((state) => state.duration),
+    );
 
-    final maxDuration = duration.inMilliseconds.toDouble() > 0 
-        ? duration.inMilliseconds.toDouble() 
+    final maxDuration = duration.inMilliseconds.toDouble() > 0
+        ? duration.inMilliseconds.toDouble()
         : 1.0;
 
     // Use the local drag value if it exists, otherwise use the stream position
-    final currentPos = _dragValue ?? position.inMilliseconds.toDouble().clamp(0.0, maxDuration);
+    final currentPos =
+        _dragValue ??
+        position.inMilliseconds.toDouble().clamp(0.0, maxDuration);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -34,12 +40,18 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
           Text(
             '${Formatters.formatDuration(Duration(milliseconds: currentPos.toInt()))}  |  ${Formatters.formatDuration(duration)}',
             key: const Key('player_progress_bar_duration_text'),
-            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6), // Added small thumb for better visual feedback
+              thumbShape: const RoundSliderThumbShape(
+                enabledThumbRadius: 6,
+              ), // Added small thumb for better visual feedback
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               activeTrackColor: AppTheme.primaryBrand,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
@@ -61,7 +73,9 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
               },
               onChangeEnd: (value) {
                 // Only trigger the actual seek when the user releases their finger
-                ref.read(playerStateProvider.notifier).seek(Duration(milliseconds: value.toInt()));
+                ref
+                    .read(playerStateProvider.notifier)
+                    .seek(Duration(milliseconds: value.toInt()));
                 setState(() {
                   _dragValue = null; // Resume following the stream
                 });

@@ -32,10 +32,12 @@ class _PlayerScaffoldState extends ConsumerState<PlayerScaffold> {
       children: [
         // Main App Content
         Positioned.fill(
-          bottom: hasTrack ? 60.0 : 0.0, // Leave room for MiniPlayer if there's a track
+          bottom: hasTrack
+              ? 60.0
+              : 0.0, // Leave room for MiniPlayer if there's a track
           child: widget.child,
         ),
-        
+
         // Mini Player
         if (hasTrack)
           Positioned(

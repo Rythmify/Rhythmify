@@ -3,8 +3,11 @@ import 'package:rythmify/features/messaging/domain/usecases/get_messages_usecase
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
-final messageProvider=FutureProvider.family<List<Message>,String>((ref,conversationId)async{
-  final uCase=GetMessagesUsecase(repo: ref.read(repositoryprovider));
-  final msg=await uCase(conversationId);
+final messageProvider = FutureProvider.family<List<Message>, String>((
+  ref,
+  conversationId,
+) async {
+  final uCase = GetMessagesUsecase(repo: ref.read(repositoryprovider));
+  final msg = await uCase(conversationId);
   return msg;
 });

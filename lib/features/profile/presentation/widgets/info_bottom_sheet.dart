@@ -53,9 +53,10 @@ class InfoBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  [profile.city, profile.country]
-                      .where((e) => e != null && e.isNotEmpty)
-                      .join(', '),
+                  [
+                    profile.city,
+                    profile.country,
+                  ].where((e) => e != null && e.isNotEmpty).join(', '),
                   key: const Key('profile_info_location_text'),
                   style: AppTheme.bodyMedium,
                 ),
@@ -108,14 +109,8 @@ class InfoBottomSheet extends StatelessWidget {
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          count,
-          style: AppTheme.titleMedium,
-        ),
-        Text(
-          label,
-          style: AppTheme.labelSmall,
-        ),
+        Text(count, style: AppTheme.titleMedium),
+        Text(label, style: AppTheme.labelSmall),
       ],
     );
   }

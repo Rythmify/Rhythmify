@@ -7,9 +7,7 @@ class FollowUserUseCase {
 
   FollowUserUseCase(this.repository);
 
-  Future<Either<Failure, void>> call({
-    required String userId,
-  }) {
+  Future<Either<Failure, void>> call({required String userId}) {
     return repository.followUser(userId: userId);
   }
 }
