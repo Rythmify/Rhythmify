@@ -65,7 +65,8 @@ class UploadTrackRepositoryImpl implements UploadTrackRepository {
     if (message.contains('AUTH_401')) return const AuthFailure();
     if (message.contains('UPLOAD_LIMIT_403')) return const UploadLimitFailure();
     if (message.contains('FILE_TOO_LARGE')) return const FileTooLargeFailure();
-    if (message.contains('UNSUPPORTED_FILE'))return const UnsupportedFileFailure();
+    if (message.contains('UNSUPPORTED_FILE'))
+      return const UnsupportedFileFailure();
     if (message.contains('SocketException')) return const NetworkFailure();
     return UploadFailure(message);
   }
