@@ -53,8 +53,7 @@ class PublicProfilePage extends ConsumerStatefulWidget {
   const PublicProfilePage({super.key, required this.userId});
 
   @override
-  ConsumerState<PublicProfilePage> createState() =>
-      _PublicProfilePageState();
+  ConsumerState<PublicProfilePage> createState() => _PublicProfilePageState();
 }
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
@@ -71,13 +70,13 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     super.initState();
 
     final authState = ref.read(authProvider);
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
 
-    _resolvedUserId =
-        widget.userId == currentUserId || widget.userId == 'me'
-            ? 'me'
-            : widget.userId;
+    _resolvedUserId = widget.userId == currentUserId || widget.userId == 'me'
+        ? 'me'
+        : widget.userId;
 
     // Trigger profile load after the build phase completes
     Future.microtask(() =>
@@ -91,9 +90,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           _scrollController.position.maxScrollExtent - 200) {
         final s = ref.read(profileProvider);
         if (s is ProfileLoaded) {
-          ref.read(profileProvider.notifier).loadLikedTracks(
-                userId: _resolvedUserId,
-              );
+          ref
+              .read(profileProvider.notifier)
+              .loadLikedTracks(userId: _resolvedUserId);
         }
       }
     });
@@ -118,8 +117,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final authState = ref.watch(authProvider);
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
@@ -151,29 +151,25 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       body: switch (profileState) {
         ProfileInitial() => const SizedBox.shrink(),
         ProfileLoading() => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-          ),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
         ProfileError(:final message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(message, style: AppTheme.bodyMedium),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  key: const Key('public_profile_retry_button'),
-                  onPressed: () => ref
-                      .read(profileProvider.notifier)
-                      .loadProfile(userId: _resolvedUserId),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(message, style: AppTheme.bodyMedium),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                key: const Key('public_profile_retry_button'),
+                onPressed: () => ref
+                    .read(profileProvider.notifier)
+                    .loadProfile(userId: _resolvedUserId),
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-        ProfileLoaded() => _buildLoaded(
-            context,
-            profileState,
-            isOwnProfile,
-          ),
+        ),
+        ProfileLoaded() => _buildLoaded(context, profileState, isOwnProfile),
         _ => const SizedBox.shrink(),
       },
     );
@@ -205,9 +201,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 if (state.profile.city != null ||
                     state.profile.country != null)
                   Text(
-                    [state.profile.city, state.profile.country]
-                        .where((e) => e != null && e.isNotEmpty)
-                        .join(', '),
+                    [
+                      state.profile.city,
+                      state.profile.country,
+                    ].where((e) => e != null && e.isNotEmpty).join(', '),
                     style: AppTheme.bodyMedium,
                   ),
                 const SizedBox(height: 4),
@@ -249,12 +246,14 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: AppTheme.textSecondary
-                                  .withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
+                            state.profile.isFollowing ? 'Following' : 'Follow',
                             state.profile.isFollowing ? 'Following' : 'Follow',
                             style: AppTheme.labelLarge,
                           ),
@@ -332,7 +331,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       : const SizedBox.shrink();
                 }
 
-                final track = state.likedTracks[index];
+              final track = state.likedTracks[index];
 
                 return TrackListTile(
                   key: Key('item_${track.id}'),

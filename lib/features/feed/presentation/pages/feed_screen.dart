@@ -7,11 +7,7 @@ class FeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Feed'),
-        centerTitle: false,
-
-      ),
+      appBar: AppBar(title: const Text('Feed'), centerTitle: false),
       body: const Center(
         child: Text(
           'This is a dummy page',

@@ -122,18 +122,18 @@ class ProfileEntity extends Equatable {
   /// The list of fields used by [Equatable] to determine equality.
   @override
   List<Object?> get props => [
-        id,
-        displayName,
-        username,
-        avatarUrl,
-        coverUrl,
-        city,
-        country,
-        bio,
-        followersCount,
-        followingCount,
-        tracksCount,
-        isFollowing,
-        isVerified,
-      ];
+    id,
+    displayName,
+    username,
+    avatarUrl,
+    coverUrl,
+    city,
+    country,
+    bio,
+    followersCount,
+    followingCount,
+    tracksCount,
+    isFollowing,
+    isVerified,
+  ];
 }

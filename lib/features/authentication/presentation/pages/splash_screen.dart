@@ -58,11 +58,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.cloud,
-              color: AppTheme.primaryBrand,
-              size: 80,
-            ),
+            const Icon(Icons.cloud, color: AppTheme.primaryBrand, size: 80),
             const SizedBox(height: 24),
             Text(
               'Rythmify',

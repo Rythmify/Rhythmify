@@ -62,13 +62,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
     final result = await _getProfile(userId: userId);
-    result.fold(
-      (failure) => state = ProfileError(failure.message),
-      (profile) {
-        state = ProfileLoaded(profile: profile);
-        loadLikedTracks(userId: userId, refresh: true);
-      },
-    );
+    result.fold((failure) => state = ProfileError(failure.message), (profile) {
+      state = ProfileLoaded(profile: profile);
+      loadLikedTracks(userId: userId, refresh: true);
+    });
   }
 
   Future<void> loadLikedTracks({
@@ -140,10 +137,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     result.fold(
       (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(
-        profile: profile,
-        isSaving: false,
-      ),
+      (profile) => state = current.copyWith(profile: profile, isSaving: false),
     );
   }
 
@@ -154,13 +148,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadAvatar(filePath: filePath);
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (profile) {
-        state = current.copyWith(profile: profile, isSaving: false);
-        loadProfile(userId: 'me');
-      },
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (
+      profile,
+    ) {
+      state = current.copyWith(profile: profile, isSaving: false);
+      loadProfile(userId: 'me');
+    });
   }
 
   Future<void> deleteAvatar() async {
@@ -170,19 +163,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteAvatar();
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (_) {
-        state = current.copyWith(
-          profile: current.profile.copyWithFollowing(
-            isFollowing: current.profile.isFollowing,
-            followersCount: current.profile.followersCount,
-          ),
-          isSaving: false,
-        );
-        loadProfile(userId: 'me');
-      },
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
+      state = current.copyWith(
+        profile: current.profile.copyWithFollowing(
+          isFollowing: current.profile.isFollowing,
+          followersCount: current.profile.followersCount,
+        ),
+        isSaving: false,
+      );
+      loadProfile(userId: 'me');
+    });
   }
 
   Future<void> uploadCoverPhoto({required String filePath}) async {
@@ -192,13 +182,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadCoverPhoto(filePath: filePath);
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (profile) {
-        state = current.copyWith(profile: profile, isSaving: false);
-        loadProfile(userId: 'me');
-      },
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (
+      profile,
+    ) {
+      state = current.copyWith(profile: profile, isSaving: false);
+      loadProfile(userId: 'me');
+    });
   }
 
   Future<void> deleteCoverPhoto() async {
@@ -208,13 +197,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteCoverPhoto();
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (_) {
-        state = current.copyWith(isSaving: false);
-        loadProfile(userId: 'me');
-      },
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
+      state = current.copyWith(isSaving: false);
+      loadProfile(userId: 'me');
+    });
   }
 
   Future<void> followUser({required String userId}) async {

@@ -35,7 +35,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
   /// Validates the password field and triggers sign-in.
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authProvider.notifier).signInWithEmailAndPassword(
+      ref
+          .read(authProvider.notifier)
+          .signInWithEmailAndPassword(
             email: widget.email,
             password: _passwordController.text,
           );
@@ -121,7 +123,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                     ),
                     child: authState is AuthLoading
                         ? const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
                         : Text('Sign in', style: AppTheme.labelLarge),
                   ),
                 ),
@@ -132,8 +136,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   onTap: () {},
                   child: Text(
                     'Forgot password?',
-                    style: AppTheme.bodyMedium
-                        .copyWith(color: AppTheme.link),
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.link),
                   ),
                 ),
               ],

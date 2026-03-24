@@ -4,61 +4,62 @@ import '../../../../core/domain/entities/track.dart';
 
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
-  
+
   List<Track> _currentQueue = [];
 
-  RythmifyAudioHandler() { _init(); }
+  RythmifyAudioHandler() {
+    _init();
+  }
 
   Future<void> _init() async {
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
-      playbackState.add(playbackState.value.copyWith(
-        controls:
-        [
-          MediaControl.skipToPrevious,
-          if (playing) MediaControl.pause else MediaControl.play,
-          MediaControl.stop,
-          MediaControl.skipToNext,
-        ],
-        systemActions: const
-        {
-          MediaAction.seek,
-          MediaAction.seekForward,
-          MediaAction.seekBackward,
-        },
-        androidCompactActionIndices: const [0, 1, 3],
-        processingState: const
-        {
-          ProcessingState.idle:      AudioProcessingState.idle,
-          ProcessingState.loading:   AudioProcessingState.loading,
-          ProcessingState.buffering: AudioProcessingState.buffering,
-          ProcessingState.ready:     AudioProcessingState.ready,
-          ProcessingState.completed: AudioProcessingState.completed,
-        }[_player.processingState]!,
+      playbackState.add(
+        playbackState.value.copyWith(
+          controls: [
+            MediaControl.skipToPrevious,
+            if (playing) MediaControl.pause else MediaControl.play,
+            MediaControl.stop,
+            MediaControl.skipToNext,
+          ],
+          systemActions: const {
+            MediaAction.seek,
+            MediaAction.seekForward,
+            MediaAction.seekBackward,
+          },
+          androidCompactActionIndices: const [0, 1, 3],
+          processingState: const {
+            ProcessingState.idle: AudioProcessingState.idle,
+            ProcessingState.loading: AudioProcessingState.loading,
+            ProcessingState.buffering: AudioProcessingState.buffering,
+            ProcessingState.ready: AudioProcessingState.ready,
+            ProcessingState.completed: AudioProcessingState.completed,
+          }[_player.processingState]!,
 
-        playing: playing,
-        updatePosition: _player.position,
-        bufferedPosition: _player.bufferedPosition,
-        speed: _player.speed,
-        queueIndex: event.currentIndex,
-      ));
+          playing: playing,
+          updatePosition: _player.position,
+          bufferedPosition: _player.bufferedPosition,
+          speed: _player.speed,
+          queueIndex: event.currentIndex,
+        ),
+      );
     });
 
     /// Listen to current index changes
     /// To update lock screen media item
 
-    _player.currentIndexStream.listen((index)
-    {
-      if (index != null && index < _currentQueue.length)
-      {
+    _player.currentIndexStream.listen((index) {
+      if (index != null && index < _currentQueue.length) {
         final track = _currentQueue[index];
-        mediaItem.add(MediaItem(
-          id: track.id,
-          title: track.title,
-          artist: track.artist,
-          duration: track.duration,
-          artUri: Uri.parse('asset:///${track.artworkUrl}'),
-        ));
+        mediaItem.add(
+          MediaItem(
+            id: track.id,
+            title: track.title,
+            artist: track.artist,
+            duration: track.duration,
+            artUri: Uri.parse('asset:///${track.artworkUrl}'),
+          ),
+        );
       }
     });
   }
@@ -67,22 +68,24 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     final index = _currentQueue.indexWhere((t) => t.id == id);
     if (index != -1) {
       _currentQueue[index] = updatedTrack;
-      
+
       // If it's the currently playing track, update mediaItem to reflect new metadata
       if (_player.currentIndex == index) {
-        mediaItem.add(MediaItem(
-          id: updatedTrack.id,
-          title: updatedTrack.title,
-          artist: updatedTrack.artist,
-          duration: updatedTrack.duration,
-          artUri: Uri.parse('asset:///${updatedTrack.artworkUrl}'),
-          displayDescription: updatedTrack.description,
-          genre: updatedTrack.genre,
-          extras: {
-            'artists': updatedTrack.artists,
-            'waveform': updatedTrack.waveformData,
-          },
-        ));
+        mediaItem.add(
+          MediaItem(
+            id: updatedTrack.id,
+            title: updatedTrack.title,
+            artist: updatedTrack.artist,
+            duration: updatedTrack.duration,
+            artUri: Uri.parse('asset:///${updatedTrack.artworkUrl}'),
+            displayDescription: updatedTrack.description,
+            genre: updatedTrack.genre,
+            extras: {
+              'artists': updatedTrack.artists,
+              'waveform': updatedTrack.waveformData,
+            },
+          ),
+        );
       }
     }
   }
@@ -98,17 +101,16 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
-    
+
     final audioSources = tracks.map((track) {
       final url = track.audioUrl;
-      if (url.startsWith('assets/'))  //change later
+      if (url.startsWith('assets/')) //change later
       {
         return AudioSource.asset(url, tag: track.id);
       } else {
         return AudioSource.uri(Uri.parse(url), tag: track.id);
       }
     }).toList();
-
 
     await _player.setAudioSources(
       audioSources,

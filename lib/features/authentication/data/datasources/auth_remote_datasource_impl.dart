@@ -46,10 +46,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     try {
       final response = await client.dio.post(
         '/auth/login',
-        data: {
-          'identifier': email,
-          'password': password,
-        },
+        data: {'identifier': email, 'password': password},
       );
 
       final responseData = response.data is List
@@ -154,7 +151,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       if (googleUser == null) {
         throw Exception('Google sign in cancelled');
       }
+      if (googleUser == null) {
+        throw Exception('Google sign in cancelled');
+      }
 
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
@@ -166,7 +168,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           await FirebaseAuth.instance.signInWithCredential(credential);
 
       final idToken = await firebaseUser.user!.getIdToken();
+      final idToken = await firebaseUser.user!.getIdToken();
 
+      final response = await client.dio.post(
+        '/auth/google',
+        data: {'id_token': idToken},
+      );
       final response = await client.dio.post(
         '/auth/google',
         data: {'id_token': idToken},
@@ -175,7 +182,25 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       final data = response.data['data'];
       final token = data['access_token'] as String;
       await client.saveToken(token);
+      final data = response.data['data'];
+      final token = data['access_token'] as String;
+      await client.saveToken(token);
 
+      final user = data['user'];
+      return UserModel.fromJson({
+        'id': user['user_id'],
+        'email': user['email'],
+        'display_name': user['display_name'],
+        'is_email_verified': user['is_verified'] ?? true,
+        'token': token,
+      });
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
       final user = data['user'];
       return UserModel.fromJson({
         'id': user['user_id'],
@@ -226,9 +251,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     try {
       final response = await client.dio.post(
         '/auth/apple',
-        data: {
-          'id_token': 'APPLE_ID_TOKEN_HERE',
-        },
+        data: {'id_token': 'APPLE_ID_TOKEN_HERE'},
       );
 
       final responseData = response.data is List
@@ -284,10 +307,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<void> sendPasswordReset({required String email}) async {
     try {
-      await client.dio.post(
-        '/auth/forgot-password',
-        data: {'email': email},
-      );
+      await client.dio.post('/auth/forgot-password', data: {'email': email});
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

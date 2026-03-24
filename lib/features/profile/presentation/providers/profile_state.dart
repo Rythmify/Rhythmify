@@ -96,12 +96,12 @@ class ProfileLoaded extends ProfileState {
   /// Props used by [Equatable] to determine equality between states.
   @override
   List<Object?> get props => [
-        profile,
-        likedTracks,
-        isLoadingTracks,
-        hasMoreTracks,
-        isSaving,
-      ];
+    profile,
+    likedTracks,
+    isLoadingTracks,
+    hasMoreTracks,
+    isSaving,
+  ];
 }
 
 /// Emitted when loading the profile fails.

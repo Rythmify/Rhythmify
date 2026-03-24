@@ -137,6 +137,7 @@ class UploadLimitFailure extends Failure {
   /// Creates an [UploadLimitFailure] with a fixed message.
   const UploadLimitFailure([
     super.message = 'Upload limit reached. Try again later.',
+    super.message = 'Upload limit reached. Try again later.',
   ]);
 }
 
@@ -146,6 +147,7 @@ class UploadLimitFailure extends Failure {
 class FileTooLargeFailure extends Failure {
   /// Creates a [FileTooLargeFailure] with a fixed message.
   const FileTooLargeFailure([
+    super.message = 'File is too large. Maximum size is 100MB.',
     super.message = 'File is too large. Maximum size is 100MB.',
   ]);
 }

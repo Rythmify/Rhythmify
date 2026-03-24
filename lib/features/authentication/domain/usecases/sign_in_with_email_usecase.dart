@@ -25,10 +25,7 @@ class SignInWithEmailUseCase {
     required String email,
     required String password,
   }) {
-    return repository.signInWithEmail(
-      email: email,
-      password: password,
-    );
+    return repository.signInWithEmail(email: email, password: password);
   }
 }
  

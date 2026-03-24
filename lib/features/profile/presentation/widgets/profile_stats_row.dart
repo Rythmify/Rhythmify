@@ -55,10 +55,7 @@ class ProfileStatsRow extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(
-            '·',
-            style: AppTheme.bodyMedium,
-          ),
+          child: Text('·', style: AppTheme.bodyMedium),
         ),
         Text(
           '${_formatCount(followingCount)} Following',

@@ -12,12 +12,9 @@ class InboxScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final convprovider = ref.watch(conversationProvider);
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inbox'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Inbox'), centerTitle: false),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 130), // Space for player
         child: convprovider.when(
@@ -27,23 +24,20 @@ class InboxScreen extends ConsumerWidget {
                 : InboxConversations(conversations: conversations);
           },
           error: (error, stackTrace) => Center(
-            child: Text(
-              error.toString(),
-              key: const Key('inbox_error_text'),
-            ),
+            child: Text(error.toString(), key: const Key('inbox_error_text')),
           ),
-          loading: () => const Center(
-            child: CircularProgressIndicator(),
-          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
         ),
       ),
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: 130),
         child: ComposeButton(
           key: Key('inbox_compose_button'),
-          onPressed:(){
+          onPressed: () {
             context.push('/home/inbox/search');
-          }
+          },
+        ),
       ),
-    ));  }
+    );
+  }
 }

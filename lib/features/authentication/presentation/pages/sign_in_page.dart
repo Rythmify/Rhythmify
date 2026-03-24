@@ -48,11 +48,12 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
       if (widget.mode == 'register') {
-        context.push('/create-account/password',
-            extra: _emailController.text.trim());
+        context.push(
+          '/create-account/password',
+          extra: _emailController.text.trim(),
+        );
       } else {
-        context.push('/login/password',
-            extra: _emailController.text.trim());
+        context.push('/login/password', extra: _emailController.text.trim());
       }
     }
   }
@@ -106,14 +107,16 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       TextSpan(
                         text: 'Terms of Use',
-                        style: AppTheme.bodyMedium
-                            .copyWith(color: AppTheme.link),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.link,
+                        ),
                       ),
                       const TextSpan(text: ' and acknowledge our '),
                       TextSpan(
                         text: 'Privacy Policy.',
-                        style: AppTheme.bodyMedium
-                            .copyWith(color: AppTheme.link),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.link,
+                        ),
                       ),
                     ],
                   ),
@@ -123,30 +126,29 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 SocialLoginButton(
                   key: const Key('auth_social_facebook_button'),
                   provider: SocialProvider.facebook,
-                  onTap: () => ref
-                      .read(authProvider.notifier)
-                      .signInWithGoogleAccount(),
+                  onTap: () =>
+                      ref.read(authProvider.notifier).signInWithGoogleAccount(),
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
                   key: const Key('auth_social_google_button'),
                   provider: SocialProvider.google,
-                  onTap: () => ref
-                      .read(authProvider.notifier)
-                      .signInWithGoogleAccount(),
+                  onTap: () =>
+                      ref.read(authProvider.notifier).signInWithGoogleAccount(),
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
                   key: const Key('auth_social_apple_button'),
                   provider: SocialProvider.apple,
-                  onTap: () => ref
-                      .read(authProvider.notifier)
-                      .signInWithAppleAccount(),
+                  onTap: () =>
+                      ref.read(authProvider.notifier).signInWithAppleAccount(),
                 ),
                 const SizedBox(height: 28),
                 Text(
                   'Or with email',
+                  'Or with email',
                   key: const Key('auth_email_divider_text'),
+                  style: AppTheme.labelLarge,
                   style: AppTheme.labelLarge,
                 ),
                 const SizedBox(height: 12),
@@ -174,8 +176,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   height: 50,
                   child: ElevatedButton(
                     key: const Key('auth_continue_button'),
-                    onPressed:
-                        authState is AuthLoading ? null : _onContinue,
+                    onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,
@@ -186,7 +187,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                     ),
                     child: authState is AuthLoading
                         ? const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
                         : Text('Continue', style: AppTheme.labelLarge),
                   ),
                 ),
@@ -196,8 +199,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   onTap: () {},
                   child: Text(
                     'Need help?',
-                    style: AppTheme.bodyMedium
-                        .copyWith(color: AppTheme.link),
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.link),
                   ),
                 ),
               ],

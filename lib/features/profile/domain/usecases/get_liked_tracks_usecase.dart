@@ -22,10 +22,6 @@ class GetLikedTracksUseCase {
     int page = 1,
     int limit = 20,
   }) {
-    return repository.getLikedTracks(
-      userId: userId,
-      page: page,
-      limit: limit,
-    );
+    return repository.getLikedTracks(userId: userId, page: page, limit: limit);
   }
 }

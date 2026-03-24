@@ -101,17 +101,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         // Password visibility toggle
         suffixIcon: widget.isPassword
