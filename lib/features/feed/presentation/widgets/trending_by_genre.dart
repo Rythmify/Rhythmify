@@ -71,7 +71,7 @@ class _TrendingByGenreState extends State<TrendingByGenre>
 
         GenreTabBar(tabController: _tabController),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 2),
 
         SizedBox(
           height: 250,

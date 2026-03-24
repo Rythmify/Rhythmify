@@ -1,22 +1,29 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
-/// This file is faking the internet fetching for apis json results
-/// and then hands it to the repository
-
+/// [TrackLocalDataSource] defines the interface for local track data operations.
+///
+/// This data source is primarily used for mocking and offline capabilities,
+/// fetching data from local JSON assets or simulated local storage.
 abstract class TrackLocalDataSource {
+  /// Fetches summary track data from a local JSON mock.
   Future<List<dynamic>> getSummaryTracks();
 
+  /// Fetches full track data from a local JSON mock.
   Future<List<dynamic>> getFullTracks();
 
+  /// Simulates fetching waveform peak data for a track.
   Future<Map<String, dynamic>> getWaveform(String id);
 
+  /// Simulates fetching tag data.
   Future<Map<String, dynamic>> getTags();
 }
 
+/// [TrackLocalDataSourceImpl] is the implementation of [TrackLocalDataSource].
+///
+/// It uses the [rootBundle] to load mock data from assets.
 class TrackLocalDataSourceImpl implements TrackLocalDataSource {
   static const String _summaryJsonPath = 'assets/mocks/tracks_summary.json';
-  //static const String _fullJsonPath = 'assets/mocks/tracks_full.json';
 
   @override
   Future<List<dynamic>> getSummaryTracks() async {
@@ -35,7 +42,6 @@ class TrackLocalDataSourceImpl implements TrackLocalDataSource {
   @override
   Future<Map<String, dynamic>> getWaveform(String id) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    // Simulating API response provided by user
     return {
       "data": {
         "track_id": id,
@@ -47,7 +53,6 @@ class TrackLocalDataSourceImpl implements TrackLocalDataSource {
   @override
   Future<Map<String, dynamic>> getTags() async {
     await Future.delayed(const Duration(milliseconds: 400));
-    // Simulating API response provided by user
     return {
       "data": {
         "items": [

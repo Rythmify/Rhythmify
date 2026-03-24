@@ -13,7 +13,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/onboarding',
-            builder: (_, __) => const OnboardingPage(),
+            builder: (a, b) => const OnboardingPage(),
           ),
           GoRoute(
             path: '/sign-in',

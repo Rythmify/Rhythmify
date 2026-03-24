@@ -20,17 +20,27 @@ const bool _useMock = false;
 //  --- Data Source & Repository Providers ---
 // ============================================
 
-/// Provides the local JSON reader
+/// [trackLocalDataSourceProvider] provides an instance of [TrackLocalDataSource].
+///
+/// Manages the [TrackLocalDataSource] implementation for fetching mock data.
+/// Layer: Data
 final trackLocalDataSourceProvider = Provider<TrackLocalDataSource>((ref) {
   return TrackLocalDataSourceImpl();
 });
 
-/// Provides the Remote API data source
+/// [trackRemoteDataSourceProvider] provides an instance of [TrackRemoteDataSource].
+///
+/// Manages the remote API interaction using the global [apiClient].
+/// Layer: Data
 final trackRemoteDataSourceProvider = Provider<TrackRemoteDataSource>((ref) {
   return TrackRemoteDataSourceImpl(apiClient);
 });
 
-/// Provides the Repository.
+/// [trackRepositoryProvider] provides the [TrackRepository] implementation.
+///
+/// Depending on [_useMock], it returns either [MockTrackRepositoryImpl] or [TrackRepositoryImpl].
+/// Layer: Data/Domain Interface
+/// Depends on [trackLocalDataSourceProvider] and [trackRemoteDataSourceProvider].
 final trackRepositoryProvider = Provider<TrackRepository>((ref) {
   if (_useMock) {
     final localDataSource = ref.watch(trackLocalDataSourceProvider);
@@ -45,18 +55,34 @@ final trackRepositoryProvider = Provider<TrackRepository>((ref) {
 //  --- Use Case Providers (Fetching Data) ---
 // ============================================
 
+/// Provides the [GetTrackDetails] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final getTrackDetailsUseCaseProvider = Provider<GetTrackDetails>((ref) {
   return GetTrackDetails(ref.watch(trackRepositoryProvider));
 });
 
+/// Provides the [GetTracks] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final getTracksUseCaseProvider = Provider<GetTracks>((ref) {
   return GetTracks(ref.watch(trackRepositoryProvider));
 });
 
+/// Provides the [GetWaveform] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final getWaveformUseCaseProvider = Provider<GetWaveform>((ref) {
   return GetWaveform(ref.watch(trackRepositoryProvider));
 });
 
+/// Provides the [GetTags] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final getTagsUseCaseProvider = Provider<GetTags>((ref) {
   return GetTags(ref.watch(trackRepositoryProvider));
 });
@@ -65,14 +91,26 @@ final getTagsUseCaseProvider = Provider<GetTags>((ref) {
 //  --- Use Case Providers (Mutations) ---
 // ========================================
 
+/// Provides the [ToggleLike] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final toggleLikeUseCaseProvider = Provider<ToggleLike>((ref) {
   return ToggleLike(ref.watch(trackRepositoryProvider));
 });
 
+/// Provides the [ToggleRepost] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final toggleRepostUseCaseProvider = Provider<ToggleRepost>((ref) {
   return ToggleRepost(ref.watch(trackRepositoryProvider));
 });
 
+/// Provides the [RecordPlay] use case.
+///
+/// Layer: Domain
+/// Depends on [trackRepositoryProvider].
 final recordPlayUseCaseProvider = Provider<RecordPlay>((ref) {
   return RecordPlay(ref.watch(trackRepositoryProvider));
 });

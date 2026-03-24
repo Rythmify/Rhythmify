@@ -4,6 +4,12 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../providers/player_provider.dart';
 
+/// A seekable progress bar displaying the current playback position and duration.
+///
+/// This widget allows users to jump to different parts of a track and
+/// provides visual feedback on current progress.
+///
+/// Depends on [playerStateProvider].
 class PlayerProgressBar extends ConsumerStatefulWidget {
   const PlayerProgressBar({super.key});
 
@@ -12,11 +18,11 @@ class PlayerProgressBar extends ConsumerStatefulWidget {
 }
 
 class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
+  /// Local state to manage smooth dragging without being interrupted by the position stream.
   double? _dragValue;
 
   @override
   Widget build(BuildContext context) {
-    // Watch the global position and duration
     final position = ref.watch(
       playerStateProvider.select((state) => state.position),
     );
@@ -28,7 +34,6 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
         ? duration.inMilliseconds.toDouble()
         : 1.0;
 
-    // Use the local drag value if it exists, otherwise use the stream position
     final currentPos =
         _dragValue ??
         position.inMilliseconds.toDouble().clamp(0.0, maxDuration);
@@ -49,9 +54,7 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 6,
-              ), // Added small thumb for better visual feedback
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               activeTrackColor: AppTheme.primaryBrand,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
@@ -72,12 +75,11 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 });
               },
               onChangeEnd: (value) {
-                // Only trigger the actual seek when the user releases their finger
                 ref
                     .read(playerStateProvider.notifier)
                     .seek(Duration(milliseconds: value.toInt()));
                 setState(() {
-                  _dragValue = null; // Resume following the stream
+                  _dragValue = null;
                 });
               },
             ),

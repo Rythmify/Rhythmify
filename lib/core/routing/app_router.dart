@@ -30,6 +30,7 @@ import '../../features/track/presentation/pages/behind_the_track.dart';
 import '../../features/player/presentation/pages/full_player_page.dart';
 
 //  Messaging imports
+import '../../features/messaging/domain/entities/conversation.dart';
 import '../../features/messaging/presentation/pages/inbox_screen.dart';
 import '../../features/messaging/presentation/pages/chat_screen.dart';
 import '../../features/messaging/presentation/pages/search_screen.dart'
@@ -192,9 +193,29 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'chat/:chatId',
                         builder: (context, state) {
                           final chatId = state.pathParameters['chatId']!;
-                          final conv = mockConversations.firstWhere(
-                            (c) => c.conversationId == chatId,
-                          );
+                          final extra = state.extra;
+
+                          if (extra is Conversation) {
+                            return ChatScreen(conv: extra);
+                          }
+
+                          if (extra is Map<String, dynamic>) {
+                            return ChatScreen(
+                              conv: extra['conv'] as Conversation?,
+                              newParticipantId:
+                                  extra['newParticipantId'] as String?,
+                              newParticipantName:
+                                  extra['newParticipantName'] as String?,
+                            );
+                          }
+
+                          // Fallback to searching mock data if no extra provided
+                          final conv = mockConversations
+                              .cast<Conversation?>()
+                              .firstWhere(
+                                (c) => c?.conversationId == chatId,
+                                orElse: () => null,
+                              );
 
                           return ChatScreen(conv: conv);
                         },

@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// A widget that displays the current track's title and artist.
+///
+/// It also includes a "Behind this track" button for navigating to detailed
+/// track information.
 class TrackInfoBox extends StatelessWidget {
+  /// The summary metadata of the track to display.
   final Track summary;
+
+  /// Callback to navigate to the detailed track information page.
   final VoidCallback onNavigateBehindTrack;
 
   const TrackInfoBox({

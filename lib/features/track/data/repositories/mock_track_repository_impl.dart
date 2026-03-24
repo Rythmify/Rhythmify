@@ -3,6 +3,11 @@ import '../../../../core/data/models/track_dto.dart';
 import '../../domain/repositories/track_repository.dart';
 import '../datasources/track_local_data_source.dart';
 
+/// [MockTrackRepositoryImpl] provides a simulated implementation of [TrackRepository].
+///
+/// This implementation relies on [TrackLocalDataSource] to fetch data from
+/// local JSON assets, allowing for offline development and testing of the
+/// track feature without needing a live backend.
 class MockTrackRepositoryImpl implements TrackRepository {
   final TrackLocalDataSource localDataSource;
 
@@ -19,7 +24,6 @@ class MockTrackRepositoryImpl implements TrackRepository {
     final trackJson = rawData.firstWhere(
       (json) => json['id'] == id,
       orElse: () {
-        // Fallback for user's provided example if it's not in mocks
         if (id == "e5f6a7b8-c9d0-1234-efab-567890abcdef") {
           return {
             "data": {
@@ -32,7 +36,7 @@ class MockTrackRepositoryImpl implements TrackRepository {
                 "bbb22222-cccc-dddd-eeee-ffffffffffff",
               ],
               "duration": 210,
-              "audio_url": "assets/audio/Track_audio_1.mp3", // mock asset
+              "audio_url": "assets/audio/Track_audio_1.mp3",
               "stream_url":
                   "https://cdn.rythmify.com/tracks/e5f6a7b8/stream.mp3",
               "artists": "Ahmed Sami, DJ Karim",

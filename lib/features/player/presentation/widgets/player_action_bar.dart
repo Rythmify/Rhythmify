@@ -4,8 +4,15 @@ import '../../../../core/utils/formatters.dart';
 import '../../../track/presentation/providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// A horizontal bar providing secondary track actions.
+///
+/// Includes like count, comments, sharing, and playlist management.
+///
+/// Depends on [trackDetailsProvider].
 class PlayerActionBar extends ConsumerWidget {
+  /// The ID of the track for which to display actions.
   final String trackId;
+
   const PlayerActionBar({super.key, required this.trackId});
 
   @override

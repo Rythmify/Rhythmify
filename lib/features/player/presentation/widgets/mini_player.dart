@@ -5,14 +5,21 @@ import '../providers/player_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
 import 'mini_player_progress_button.dart';
 
+/// A persistent mini-player widget that appears when a track is active.
+///
+/// This widget provides basic playback information and quick actions (like, follow)
+/// and allows the user to expand the full player.
+///
+/// Depends on [playerStateProvider] and [trackInteractionProvider].
 class MiniPlayer extends ConsumerWidget {
+  /// Callback triggered when the mini-player is tapped to expand.
   final VoidCallback? onTap;
 
   const MiniPlayer({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ONLY rebuilds when the song changes -> not when the timer ticks
+    // Only rebuilds when the song changes -> not when the timer ticks
     final track = ref.watch(
       playerStateProvider.select((state) => state.currentTrack),
     );
@@ -42,16 +49,9 @@ class MiniPlayer extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              // ===============================
-              //  Animated Progress Play Button
-              // ===============================
               const SizedBox(width: 5),
               const MiniPlayerProgressButton(),
               const SizedBox(width: 16),
-
-              // ============
-              //  Track Info
-              // ============
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -74,10 +74,6 @@ class MiniPlayer extends ConsumerWidget {
                   ],
                 ),
               ),
-
-              // ================
-              //  Social Actions
-              // ================
               IconButton(
                 key: const Key('player_mini_player_follow_icon_button'),
                 icon: Icon(

@@ -4,12 +4,18 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
 import '../../domain/entities/player_state.dart';
 
+/// A circular progress button used in the [MiniPlayer].
+///
+/// It displays the current track progress as a border and provides a
+/// toggle between play and pause.
+///
+/// Depends on [playerStateProvider].
 class MiniPlayerProgressButton extends ConsumerWidget {
   const MiniPlayerProgressButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watches the rapidly changing timer
+    // Watches position, duration, and status for real-time updates.
     final position = ref.watch(
       playerStateProvider.select((state) => state.position),
     );
@@ -47,7 +53,6 @@ class MiniPlayerProgressButton extends ConsumerWidget {
               ),
               backgroundColor: Colors.black87,
             ),
-            // The white play/pause button
             Padding(
               padding: const EdgeInsets.all(1.5),
               child: Container(

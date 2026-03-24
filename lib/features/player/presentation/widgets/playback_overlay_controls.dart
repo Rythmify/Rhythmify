@@ -3,6 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/player_provider.dart';
 import '../../domain/entities/player_state.dart';
 
+/// An overlay widget that displays primary playback controls (prev, play/pause, next).
+///
+/// This overlay is typically shown when the player is in a paused state to
+/// provide clear control options over the background artwork.
+///
+/// Depends on [playerStateProvider].
 class PlaybackOverlayControls extends ConsumerWidget {
   const PlaybackOverlayControls({super.key});
 
@@ -19,7 +25,6 @@ class PlaybackOverlayControls extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        // Replaced heavy BackdropFilter with a smooth, dark overlay
         color: isPaused
             ? Colors.black.withValues(alpha: 0.6)
             : Colors.transparent,
@@ -67,6 +72,7 @@ class PlaybackOverlayControls extends ConsumerWidget {
     );
   }
 
+  /// Helper to build consistent circular control buttons.
   Widget _buildCircleControlButton({
     Key? key,
     required IconData icon,

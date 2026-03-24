@@ -8,6 +8,12 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 import '../widgets/fans_leaderboard.dart';
 
+/// [BehindTheTrackPage] displays detailed information and engagement data for a specific track.
+///
+/// This page provides a deep dive into the track's context, including artist details,
+/// fans leaderboard, and related metadata.
+///
+/// Depends on [trackDetailsProvider] and [playerStateProvider].
 class BehindTheTrackPage extends ConsumerWidget {
   final String trackId;
 
