@@ -294,7 +294,6 @@ class FrostedGlassBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return RepaintBoundary(
       key: const Key('frosted_glass_repaint_boundary'),
       child: ClipRRect(
@@ -313,7 +312,7 @@ class FrostedGlassBox extends StatelessWidget {
                 color: Colors.black.withAlpha(150), // subtle tint
 
                 border: Border.all(
-                  color: Colors.white.withAlpha(50), 
+                  color: Colors.white.withAlpha(50),
                   width: 0.5,
                 ),
                 borderRadius: BorderRadius.circular(12),

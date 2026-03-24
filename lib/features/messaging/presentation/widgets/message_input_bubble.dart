@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class MessageInputBubble extends StatelessWidget{
+class MessageInputBubble extends StatelessWidget {
   final TextEditingController controller;
   final Future<void> Function(String)? onSubmitted;
 
   const MessageInputBubble({
     super.key,
     required this.controller,
-    this.onSubmitted
+    this.onSubmitted,
   });
 
   @override
@@ -17,7 +17,7 @@ class MessageInputBubble extends StatelessWidget{
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: const Color(0xFF2F2F2F),
-        borderRadius: BorderRadius.circular(26)
+        borderRadius: BorderRadius.circular(26),
       ),
       alignment: Alignment.center,
       child: TextFormField(
@@ -26,18 +26,12 @@ class MessageInputBubble extends StatelessWidget{
         onFieldSubmitted: onSubmitted,
         textInputAction: TextInputAction.send,
         cursorColor: Colors.white,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: const InputDecoration(
           hintText: 'Type your message',
-          hintStyle: TextStyle(
-            color: Colors.white54,
-            fontSize: 16
-          ),
+          hintStyle: TextStyle(color: Colors.white54, fontSize: 16),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 12)
+          contentPadding: EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );

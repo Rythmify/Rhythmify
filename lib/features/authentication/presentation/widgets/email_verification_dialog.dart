@@ -16,8 +16,11 @@ class EmailVerificationDialog extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mark_email_unread_outlined,
-                color: AppTheme.primaryBrand, size: 48),
+            const Icon(
+              Icons.mark_email_unread_outlined,
+              color: AppTheme.primaryBrand,
+              size: 48,
+            ),
 
             const SizedBox(height: 16),
 
@@ -61,8 +64,9 @@ class EmailVerificationDialog extends ConsumerWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Dismiss',
-                style:
-                    AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.textPrimary,
+                ),
               ),
             ),
           ],

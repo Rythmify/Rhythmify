@@ -13,10 +13,8 @@ import '../../domain/usecases/toggle_like.dart';
 import '../../domain/usecases/toggle_repost.dart';
 import '../../domain/usecases/record_play.dart';
 
-
 /// Toggle this to switch between Mock and Real API
 const bool _useMock = false;
-
 
 // ============================================
 //  --- Data Source & Repository Providers ---
@@ -32,7 +30,7 @@ final trackRemoteDataSourceProvider = Provider<TrackRemoteDataSource>((ref) {
   return TrackRemoteDataSourceImpl(apiClient);
 });
 
-/// Provides the Repository. 
+/// Provides the Repository.
 final trackRepositoryProvider = Provider<TrackRepository>((ref) {
   if (_useMock) {
     final localDataSource = ref.watch(trackLocalDataSourceProvider);

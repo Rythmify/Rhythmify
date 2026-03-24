@@ -50,12 +50,12 @@ class ProfileLoaded extends ProfileState {
 
   @override
   List<Object?> get props => [
-        profile,
-        likedTracks,
-        isLoadingTracks,
-        hasMoreTracks,
-        isSaving,
-      ];
+    profile,
+    likedTracks,
+    isLoadingTracks,
+    hasMoreTracks,
+    isSaving,
+  ];
 }
 
 class ProfileError extends ProfileState {

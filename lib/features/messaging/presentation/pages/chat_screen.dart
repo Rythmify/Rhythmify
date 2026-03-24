@@ -20,7 +20,7 @@ class ChatScreen extends ConsumerStatefulWidget {
     super.key,
     this.conv,
     this.newParticipantName,
-    this.newParticipantId
+    this.newParticipantId,
   });
 
   @override
@@ -44,20 +44,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
-    final myId=ref.watch(currentUserIdProvider);
+    final myId = ref.watch(currentUserIdProvider);
 
-    final msgProvider= widget.conv!=null?
-    ref.watch(
-      messageProvider(widget.conv!.conversationId),
-    )
-    :null;
+    final msgProvider = widget.conv != null
+        ? ref.watch(messageProvider(widget.conv!.conversationId))
+        : null;
 
-    final unreadMsgProvider=widget.conv!=null?
-    ref.watch(
-      unreadProvider(widget.conv!.conversationId),
-    )
-    :null;
+    final unreadMsgProvider = widget.conv != null
+        ? ref.watch(unreadProvider(widget.conv!.conversationId))
+        : null;
 
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
@@ -66,110 +61,146 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
         title: Text(
-          widget.conv?.participantName??widget.newParticipantName??'',
+          widget.conv?.participantName ?? widget.newParticipantName ?? '',
           key: const Key('chat_participant_name_text'),
         ),
         backgroundColor: Colors.black,
       ),
-      body:widget.conv==null
-      ?_blanckChatPage()
-      :msgProvider!.when(
-        data:(msg){
-          unreadMsgProvider!.whenData((unreads){
-            Future.microtask(() async{
-            final unreads=await ref.read(unreadProvider(widget.conv!.conversationId).future);
-            for(final unread in unreads){
-              await ref.read(markAsRead.notifier).markRead(
-                msgId:unread.messageId,
-                convId:unread.conversationId
-              );
-              await Future.delayed(const Duration(microseconds: 500));
-              ref.invalidate(conversationProvider);
-            }
-          });
-          });
-        return Column(
-        children: [
-          Expanded(child: ListView.builder(
-            itemCount: msg.length,
-            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 12),
-            itemBuilder: (context,index){
-              final message=msg[index];
-              return MessageBubble(myId: myId,
-              senderId: message.senderId,
-              sentAt: message.createdAt,
-              userAvatar: widget.conv!.participantAvatar,
-              body: message.body);
-            }
-          
-          )
-         
-        ),
-        //Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-         Padding(padding: EdgeInsets.only(left:16,right:16,top:8,bottom: MediaQuery.of(context).padding.bottom+80),
-        child: Row(children: [
-          IconButton(onPressed: (){},
-          icon:const Icon(Icons.add,color:Colors.white)
-          ),
-          const SizedBox(width: 8),
-          Expanded(child: MessageInputBubble(
-            controller: controller,
-            onSubmitted: (text)async {
-          if(controller.text.trim().isEmpty) return;
-          await ref.read(sendMessageProvider.notifier).sendMessage(
-            conversationId:widget.conv!.conversationId,
-            body:text.trim()
-          );
-          
-          controller.clear();
-},
-),)
-        ],),
-        )
-        ],
-      );
-      },
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
-      error: (error, stackTrace) => Center(
-        child: Text(error.toString()),
-      ),
-      )
+      body: widget.conv == null
+          ? _blanckChatPage()
+          : msgProvider!.when(
+              data: (msg) {
+                unreadMsgProvider!.whenData((unreads) {
+                  Future.microtask(() async {
+                    final unreads = await ref.read(
+                      unreadProvider(widget.conv!.conversationId).future,
+                    );
+                    for (final unread in unreads) {
+                      await ref
+                          .read(markAsRead.notifier)
+                          .markRead(
+                            msgId: unread.messageId,
+                            convId: unread.conversationId,
+                          );
+                      await Future.delayed(const Duration(microseconds: 500));
+                      ref.invalidate(conversationProvider);
+                    }
+                  });
+                });
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: msg.length,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        itemBuilder: (context, index) {
+                          final message = msg[index];
+                          return MessageBubble(
+                            myId: myId,
+                            senderId: message.senderId,
+                            sentAt: message.createdAt,
+                            userAvatar: widget.conv!.participantAvatar,
+                            body: message.body,
+                          );
+                        },
+                      ),
+                    ),
+                    //Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 8,
+                        bottom: MediaQuery.of(context).padding.bottom + 80,
+                      ),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.add, color: Colors.white),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: MessageInputBubble(
+                              controller: controller,
+                              onSubmitted: (text) async {
+                                if (controller.text.trim().isEmpty) return;
+                                await ref
+                                    .read(sendMessageProvider.notifier)
+                                    .sendMessage(
+                                      conversationId:
+                                          widget.conv!.conversationId,
+                                      body: text.trim(),
+                                    );
+
+                                controller.clear();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text(error.toString())),
+            ),
     );
   }
-  Widget _blanckChatPage(){
-  return Column(
-    children: [
-      Expanded(child: const SizedBox()),
-      ///Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      Padding(padding: EdgeInsets.only(left:16,right:16,top:8,bottom: MediaQuery.of(context).padding.bottom+80),
-        child: Row(children: [
-          IconButton(onPressed: (){},
-          icon:const Icon(Icons.add,color:Colors.white)
+
+  Widget _blanckChatPage() {
+    return Column(
+      children: [
+        Expanded(child: const SizedBox()),
+
+        ///Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 8,
+            bottom: MediaQuery.of(context).padding.bottom + 80,
           ),
-          const SizedBox(width: 8),
-          Expanded(child: MessageInputBubble(
-            controller: controller,
-            onSubmitted: (text)async {
-          if(controller.text.trim().isEmpty) return;
-          final newConv = await ref.read(sendMessageProvider.notifier).sendMessage(
-            newParticipantId: widget.newParticipantId,
-            body:text.trim()
-          );
-          controller.clear();
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.add, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: MessageInputBubble(
+                  controller: controller,
+                  onSubmitted: (text) async {
+                    if (controller.text.trim().isEmpty) return;
+                    final newConv = await ref
+                        .read(sendMessageProvider.notifier)
+                        .sendMessage(
+                          newParticipantId: widget.newParticipantId,
+                          body: text.trim(),
+                        );
+                    controller.clear();
 
-          if (!mounted) return; 
+                    if (!mounted) return;
 
-          if (newConv != null) {
-            context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
-          }
-      },
-      ),)
-              ],),
-              )
-          ],
-        );
-      }
+                    if (newConv != null) {
+                      context.go(
+                        '/home/inbox/chat/${newConv.conversationId}',
+                        extra: newConv,
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
-

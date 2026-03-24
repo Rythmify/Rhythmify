@@ -3,7 +3,7 @@ class Track {
   final String userId;
   final String title;
   final String artist;
-  final String? description;   // "Heavy" data (Nullable)
+  final String? description; // "Heavy" data (Nullable)
   final String? coverImage;
   final String audioUrl;
   final String? streamUrl;
@@ -14,13 +14,13 @@ class Track {
   final int likeCount;
   final int commentCount;
   final int repostCount;
-  
+
   final bool isLiked;
   final bool isReposted;
   final bool isArtistFollowed;
   final List<String> tags;
-  
-  final List<double>? waveformData;   // "Heavy" data (Nullable)
+
+  final List<double>? waveformData; // "Heavy" data (Nullable)
 
   final String? genre;
   final String? artists;

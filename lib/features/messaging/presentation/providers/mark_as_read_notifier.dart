@@ -6,18 +6,13 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 
 class MarkAsReadNotifier extends StateNotifier<bool> {
   final Ref ref;
-  MarkAsReadNotifier({
-    required this.ref
-  }):super(false);
+  MarkAsReadNotifier({required this.ref}) : super(false);
 
-  Future<void> markRead({
-    required String msgId,
-    required String convId,
-  }) async{
-    state =true;
-    final uCase=MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
-    await uCase(msgId,convId);
+  Future<void> markRead({required String msgId, required String convId}) async {
+    state = true;
+    final uCase = MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
+    await uCase(msgId, convId);
     ref.invalidate(messageProvider(convId));
-    state=false;
+    state = false;
   }
 }

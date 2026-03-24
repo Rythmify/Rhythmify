@@ -5,7 +5,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class ApiClient {
   // Use your computer's IP for physical phone connection
   // Change this when we make it online
-  static const String _baseUrl = 'http://192.168.100.10:8080/api/v1';   ///change this line to match your ip address
+  static const String _baseUrl = 'http://192.168.100.10:8080/api/v1';
+
+  ///change this line to match your ip address
 
   static const String _tokenKey = 'access_token';
 
@@ -24,13 +26,15 @@ class ApiClient {
 
     // --- ADDING VERBOSE NETWORK LOGS ---
     if (kDebugMode) {
-      dio.interceptors.add(LogInterceptor(
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
-        responseBody: true,
-        error: true,
-      ));
+      dio.interceptors.add(
+        LogInterceptor(
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: true,
+          responseBody: true,
+          error: true,
+        ),
+      );
     }
     // ------------------------------------
 

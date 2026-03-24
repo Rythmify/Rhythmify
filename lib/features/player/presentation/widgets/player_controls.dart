@@ -14,23 +14,29 @@ class PlayerControls extends ConsumerWidget {
     final isLoading = playerState.status == PlayerStatus.loading;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0), 
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, 
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
             key: const Key('player_controls_skip_previous_iconbutton'),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
-            onPressed: () => ref.read(playerStateProvider.notifier).skipToPrevious(),
+            icon: const Icon(
+              Icons.skip_previous,
+              color: Colors.white,
+              size: 36,
+            ),
+            onPressed: () =>
+                ref.read(playerStateProvider.notifier).skipToPrevious(),
           ),
-          
-          const SizedBox(width: 60), 
-          
+
+          const SizedBox(width: 60),
+
           GestureDetector(
             key: const Key('player_controls_toggle_play_pause_gesturedetector'),
-            onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
+            onTap: () =>
+                ref.read(playerStateProvider.notifier).togglePlayPause(),
             child: Container(
               width: 72,
               height: 72,
@@ -55,13 +61,14 @@ class PlayerControls extends ConsumerWidget {
                     ),
             ),
           ),
-          
-          const SizedBox(width: 60), 
-          
+
+          const SizedBox(width: 60),
+
           IconButton(
             key: const Key('player_controls_skip_next_iconbutton'),
             icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
-            onPressed: () => ref.read(playerStateProvider.notifier).skipToNext(),
+            onPressed: () =>
+                ref.read(playerStateProvider.notifier).skipToNext(),
           ),
         ],
       ),

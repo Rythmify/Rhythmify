@@ -26,7 +26,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
 
   void _onContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authProvider.notifier).signInWithEmailAndPassword(
+      ref
+          .read(authProvider.notifier)
+          .signInWithEmailAndPassword(
             email: widget.email,
             password: _passwordController.text,
           );
@@ -73,13 +75,17 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                 const SizedBox(height: 4),
                 Text(
                   widget.email,
-                  key: const Key('authentication_login_password_email_display_text'),
+                  key: const Key(
+                    'authentication_login_password_email_display_text',
+                  ),
                   style: AppTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
 
                 AuthTextField(
-                  key: const Key('authentication_login_password_auth_text_field'),
+                  key: const Key(
+                    'authentication_login_password_auth_text_field',
+                  ),
                   hint: 'Your password',
                   controller: _passwordController,
                   isPassword: true,
@@ -98,7 +104,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    key: const Key('authentication_login_password_sign_in_elevated_button'),
+                    key: const Key(
+                      'authentication_login_password_sign_in_elevated_button',
+                    ),
                     onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
@@ -110,7 +118,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                     ),
                     child: authState is AuthLoading
                         ? const CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
                         : Text('Sign in', style: AppTheme.labelLarge),
                   ),
                 ),
@@ -118,12 +128,13 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                 const SizedBox(height: 20),
 
                 GestureDetector(
-                  key: const Key('authentication_login_password_forgot_password_gesture_detector'),
+                  key: const Key(
+                    'authentication_login_password_forgot_password_gesture_detector',
+                  ),
                   onTap: () {},
                   child: Text(
                     'Forgot password?',
-                    style: AppTheme.bodyMedium
-                        .copyWith(color: AppTheme.link),
+                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.link),
                   ),
                 ),
               ],

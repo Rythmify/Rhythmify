@@ -10,41 +10,37 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 class SendMessageNotifier extends StateNotifier<bool> {
   final Ref ref;
 
-  SendMessageNotifier({
-    required this.ref
-  }):super(false);
+  SendMessageNotifier({required this.ref}) : super(false);
 
   Future<Conversation?> sendMessage({
     required String body,
     String? conversationId,
     String? newParticipantId,
     String? embedId,
-    String? embedType
-  }) async{
-    state=true;
-    if(conversationId!=null)
-    {
-      final uCase=SendMessageUsecase(repo: ref.read(repositoryprovider));
-      await(uCase(conversationId,body));
+    String? embedType,
+  }) async {
+    state = true;
+    if (conversationId != null) {
+      final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
+      await (uCase(conversationId, body));
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(conversationId));
-      state=false;
+      state = false;
       return null;
-    }
-    else
-    {
-      final uCase=StartConversationUsecase(repo: ref.read(repositoryprovider));
-      final newConv = await(uCase(newParticipantId!,
-      body: body,
-      trackId: embedType=='track'?embedId:null,
-      playlistId: embedType=='playlist'?embedId:null,
+    } else {
+      final uCase = StartConversationUsecase(
+        repo: ref.read(repositoryprovider),
+      );
+      final newConv = await (uCase(
+        newParticipantId!,
+        body: body,
+        trackId: embedType == 'track' ? embedId : null,
+        playlistId: embedType == 'playlist' ? embedId : null,
       ));
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(newConv.conversationId));
-      state=false;
+      state = false;
       return newConv;
     }
-    
   }
-
 }

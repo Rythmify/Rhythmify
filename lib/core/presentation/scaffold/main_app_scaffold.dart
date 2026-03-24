@@ -10,18 +10,16 @@ import '../../../../features/player/presentation/providers/player_provider.dart'
 class MainAppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MainAppScaffold({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainAppScaffold({super.key, required this.navigationShell});
 
   @override
   ConsumerState<MainAppScaffold> createState() => _MainAppScaffoldState();
 }
 
 class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
-  final DraggableScrollableController _draggableController = DraggableScrollableController();
-  
+  final DraggableScrollableController _draggableController =
+      DraggableScrollableController();
+
   // Heights in logical pixels
   static const double _navBarHeight = 85.0;
   static const double _miniPlayerHeight = 65.0;
@@ -29,9 +27,11 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   double get _minSize {
     if (!context.mounted) return 0.08;
     final screenHeight = MediaQuery.of(context).size.height;
-    return screenHeight > 0 ? (_navBarHeight + _miniPlayerHeight) / screenHeight : 0.15;
+    return screenHeight > 0
+        ? (_navBarHeight + _miniPlayerHeight) / screenHeight
+        : 0.15;
   }
-  
+
   static const double _maxSize = 1.0;
 
   void _expandPlayer() {
@@ -63,13 +63,15 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     // Determine if mini player should be visible based on the current route
     final routerState = GoRouterState.of(context);
     final location = routerState.uri.path;
-    final isChatRoute = location.contains('/chat'); // Match '/chat' or '/chat/:id'
+    final isChatRoute = location.contains(
+      '/chat',
+    ); // Match '/chat' or '/chat/:id'
     final isVisible = !isChatRoute;
-  
+
     // We use a local variable to capture the minSize during build
     final currentMinSize = _minSize;
-    
-    // Displacement for the "go down" animation. 
+
+    // Displacement for the "go down" animation.
     // We move it by the full screen height to be absolutely sure it's gone.
     final double displacement = isVisible ? 0 : screenHeight;
 
@@ -79,9 +81,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       body: Stack(
         children: [
           // 1. Main Content (Back to Full Screen)
-          Positioned.fill(
-            child: widget.navigationShell,
-          ),
+          Positioned.fill(child: widget.navigationShell),
 
           // 2. Draggable Player (Behind the Nav Bar)
           if (hasTrack)
@@ -101,7 +101,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                 snap: true,
                 builder: (context, scrollController) {
                   return Container(
-                    color: Colors.transparent, 
+                    color: Colors.transparent,
                     child: SingleChildScrollView(
                       controller: scrollController,
                       physics: const ClampingScrollPhysics(),
@@ -110,11 +110,14 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                         child: AnimatedBuilder(
                           animation: _draggableController,
                           builder: (context, child) {
-                            final extent = _draggableController.isAttached 
-                                ? _draggableController.size 
+                            final extent = _draggableController.isAttached
+                                ? _draggableController.size
                                 : currentMinSize;
-                            final t = ((extent - currentMinSize) / (_maxSize - currentMinSize)).clamp(0.0, 1.0);
-                            
+                            final t =
+                                ((extent - currentMinSize) /
+                                        (_maxSize - currentMinSize))
+                                    .clamp(0.0, 1.0);
+
                             return Stack(
                               children: [
                                 // Full Player
@@ -141,7 +144,9 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                                     child: Opacity(
                                       opacity: (1 - t * 5).clamp(0.0, 1.0),
                                       child: MiniPlayer(
-                                        key: const Key('main_mini_player_widget'),
+                                        key: const Key(
+                                          'main_mini_player_widget',
+                                        ),
                                         onTap: _expandPlayer,
                                       ),
                                     ),
@@ -168,9 +173,12 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                 builder: (context, child) {
                   double t = 0.0;
                   if (_draggableController.isAttached) {
-                    t = ((_draggableController.size - currentMinSize) / (_maxSize - currentMinSize)).clamp(0.0, 1.0);
+                    t =
+                        ((_draggableController.size - currentMinSize) /
+                                (_maxSize - currentMinSize))
+                            .clamp(0.0, 1.0);
                   }
-                  
+
                   return IgnorePointer(
                     ignoring: t > 0.2, // Disable clicks as it slides away
                     child: Transform.translate(
@@ -184,7 +192,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                 },
                 child: BottomNavigation(
                   key: const Key('main_bottom_navigation_bar'),
-                  navigationShell: widget.navigationShell
+                  navigationShell: widget.navigationShell,
                 ),
               ),
             ),

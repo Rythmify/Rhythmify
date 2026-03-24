@@ -12,24 +12,21 @@ class UploadTrackRemoteDataSource {
   Future<List<String>> fetchTags() async {
     try {
       final response = await _dio.get('/tags');
-      final data     = response.data;
+      final data = response.data;
 
       // Handle both possible response shapes from server:
       // Shape A: { "tags": ["chill", "electronic"] }
       // Shape B: { "data": { "tags": [...] } }
-      final rawList = data['tags']
-          ?? data['data']?['tags']
-          ?? [];
+      final rawList = data['tags'] ?? data['data']?['tags'] ?? [];
 
       return (rawList as List<dynamic>)
           .map((tag) {
             if (tag is String) return tag;
-            if (tag is Map)    return tag['name'] as String? ?? '';
+            if (tag is Map) return tag['name'] as String? ?? '';
             return '';
           })
           .where((tag) => tag.isNotEmpty)
           .toList();
-
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -54,9 +51,9 @@ class UploadTrackRemoteDataSource {
 
       // Build form fields map
       final Map<String, dynamic> fields = {
-        'title':     title,
-        'artist':    artist,
-        'genre':     genre,
+        'title': title,
+        'artist': artist,
+        'genre': genre,
         'is_public': isPublic.toString(),
         'audio': await MultipartFile.fromFile(
           audioFile.path,
@@ -105,7 +102,8 @@ class UploadTrackRemoteDataSource {
         '/tracks',
         data: formData,
         options: Options(
-          contentType: Headers.multipartFormDataContentType, // Forces multipart instead of JSON
+          contentType: Headers
+              .multipartFormDataContentType, // Forces multipart instead of JSON
         ),
         onSendProgress: (sent, total) {
           if (total > 0 && onProgress != null) {
@@ -120,7 +118,6 @@ class UploadTrackRemoteDataSource {
       return UploadResponseModel.fromJson(
         response.data as Map<String, dynamic>,
       );
-
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -136,20 +133,27 @@ class UploadTrackRemoteDataSource {
     print('   - URL: ${e.requestOptions.baseUrl}${e.requestOptions.path}');
 
     final statusCode = e.response?.statusCode;
-    final data       = e.response?.data;
+    final data = e.response?.data;
 
-    final message = data?['error']?['message']
-        ?? data?['message']
-        ?? e.message
-        ?? 'Unknown error';
+    final message =
+        data?['error']?['message'] ??
+        data?['message'] ??
+        e.message ??
+        'Unknown error';
 
     switch (statusCode) {
-      case 401: return Exception('AUTH_401: $message');
-      case 403: return Exception('UPLOAD_LIMIT_403: $message');
-      case 413: return Exception('FILE_TOO_LARGE_413: $message');
-      case 415: return Exception('UNSUPPORTED_FILE_415: $message');
-      case 429: return Exception('RATE_LIMIT_429: $message');
-      default:  return Exception('SERVER_${statusCode ?? 'UNKNOWN'}: $message');
+      case 401:
+        return Exception('AUTH_401: $message');
+      case 403:
+        return Exception('UPLOAD_LIMIT_403: $message');
+      case 413:
+        return Exception('FILE_TOO_LARGE_413: $message');
+      case 415:
+        return Exception('UNSUPPORTED_FILE_415: $message');
+      case 429:
+        return Exception('RATE_LIMIT_429: $message');
+      default:
+        return Exception('SERVER_${statusCode ?? 'UNKNOWN'}: $message');
     }
   }
 }

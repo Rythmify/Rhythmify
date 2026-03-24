@@ -1,4 +1,4 @@
-class Message{
+class Message {
   final String messageId;
   final String senderId;
   final String conversationId;
@@ -16,7 +16,6 @@ class Message{
     this.embedId,
     this.embedType,
     required this.isRead,
-    required this.createdAt
+    required this.createdAt,
   });
-  
 }

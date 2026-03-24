@@ -17,7 +17,9 @@ class TrackRepositoryImpl implements TrackRepository {
   @override
   Future<List<Track>> getTracks() async {
     final list = await remoteDataSource.getTracks();
-    return list.map((json) => TrackDto.fromJson(json as Map<String, dynamic>)).toList();
+    return list
+        .map((json) => TrackDto.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -32,8 +34,7 @@ class TrackRepositoryImpl implements TrackRepository {
     final response = await remoteDataSource.getTags();
     final List<dynamic> items = response['data']['items'];
     return {
-      for (var item in items)
-        item['id'] as String: item['name'] as String
+      for (var item in items) item['id'] as String: item['name'] as String,
     };
   }
 

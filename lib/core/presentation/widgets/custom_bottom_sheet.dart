@@ -14,7 +14,8 @@ class CustomBottomSheet {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      useRootNavigator: true, // To ensures it sits above everything (mini player/navbar)
+      useRootNavigator:
+          true, // To ensures it sits above everything (mini player/navbar)
       builder: (context) {
         return DraggableScrollableSheet(
           initialChildSize: initialChildSize,
@@ -40,7 +41,7 @@ class CustomBottomSheet {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Header
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -50,11 +51,14 @@ class CustomBottomSheet {
                       children: [
                         IconButton(
                           key: const Key('core_bottom_sheet_close_icon_button'),
-                          icon: const Icon(Icons.close, color: AppTheme.textPrimary),
+                          icon: const Icon(
+                            Icons.close,
+                            color: AppTheme.textPrimary,
+                          ),
                           onPressed: () => Navigator.pop(context),
                           style: IconButton.styleFrom(
-                          backgroundColor: Colors.white12,
-                         ),
+                            backgroundColor: Colors.white12,
+                          ),
                         ),
 
                         Expanded(
@@ -65,7 +69,6 @@ class CustomBottomSheet {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        
                       ],
                     ),
                   ),

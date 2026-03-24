@@ -10,18 +10,14 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 //________ Uncomment to use mock data _______
 import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
 
-
 // Change this to switch modes
-const bool useMockData = true; 
+const bool useMockData = true;
 
 final repositoryprovider = Provider<MessagingRepository>((ref) {
-  
   final dio = Dio(
     BaseOptions(
       baseUrl: 'http://localhost:8080/api/v1',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     ),
   );
 

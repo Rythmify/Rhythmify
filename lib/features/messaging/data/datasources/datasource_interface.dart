@@ -5,13 +5,24 @@ import 'package:rythmify/features/messaging/data/models/sent_message_request_mod
 
 abstract class DatasourceInterface {
   Future<List<ConversationModel>> getConversations();
-  Future<List<MessageModel>> getMessages({ required String conversationId });
-  Future<MessageModel> sendMessage({required String conversationId,required SentMessageRequestModel requestContent});
-  Future<ConversationModel> newConversation({required String participantId, String? body,String? trackId, String? playlistId});
+  Future<List<MessageModel>> getMessages({required String conversationId});
+  Future<MessageModel> sendMessage({
+    required String conversationId,
+    required SentMessageRequestModel requestContent,
+  });
+  Future<ConversationModel> newConversation({
+    required String participantId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  });
   Future<int> getUnreadCount();
   Future<void> blockUser({required String userId});
   Future<void> unBlockUser({required String userId});
-  Future<void> markMessagesAsRead({required String conversationId,required String messageId});
+  Future<void> markMessagesAsRead({
+    required String conversationId,
+    required String messageId,
+  });
   Future<List<PotentialConversationModel>> getFollowings(String myId);
   Future<List<PotentialConversationModel>> getSearchedUsers(String query);
 }
