@@ -55,10 +55,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'avatar': await MultipartFile.fromFile(filePath),
       });
 
-      final uploadResponse = await client.dio.post(
-        '/users/me/avatar',
-        data: formData,
-      );
+      await client.dio.post('/users/me/avatar', data: formData);
 
       // Reload full profile to get updated avatar URL
       final profile = await getProfile(userId: 'me');
@@ -87,10 +84,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         'cover': await MultipartFile.fromFile(filePath),
       });
 
-      final uploadResponse = await client.dio.post(
-        '/users/me/cover',
-        data: formData,
-      );
+      await client.dio.post('/users/me/cover', data: formData);
 
       // Reload full profile to get updated cover URL
       final profile = await getProfile(userId: 'me');

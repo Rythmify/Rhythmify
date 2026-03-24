@@ -37,14 +37,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   @override
   ProfileState build() {
-    // ── Safe auth state read — never throws ──────────────
-    AuthState? authState;
-    try {
-      authState = ref.watch(authProvider);
-    } catch (e) {
-      authState = const AuthUnauthenticated();
-    }
-
     final datasource = useProfileMockData
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);
