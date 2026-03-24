@@ -4,6 +4,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
 import '../../domain/entities/player_state.dart';
 
+/// The main playback control set (prev, play/pause, next).
+///
+/// This widget is used in the player UI to provide prominent playback controls.
+///
+/// Depends on [playerStateProvider].
 class PlayerControls extends ConsumerWidget {
   const PlayerControls({super.key});
 
@@ -30,9 +35,7 @@ class PlayerControls extends ConsumerWidget {
             onPressed: () =>
                 ref.read(playerStateProvider.notifier).skipToPrevious(),
           ),
-
           const SizedBox(width: 60),
-
           GestureDetector(
             key: const Key('player_controls_toggle_play_pause_gesturedetector'),
             onTap: () =>
@@ -61,9 +64,7 @@ class PlayerControls extends ConsumerWidget {
                     ),
             ),
           ),
-
           const SizedBox(width: 60),
-
           IconButton(
             key: const Key('player_controls_skip_next_iconbutton'),
             icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),

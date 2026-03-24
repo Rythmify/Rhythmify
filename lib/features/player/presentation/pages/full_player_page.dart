@@ -9,18 +9,25 @@ import 'package:rythmify/features/comments/presentation/widgets/floating_comment
 import '../widgets/player_action_bar.dart';
 import 'package:go_router/go_router.dart';
 
+/// The main immersive playback page of the application.
+///
+/// This page displays the full-screen player with artwork, controls, and
+/// metadata. It reacts to changes in [playerStateProvider].
 class FullPlayerPage extends ConsumerWidget {
+  /// Callback triggered when the player is collapsed or dismissed.
   final VoidCallback? onCollapse;
+
   const FullPlayerPage({super.key, this.onCollapse});
 
+  /// Navigates to the "Behind the Track" page for additional metadata.
   void _triggerNavigation(BuildContext context, String trackId) {
-    // Collapse the player
     if (onCollapse != null) onCollapse!();
     context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch only the current track to avoid rebuilding the entire scaffold on progress updates.
     final summary = ref.watch(
       playerStateProvider.select((state) => state.currentTrack),
     );
@@ -42,25 +49,13 @@ class FullPlayerPage extends ConsumerWidget {
       backgroundColor: Colors.black,
       body: GestureDetector(
         key: const Key('player_full_page_toggle_play_pause_gesturedetector'),
-        // Tapping anywhere on the background toggles play/pause
         onTap: () => ref.read(playerStateProvider.notifier).togglePlayPause(),
         child: Stack(
           children: [
-            // ==========================================
-            // LAYER 1: Optimized Scrolling Background
-            // ==========================================
             Positioned.fill(
               child: ScrollingArtworkBackground(artworkUrl: summary.artworkUrl),
             ),
-
-            // ==========================================
-            // LAYER 2: Playback Controls Overlay
-            // ==========================================
             const Positioned.fill(child: PlaybackOverlayControls()),
-
-            // ==========================================
-            // LAYER 3: Top Left Track Info
-            // ==========================================
             Positioned(
               top: 60,
               left: 16,
@@ -70,10 +65,6 @@ class FullPlayerPage extends ConsumerWidget {
                     _triggerNavigation(context, summary.id),
               ),
             ),
-
-            // ==========================================
-            // LAYER 4: Top Right Controls
-            // ==========================================
             Positioned(
               top: 60,
               right: 8,
@@ -95,7 +86,6 @@ class FullPlayerPage extends ConsumerWidget {
                         color: Colors.black,
                         size: 20,
                       ),
-
                       onPressed: onCollapse ?? () => Navigator.pop(context),
                     ),
                   ),
@@ -116,18 +106,12 @@ class FullPlayerPage extends ConsumerWidget {
                         color: Colors.black,
                         size: 20,
                       ),
-                      onPressed: () {
-                        // Handle user add
-                      },
+                      onPressed: () {},
                     ),
                   ),
                 ],
               ),
             ),
-
-            // =================
-            //  Bottom Elements
-            // =================
             Align(
               alignment: Alignment.bottomCenter,
               child: Column(

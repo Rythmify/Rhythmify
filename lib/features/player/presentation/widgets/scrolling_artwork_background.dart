@@ -4,13 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/player_provider.dart';
 import '../../domain/entities/player_state.dart';
 
+/// A dynamic background widget that scrolls the track artwork based on playback progress.
+///
+/// It also applies a blur effect when the player is paused to emphasize controls.
+///
+/// Depends on [playerStateProvider].
 class ScrollingArtworkBackground extends ConsumerWidget {
+  /// The local or remote URL of the artwork to display.
   final String artworkUrl;
+
   const ScrollingArtworkBackground({super.key, required this.artworkUrl});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watches the position, duration and status
+    // Watches progress and status for real-time visual updates.
     final position = ref.watch(
       playerStateProvider.select((state) => state.position),
     );
@@ -29,7 +36,7 @@ class ScrollingArtworkBackground extends ConsumerWidget {
       progress = position.inMilliseconds / duration.inMilliseconds;
     }
 
-    // Maps progress (0.0 to 1.0) to Alignment (-1.0 to 1.0)
+    // Maps progress (0.0 to 1.0) to Alignment (-1.0 to 1.0) for the scrolling effect.
     final double alignmentX = -1.0 + (progress * 2.0);
 
     return Container(
