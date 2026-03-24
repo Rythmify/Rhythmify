@@ -1,6 +1,3 @@
-// Copyright (c) 2026
-// SPDX-License-Identifier: MIT
-
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -12,12 +9,12 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:rythmify/features/feed/presentation/pages/home_screen.dart';
 import 'package:rythmify/features/feed/data/datasources/home_datasource.dart';
-import 'package:rythmify/features/feed/presentation/providers/home_providers.dart';
+
 import 'package:rythmify/features/player/domain/entities/player_state.dart';
 import 'package:rythmify/features/player/domain/repositories/audio_repository.dart';
 import 'package:rythmify/features/player/presentation/providers/player_dependency_providers.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
-
+import 'package:rythmify/features/feed/presentation/providers/home_providers.dart';
 import 'package:rythmify/core/domain/entities/track.dart';
 
 // ignore: unused_element
