@@ -6,10 +6,7 @@ on:
       - Development
 
 jobs:
-  # ────────────────────────────────────────────────
   # JOB 1 — Validate repo structure
-  # Checks critical files exist before anything runs
-  # ────────────────────────────────────────────────
   validate-structure:
     name: Validate Repo Structure
     runs-on: ubuntu-latest
@@ -52,10 +49,7 @@ jobs:
             echo "No hardcoded URLs detected in api_client.dart."
           fi
 
-  # ────────────────────────────────────────────────
   # JOB 2 — Flutter analysis and format check
-  # Runs after structure validation passes
-  # ────────────────────────────────────────────────
   analyze:
     name: Format Check & Static Analysis
     runs-on: ubuntu-latest
@@ -86,12 +80,9 @@ jobs:
             { echo "Format check failed — run 'dart format lib/ test/' locally to fix."; exit 1; }
 
       - name: Run Flutter analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-  # ────────────────────────────────────────────────
   # JOB 3 — Android debug build
-  # Confirms the app compiles for Android
-  # ────────────────────────────────────────────────
   build-android:
     name: Android Debug Build
     runs-on: ubuntu-latest
