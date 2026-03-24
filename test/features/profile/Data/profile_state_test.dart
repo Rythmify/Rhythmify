@@ -236,22 +236,24 @@ void main() {
       expect(state.props.length, 5);
     });
 
-    test('should include profile, likedTracks, isLoadingTracks, hasMoreTracks, isSaving in props',
-        () {
-      final state = ProfileLoaded(
-        profile: tProfile,
-        likedTracks: [tTrack],
-        isLoadingTracks: true,
-        hasMoreTracks: false,
-        isSaving: true,
-      );
+    test(
+      'should include profile, likedTracks, isLoadingTracks, hasMoreTracks, isSaving in props',
+      () {
+        final state = ProfileLoaded(
+          profile: tProfile,
+          likedTracks: [tTrack],
+          isLoadingTracks: true,
+          hasMoreTracks: false,
+          isSaving: true,
+        );
 
-      expect(state.props[0], tProfile);
-      expect(state.props[1], [tTrack]);
-      expect(state.props[2], true);   // isLoadingTracks
-      expect(state.props[3], false);  // hasMoreTracks
-      expect(state.props[4], true);   // isSaving
-    });
+        expect(state.props[0], tProfile);
+        expect(state.props[1], [tTrack]);
+        expect(state.props[2], true); // isLoadingTracks
+        expect(state.props[3], false); // hasMoreTracks
+        expect(state.props[4], true); // isSaving
+      },
+    );
   });
 
   // =========================================================================
@@ -334,25 +336,27 @@ void main() {
       expect(identical(base, copy), false);
     });
 
-    test('should preserve large likedTracks list when updating other fields',
-        () {
-      final manyTracks = List.generate(
-        20,
-        (i) => Track(
-          id: 'track-$i',
-          userId: 'user-001',
-          title: 'Track $i',
-          artist: 'Artist',
-          audioUrl: 'https://example.com/$i.mp3',
-          duration: const Duration(seconds: 200),
-          createdAt: DateTime(2024, 1, 1),
-        ),
-      );
-      final withTracks = base.copyWith(likedTracks: manyTracks);
-      final updated = withTracks.copyWith(isSaving: true);
+    test(
+      'should preserve large likedTracks list when updating other fields',
+      () {
+        final manyTracks = List.generate(
+          20,
+          (i) => Track(
+            id: 'track-$i',
+            userId: 'user-001',
+            title: 'Track $i',
+            artist: 'Artist',
+            audioUrl: 'https://example.com/$i.mp3',
+            duration: const Duration(seconds: 200),
+            createdAt: DateTime(2024, 1, 1),
+          ),
+        );
+        final withTracks = base.copyWith(likedTracks: manyTracks);
+        final updated = withTracks.copyWith(isSaving: true);
 
-      expect(updated.likedTracks.length, 20);
-      expect(updated.isSaving, true);
-    });
+        expect(updated.likedTracks.length, 20);
+        expect(updated.isSaving, true);
+      },
+    );
   });
 }

@@ -119,16 +119,19 @@ void main() {
       expect(tUser, isNot(equals(tUserNoToken)));
     });
 
-    test('should return true for two null-token instances with same fields', () {
-      const a = UserEntity(
-        id: 'user-002',
-        email: 'bassel@rythmify.com',
-        displayName: 'Bassel Alaa',
-        isEmailVerified: false,
-        token: null,
-      );
-      expect(tUserNoToken, equals(a));
-    });
+    test(
+      'should return true for two null-token instances with same fields',
+      () {
+        const a = UserEntity(
+          id: 'user-002',
+          email: 'bassel@rythmify.com',
+          displayName: 'Bassel Alaa',
+          isEmailVerified: false,
+          token: null,
+        );
+        expect(tUserNoToken, equals(a));
+      },
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -137,16 +140,13 @@ void main() {
 
   group('UserEntity — props', () {
     test('should expose all five fields in props', () {
-      expect(
-        tUser.props,
-        [
-          'user-001',
-          'karim@rythmify.com',
-          'KarimWI',
-          true,
-          'mock-jwt-token-user-001',
-        ],
-      );
+      expect(tUser.props, [
+        'user-001',
+        'karim@rythmify.com',
+        'KarimWI',
+        true,
+        'mock-jwt-token-user-001',
+      ]);
     });
 
     test('should include null token in props', () {

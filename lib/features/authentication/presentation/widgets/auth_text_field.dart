@@ -68,7 +68,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
   Widget build(BuildContext context) {
     return TextFormField(
       key: Key(
-          'auth_${widget.hint.toLowerCase().replaceAll(' ', '_')}_text_field'),
+        'auth_${widget.hint.toLowerCase().replaceAll(' ', '_')}_text_field',
+      ),
       controller: widget.controller,
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
@@ -116,8 +117,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                   color: AppTheme.textSecondary,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _obscureText = !_obscureText),
+                onPressed: () => setState(() => _obscureText = !_obscureText),
               )
             : null,
       ),

@@ -21,9 +21,7 @@ void main() {
     testWidgets('should display title text', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
@@ -33,15 +31,14 @@ void main() {
     testWidgets('should display description text', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
       expect(
         find.text(
-            'We sent a verification link to your email. Please check your inbox and verify before continuing.'),
+          'We sent a verification link to your email. Please check your inbox and verify before continuing.',
+        ),
         findsOneWidget,
       );
     });
@@ -49,9 +46,7 @@ void main() {
     testWidgets('should display Resend email button', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
@@ -61,17 +56,14 @@ void main() {
     testWidgets('should display Dismiss button', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
       expect(find.text('Dismiss'), findsOneWidget);
     });
 
-    testWidgets('should close dialog when Dismiss is tapped',
-        (tester) async {
+    testWidgets('should close dialog when Dismiss is tapped', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -80,9 +72,8 @@ void main() {
                 builder: (context) => ElevatedButton(
                   onPressed: () => showDialog(
                     context: context,
-                    builder: (_) => const ProviderScope(
-                      child: EmailVerificationDialog(),
-                    ),
+                    builder: (_) =>
+                        const ProviderScope(child: EmailVerificationDialog()),
                   ),
                   child: const Text('Open'),
                 ),
@@ -98,7 +89,8 @@ void main() {
       expect(find.text('Verify your email'), findsOneWidget);
 
       await tester.tap(
-          find.byKey(const Key('authentication_dismiss_text_button')));
+        find.byKey(const Key('authentication_dismiss_text_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Verify your email'), findsNothing);
@@ -107,9 +99,7 @@ void main() {
     testWidgets('should show email icon', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
@@ -119,28 +109,26 @@ void main() {
     testWidgets('should render with correct widget keys', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: EmailVerificationDialog()),
-          ),
+          child: MaterialApp(home: Scaffold(body: EmailVerificationDialog())),
         ),
       );
 
       expect(
-          find.byKey(
-              const Key('authentication_verify_email_title_text')),
-          findsOneWidget);
+        find.byKey(const Key('authentication_verify_email_title_text')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(const Key(
-              'authentication_verify_email_description_text')),
-          findsOneWidget);
+        find.byKey(const Key('authentication_verify_email_description_text')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(
-              const Key('authentication_resend_email_elevated_button')),
-          findsOneWidget);
+        find.byKey(const Key('authentication_resend_email_elevated_button')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(
-              const Key('authentication_dismiss_text_button')),
-          findsOneWidget);
+        find.byKey(const Key('authentication_dismiss_text_button')),
+        findsOneWidget,
+      );
     });
   });
 }

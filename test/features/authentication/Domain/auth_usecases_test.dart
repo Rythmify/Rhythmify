@@ -49,10 +49,12 @@ void main() {
     });
 
     test('should return UserEntity when credentials are valid', () async {
-      when(() => mockRepository.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => const Right(tUser));
 
       final result = await useCase(
         email: 'karim@rythmify.com',
@@ -60,51 +62,60 @@ void main() {
       );
 
       expect(result, const Right(tUser));
-      verify(() => mockRepository.signInWithEmail(
-            email: 'karim@rythmify.com',
-            password: 'Karim123!',
-          )).called(1);
+      verify(
+        () => mockRepository.signInWithEmail(
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        ),
+      ).called(1);
     });
 
-    test('should return InvalidCredentialsFailure when credentials are wrong',
-        () async {
-      when(() => mockRepository.signInWithEmail(
+    test(
+      'should return InvalidCredentialsFailure when credentials are wrong',
+      () async {
+        when(
+          () => mockRepository.signInWithEmail(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenAnswer(
-              (_) async => const Left(InvalidCredentialsFailure()));
+          ),
+        ).thenAnswer((_) async => const Left(InvalidCredentialsFailure()));
 
-      final result = await useCase(
-        email: 'wrong@test.com',
-        password: 'wrong',
-      );
+        final result = await useCase(
+          email: 'wrong@test.com',
+          password: 'wrong',
+        );
 
-      expect(result, isA<Left>());
-      expect(
-          (result as Left).value, isA<InvalidCredentialsFailure>());
-    });
+        expect(result, isA<Left>());
+        expect((result as Left).value, isA<InvalidCredentialsFailure>());
+      },
+    );
 
-    test('should return EmailNotVerifiedFailure when email is unverified',
-        () async {
-      when(() => mockRepository.signInWithEmail(
+    test(
+      'should return EmailNotVerifiedFailure when email is unverified',
+      () async {
+        when(
+          () => mockRepository.signInWithEmail(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenAnswer(
-              (_) async => const Left(EmailNotVerifiedFailure()));
+          ),
+        ).thenAnswer((_) async => const Left(EmailNotVerifiedFailure()));
 
-      final result = await useCase(
-        email: 'karim@rythmify.com',
-        password: 'Karim123!',
-      );
+        final result = await useCase(
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        );
 
-      expect((result as Left).value, isA<EmailNotVerifiedFailure>());
-    });
+        expect((result as Left).value, isA<EmailNotVerifiedFailure>());
+      },
+    );
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase(
         email: 'karim@rythmify.com',
@@ -115,17 +126,21 @@ void main() {
     });
 
     test('should pass email and password directly to repository', () async {
-      when(() => mockRepository.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => const Right(tUser));
 
       await useCase(email: 'test@test.com', password: 'Pass123!');
 
-      verify(() => mockRepository.signInWithEmail(
-            email: 'test@test.com',
-            password: 'Pass123!',
-          )).called(1);
+      verify(
+        () => mockRepository.signInWithEmail(
+          email: 'test@test.com',
+          password: 'Pass123!',
+        ),
+      ).called(1);
     });
   });
 
@@ -141,13 +156,15 @@ void main() {
     });
 
     test('should return UserEntity when registration succeeds', () async {
-      when(() => mockRepository.signUpWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-            displayName: any(named: 'displayName'),
-            gender: any(named: 'gender'),
-            dateOfBirth: any(named: 'dateOfBirth'),
-          )).thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signUpWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          displayName: any(named: 'displayName'),
+          gender: any(named: 'gender'),
+          dateOfBirth: any(named: 'dateOfBirth'),
+        ),
+      ).thenAnswer((_) async => const Right(tUser));
 
       final result = await useCase(
         email: 'karim@rythmify.com',
@@ -160,36 +177,41 @@ void main() {
       expect(result, const Right(tUser));
     });
 
-    test('should return EmailAlreadyInUseFailure when email is taken',
-        () async {
-      when(() => mockRepository.signUpWithEmail(
+    test(
+      'should return EmailAlreadyInUseFailure when email is taken',
+      () async {
+        when(
+          () => mockRepository.signUpWithEmail(
             email: any(named: 'email'),
             password: any(named: 'password'),
             displayName: any(named: 'displayName'),
             gender: any(named: 'gender'),
             dateOfBirth: any(named: 'dateOfBirth'),
-          )).thenAnswer(
-              (_) async => const Left(EmailAlreadyInUseFailure()));
+          ),
+        ).thenAnswer((_) async => const Left(EmailAlreadyInUseFailure()));
 
-      final result = await useCase(
-        email: 'karim@rythmify.com',
-        password: 'Karim123!',
-        displayName: 'KarimWI',
-        gender: 'male',
-        dateOfBirth: '2000-01-01',
-      );
+        final result = await useCase(
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+          displayName: 'KarimWI',
+          gender: 'male',
+          dateOfBirth: '2000-01-01',
+        );
 
-      expect((result as Left).value, isA<EmailAlreadyInUseFailure>());
-    });
+        expect((result as Left).value, isA<EmailAlreadyInUseFailure>());
+      },
+    );
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.signUpWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-            displayName: any(named: 'displayName'),
-            gender: any(named: 'gender'),
-            dateOfBirth: any(named: 'dateOfBirth'),
-          )).thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.signUpWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          displayName: any(named: 'displayName'),
+          gender: any(named: 'gender'),
+          dateOfBirth: any(named: 'dateOfBirth'),
+        ),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase(
         email: 'karim@rythmify.com',
@@ -203,13 +225,15 @@ void main() {
     });
 
     test('should pass all parameters to repository correctly', () async {
-      when(() => mockRepository.signUpWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-            displayName: any(named: 'displayName'),
-            gender: any(named: 'gender'),
-            dateOfBirth: any(named: 'dateOfBirth'),
-          )).thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signUpWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          displayName: any(named: 'displayName'),
+          gender: any(named: 'gender'),
+          dateOfBirth: any(named: 'dateOfBirth'),
+        ),
+      ).thenAnswer((_) async => const Right(tUser));
 
       await useCase(
         email: 'new@rythmify.com',
@@ -219,24 +243,29 @@ void main() {
         dateOfBirth: '1995-06-15',
       );
 
-      verify(() => mockRepository.signUpWithEmail(
-            email: 'new@rythmify.com',
-            password: 'New123!',
-            displayName: 'NewUser',
-            gender: 'female',
-            dateOfBirth: '1995-06-15',
-          )).called(1);
+      verify(
+        () => mockRepository.signUpWithEmail(
+          email: 'new@rythmify.com',
+          password: 'New123!',
+          displayName: 'NewUser',
+          gender: 'female',
+          dateOfBirth: '1995-06-15',
+        ),
+      ).called(1);
     });
 
     test('should return ValidationFailure when data is invalid', () async {
-      when(() => mockRepository.signUpWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-            displayName: any(named: 'displayName'),
-            gender: any(named: 'gender'),
-            dateOfBirth: any(named: 'dateOfBirth'),
-          )).thenAnswer((_) async =>
-              const Left(ValidationFailure('Invalid date of birth')));
+      when(
+        () => mockRepository.signUpWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          displayName: any(named: 'displayName'),
+          gender: any(named: 'gender'),
+          dateOfBirth: any(named: 'dateOfBirth'),
+        ),
+      ).thenAnswer(
+        (_) async => const Left(ValidationFailure('Invalid date of birth')),
+      );
 
       final result = await useCase(
         email: 'karim@rythmify.com',
@@ -262,8 +291,9 @@ void main() {
     });
 
     test('should return UserEntity when Google sign-in succeeds', () async {
-      when(() => mockRepository.signInWithGoogle())
-          .thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signInWithGoogle(),
+      ).thenAnswer((_) async => const Right(tUser));
 
       final result = await useCase();
 
@@ -273,7 +303,8 @@ void main() {
 
     test('should return Failure when Google sign-in fails', () async {
       when(() => mockRepository.signInWithGoogle()).thenAnswer(
-          (_) async => const Left(ServerFailure('Google sign-in failed')));
+        (_) async => const Left(ServerFailure('Google sign-in failed')),
+      );
 
       final result = await useCase();
 
@@ -281,8 +312,9 @@ void main() {
     });
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.signInWithGoogle())
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.signInWithGoogle(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase();
 
@@ -302,8 +334,9 @@ void main() {
     });
 
     test('should return UserEntity when Apple sign-in succeeds', () async {
-      when(() => mockRepository.signInWithApple())
-          .thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.signInWithApple(),
+      ).thenAnswer((_) async => const Right(tUser));
 
       final result = await useCase();
 
@@ -313,7 +346,8 @@ void main() {
 
     test('should return Failure when Apple sign-in fails', () async {
       when(() => mockRepository.signInWithApple()).thenAnswer(
-          (_) async => const Left(ServerFailure('Apple sign-in failed')));
+        (_) async => const Left(ServerFailure('Apple sign-in failed')),
+      );
 
       final result = await useCase();
 
@@ -321,8 +355,9 @@ void main() {
     });
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.signInWithApple())
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.signInWithApple(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase();
 
@@ -342,8 +377,9 @@ void main() {
     });
 
     test('should return Right(void) when sign-out succeeds', () async {
-      when(() => mockRepository.signOut())
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepository.signOut(),
+      ).thenAnswer((_) async => const Right(null));
 
       final result = await useCase();
 
@@ -352,8 +388,9 @@ void main() {
     });
 
     test('should return Failure when sign-out fails', () async {
-      when(() => mockRepository.signOut()).thenAnswer(
-          (_) async => const Left(ServerFailure('Sign-out failed')));
+      when(
+        () => mockRepository.signOut(),
+      ).thenAnswer((_) async => const Left(ServerFailure('Sign-out failed')));
 
       final result = await useCase();
 
@@ -361,8 +398,9 @@ void main() {
     });
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.signOut())
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.signOut(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase();
 
@@ -382,8 +420,9 @@ void main() {
     });
 
     test('should return Right(void) when email is sent successfully', () async {
-      when(() => mockRepository.sendVerificationEmail())
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepository.sendVerificationEmail(),
+      ).thenAnswer((_) async => const Right(null));
 
       final result = await useCase();
 
@@ -393,8 +432,9 @@ void main() {
 
     test('should return Failure when sending fails', () async {
       when(() => mockRepository.sendVerificationEmail()).thenAnswer(
-          (_) async =>
-              const Left(ServerFailure('Failed to send verification email')));
+        (_) async =>
+            const Left(ServerFailure('Failed to send verification email')),
+      );
 
       final result = await useCase();
 
@@ -402,8 +442,9 @@ void main() {
     });
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.sendVerificationEmail())
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.sendVerificationEmail(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase();
 
@@ -423,36 +464,35 @@ void main() {
     });
 
     test('should return Right(void) when reset email is sent', () async {
-      when(() => mockRepository.sendPasswordReset(
-            email: any(named: 'email'),
-          )).thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepository.sendPasswordReset(email: any(named: 'email')),
+      ).thenAnswer((_) async => const Right(null));
 
-      final result =
-          await useCase(email: 'karim@rythmify.com');
+      final result = await useCase(email: 'karim@rythmify.com');
 
       expect(result, const Right(null));
-      verify(() => mockRepository.sendPasswordReset(
-            email: 'karim@rythmify.com',
-          )).called(1);
+      verify(
+        () => mockRepository.sendPasswordReset(email: 'karim@rythmify.com'),
+      ).called(1);
     });
 
-    test('should return InvalidCredentialsFailure when email is not registered',
-        () async {
-      when(() => mockRepository.sendPasswordReset(
-            email: any(named: 'email'),
-          )).thenAnswer(
-              (_) async => const Left(InvalidCredentialsFailure()));
+    test(
+      'should return InvalidCredentialsFailure when email is not registered',
+      () async {
+        when(
+          () => mockRepository.sendPasswordReset(email: any(named: 'email')),
+        ).thenAnswer((_) async => const Left(InvalidCredentialsFailure()));
 
-      final result =
-          await useCase(email: 'notregistered@test.com');
+        final result = await useCase(email: 'notregistered@test.com');
 
-      expect((result as Left).value, isA<InvalidCredentialsFailure>());
-    });
+        expect((result as Left).value, isA<InvalidCredentialsFailure>());
+      },
+    );
 
     test('should return NetworkFailure when there is no connection', () async {
-      when(() => mockRepository.sendPasswordReset(
-            email: any(named: 'email'),
-          )).thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepository.sendPasswordReset(email: any(named: 'email')),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final result = await useCase(email: 'karim@rythmify.com');
 
@@ -460,22 +500,21 @@ void main() {
     });
 
     test('should pass email directly to repository', () async {
-      when(() => mockRepository.sendPasswordReset(
-            email: any(named: 'email'),
-          )).thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepository.sendPasswordReset(email: any(named: 'email')),
+      ).thenAnswer((_) async => const Right(null));
 
       await useCase(email: 'specific@email.com');
 
-      verify(() => mockRepository.sendPasswordReset(
-            email: 'specific@email.com',
-          )).called(1);
+      verify(
+        () => mockRepository.sendPasswordReset(email: 'specific@email.com'),
+      ).called(1);
     });
 
     test('should handle empty string email', () async {
-      when(() => mockRepository.sendPasswordReset(
-            email: any(named: 'email'),
-          )).thenAnswer(
-              (_) async => const Left(InvalidCredentialsFailure()));
+      when(
+        () => mockRepository.sendPasswordReset(email: any(named: 'email')),
+      ).thenAnswer((_) async => const Left(InvalidCredentialsFailure()));
 
       final result = await useCase(email: '');
 

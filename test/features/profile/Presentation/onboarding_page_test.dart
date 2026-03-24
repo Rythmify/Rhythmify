@@ -17,16 +17,14 @@ void main() {
           ),
           GoRoute(
             path: '/sign-in',
-            builder: (_, state) => Scaffold(
-              body: Text('sign-in-${state.extra}'),
-            ),
+            builder: (_, state) =>
+                Scaffold(body: Text('sign-in-${state.extra}')),
           ),
         ],
       );
     });
 
-    testWidgets('should display Create an account button',
-        (tester) async {
+    testWidgets('should display Create an account button', (tester) async {
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
@@ -41,28 +39,30 @@ void main() {
     });
 
     testWidgets(
-        'should navigate to sign-in with register mode when Create account is tapped',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
+      'should navigate to sign-in with register mode when Create account is tapped',
+      (tester) async {
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Create an account'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Create an account'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('sign-in-register'), findsOneWidget);
-    });
+        expect(find.text('sign-in-register'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'should navigate to sign-in with login mode when Log in is tapped',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
+      'should navigate to sign-in with login mode when Log in is tapped',
+      (tester) async {
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Log in'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Log in'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('sign-in-login'), findsOneWidget);
-    });
+        expect(find.text('sign-in-login'), findsOneWidget);
+      },
+    );
 
     testWidgets('should display tagline text', (tester) async {
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));

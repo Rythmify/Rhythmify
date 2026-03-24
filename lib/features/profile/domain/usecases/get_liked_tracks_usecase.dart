@@ -9,10 +9,10 @@ import '../repositories/profile_repository.dart';
 class GetLikedTracksUseCase {
   /// The repository used to fetch liked tracks.
   final ProfileRepository repository;
- 
+
   /// Creates a [GetLikedTracksUseCase] with the given [repository].
   GetLikedTracksUseCase(this.repository);
- 
+
   /// Fetches liked tracks for [userId] at the given [page] and [limit].
   ///
   /// Returns [Right] with a list of [Track] objects (empty when no more

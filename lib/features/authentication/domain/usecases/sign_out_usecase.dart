@@ -9,10 +9,10 @@ import '../repositories/auth_repository.dart';
 class SignOutUseCase {
   /// The repository used to perform the sign-out operation.
   final AuthRepository repository;
- 
+
   /// Creates a [SignOutUseCase] with the given [repository].
   SignOutUseCase(this.repository);
- 
+
   /// Executes the sign-out operation.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a

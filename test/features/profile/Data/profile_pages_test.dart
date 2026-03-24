@@ -1,11 +1,8 @@
-import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/core/domain/entities/track.dart';
-import 'package:rythmify/core/errors/failures.dart';
 import 'package:rythmify/features/profile/domain/entities/profile_entity.dart';
 import 'package:rythmify/features/profile/domain/repositories/profile_repository.dart';
 import 'package:rythmify/features/profile/presentation/pages/likes_page.dart';
@@ -46,14 +43,14 @@ const tProfileFollowing = ProfileEntity(
 );
 
 Track makeTrack(String id) => Track(
-      id: id,
-      userId: 'user-002',
-      title: 'Cairo Nights $id',
-      artist: 'Bassel Alaa',
-      audioUrl: 'https://example.com/$id.mp3',
-      duration: const Duration(seconds: 238),
-      createdAt: DateTime(2024, 1, 1),
-    );
+  id: id,
+  userId: 'user-002',
+  title: 'Cairo Nights $id',
+  artist: 'Bassel Alaa',
+  audioUrl: 'https://example.com/$id.mp3',
+  duration: const Duration(seconds: 238),
+  createdAt: DateTime(2024, 1, 1),
+);
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -62,30 +59,29 @@ Track makeTrack(String id) => Track(
 /// Builds a [ProviderScope] override that seeds [profileProvider] with [state].
 Widget buildWithState(ProfileState state, Widget child) {
   return ProviderScope(
-    overrides: [
-      profileProvider.overrideWith(() => _SeedNotifier(state)),
-    ],
+    overrides: [profileProvider.overrideWith(() => _SeedNotifier(state))],
     child: MaterialApp(home: child),
   );
 }
 
 /// A minimal notifier that seeds a fixed state for widget tests.
-class _SeedNotifier extends Notifier<ProfileState> {
+class _SeedNotifier extends ProfileNotifier {
   final ProfileState _seed;
+
   _SeedNotifier(this._seed);
 
   @override
   ProfileState build() => _seed;
 }
-
 // ---------------------------------------------------------------------------
 // LikesPage tests
 // ---------------------------------------------------------------------------
 
 void main() {
   group('LikesPage', () {
-    testWidgets('should show loading indicator when state is ProfileLoading',
-        (tester) async {
+    testWidgets('should show loading indicator when state is ProfileLoading', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(const ProfileLoading(), const LikesPage(userId: 'me')),
       );
@@ -93,8 +89,9 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should show empty state when likedTracks is empty',
-        (tester) async {
+    testWidgets('should show empty state when likedTracks is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoaded(profile: tProfile, likedTracks: []),
@@ -106,8 +103,9 @@ void main() {
       expect(find.text('Tracks you like will appear here.'), findsOneWidget);
     });
 
-    testWidgets('should render a track list when likedTracks is not empty',
-        (tester) async {
+    testWidgets('should render a track list when likedTracks is not empty', (
+      tester,
+    ) async {
       final tracks = [makeTrack('t1'), makeTrack('t2')];
 
       await tester.pumpWidget(
@@ -121,8 +119,9 @@ void main() {
       expect(find.byKey(const Key('item_t2')), findsOneWidget);
     });
 
-    testWidgets('should show pagination spinner when isLoadingTracks is true',
-        (tester) async {
+    testWidgets('should show pagination spinner when isLoadingTracks is true', (
+      tester,
+    ) async {
       final tracks = [makeTrack('t1')];
 
       await tester.pumpWidget(
@@ -173,13 +172,11 @@ void main() {
       expect(find.byKey(const Key('likes_cast_button')), findsOneWidget);
     });
 
-    testWidgets('should show SizedBox.shrink when state is ProfileInitial',
-        (tester) async {
+    testWidgets('should show SizedBox.shrink when state is ProfileInitial', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildWithState(
-          const ProfileInitial(),
-          const LikesPage(userId: 'me'),
-        ),
+        buildWithState(const ProfileInitial(), const LikesPage(userId: 'me')),
       );
 
       // No list, no loading, no error — silent
@@ -187,8 +184,9 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('should show SizedBox.shrink when state is ProfileError',
-        (tester) async {
+    testWidgets('should show SizedBox.shrink when state is ProfileError', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileError('Error'),
@@ -200,24 +198,25 @@ void main() {
     });
 
     testWidgets(
-        'should not show pagination spinner when isLoadingTracks is false',
-        (tester) async {
-      final tracks = [makeTrack('t1')];
+      'should not show pagination spinner when isLoadingTracks is false',
+      (tester) async {
+        final tracks = [makeTrack('t1')];
 
-      await tester.pumpWidget(
-        buildWithState(
-          ProfileLoaded(
-            profile: tProfile,
-            likedTracks: tracks,
-            isLoadingTracks: false,
+        await tester.pumpWidget(
+          buildWithState(
+            ProfileLoaded(
+              profile: tProfile,
+              likedTracks: tracks,
+              isLoadingTracks: false,
+            ),
+            const LikesPage(userId: 'me'),
           ),
-          const LikesPage(userId: 'me'),
-        ),
-      );
+        );
 
-      // No CircularProgressIndicator expected
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    });
+        // No CircularProgressIndicator expected
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
   });
 
   // =========================================================================
@@ -225,8 +224,9 @@ void main() {
   // =========================================================================
 
   group('PublicProfilePage', () {
-    testWidgets('should show loading indicator when state is ProfileLoading',
-        (tester) async {
+    testWidgets('should show loading indicator when state is ProfileLoading', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoading(),
@@ -238,19 +238,22 @@ void main() {
     });
 
     testWidgets(
-        'should show error message and retry button when state is ProfileError',
-        (tester) async {
-      await tester.pumpWidget(
-        buildWithState(
-          const ProfileError('User profile not found.'),
-          const PublicProfilePage(userId: 'nonexistent'),
-        ),
-      );
+      'should show error message and retry button when state is ProfileError',
+      (tester) async {
+        await tester.pumpWidget(
+          buildWithState(
+            const ProfileError('User profile not found.'),
+            const PublicProfilePage(userId: 'nonexistent'),
+          ),
+        );
 
-      expect(find.text('User profile not found.'), findsOneWidget);
-      expect(find.byKey(const Key('public_profile_retry_button')),
-          findsOneWidget);
-    });
+        expect(find.text('User profile not found.'), findsOneWidget);
+        expect(
+          find.byKey(const Key('public_profile_retry_button')),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('should render display name when loaded', (tester) async {
       await tester.pumpWidget(
@@ -263,8 +266,9 @@ void main() {
       expect(find.text('KarimWI'), findsOneWidget);
     });
 
-    testWidgets('should render location when city and country are set',
-        (tester) async {
+    testWidgets('should render location when city and country are set', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoaded(profile: tProfile),
@@ -284,14 +288,19 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_edit_gesture')),
-          findsOneWidget);
-      expect(find.byKey(const Key('public_profile_follow_gesture')),
-          findsNothing);
+      expect(
+        find.byKey(const Key('public_profile_edit_gesture')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('public_profile_follow_gesture')),
+        findsNothing,
+      );
     });
 
-    testWidgets('should show Follow button for another user profile',
-        (tester) async {
+    testWidgets('should show Follow button for another user profile', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoaded(profile: tProfile),
@@ -299,14 +308,19 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_follow_gesture')),
-          findsOneWidget);
-      expect(find.byKey(const Key('public_profile_edit_gesture')),
-          findsNothing);
+      expect(
+        find.byKey(const Key('public_profile_follow_gesture')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('public_profile_edit_gesture')),
+        findsNothing,
+      );
     });
 
-    testWidgets('should show "Following" label when isFollowing is true',
-        (tester) async {
+    testWidgets('should show "Following" label when isFollowing is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoaded(profile: tProfileFollowing),
@@ -317,8 +331,9 @@ void main() {
       expect(find.text('Following'), findsOneWidget);
     });
 
-    testWidgets('should show "Follow" label when isFollowing is false',
-        (tester) async {
+    testWidgets('should show "Follow" label when isFollowing is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileLoaded(profile: tProfile),
@@ -340,8 +355,9 @@ void main() {
       expect(find.text('Seems a little quiet over here'), findsOneWidget);
     });
 
-    testWidgets('should render track tiles when likedTracks is not empty',
-        (tester) async {
+    testWidgets('should render track tiles when likedTracks is not empty', (
+      tester,
+    ) async {
       final tracks = [makeTrack('t1'), makeTrack('t2')];
 
       await tester.pumpWidget(
@@ -363,8 +379,10 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_back_button')),
-          findsOneWidget);
+      expect(
+        find.byKey(const Key('public_profile_back_button')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should show more (⋮) button in AppBar', (tester) async {
@@ -375,8 +393,10 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_more_button')),
-          findsOneWidget);
+      expect(
+        find.byKey(const Key('public_profile_more_button')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should show play button', (tester) async {
@@ -387,8 +407,10 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_play_button')),
-          findsOneWidget);
+      expect(
+        find.byKey(const Key('public_profile_play_button')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('should show shuffle button', (tester) async {
@@ -399,12 +421,15 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('public_profile_shuffle_gesture')),
-          findsOneWidget);
+      expect(
+        find.byKey(const Key('public_profile_shuffle_gesture')),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('should show SizedBox.shrink when state is ProfileInitial',
-        (tester) async {
+    testWidgets('should show SizedBox.shrink when state is ProfileInitial', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildWithState(
           const ProfileInitial(),
@@ -417,29 +442,28 @@ void main() {
       expect(find.text('KarimWI'), findsNothing);
     });
 
-    testWidgets('should show pagination spinner at bottom when loading tracks',
-        (tester) async {
-      final tracks = [makeTrack('t1')];
+    testWidgets(
+      'should show pagination spinner at bottom when loading tracks',
+      (tester) async {
+        final tracks = [makeTrack('t1')];
 
-      await tester.pumpWidget(
-        buildWithState(
-          ProfileLoaded(
-            profile: tProfile,
-            likedTracks: tracks,
-            isLoadingTracks: true,
+        await tester.pumpWidget(
+          buildWithState(
+            ProfileLoaded(
+              profile: tProfile,
+              likedTracks: tracks,
+              isLoadingTracks: true,
+            ),
+            const PublicProfilePage(userId: 'user-001'),
           ),
-          const PublicProfilePage(userId: 'user-001'),
-        ),
-      );
+        );
 
-      // Scroll to make the spinner visible
-      await tester.drag(
-        find.byType(CustomScrollView),
-        const Offset(0, -300),
-      );
-      await tester.pump();
+        // Scroll to make the spinner visible
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
+        await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsWidgets);
-    });
+        expect(find.byType(CircularProgressIndicator), findsWidgets);
+      },
+    );
   });
 }

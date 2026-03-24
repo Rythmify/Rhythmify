@@ -34,7 +34,7 @@ abstract class AuthRepository {
   /// [displayName] — the name shown publicly across the app.
   /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
-  
+
   Future<Either<Failure, UserEntity>> signUpWithEmail({
     required String email,
     required String password,
@@ -44,7 +44,7 @@ abstract class AuthRepository {
   });
 
   /// Signs in using a Google account via Firebase OAuth.
-  /// 
+  ///
   /// Returns [Right] with a [UserEntity] on success.
   /// Returns [Left] with an appropriate [Failure] if the sign-in
   /// is cancelled or fails.
@@ -77,6 +77,6 @@ abstract class AuthRepository {
   /// exists for the given [email].
   ///
   /// [email] — the email address associated with the account to reset.
-  
+
   Future<Either<Failure, void>> sendPasswordReset({required String email});
 }

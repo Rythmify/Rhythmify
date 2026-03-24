@@ -11,6 +11,7 @@ import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+
 /// A full-screen profile page showing a user's public information and tracks.
 ///
 /// Can display both the authenticated user's own profile and any other user's
@@ -79,10 +80,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : widget.userId;
 
     // Trigger profile load after the build phase completes
-    Future.microtask(() =>
-        ref.read(profileProvider.notifier).loadProfile(
-              userId: _resolvedUserId,
-            ));
+    Future.microtask(
+      () => ref
+          .read(profileProvider.notifier)
+          .loadProfile(userId: _resolvedUserId),
+    );
 
     // Scroll listener for pagination
     _scrollController.addListener(() {
@@ -198,8 +200,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 const SizedBox(height: 12),
                 Text(state.profile.displayName, style: AppTheme.headlineLarge),
                 const SizedBox(height: 4),
-                if (state.profile.city != null ||
-                    state.profile.country != null)
+                if (state.profile.city != null || state.profile.country != null)
                   Text(
                     [
                       state.profile.city,
@@ -254,7 +255,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                           child: Text(
                             state.profile.isFollowing ? 'Following' : 'Follow',
-                            state.profile.isFollowing ? 'Following' : 'Follow',
                             style: AppTheme.labelLarge,
                           ),
                         ),
@@ -300,8 +300,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               children: [
                 Text(
                   'Seems a little quiet over here',
-                  style: AppTheme.titleMedium
-                      .copyWith(color: AppTheme.textSecondary),
+                  style: AppTheme.titleMedium.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -314,38 +315,33 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           )
         else
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Pagination spinner at the end of the list
-                if (index == state.likedTracks.length) {
-                  return state.isLoadingTracks
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryBrand,
-                              strokeWidth: 2,
-                            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              // Pagination spinner at the end of the list
+              if (index == state.likedTracks.length) {
+                return state.isLoadingTracks
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
                           ),
-                        )
-                      : const SizedBox.shrink();
-                }
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              }
 
               final track = state.likedTracks[index];
 
-                return TrackListTile(
-                  key: Key('item_${track.id}'),
-                  track: track,
-                  onTap: () {
-                    ref
-                        .read(playerStateProvider.notifier)
-                        .playOptimistic(track);
-                  },
-                  onMoreTap: () {},
-                );
-              },
-              childCount: state.likedTracks.length + 1,
-            ),
+              return TrackListTile(
+                key: Key('item_${track.id}'),
+                track: track,
+                onTap: () {
+                  ref.read(playerStateProvider.notifier).playOptimistic(track);
+                },
+                onMoreTap: () {},
+              );
+            }, childCount: state.likedTracks.length + 1),
           ),
       ],
     );

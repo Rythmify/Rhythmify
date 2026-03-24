@@ -18,6 +18,7 @@ import 'package:rythmify/core/network/api_client.dart';
 // ---------------------------------------------------------------------------
 
 class MockApiClient extends Mock implements ApiClient {}
+
 class MockDio extends Mock implements Dio {}
 
 // ---------------------------------------------------------------------------
@@ -38,7 +39,7 @@ Response<dynamic> loginSuccessResponse() {
           'display_name': 'KarimWI',
           'is_verified': true,
         },
-      }
+      },
     },
   );
 }
@@ -53,7 +54,7 @@ Response<dynamic> registerSuccessResponse() {
         'user_id': 'user-001',
         'email': 'karim@rythmify.com',
         'display_name': 'KarimWI',
-      }
+      },
     },
   );
 }
@@ -66,10 +67,7 @@ DioException makeDioError(String code, {String? message}) {
       requestOptions: RequestOptions(path: '/auth/login'),
       statusCode: 401,
       data: {
-        'error': {
-          'code': code,
-          'message': message ?? '$code error message',
-        }
+        'error': {'code': code, 'message': message ?? '$code error message'},
       },
     ),
     type: DioExceptionType.badResponse,
@@ -94,10 +92,9 @@ void main() {
 
   group('AuthRemoteDatasourceImpl.signInWithEmail', () {
     test('should return UserModel when login succeeds', () async {
-      when(() => mockDio.post(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => loginSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => loginSuccessResponse());
 
       when(() => mockApiClient.saveToken(any())).thenAnswer((_) async {});
 
@@ -112,8 +109,9 @@ void main() {
     });
 
     test('should save token after successful login', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => loginSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => loginSuccessResponse());
       when(() => mockApiClient.saveToken(any())).thenAnswer((_) async {});
 
       await datasource.signInWithEmail(
@@ -125,8 +123,9 @@ void main() {
     });
 
     test('should send identifier field (not email) in request body', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => loginSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => loginSuccessResponse());
       when(() => mockApiClient.saveToken(any())).thenAnswer((_) async {});
 
       await datasource.signInWithEmail(
@@ -134,86 +133,111 @@ void main() {
         password: 'Karim123!',
       );
 
-      verify(() => mockDio.post(
-            '/auth/login',
-            data: {
-              'identifier': 'karim@rythmify.com',
-              'password': 'Karim123!',
-            },
-          )).called(1);
+      verify(
+        () => mockDio.post(
+          '/auth/login',
+          data: {'identifier': 'karim@rythmify.com', 'password': 'Karim123!'},
+        ),
+      ).called(1);
     });
 
-    test('should throw AUTH_INVALID_CREDENTIALS on 401 with that code',
-        () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('AUTH_INVALID_CREDENTIALS'));
+    test(
+      'should throw AUTH_INVALID_CREDENTIALS on 401 with that code',
+      () async {
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenThrow(makeDioError('AUTH_INVALID_CREDENTIALS'));
 
-      expect(
-        () => datasource.signInWithEmail(
-            email: 'bad@test.com', password: 'wrong'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
-        )),
-      );
-    });
+        expect(
+          () => datasource.signInWithEmail(
+            email: 'bad@test.com',
+            password: 'wrong',
+          ),
+          throwsA(
+            predicate<Exception>(
+              (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('should throw AUTH_EMAIL_NOT_VERIFIED on that code', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('AUTH_EMAIL_NOT_VERIFIED'));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenThrow(makeDioError('AUTH_EMAIL_NOT_VERIFIED'));
 
       expect(
         () => datasource.signInWithEmail(
-            email: 'karim@rythmify.com', password: 'Karim123!'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('AUTH_EMAIL_NOT_VERIFIED'),
-        )),
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        ),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('AUTH_EMAIL_NOT_VERIFIED'),
+          ),
+        ),
       );
     });
 
     test('should throw AUTH_ACCOUNT_SUSPENDED on that code', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('AUTH_ACCOUNT_SUSPENDED'));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenThrow(makeDioError('AUTH_ACCOUNT_SUSPENDED'));
 
       expect(
         () => datasource.signInWithEmail(
-            email: 'karim@rythmify.com', password: 'Karim123!'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('AUTH_ACCOUNT_SUSPENDED'),
-        )),
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        ),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('AUTH_ACCOUNT_SUSPENDED'),
+          ),
+        ),
       );
     });
 
     test('should throw RATE_LIMIT_EXCEEDED on that code', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('RATE_LIMIT_EXCEEDED'));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenThrow(makeDioError('RATE_LIMIT_EXCEEDED'));
 
       expect(
         () => datasource.signInWithEmail(
-            email: 'karim@rythmify.com', password: 'Karim123!'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('RATE_LIMIT_EXCEEDED'),
-        )),
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        ),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('RATE_LIMIT_EXCEEDED'),
+          ),
+        ),
       );
     });
 
     test('should throw generic exception for unknown error code', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('UNKNOWN_CODE', message: 'Something broke'));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenThrow(makeDioError('UNKNOWN_CODE', message: 'Something broke'));
 
       expect(
         () => datasource.signInWithEmail(
-            email: 'karim@rythmify.com', password: 'Karim123!'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('Something broke'),
-        )),
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+        ),
+        throwsA(
+          predicate<Exception>((e) => e.toString().contains('Something broke')),
+        ),
       );
     });
   });
 
   group('AuthRemoteDatasourceImpl.signUpWithEmail', () {
     test('should return UserModel with null token on success', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => registerSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => registerSuccessResponse());
 
       final result = await datasource.signUpWithEmail(
         email: 'karim@rythmify.com',
@@ -229,8 +253,9 @@ void main() {
     });
 
     test('should include captcha_token dev-bypass in request body', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => registerSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => registerSuccessResponse());
 
       await datasource.signUpWithEmail(
         email: 'karim@rythmify.com',
@@ -240,17 +265,19 @@ void main() {
         dateOfBirth: '2000-01-01',
       );
 
-      final captured = verify(() => mockDio.post(
-            any(),
-            data: captureAny(named: 'data'),
-          )).captured.first as Map<String, dynamic>;
+      final captured =
+          verify(
+                () => mockDio.post(any(), data: captureAny(named: 'data')),
+              ).captured.first
+              as Map<String, dynamic>;
 
       expect(captured['captcha_token'], 'dev-bypass');
     });
 
     test('should parse user_id (not id) from response', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => registerSuccessResponse());
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => registerSuccessResponse());
 
       final result = await datasource.signUpWithEmail(
         email: 'karim@rythmify.com',
@@ -265,8 +292,9 @@ void main() {
     });
 
     test('should throw AUTH_EMAIL_ALREADY_EXISTS on that code', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('AUTH_EMAIL_ALREADY_EXISTS'));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenThrow(makeDioError('AUTH_EMAIL_ALREADY_EXISTS'));
 
       expect(
         () => datasource.signUpWithEmail(
@@ -276,16 +304,18 @@ void main() {
           gender: 'male',
           dateOfBirth: '2000-01-01',
         ),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('AUTH_EMAIL_ALREADY_EXISTS'),
-        )),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('AUTH_EMAIL_ALREADY_EXISTS'),
+          ),
+        ),
       );
     });
 
     test('should throw VALIDATION_FAILED with server message', () async {
       when(() => mockDio.post(any(), data: any(named: 'data'))).thenThrow(
-          makeDioError('VALIDATION_FAILED',
-              message: 'date_of_birth is required'));
+        makeDioError('VALIDATION_FAILED', message: 'date_of_birth is required'),
+      );
 
       expect(
         () => datasource.signUpWithEmail(
@@ -295,19 +325,23 @@ void main() {
           gender: 'male',
           dateOfBirth: '',
         ),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('date_of_birth is required'),
-        )),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('date_of_birth is required'),
+          ),
+        ),
       );
     });
   });
 
   group('AuthRemoteDatasourceImpl.signOut', () {
     test('should call /auth/logout and clear token', () async {
-      when(() => mockDio.post(any())).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/auth/logout'),
-            statusCode: 200,
-          ));
+      when(() => mockDio.post(any())).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/logout'),
+          statusCode: 200,
+        ),
+      );
       when(() => mockApiClient.clearToken()).thenAnswer((_) async {});
 
       await datasource.signOut();
@@ -317,8 +351,9 @@ void main() {
     });
 
     test('should throw on DioException', () async {
-      when(() => mockDio.post(any()))
-          .thenThrow(makeDioError('UNKNOWN', message: 'Logout failed'));
+      when(
+        () => mockDio.post(any()),
+      ).thenThrow(makeDioError('UNKNOWN', message: 'Logout failed'));
 
       expect(() => datasource.signOut(), throwsA(isA<Exception>()));
     });
@@ -326,10 +361,12 @@ void main() {
 
   group('AuthRemoteDatasourceImpl.sendVerificationEmail', () {
     test('should call /auth/resend-verification', () async {
-      when(() => mockDio.post(any())).thenAnswer((_) async => Response(
-            requestOptions: RequestOptions(path: '/auth/resend-verification'),
-            statusCode: 200,
-          ));
+      when(() => mockDio.post(any())).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/resend-verification'),
+          statusCode: 200,
+        ),
+      );
 
       await datasource.sendVerificationEmail();
 
@@ -339,33 +376,40 @@ void main() {
 
   group('AuthRemoteDatasourceImpl.sendPasswordReset', () {
     test('should call /auth/forgot-password with email in body', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => Response(
-                requestOptions:
-                    RequestOptions(path: '/auth/forgot-password'),
-                statusCode: 200,
-              ));
+      when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/forgot-password'),
+          statusCode: 200,
+        ),
+      );
 
       await datasource.sendPasswordReset(email: 'karim@rythmify.com');
 
-      verify(() => mockDio.post(
-            '/auth/forgot-password',
-            data: {'email': 'karim@rythmify.com'},
-          )).called(1);
+      verify(
+        () => mockDio.post(
+          '/auth/forgot-password',
+          data: {'email': 'karim@rythmify.com'},
+        ),
+      ).called(1);
     });
 
-    test('should throw AUTH_INVALID_CREDENTIALS when email not registered',
-        () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenThrow(makeDioError('AUTH_INVALID_CREDENTIALS'));
+    test(
+      'should throw AUTH_INVALID_CREDENTIALS when email not registered',
+      () async {
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenThrow(makeDioError('AUTH_INVALID_CREDENTIALS'));
 
-      expect(
-        () => datasource.sendPasswordReset(email: 'ghost@test.com'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
-        )),
-      );
-    });
+        expect(
+          () => datasource.sendPasswordReset(email: 'ghost@test.com'),
+          throwsA(
+            predicate<Exception>(
+              (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('AuthRemoteDatasourceImpl._handleDioError — all codes', () {
@@ -380,29 +424,35 @@ void main() {
 
     for (final code in codes) {
       test('should throw Exception containing $code', () async {
-        when(() => mockDio.post(any(), data: any(named: 'data')))
-            .thenThrow(makeDioError(code));
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenThrow(makeDioError(code));
 
         expect(
           () => datasource.signInWithEmail(
-              email: 'test@test.com', password: 'pass'),
-          throwsA(predicate<Exception>(
-            (e) => e.toString().contains(code),
-          )),
+            email: 'test@test.com',
+            password: 'pass',
+          ),
+          throwsA(predicate<Exception>((e) => e.toString().contains(code))),
         );
       });
     }
 
     test('should use server message for VALIDATION_FAILED', () async {
       when(() => mockDio.post(any(), data: any(named: 'data'))).thenThrow(
-          makeDioError('VALIDATION_FAILED', message: 'Server says invalid'));
+        makeDioError('VALIDATION_FAILED', message: 'Server says invalid'),
+      );
 
       expect(
         () => datasource.signInWithEmail(
-            email: 'test@test.com', password: 'pass'),
-        throwsA(predicate<Exception>(
-          (e) => e.toString().contains('Server says invalid'),
-        )),
+          email: 'test@test.com',
+          password: 'pass',
+        ),
+        throwsA(
+          predicate<Exception>(
+            (e) => e.toString().contains('Server says invalid'),
+          ),
+        ),
       );
     });
   });
@@ -442,27 +492,36 @@ void main() {
         expect(result.id, 'user-004');
       });
 
-      test('should throw AUTH_INVALID_CREDENTIALS for unknown email',
-          () async {
+      test('should throw AUTH_INVALID_CREDENTIALS for unknown email', () async {
         expect(
           () => mockDs.signInWithEmail(
-              email: 'nobody@test.com', password: 'Pass123!'),
-          throwsA(predicate<Exception>(
-            (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
-          )),
+            email: 'nobody@test.com',
+            password: 'Pass123!',
+          ),
+          throwsA(
+            predicate<Exception>(
+              (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
+            ),
+          ),
         );
       });
 
-      test('should throw AUTH_INVALID_CREDENTIALS for wrong password',
-          () async {
-        expect(
-          () => mockDs.signInWithEmail(
-              email: 'karim@rythmify.com', password: 'WrongPass!'),
-          throwsA(predicate<Exception>(
-            (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
-          )),
-        );
-      });
+      test(
+        'should throw AUTH_INVALID_CREDENTIALS for wrong password',
+        () async {
+          expect(
+            () => mockDs.signInWithEmail(
+              email: 'karim@rythmify.com',
+              password: 'WrongPass!',
+            ),
+            throwsA(
+              predicate<Exception>(
+                (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
+              ),
+            ),
+          );
+        },
+      );
 
       test('should match email case-insensitively', () async {
         final result = await mockDs.signInWithEmail(
@@ -509,21 +568,25 @@ void main() {
         expect(result.id, startsWith('user-'));
       });
 
-      test('should throw AUTH_EMAIL_ALREADY_EXISTS for duplicate email',
-          () async {
-        expect(
-          () => mockDs.signUpWithEmail(
-            email: 'karim@rythmify.com',
-            password: 'Karim123!',
-            displayName: 'Dup',
-            gender: 'male',
-            dateOfBirth: '2000-01-01',
-          ),
-          throwsA(predicate<Exception>(
-            (e) => e.toString().contains('AUTH_EMAIL_ALREADY_EXISTS'),
-          )),
-        );
-      });
+      test(
+        'should throw AUTH_EMAIL_ALREADY_EXISTS for duplicate email',
+        () async {
+          expect(
+            () => mockDs.signUpWithEmail(
+              email: 'karim@rythmify.com',
+              password: 'Karim123!',
+              displayName: 'Dup',
+              gender: 'male',
+              dateOfBirth: '2000-01-01',
+            ),
+            throwsA(
+              predicate<Exception>(
+                (e) => e.toString().contains('AUTH_EMAIL_ALREADY_EXISTS'),
+              ),
+            ),
+          );
+        },
+      );
 
       test('should allow new user to sign in after registration', () async {
         await mockDs.signUpWithEmail(
@@ -579,15 +642,19 @@ void main() {
         );
       });
 
-      test('should throw AUTH_INVALID_CREDENTIALS for unregistered email',
-          () async {
-        expect(
-          () => mockDs.sendPasswordReset(email: 'ghost@test.com'),
-          throwsA(predicate<Exception>(
-            (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
-          )),
-        );
-      });
+      test(
+        'should throw AUTH_INVALID_CREDENTIALS for unregistered email',
+        () async {
+          expect(
+            () => mockDs.sendPasswordReset(email: 'ghost@test.com'),
+            throwsA(
+              predicate<Exception>(
+                (e) => e.toString().contains('AUTH_INVALID_CREDENTIALS'),
+              ),
+            ),
+          );
+        },
+      );
 
       test('should complete for email matching case-insensitively', () async {
         await expectLater(

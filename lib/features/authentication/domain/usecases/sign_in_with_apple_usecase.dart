@@ -8,10 +8,10 @@ import '../repositories/auth_repository.dart';
 class SignInWithAppleUseCase {
   /// The repository used to perform Apple sign-in.
   final AuthRepository repository;
- 
+
   /// Creates a [SignInWithAppleUseCase] with the given [repository].
   SignInWithAppleUseCase(this.repository);
- 
+
   /// Executes the Apple sign-in flow.
   ///
   /// Returns [Right] with a [UserEntity] on success, or [Left] with

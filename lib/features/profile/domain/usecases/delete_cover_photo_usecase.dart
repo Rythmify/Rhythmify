@@ -8,10 +8,10 @@ import '../repositories/profile_repository.dart';
 class DeleteCoverPhotoUseCase {
   /// The repository used to delete the cover photo.
   final ProfileRepository repository;
- 
+
   /// Creates a [DeleteCoverPhotoUseCase] with the given [repository].
   DeleteCoverPhotoUseCase(this.repository);
- 
+
   /// Deletes the current user's cover photo.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a [Failure].

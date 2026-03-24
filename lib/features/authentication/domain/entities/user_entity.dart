@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 /// Represents an authenticated user in the Rythmify system.
 /// This is the core domain entity for a user. It contains the identity
 /// information returned after a successful login or registration.

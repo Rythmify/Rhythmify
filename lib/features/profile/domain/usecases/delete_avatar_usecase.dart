@@ -8,10 +8,10 @@ import '../repositories/profile_repository.dart';
 class DeleteAvatarUseCase {
   /// The repository used to delete the avatar.
   final ProfileRepository repository;
- 
+
   /// Creates a [DeleteAvatarUseCase] with the given [repository].
   DeleteAvatarUseCase(this.repository);
- 
+
   /// Deletes the current user's avatar image.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a [Failure].

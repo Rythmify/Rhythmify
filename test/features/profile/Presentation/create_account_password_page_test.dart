@@ -15,8 +15,7 @@ void main() {
           GoRoute(
             path: '/create-account/password',
             builder: (_, __) => const ProviderScope(
-              child: CreateAccountPasswordPage(
-                  email: 'test@test.com'),
+              child: CreateAccountPasswordPage(email: 'test@test.com'),
             ),
           ),
           GoRoute(
@@ -32,8 +31,7 @@ void main() {
       );
     });
 
-    testWidgets('should display the email passed as parameter',
-        (tester) async {
+    testWidgets('should display the email passed as parameter', (tester) async {
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
 
@@ -45,114 +43,124 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
+        find.byKey(const Key('authentication_password_text_field')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'should show error when password is empty and Continue is tapped',
+      (tester) async {
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.byKey(const Key('authentication_continue_elevated_button')),
+        );
+        await tester.pump();
+
+        expect(find.text('Please enter a password'), findsOneWidget);
+      },
+    );
+
+    testWidgets('should show error when password is less than 8 characters', (
+      tester,
+    ) async {
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('authentication_password_text_field')),
+        'Ab1',
+      );
+      await tester.tap(
+        find.byKey(const Key('authentication_continue_elevated_button')),
+      );
+      await tester.pump();
+
+      expect(
+        find.text('Password must be at least 8 characters'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should show error when password has no uppercase letter', (
+      tester,
+    ) async {
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('authentication_password_text_field')),
+        'password1',
+      );
+      await tester.tap(
+        find.byKey(const Key('authentication_continue_elevated_button')),
+      );
+      await tester.pump();
+
+      expect(
+        find.text('Password must contain an uppercase letter'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should show error when password has no lowercase letter', (
+      tester,
+    ) async {
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('authentication_password_text_field')),
+        'PASSWORD1',
+      );
+      await tester.tap(
+        find.byKey(const Key('authentication_continue_elevated_button')),
+      );
+      await tester.pump();
+
+      expect(
+        find.text('Password must contain a lowercase letter'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should show error when password has no number', (
+      tester,
+    ) async {
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('authentication_password_text_field')),
+        'Password',
+      );
+      await tester.tap(
+        find.byKey(const Key('authentication_continue_elevated_button')),
+      );
+      await tester.pump();
+
+      expect(find.text('Password must contain a number'), findsOneWidget);
+    });
+
+    testWidgets(
+      'should navigate to profile page when valid password is entered',
+      (tester) async {
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
           find.byKey(const Key('authentication_password_text_field')),
-          findsOneWidget);
-    });
+          'SecurePass1',
+        );
+        await tester.tap(
+          find.byKey(const Key('authentication_continue_elevated_button')),
+        );
+        await tester.pumpAndSettle();
 
-    testWidgets(
-        'should show error when password is empty and Continue is tapped',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pump();
-
-      expect(find.text('Please enter a password'), findsOneWidget);
-    });
-
-    testWidgets(
-        'should show error when password is less than 8 characters',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-          find.byKey(
-              const Key('authentication_password_text_field')),
-          'Ab1');
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pump();
-
-      expect(
-          find.text('Password must be at least 8 characters'),
-          findsOneWidget);
-    });
-
-    testWidgets(
-        'should show error when password has no uppercase letter',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-          find.byKey(
-              const Key('authentication_password_text_field')),
-          'password1');
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pump();
-
-      expect(
-          find.text('Password must contain an uppercase letter'),
-          findsOneWidget);
-    });
-
-    testWidgets(
-        'should show error when password has no lowercase letter',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-          find.byKey(
-              const Key('authentication_password_text_field')),
-          'PASSWORD1');
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pump();
-
-      expect(
-          find.text('Password must contain a lowercase letter'),
-          findsOneWidget);
-    });
-
-    testWidgets(
-        'should show error when password has no number',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-          find.byKey(
-              const Key('authentication_password_text_field')),
-          'Password');
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pump();
-
-      expect(
-          find.text('Password must contain a number'), findsOneWidget);
-    });
-
-    testWidgets(
-        'should navigate to profile page when valid password is entered',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-          find.byKey(
-              const Key('authentication_password_text_field')),
-          'SecurePass1');
-      await tester.tap(find.byKey(
-          const Key('authentication_continue_elevated_button')));
-      await tester.pumpAndSettle();
-
-      expect(
-          find.text('profile-test@test.com-SecurePass1'), findsOneWidget);
-    });
+        expect(find.text('profile-test@test.com-SecurePass1'), findsOneWidget);
+      },
+    );
   });
 }

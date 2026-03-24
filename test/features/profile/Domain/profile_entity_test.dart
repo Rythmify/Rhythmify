@@ -96,19 +96,20 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('ProfileEntity — copyWithFollowing', () {
-    test('should return a new instance with updated isFollowing and followersCount',
-        () {
-      final updated = tProfile.copyWithFollowing(
-        isFollowing: true,
-        followersCount: 1241,
-      );
+    test(
+      'should return a new instance with updated isFollowing and followersCount',
+      () {
+        final updated = tProfile.copyWithFollowing(
+          isFollowing: true,
+          followersCount: 1241,
+        );
 
-      expect(updated.isFollowing, true);
-      expect(updated.followersCount, 1241);
-    });
+        expect(updated.isFollowing, true);
+        expect(updated.followersCount, 1241);
+      },
+    );
 
-    test('should preserve all other fields when copying with follow state',
-        () {
+    test('should preserve all other fields when copying with follow state', () {
       final updated = tProfile.copyWithFollowing(
         isFollowing: true,
         followersCount: 1241,

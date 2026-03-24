@@ -8,10 +8,10 @@ import '../repositories/auth_repository.dart';
 class SendVerificationEmailUseCase {
   /// The repository used to dispatch the verification email.
   final AuthRepository repository;
- 
+
   /// Creates a [SendVerificationEmailUseCase] with the given [repository].
   SendVerificationEmailUseCase(this.repository);
- 
+
   /// Sends the email verification link.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a

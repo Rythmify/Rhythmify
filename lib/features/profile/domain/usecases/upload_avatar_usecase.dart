@@ -9,10 +9,10 @@ import '../repositories/profile_repository.dart';
 class UploadAvatarUseCase {
   /// The repository used to upload the avatar.
   final ProfileRepository repository;
- 
+
   /// Creates an [UploadAvatarUseCase] with the given [repository].
   UploadAvatarUseCase(this.repository);
- 
+
   /// Uploads the image at [filePath] as the user's avatar.
   ///
   /// Returns [Right] with updated [ProfileEntity], or [Left] with a [Failure].

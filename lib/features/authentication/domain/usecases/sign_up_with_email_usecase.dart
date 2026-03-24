@@ -10,10 +10,10 @@ import '../repositories/auth_repository.dart';
 class SignUpWithEmailUseCase {
   /// The repository used to perform the registration operation.
   final AuthRepository repository;
- 
+
   /// Creates a [SignUpWithEmailUseCase] with the given [repository].
   SignUpWithEmailUseCase(this.repository);
- 
+
   /// Executes the registration operation.
   ///
   /// Returns [Right] with a [UserEntity] on success, or [Left] with a

@@ -111,8 +111,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
           children: [
             Text(
               'No liked tracks yet',
-              style: AppTheme.titleMedium
-                  .copyWith(color: AppTheme.textSecondary),
+              style: AppTheme.titleMedium.copyWith(
+                color: AppTheme.textSecondary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(

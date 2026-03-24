@@ -18,8 +18,7 @@ class LoginPasswordPage extends ConsumerStatefulWidget {
   const LoginPasswordPage({super.key, required this.email});
 
   @override
-  ConsumerState<LoginPasswordPage> createState() =>
-      _LoginPasswordPageState();
+  ConsumerState<LoginPasswordPage> createState() => _LoginPasswordPageState();
 }
 
 class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
@@ -86,13 +85,15 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                 Text(
                   widget.email,
                   key: const Key(
-                      'authentication_login_password_email_display_text'),
+                    'authentication_login_password_email_display_text',
+                  ),
                   style: AppTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
                 AuthTextField(
                   key: const Key(
-                      'authentication_login_password_auth_text_field'),
+                    'authentication_login_password_auth_text_field',
+                  ),
                   hint: 'Your password',
                   controller: _passwordController,
                   isPassword: true,
@@ -110,9 +111,9 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   height: 50,
                   child: ElevatedButton(
                     key: const Key(
-                        'authentication_login_password_sign_in_elevated_button'),
-                    onPressed:
-                        authState is AuthLoading ? null : _onContinue,
+                      'authentication_login_password_sign_in_elevated_button',
+                    ),
+                    onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,
@@ -132,7 +133,8 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                 const SizedBox(height: 20),
                 GestureDetector(
                   key: const Key(
-                      'authentication_login_password_forgot_password_gesture_detector'),
+                    'authentication_login_password_forgot_password_gesture_detector',
+                  ),
                   onTap: () {},
                   child: Text(
                     'Forgot password?',

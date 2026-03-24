@@ -25,7 +25,7 @@ class InvalidCredentialsFailure extends Failure {
 class EmailNotVerifiedFailure extends Failure {
   /// Creates an [EmailNotVerifiedFailure] with a fixed message.
   const EmailNotVerifiedFailure()
-      : super('Please verify your email before signing in.');
+    : super('Please verify your email before signing in.');
 }
 
 /// Thrown when a registration attempt uses an email already in use.
@@ -34,7 +34,7 @@ class EmailNotVerifiedFailure extends Failure {
 class EmailAlreadyInUseFailure extends Failure {
   /// Creates an [EmailAlreadyInUseFailure] with a fixed message.
   const EmailAlreadyInUseFailure()
-      : super('An account with this email already exists.');
+    : super('An account with this email already exists.');
 }
 
 /// Thrown when a network request fails due to no internet connection.
@@ -75,7 +75,7 @@ class AccountSuspendedFailure extends Failure {
 class RefreshTokenInvalidFailure extends Failure {
   /// Creates a [RefreshTokenInvalidFailure] with a fixed message.
   const RefreshTokenInvalidFailure()
-      : super('Your session has expired. Please sign in again.');
+    : super('Your session has expired. Please sign in again.');
 }
 
 /// Thrown when the user or IP has exceeded the allowed request rate.
@@ -84,7 +84,7 @@ class RefreshTokenInvalidFailure extends Failure {
 class TooManyRequestsFailure extends Failure {
   /// Creates a [TooManyRequestsFailure] with a fixed message.
   const TooManyRequestsFailure()
-      : super('Too many attempts. Please try again later.');
+    : super('Too many attempts. Please try again later.');
 }
 
 /// Thrown when a file cannot be read from the device.
@@ -137,7 +137,6 @@ class UploadLimitFailure extends Failure {
   /// Creates an [UploadLimitFailure] with a fixed message.
   const UploadLimitFailure([
     super.message = 'Upload limit reached. Try again later.',
-    super.message = 'Upload limit reached. Try again later.',
   ]);
 }
 
@@ -147,7 +146,6 @@ class UploadLimitFailure extends Failure {
 class FileTooLargeFailure extends Failure {
   /// Creates a [FileTooLargeFailure] with a fixed message.
   const FileTooLargeFailure([
-    super.message = 'File is too large. Maximum size is 100MB.',
     super.message = 'File is too large. Maximum size is 100MB.',
   ]);
 }
@@ -159,7 +157,6 @@ class FileTooLargeFailure extends Failure {
 class UnsupportedFileFailure extends Failure {
   /// Creates an [UnsupportedFileFailure] with a fixed message.
   const UnsupportedFileFailure([
-    super.message =
-        'File format not supported. Use MP3, WAV, FLAC or AAC.',
+    super.message = 'File format not supported. Use MP3, WAV, FLAC or AAC.',
   ]);
 }

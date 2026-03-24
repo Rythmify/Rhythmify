@@ -37,7 +37,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   @override
   ProfileState build() {
-
     final datasource = useProfileMockData
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);

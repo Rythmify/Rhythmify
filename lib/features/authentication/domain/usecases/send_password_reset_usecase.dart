@@ -8,10 +8,10 @@ import '../repositories/auth_repository.dart';
 class SendPasswordResetUseCase {
   /// The repository used to dispatch the password reset email.
   final AuthRepository repository;
- 
+
   /// Creates a [SendPasswordResetUseCase] with the given [repository].
   SendPasswordResetUseCase(this.repository);
- 
+
   /// Sends the password reset email.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a
@@ -23,4 +23,3 @@ class SendPasswordResetUseCase {
     return repository.sendPasswordReset(email: email);
   }
 }
- 

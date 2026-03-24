@@ -10,10 +10,10 @@ import '../repositories/profile_repository.dart';
 class GetProfileUseCase {
   /// The repository used to fetch the profile.
   final ProfileRepository repository;
- 
+
   /// Creates a [GetProfileUseCase] with the given [repository].
   GetProfileUseCase(this.repository);
- 
+
   /// Fetches the profile for [userId].
   ///
   /// Returns [Right] with a [ProfileEntity], or [Left] with a [Failure].

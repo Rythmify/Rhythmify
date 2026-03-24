@@ -106,33 +106,14 @@ class _CreateAccountPasswordPageState
                     }
                     return null;
                   },
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 8) {
-                      return 'Password must be at least 8 characters';
-                    }
-                    if (!value.contains(RegExp(r'[A-Z]'))) {
-                      return 'Password must contain an uppercase letter';
-                    }
-                    if (!value.contains(RegExp(r'[a-z]'))) {
-                      return 'Password must contain a lowercase letter';
-                    }
-                    if (!value.contains(RegExp(r'[0-9]'))) {
-                      return 'Password must contain a number';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 50),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    key: const Key(
-                        'authentication_continue_elevated_button'),
-                    onPressed:
-                        authState is AuthLoading ? null : _onContinue,
+                    key: const Key('authentication_continue_elevated_button'),
+                    onPressed: authState is AuthLoading ? null : _onContinue,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,

@@ -8,10 +8,10 @@ import '../repositories/profile_repository.dart';
 class FollowUserUseCase {
   /// The repository used to follow the user.
   final ProfileRepository repository;
- 
+
   /// Creates a [FollowUserUseCase] with the given [repository].
   FollowUserUseCase(this.repository);
- 
+
   /// Follows the user identified by [userId].
   ///
   /// Returns [Right] with `void` on success, or [Left] with a [Failure].

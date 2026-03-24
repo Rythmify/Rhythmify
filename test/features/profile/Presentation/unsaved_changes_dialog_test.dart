@@ -4,50 +4,37 @@ import 'package:rythmify/features/profile/presentation/widgets/unsaved_changes_d
 
 void main() {
   group('UnsavedChangesDialog', () {
-    testWidgets('should display title and description text',
-        (tester) async {
+    testWidgets('should display title and description text', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: UnsavedChangesDialog(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: UnsavedChangesDialog())),
       );
 
       expect(find.text('Are you sure?'), findsOneWidget);
       expect(
-          find.text('You have unsaved changes that will be lost'),
-          findsOneWidget);
+        find.text('You have unsaved changes that will be lost'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('should display Discard Changes button',
-        (tester) async {
+    testWidgets('should display Discard Changes button', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: UnsavedChangesDialog(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: UnsavedChangesDialog())),
       );
 
       expect(find.text('DISCARD CHANGES'), findsOneWidget);
     });
 
-    testWidgets('should display Continue Editing button',
-        (tester) async {
+    testWidgets('should display Continue Editing button', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: UnsavedChangesDialog(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: UnsavedChangesDialog())),
       );
 
       expect(find.text('CONTINUE EDITING'), findsOneWidget);
     });
 
-    testWidgets('should return true when Discard Changes is tapped',
-        (tester) async {
+    testWidgets('should return true when Discard Changes is tapped', (
+      tester,
+    ) async {
       bool? result;
 
       await tester.pumpWidget(
@@ -71,15 +58,17 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(
-          const Key('profile_unsaved_changes_discard_button')));
+      await tester.tap(
+        find.byKey(const Key('profile_unsaved_changes_discard_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(result, true);
     });
 
-    testWidgets('should return false when Continue Editing is tapped',
-        (tester) async {
+    testWidgets('should return false when Continue Editing is tapped', (
+      tester,
+    ) async {
       bool? result;
 
       await tester.pumpWidget(
@@ -103,39 +92,35 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(
-          const Key('profile_unsaved_changes_continue_button')));
+      await tester.tap(
+        find.byKey(const Key('profile_unsaved_changes_continue_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(result, false);
     });
 
-    testWidgets('should render with correct widget keys',
-        (tester) async {
+    testWidgets('should render with correct widget keys', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: UnsavedChangesDialog(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: UnsavedChangesDialog())),
       );
 
       expect(
-          find.byKey(
-              const Key('profile_unsaved_changes_title_text')),
-          findsOneWidget);
+        find.byKey(const Key('profile_unsaved_changes_title_text')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(const Key(
-              'profile_unsaved_changes_description_text')),
-          findsOneWidget);
+        find.byKey(const Key('profile_unsaved_changes_description_text')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(
-              const Key('profile_unsaved_changes_discard_button')),
-          findsOneWidget);
+        find.byKey(const Key('profile_unsaved_changes_discard_button')),
+        findsOneWidget,
+      );
       expect(
-          find.byKey(
-              const Key('profile_unsaved_changes_continue_button')),
-          findsOneWidget);
+        find.byKey(const Key('profile_unsaved_changes_continue_button')),
+        findsOneWidget,
+      );
     });
   });
 }

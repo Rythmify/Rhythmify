@@ -195,7 +195,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// Sends [_selectedCountry] (ISO code) as the country, not the
   /// display name. Called by the Save button in the AppBar.
   void _onSave() {
-    ref.read(profileProvider.notifier).updateProfile(
+    ref
+        .read(profileProvider.notifier)
+        .updateProfile(
           displayName: _displayNameController.text.trim(),
           city: _cityController.text.trim(),
           country: _selectedCountry,
@@ -375,8 +377,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         ),
         body: profileState is! ProfileLoaded
             ? const Center(
-                child:
-                    CircularProgressIndicator(color: AppTheme.primaryBrand),
+                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
               )
             : SingleChildScrollView(
                 child: Column(
@@ -392,8 +393,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               ? Image.network(
                                   profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (a, b, c) =>
-                                      const SizedBox(),
+                                  errorBuilder: (a, b, c) => const SizedBox(),
                                 )
                               : null,
                         ),
@@ -401,14 +401,14 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           right: 12,
                           bottom: 12,
                           child: GestureDetector(
-                            key: const Key(
-                                'edit_profile_pick_cover_gesture'),
+                            key: const Key('edit_profile_pick_cover_gesture'),
                             onTap: _pickCoverPhoto,
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.background
-                                    .withValues(alpha: 0.7),
+                                color: AppTheme.background.withValues(
+                                  alpha: 0.7,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -440,24 +440,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildField(
-                            key: const Key(
-                                'edit_profile_name_textfield'),
+                            key: const Key('edit_profile_name_textfield'),
                             label: 'Display Name',
                             controller: _displayNameController,
                             maxLength: 50,
                           ),
                           const Divider(color: AppTheme.surface, height: 1),
                           _buildField(
-                            key: const Key(
-                                'edit_profile_city_textfield'),
+                            key: const Key('edit_profile_city_textfield'),
                             label: 'City',
                             controller: _cityController,
                             maxLength: 35,
                           ),
                           const Divider(color: AppTheme.surface, height: 1),
                           _buildChevronField(
-                            key: const Key(
-                                'edit_profile_country_gesture'),
+                            key: const Key('edit_profile_country_gesture'),
                             label: 'Country',
                             value: _selectedCountryDisplay.isEmpty
                                 ? 'Select country'

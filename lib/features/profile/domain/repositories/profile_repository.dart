@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';
+
 /// Defines the contract for all profile operations in Rythmify.
 ///
 /// This abstract class sits in the domain layer. Concrete implementations
@@ -18,10 +19,8 @@ abstract class ProfileRepository {
   ///
   /// Returns [Right] with a [ProfileEntity] on success.
   /// Returns [Left] with [ServerFailure] if the profile is not found.
-  Future<Either<Failure, ProfileEntity>> getProfile({
-    required String userId,
-  });
- 
+  Future<Either<Failure, ProfileEntity>> getProfile({required String userId});
+
   /// Updates the authenticated user's profile fields.
   ///
   /// Returns [Right] with the updated [ProfileEntity] on success.
@@ -37,7 +36,7 @@ abstract class ProfileRepository {
     required String country,
     required String bio,
   });
- 
+
   /// Uploads a new avatar image for the authenticated user.
   ///
   /// Sends the file at [filePath] as a multipart POST to `/users/me/avatar`.
@@ -49,13 +48,13 @@ abstract class ProfileRepository {
   Future<Either<Failure, ProfileEntity>> uploadAvatar({
     required String filePath,
   });
- 
+
   /// Removes the authenticated user's avatar image.
   ///
   /// Returns [Right] with `void` on success.
   /// Returns [Left] with a [Failure] if the deletion fails.
   Future<Either<Failure, void>> deleteAvatar();
- 
+
   /// Uploads a new cover/banner photo for the authenticated user.
   ///
   /// Sends the file at [filePath] as a multipart POST to `/users/me/cover`.
@@ -65,13 +64,13 @@ abstract class ProfileRepository {
   Future<Either<Failure, ProfileEntity>> uploadCoverPhoto({
     required String filePath,
   });
- 
+
   /// Removes the authenticated user's cover photo.
   ///
   /// Returns [Right] with `void` on success.
   /// Returns [Left] with a [Failure] if the deletion fails.
   Future<Either<Failure, void>> deleteCoverPhoto();
- 
+
   /// Follows the user with the given [userId].
   ///
   /// Returns [Right] with `void` on success.
@@ -79,20 +78,16 @@ abstract class ProfileRepository {
   /// if the user attempts to follow themselves.
   ///
   /// [userId] — the ID of the user to follow.
-  Future<Either<Failure, void>> followUser({
-    required String userId,
-  });
- 
+  Future<Either<Failure, void>> followUser({required String userId});
+
   /// Unfollows the user with the given [userId].
   ///
   /// Returns [Right] with `void` on success.
   /// Returns [Left] with a [Failure] if the operation fails.
   ///
   /// [userId] — the ID of the user to unfollow.
-  Future<Either<Failure, void>> unfollowUser({
-    required String userId,
-  });
- 
+  Future<Either<Failure, void>> unfollowUser({required String userId});
+
   /// Fetches a paginated list of tracks liked by the given user.
   ///
   /// Returns [Right] with a list of [Track] objects.
@@ -108,4 +103,3 @@ abstract class ProfileRepository {
     required int limit,
   });
 }
- 

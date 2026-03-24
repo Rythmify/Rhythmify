@@ -146,9 +146,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 const SizedBox(height: 28),
                 Text(
                   'Or with email',
-                  'Or with email',
                   key: const Key('auth_email_divider_text'),
-                  style: AppTheme.labelLarge,
                   style: AppTheme.labelLarge,
                 ),
                 const SizedBox(height: 12),
