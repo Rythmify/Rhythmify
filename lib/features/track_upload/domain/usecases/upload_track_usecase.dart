@@ -34,7 +34,6 @@ class UploadTrackUseCase {
     required TrackDraft draft,
     void Function(double progress)? onProgress,
   }) async {
-
     // ── Step 1: Validate ───────────────────────────────────────────
     final validation = _validate(draft);
     if (validation != null) return Left(validation);
@@ -54,10 +53,10 @@ class UploadTrackUseCase {
 
     // ── Step 3: Upload ─────────────────────────────────────────────
     return repository.uploadTrack(
-      draft:       draft,
-      audioFile:   audioFile,
+      draft: draft,
+      audioFile: audioFile,
       artworkFile: artworkFile,
-      onProgress:  onProgress,
+      onProgress: onProgress,
     );
   }
 
