@@ -1,3 +1,13 @@
+/// Widget: CoverImagePickerWidget
+///
+/// Displays and allows selection of track artwork.
+///
+/// Responsibilities:
+/// - Show selected artwork preview
+/// - Trigger image picker when tapped
+///
+/// Notes:
+/// - Reads artwork path from UploadFormProvider
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

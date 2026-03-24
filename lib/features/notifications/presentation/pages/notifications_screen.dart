@@ -7,11 +7,7 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        centerTitle: false,
-
-      ),
+      appBar: AppBar(title: const Text('Notifications'), centerTitle: false),
       body: const Center(
         child: Text(
           'This is a dummy page',

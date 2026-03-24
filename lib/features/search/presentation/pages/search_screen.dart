@@ -7,11 +7,7 @@ class SearchScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search'),
-        centerTitle: false,
-
-      ),
+      appBar: AppBar(title: const Text('Search'), centerTitle: false),
       body: const Center(
         child: Text(
           'This is a dummy page',

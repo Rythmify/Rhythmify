@@ -7,9 +7,7 @@ class SendPasswordResetUseCase {
 
   SendPasswordResetUseCase(this.repository);
 
-  Future<Either<Failure, void>> call({
-    required String email,
-  }) {
+  Future<Either<Failure, void>> call({required String email}) {
     return repository.sendPasswordReset(email: email);
   }
 }

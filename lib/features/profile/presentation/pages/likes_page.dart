@@ -24,9 +24,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        ref.read(profileProvider.notifier).loadLikedTracks(
-              userId: widget.userId,
-            );
+        ref
+            .read(profileProvider.notifier)
+            .loadLikedTracks(userId: widget.userId);
       }
     });
   }
@@ -61,8 +61,8 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       body: switch (profileState) {
         ProfileLoaded() => _buildList(profileState),
         ProfileLoading() => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-          ),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
         _ => const SizedBox.shrink(),
       },
     );

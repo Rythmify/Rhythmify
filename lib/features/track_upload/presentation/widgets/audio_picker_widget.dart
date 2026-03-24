@@ -1,3 +1,14 @@
+/// Widget: AudioPickerWidget
+///
+/// Displays selected audio file information and artwork picker.
+///
+/// Responsibilities:
+/// - Show audio file name and duration
+/// - Allow user to pick cover image
+/// - Display upload progress button
+///
+/// Notes:
+/// - Interacts with UploadFormProvider to update artwork
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +38,8 @@ class AudioPickerWidget extends ConsumerWidget {
           children: [
             const SizedBox(height: 8),
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: Colors.white24,
                 borderRadius: BorderRadius.circular(2),
@@ -67,10 +79,10 @@ class AudioPickerWidget extends ConsumerWidget {
     if (source == null) return;
 
     final picked = await ImagePicker().pickImage(
-      source:       source,
+      source: source,
       imageQuality: 85,
-      maxWidth:     1000,
-      maxHeight:    1000,
+      maxWidth: 1000,
+      maxHeight: 1000,
     );
 
     if (picked != null) {
@@ -78,70 +90,64 @@ class AudioPickerWidget extends ConsumerWidget {
     }
   }
 
-@override
-Widget build(BuildContext context, WidgetRef ref) {
-  final state = ref.watch(uploadFormProvider);
-  final draft = state.draft;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(uploadFormProvider);
+    final draft = state.draft;
 
-  // ← fileName now reads from draft, not state
-  final fileName = draft?.audioFileName
-      ?? draft?.localAudioPath.split('/').last
-      ?? 'audio file';
+    // ← fileName now reads from draft, not state
+    final fileName =
+        draft?.audioFileName ??
+        draft?.localAudioPath.split('/').last ??
+        'audio file';
 
-  if (draft == null) return const SizedBox.shrink();
+    if (draft == null) return const SizedBox.shrink();
 
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      // ── Dashed camera frame ───────────────────────────────────────
-      GestureDetector(
-        onTap: () => _pickImage(context, ref),
-        child: _DashedFrame(
-          artworkPath: draft.localArtworkPath,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Dashed camera frame ───────────────────────────────────────
+        GestureDetector(
+          onTap: () => _pickImage(context, ref),
+          child: _DashedFrame(artworkPath: draft.localArtworkPath),
         ),
-      ),
 
-      // ── Audio name + progress button ──────────────────────────────
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              fileName,
-              style: const TextStyle(
-                color:      Colors.white,
-                fontSize:   14,
-                fontWeight: FontWeight.w500,
+        // ── Audio name + progress button ──────────────────────────────
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                fileName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatDuration(draft.duration),
-              style: const TextStyle(
-                color:    Colors.grey,
-                fontSize: 12,
+              const SizedBox(height: 4),
+              Text(
+                _formatDuration(draft.duration),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-            ),
-            const SizedBox(height: 10),
-            UploadButtonWidget(
-              buttonState: _getButtonState(draft.uploadProgress),
-              progress:    draft.uploadProgress,
-              onReplace:   () {
-              },
-            ),
-          ],
+              const SizedBox(height: 10),
+              UploadButtonWidget(
+                buttonState: _getButtonState(draft.uploadProgress),
+                progress: draft.uploadProgress,
+                onReplace: () {},
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
   UploadButtonState _getButtonState(double progress) {
     if (progress >= 1.0) return UploadButtonState.done;
-    if (progress > 0.0)  return UploadButtonState.uploading;
+    if (progress > 0.0) return UploadButtonState.uploading;
     return UploadButtonState.uploading;
   }
 }
@@ -165,10 +171,7 @@ class _DashedFrame extends StatelessWidget {
           width: 90,
           height: 90,
           child: hasArtwork
-              ? Image.file(
-                  File(artworkPath!),
-                  fit: BoxFit.cover,
-                )
+              ? Image.file(File(artworkPath!), fit: BoxFit.cover)
               : const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -191,30 +194,27 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color  = Colors.white38
+      ..color = Colors.white38
       ..strokeWidth = 1.5
-      ..style  = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke;
 
-    const dashWidth  = 6.0;
-    const dashSpace  = 4.0;
-    const radius     = 4.0;
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    const radius = 4.0;
 
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
       const Radius.circular(radius),
     );
 
-    final path      = Path()..addRRect(rect);
-    final metrics   = path.computeMetrics().first;
-    final total     = metrics.length;
+    final path = Path()..addRRect(rect);
+    final metrics = path.computeMetrics().first;
+    final total = metrics.length;
     double distance = 0;
 
     while (distance < total) {
       final end = (distance + dashWidth).clamp(0.0, total);
-      canvas.drawPath(
-        metrics.extractPath(distance, end),
-        paint,
-      );
+      canvas.drawPath(metrics.extractPath(distance, end), paint);
       distance += dashWidth + dashSpace;
     }
   }

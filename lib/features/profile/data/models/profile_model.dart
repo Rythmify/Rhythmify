@@ -21,10 +21,10 @@ class ProfileModel extends ProfileEntity {
     final id = json['id'] as String? ?? '';
     final displayName = json['display_name'] as String? ?? '';
     final username = json['username'] as String?;
-    final avatarUrl = json['profile_picture'] as String?
-        ?? json['avatar_url'] as String?;
-    final coverUrl = json['cover_photo'] as String?
-        ?? json['cover_url'] as String?;
+    final avatarUrl =
+        json['profile_picture'] as String? ?? json['avatar_url'] as String?;
+    final coverUrl =
+        json['cover_photo'] as String? ?? json['cover_url'] as String?;
     final city = json['city'] as String?;
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;

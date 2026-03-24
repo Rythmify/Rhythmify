@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-
   // ==========================================
   // ----------------- COLORS -----------------
   // ==========================================
 
-  static const Color primaryBrand = Color(0xFFFF5500); 
+  static const Color primaryBrand = Color(0xFFFF5500);
   static const Color background = Color(0xFF121212);
   static const Color surface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
@@ -22,9 +21,7 @@ class AppTheme {
   static const Color shareCircle = Color.fromARGB(255, 58, 58, 58);
   static const Color lighterSurface = Color.fromARGB(255, 46, 46, 46);
   static const Color iconBg = Color(0xFF121212);
-    static const Color babyBlue = Color(0xFF91C0FF);
-  
-  
+  static const Color babyBlue = Color(0xFF91C0FF);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
@@ -68,7 +65,7 @@ class AppTheme {
   // ==========================================
   // ---------- GENERAL TEXT STYLES -----------
   // ==========================================
-  
+
   // --- HEADLINES ---
   static TextStyle get displayLarge => GoogleFonts.inter(
     fontSize: 57,
@@ -139,18 +136,18 @@ class AppTheme {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       splashFactory: NoSplash.splashFactory,
-      
+
       colorScheme: const ColorScheme.dark(
         primary: primaryBrand,
         surface: surface,
       ),
-      
+
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         toolbarHeight: 56.0,
         elevation: 0,
-        titleTextStyle: appBarTitle, 
-        iconTheme: const IconThemeData(color:appBarItems), 
+        titleTextStyle: appBarTitle,
+        iconTheme: const IconThemeData(color: appBarItems),
       ),
     );
   }

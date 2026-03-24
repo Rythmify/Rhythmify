@@ -1,10 +1,21 @@
+/// Widget: UploadButtonWidget
+///
+/// Animated button displaying upload progress.
+///
+/// Responsibilities:
+/// - Show upload progress visually
+/// - Animate progress changes
+/// - Display completion state with replace option
+///
+/// Notes:
+/// - Uses AnimationController for smooth transitions
 import 'package:flutter/material.dart';
 
 enum UploadButtonState { uploading, processing, done }
 
 class UploadButtonWidget extends StatefulWidget {
   final UploadButtonState buttonState;
-  final double progress;      // 0.0 to 1.0
+  final double progress; // 0.0 to 1.0
   final VoidCallback? onReplace;
 
   const UploadButtonWidget({
@@ -20,7 +31,6 @@ class UploadButtonWidget extends StatefulWidget {
 
 class _UploadButtonWidgetState extends State<UploadButtonWidget>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
   double _previousProgress = 0.0;
@@ -35,10 +45,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
     _progressAnimation = Tween<double>(
       begin: 0.0,
       end: widget.progress,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -46,13 +53,10 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
   void didUpdateWidget(UploadButtonWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progress != widget.progress) {
-      _progressAnimation = Tween<double>(
-        begin: _previousProgress,
-        end: widget.progress,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
-      ));
+      _progressAnimation =
+          Tween<double>(begin: _previousProgress, end: widget.progress).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _previousProgress = widget.progress;
       _controller.forward(from: 0);
     }
@@ -91,10 +95,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
             const SizedBox(width: 8),
             // Replace button
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white38),
                 borderRadius: BorderRadius.circular(4),
@@ -119,8 +120,7 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
       animation: _progressAnimation,
       builder: (context, child) {
         final progress = _progressAnimation.value;
-        final isProcessing =
-            widget.buttonState == UploadButtonState.processing;
+        final isProcessing = widget.buttonState == UploadButtonState.processing;
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(4),

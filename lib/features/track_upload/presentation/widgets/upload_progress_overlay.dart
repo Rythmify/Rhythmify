@@ -1,3 +1,15 @@
+/// Widget: UploadProgressOverlay
+///
+/// Displays upload progress, success, or error feedback.
+///
+/// Responsibilities:
+/// - Show circular progress indicator during upload
+/// - Display success confirmation
+/// - Display error message on failure
+///
+/// Notes:
+/// - Blocks UI interaction while uploading
+/// - Dismissible after success or error
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
@@ -17,8 +29,8 @@ class UploadProgressOverlay extends ConsumerWidget {
     if (draft == null) return const SizedBox.shrink();
 
     final isUploading = draft.status == UploadStatus.uploading;
-    final isSuccess   = draft.status == UploadStatus.success;
-    final isError     = draft.status == UploadStatus.error;
+    final isSuccess = draft.status == UploadStatus.success;
+    final isError = draft.status == UploadStatus.error;
 
     if (!isUploading && !isSuccess && !isError) {
       return const SizedBox.shrink();
@@ -49,10 +61,7 @@ class UploadProgressOverlay extends ConsumerWidget {
                     style: AppTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Please keep the app open',
-                    style: AppTheme.bodyMedium,
-                  ),
+                  Text('Please keep the app open', style: AppTheme.bodyMedium),
                 ],
 
                 if (isSuccess) ...[
@@ -67,11 +76,12 @@ class UploadProgressOverlay extends ConsumerWidget {
                     style: AppTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text('Your track is being processed',
-                      style: AppTheme.bodyMedium),
+                  Text(
+                    'Your track is being processed',
+                    style: AppTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 20),
-                  Text('Tap to continue',
-                      style: AppTheme.labelSmall),
+                  Text('Tap to continue', style: AppTheme.labelSmall),
                 ],
 
                 if (isError) ...[
@@ -92,8 +102,7 @@ class UploadProgressOverlay extends ConsumerWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  Text('Tap to try again',
-                      style: AppTheme.labelSmall),
+                  Text('Tap to try again', style: AppTheme.labelSmall),
                 ],
               ],
             ),
@@ -111,17 +120,15 @@ class UploadProgressOverlay extends ConsumerWidget {
         fit: StackFit.expand,
         children: [
           CircularProgressIndicator(
-            value:           progress,
-            strokeWidth:     4,
+            value: progress,
+            strokeWidth: 4,
             backgroundColor: Colors.white12,
-            color:           AppTheme.primaryBrand,
+            color: AppTheme.primaryBrand,
           ),
           Center(
             child: Text(
               '${(progress * 100).toInt()}%',
-              style: AppTheme.labelLarge.copyWith(
-                color: AppTheme.primaryBrand,
-              ),
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
             ),
           ),
         ],
@@ -129,16 +136,13 @@ class UploadProgressOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusIcon({
-    required IconData icon,
-    required Color color,
-  }) {
+  Widget _buildStatusIcon({required IconData icon, required Color color}) {
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color:  color.withValues(alpha: 0.15),
-        shape:  BoxShape.circle,
+        color: color.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
         border: Border.all(color: color, width: 2),
       ),
       child: Icon(icon, color: color, size: 32),

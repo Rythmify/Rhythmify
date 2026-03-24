@@ -3,12 +3,9 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 class GetUnreadCountUsecase {
   final MessagingRepository repo;
 
-  GetUnreadCountUsecase({
-    required this.repo
-  });
+  GetUnreadCountUsecase({required this.repo});
 
-  Future<int> call()
-  {
+  Future<int> call() {
     return repo.getUnReadCount();
   }
 }

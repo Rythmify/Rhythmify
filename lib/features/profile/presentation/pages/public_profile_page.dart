@@ -19,8 +19,7 @@ class PublicProfilePage extends ConsumerStatefulWidget {
   const PublicProfilePage({super.key, required this.userId});
 
   @override
-  ConsumerState<PublicProfilePage> createState() =>
-      _PublicProfilePageState();
+  ConsumerState<PublicProfilePage> createState() => _PublicProfilePageState();
 }
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
@@ -32,26 +31,29 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     super.initState();
 
     final authState = ref.read(authProvider);
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
 
-    _resolvedUserId =
-        widget.userId == currentUserId || widget.userId == 'me'
-            ? 'me'
-            : widget.userId;
+    _resolvedUserId = widget.userId == currentUserId || widget.userId == 'me'
+        ? 'me'
+        : widget.userId;
 
     // Always explicitly trigger load
-    Future.microtask(() =>
-        ref.read(profileProvider.notifier).loadProfile(userId: _resolvedUserId));
+    Future.microtask(
+      () => ref
+          .read(profileProvider.notifier)
+          .loadProfile(userId: _resolvedUserId),
+    );
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         final s = ref.read(profileProvider);
         if (s is ProfileLoaded) {
-          ref.read(profileProvider.notifier).loadLikedTracks(
-                userId: _resolvedUserId,
-              );
+          ref
+              .read(profileProvider.notifier)
+              .loadLikedTracks(userId: _resolvedUserId);
         }
       }
     });
@@ -75,8 +77,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final authState = ref.watch(authProvider);
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
@@ -108,29 +111,25 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       body: switch (profileState) {
         ProfileInitial() => const SizedBox.shrink(),
         ProfileLoading() => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-          ),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
         ProfileError(:final message) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(message, style: AppTheme.bodyMedium),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  key: const Key('public_profile_retry_button'),
-                  onPressed: () => ref
-                      .read(profileProvider.notifier)
-                      .loadProfile(userId: _resolvedUserId),
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(message, style: AppTheme.bodyMedium),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                key: const Key('public_profile_retry_button'),
+                onPressed: () => ref
+                    .read(profileProvider.notifier)
+                    .loadProfile(userId: _resolvedUserId),
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-        ProfileLoaded() => _buildLoaded(
-            context,
-            profileState,
-            isOwnProfile,
-          ),
+        ),
+        ProfileLoaded() => _buildLoaded(context, profileState, isOwnProfile),
         _ => const SizedBox.shrink(),
       },
     );
@@ -151,28 +150,22 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Avatar ──────────────────────────────────────────
-                ProfileAvatar(
-                  avatarUrl: state.profile.avatarUrl,
-                  radius: 60,
-                ),
+                ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
 
                 const SizedBox(height: 12),
 
                 // ── Display name ─────────────────────────────────────
-                Text(
-                  state.profile.displayName,
-                  style: AppTheme.headlineLarge,
-                ),
+                Text(state.profile.displayName, style: AppTheme.headlineLarge),
 
                 const SizedBox(height: 4),
 
                 // ── Location ─────────────────────────────────────────
-                if (state.profile.city != null ||
-                    state.profile.country != null)
+                if (state.profile.city != null || state.profile.country != null)
                   Text(
-                    [state.profile.city, state.profile.country]
-                        .where((e) => e != null && e.isNotEmpty)
-                        .join(', '),
+                    [
+                      state.profile.city,
+                      state.profile.country,
+                    ].where((e) => e != null && e.isNotEmpty).join(', '),
                     style: AppTheme.bodyMedium,
                   ),
 
@@ -220,15 +213,14 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: AppTheme.textSecondary
-                                  .withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            state.profile.isFollowing
-                                ? 'Following'
-                                : 'Follow',
+                            state.profile.isFollowing ? 'Following' : 'Follow',
                             style: AppTheme.labelLarge,
                           ),
                         ),
@@ -294,41 +286,36 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           )
         else
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // ── Loading spinner at the bottom ──────────────────
-                if (index == state.likedTracks.length) {
-                  return state.isLoadingTracks
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryBrand,
-                              strokeWidth: 2,
-                            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              // ── Loading spinner at the bottom ──────────────────
+              if (index == state.likedTracks.length) {
+                return state.isLoadingTracks
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
                           ),
-                        )
-                      : const SizedBox.shrink();
-                }
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              }
 
-                final track = state.likedTracks[index];
+              final track = state.likedTracks[index];
 
-                return TrackListTile(
-                  key: Key('item_${track.id}'),
-                  track: track,
-                  // ── Tap → play this track immediately ─────────────
-                  onTap: () {
-                    ref
-                        .read(playerStateProvider.notifier)
-                        .playOptimistic(track);
-                  },
-                  onMoreTap: () {
-                    // TODO: open track options bottom sheet
-                  },
-                );
-              },
-              childCount: state.likedTracks.length + 1,
-            ),
+              return TrackListTile(
+                key: Key('item_${track.id}'),
+                track: track,
+                // ── Tap → play this track immediately ─────────────
+                onTap: () {
+                  ref.read(playerStateProvider.notifier).playOptimistic(track);
+                },
+                onMoreTap: () {
+                  // TODO: open track options bottom sheet
+                },
+              );
+            }, childCount: state.likedTracks.length + 1),
           ),
       ],
     );

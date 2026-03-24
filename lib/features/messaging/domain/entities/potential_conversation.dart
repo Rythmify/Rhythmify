@@ -10,6 +10,6 @@ class PotentialConversation {
     required this.participantName,
     this.followersCount,
     this.location,
-    this.avatar
+    this.avatar,
   });
 }

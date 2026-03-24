@@ -244,7 +244,7 @@ class _ErrorMixedPlaylistsDatasource extends _FakeHomeDatasource {
     required super.hotTracks,
     required super.stationPlaylists,
     required super.moreOfWhatYouLike,
-  }) : super(mixedPlaylists: [],);
+  }) : super(mixedPlaylists: []);
 
   @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async {

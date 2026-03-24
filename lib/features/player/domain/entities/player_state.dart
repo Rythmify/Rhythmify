@@ -10,7 +10,9 @@ class AppPlayerState extends Equatable {
   final Duration bufferedPosition;
   final Duration duration;
   final bool isShuffleModeEnabled;
-  final String loopMode;    /// 'off', 'all', 'one'
+  final String loopMode;
+
+  /// 'off', 'all', 'one'
 
   const AppPlayerState({
     this.status = PlayerStatus.initial,
@@ -42,11 +44,10 @@ class AppPlayerState extends Equatable {
     );
   }
 
-/// If the variables inside this list match,
-/// consider the whole object identical
+  /// If the variables inside this list match,
+  /// consider the whole object identical
   @override
-  List<Object?> get props =>
-  [
+  List<Object?> get props => [
     status,
     currentTrack,
     position,

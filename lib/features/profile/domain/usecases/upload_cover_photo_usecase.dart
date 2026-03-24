@@ -8,9 +8,7 @@ class UploadCoverPhotoUseCase {
 
   UploadCoverPhotoUseCase(this.repository);
 
-  Future<Either<Failure, ProfileEntity>> call({
-    required String filePath,
-  }) {
+  Future<Either<Failure, ProfileEntity>> call({required String filePath}) {
     return repository.uploadCoverPhoto(filePath: filePath);
   }
 }

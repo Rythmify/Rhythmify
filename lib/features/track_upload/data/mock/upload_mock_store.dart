@@ -1,3 +1,14 @@
+/// Mock Store: UploadMockStore
+///
+/// Temporary in-memory storage used for testing track uploads.
+///
+/// Responsibilities:
+/// - Store mock track submissions locally
+/// - Allow testing without backend integration
+///
+/// Notes:
+/// - Used only for debugging and development
+/// - Should not be used in production
 class MockTrackSubmission {
   final String title;
   final String artist;

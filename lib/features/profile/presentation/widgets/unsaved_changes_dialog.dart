@@ -8,9 +8,7 @@ class UnsavedChangesDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppTheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
         child: Column(
@@ -57,9 +55,7 @@ class UnsavedChangesDialog extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
                   'CONTINUE EDITING',
-                  style: AppTheme.labelLarge.copyWith(
-                    letterSpacing: 1.2,
-                  ),
+                  style: AppTheme.labelLarge.copyWith(letterSpacing: 1.2),
                 ),
               ),
             ),

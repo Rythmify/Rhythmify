@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../../core/theme/app_theme.dart'; 
+import '../../../../core/theme/app_theme.dart';
 
 class TrackInfoBox extends StatelessWidget {
   final Track summary;
@@ -35,7 +35,10 @@ class TrackInfoBox extends StatelessWidget {
                   ),
                   TextSpan(
                     text: summary.artist,
-                    style: AppTheme.titleMedium.copyWith(fontSize: 16, color: AppTheme.semiWhite),
+                    style: AppTheme.titleMedium.copyWith(
+                      fontSize: 16,
+                      color: AppTheme.semiWhite,
+                    ),
                   ),
                 ],
               ),
@@ -55,11 +58,15 @@ class TrackInfoBox extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.music_note , color: AppTheme.semiWhite, size: 16),
+                Icon(Icons.music_note, color: AppTheme.semiWhite, size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Behind this track',
-                  style: TextStyle(color: AppTheme.semiWhite, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppTheme.semiWhite,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

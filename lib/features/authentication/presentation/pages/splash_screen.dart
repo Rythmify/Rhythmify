@@ -22,7 +22,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (mounted) {
         final authState = ref.read(authProvider);
         if (authState is AuthLoading) {
-          
           context.go('/onboarding');
         }
       }
@@ -32,7 +31,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      
       if (next is AuthAuthenticated) {
         context.go('/home');
       } else if (next is AuthUnauthenticated) {
@@ -41,7 +39,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
 
     final authState = ref.watch(authProvider);
-    
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -49,11 +46,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.cloud,
-              color: AppTheme.primaryBrand,
-              size: 80,
-            ),
+            const Icon(Icons.cloud, color: AppTheme.primaryBrand, size: 80),
             const SizedBox(height: 24),
             Text(
               'Rythmify',

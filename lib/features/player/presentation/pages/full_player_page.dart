@@ -21,7 +21,9 @@ class FullPlayerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summary = ref.watch(playerStateProvider.select((state) => state.currentTrack));
+    final summary = ref.watch(
+      playerStateProvider.select((state) => state.currentTrack),
+    );
 
     if (summary == null) {
       return const Scaffold(
@@ -54,9 +56,7 @@ class FullPlayerPage extends ConsumerWidget {
             // ==========================================
             // LAYER 2: Playback Controls Overlay
             // ==========================================
-            const Positioned.fill(
-              child: PlaybackOverlayControls(),
-            ),
+            const Positioned.fill(child: PlaybackOverlayControls()),
 
             // ==========================================
             // LAYER 3: Top Left Track Info
@@ -66,7 +66,8 @@ class FullPlayerPage extends ConsumerWidget {
               left: 16,
               child: TrackInfoBox(
                 summary: summary,
-                onNavigateBehindTrack: () => _triggerNavigation(context, summary.id),
+                onNavigateBehindTrack: () =>
+                    _triggerNavigation(context, summary.id),
               ),
             ),
 
@@ -82,15 +83,19 @@ class FullPlayerPage extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                        shape: BoxShape.circle, 
-                        color: Colors.white,
-                      ),
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
                     child: IconButton(
                       key: const Key('player_full_page_collapse_iconbutton'),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 20),
-                      
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+
                       onPressed: onCollapse ?? () => Navigator.pop(context),
                     ),
                   ),
@@ -98,12 +103,19 @@ class FullPlayerPage extends ConsumerWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
                     child: IconButton(
                       key: const Key('player_full_page_add_person_iconbutton'),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.person_add_alt_1, color: Colors.black, size: 20),
+                      icon: const Icon(
+                        Icons.person_add_alt_1,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                       onPressed: () {
                         // Handle user add
                       },
