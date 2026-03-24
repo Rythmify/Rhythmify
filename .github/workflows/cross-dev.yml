@@ -1,0 +1,134 @@
+name: Cross-Platform — Dev Pipeline
+
+on:
+  pull_request:
+    branches:
+      - Development
+
+jobs:
+  # ────────────────────────────────────────────────
+  # JOB 1 — Validate repo structure
+  # Checks critical files exist before anything runs
+  # ────────────────────────────────────────────────
+  validate-structure:
+    name: Validate Repo Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout cross-platform repo
+        uses: actions/checkout@v4
+
+      - name: Check pubspec files exist
+        run: |
+          test -f pubspec.yaml || { echo "MISSING: pubspec.yaml"; exit 1; }
+          test -f pubspec.lock || { echo "MISSING: pubspec.lock"; exit 1; }
+          echo "pubspec files present."
+
+      - name: Check analysis options exist
+        run: |
+          test -f analysis_options.yaml || { echo "MISSING: analysis_options.yaml"; exit 1; }
+          echo "analysis_options.yaml present."
+
+      - name: Check main entry point exists
+        run: |
+          test -f lib/main.dart || { echo "MISSING: lib/main.dart"; exit 1; }
+          echo "lib/main.dart present."
+
+      - name: Check core structure exists
+        run: |
+          test -d lib/core         || { echo "MISSING: lib/core/"; exit 1; }
+          test -d lib/features     || { echo "MISSING: lib/features/"; exit 1; }
+          test -f lib/core/network/api_client.dart || { echo "MISSING: lib/core/network/api_client.dart"; exit 1; }
+          test -f lib/core/routing/app_router.dart || { echo "MISSING: lib/core/routing/app_router.dart"; exit 1; }
+          echo "Core structure present."
+
+      - name: Check no hardcoded base URLs in API client
+        run: |
+          echo "Scanning api_client.dart for hardcoded URLs..."
+          if grep -qE "http://[0-9]|https://[a-zA-Z0-9]" lib/core/network/api_client.dart; then
+            echo "WARNING: Possible hardcoded URL found in api_client.dart"
+            grep -nE "http://[0-9]|https://[a-zA-Z0-9]" lib/core/network/api_client.dart || true
+          else
+            echo "No hardcoded URLs detected in api_client.dart."
+          fi
+
+  # ────────────────────────────────────────────────
+  # JOB 2 — Flutter analysis and format check
+  # Runs after structure validation passes
+  # ────────────────────────────────────────────────
+  analyze:
+    name: Format Check & Static Analysis
+    runs-on: ubuntu-latest
+    needs: validate-structure
+
+    steps:
+      - name: Checkout cross-platform repo
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify dependency resolution
+        run: |
+          flutter pub deps > /dev/null && echo "Dependencies resolved cleanly." || \
+            { echo "Dependency resolution failed."; exit 1; }
+
+      - name: Run Dart format check
+        run: |
+          dart format --output=none --set-exit-if-changed lib/ test/ || \
+            { echo "Format check failed — run 'dart format lib/ test/' locally to fix."; exit 1; }
+
+      - name: Run Flutter analyze
+        run: flutter analyze --no-fatal-infos
+
+  # ────────────────────────────────────────────────
+  # JOB 3 — Android debug build
+  # Confirms the app compiles for Android
+  # ────────────────────────────────────────────────
+  build-android:
+    name: Android Debug Build
+    runs-on: ubuntu-latest
+    needs: analyze
+
+    steps:
+      - name: Checkout cross-platform repo
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          channel: stable
+          cache: true
+
+      - name: Set up Java (required for Android build)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android debug APK
+        run: flutter build apk --debug --no-pub
+
+      - name: Confirm APK was produced
+        run: |
+          test -f build/app/outputs/flutter-apk/app-debug.apk || \
+            { echo "APK not found — build may have silently failed."; exit 1; }
+          echo "Android debug APK produced successfully."
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
