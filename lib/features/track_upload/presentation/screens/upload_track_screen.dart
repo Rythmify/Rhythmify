@@ -1,3 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
+import 'package:rythmify/features/track_upload/presentation/widgets/audio_picker_widget.dart';
+import 'package:rythmify/features/track_upload/presentation/widgets/upload_progress_overlay.dart';
+import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart';
+
 /// Screen: UploadTrackScreen
 ///
 /// Main UI for uploading tracks.
@@ -11,14 +20,6 @@
 /// Notes:
 /// - Uses TabBar for multi-step form
 /// - Uses Riverpod for state management
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:rythmify/core/theme/app_theme.dart';
-import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
-import 'package:rythmify/features/track_upload/presentation/widgets/audio_picker_widget.dart';
-import 'package:rythmify/features/track_upload/presentation/widgets/upload_progress_overlay.dart';
-import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart';
 
 class UploadTrackScreen extends ConsumerStatefulWidget {
   const UploadTrackScreen({super.key});

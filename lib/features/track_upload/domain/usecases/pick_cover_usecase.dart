@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../core/errors/failures.dart';
+
 /// UseCase: PickCoverUseCase
 ///
 /// Handles selecting a cover image from camera or gallery.
@@ -14,10 +19,6 @@
 /// Notes:
 /// - Uses image_picker package
 /// - Optimizes image size for upload performance
-import 'dart:io';
-import 'package:dartz/dartz.dart';
-import 'package:image_picker/image_picker.dart';
-import '../../../../core/errors/failures.dart';
 
 class PickCoverUseCase {
   final ImagePicker _picker = ImagePicker();

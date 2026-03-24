@@ -1,5 +1,6 @@
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 
+/// A list of mock [Conversation] objects for use in previews, tests, and development.
 final List<Conversation> mockConversations = [
   Conversation(
     conversationId: 'c1',

@@ -1,3 +1,9 @@
+import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
+import '../../../../core/errors/failures.dart';
+
 /// UseCase: PickAudioUseCase
 ///
 /// Handles selecting an audio file from the user's device.
@@ -14,11 +20,6 @@
 /// Notes:
 /// - Uses FilePicker for file selection
 /// - Uses just_audio to detect duration
-import 'dart:io';
-import 'package:dartz/dartz.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:just_audio/just_audio.dart';
-import '../../../../core/errors/failures.dart';
 
 /// Result returned when user successfully picks an audio file
 class PickedAudio {
@@ -74,14 +75,6 @@ class PickAudioUseCase {
         // UseCase will catch duration = zero during upload validation
       }
 
-      return Right(
-        PickedAudio(
-          file: file,
-          fileName: picked.name,
-          localPath: picked.path!,
-          duration: duration,
-        ),
-      );
       return Right(
         PickedAudio(
           file: file,

@@ -1,3 +1,9 @@
+import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:rythmify/core/error/failures.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
+
 /// UseCase: UploadTrackUseCase
 ///
 /// Handles the full track upload process.
@@ -19,14 +25,6 @@
 /// Notes:
 /// - Contains business validation rules
 /// - Acts as the main entry point for uploading
-import 'dart:io';
-import 'package:dartz/dartz.dart';
-import 'package:rythmify/core/error/failures.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
-import 'package:rythmify/core/error/failures.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
 
 class UploadTrackUseCase {
   final UploadTrackRepository repository;

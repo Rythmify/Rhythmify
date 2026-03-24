@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:rythmify/core/error/failures.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+
 /// Domain Repository Interface: UploadTrackRepository
 ///
 /// Defines the contract for track upload operations.
@@ -7,15 +12,9 @@
 /// - Upload audio track with metadata
 ///
 /// Notes:
-/// - Returns Either<Failure, Result> for error handling
+/// - Returns Either `<Failure, Result>` for error handling
 /// - Implementation is provided in the Data layer
 /// - Domain layer does NOT know how data is fetched/uploaded
-import 'dart:io';
-import 'package:dartz/dartz.dart';
-import 'package:rythmify/core/error/failures.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/core/error/failures.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 
 abstract class UploadTrackRepository {
   /// Fetches available tags from GET /tags

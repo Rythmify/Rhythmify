@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
+
 /// Widget: UploadProgressOverlay
 ///
 /// Displays upload progress, success, or error feedback.
@@ -10,11 +16,6 @@
 /// Notes:
 /// - Blocks UI interaction while uploading
 /// - Dismissible after success or error
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/core/theme/app_theme.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 
 class UploadProgressOverlay extends ConsumerWidget {
   final VoidCallback onDismiss;
