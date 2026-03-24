@@ -8,9 +8,7 @@ class UploadAvatarUseCase {
 
   UploadAvatarUseCase(this.repository);
 
-  Future<Either<Failure, ProfileEntity>> call({
-    required String filePath,
-  }) {
+  Future<Either<Failure, ProfileEntity>> call({required String filePath}) {
     return repository.uploadAvatar(filePath: filePath);
   }
 }

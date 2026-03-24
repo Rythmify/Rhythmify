@@ -1,4 +1,3 @@
-
 // Manages all state for the upload track screen.
 // For now: form state only.
 // Upload logic wired in later when backend is confirmed.
@@ -9,26 +8,21 @@ import 'package:rythmify/features/track_upload/data/repositories/upload_track_re
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
 
-
-
-
-
-
 // ── Upload form state ──────────────────────────────────────────────────────
 
 class UploadFormState {
-  final TrackDraft? draft;          // null until audio is picked
+  final TrackDraft? draft; // null until audio is picked
   final List<String> availableTags; // fetched from backend
-  final bool isLoading;             // true while uploading
-  final String? errorMessage;       // set when something goes wrong
-  final int currentTab;             // 0=TrackInfo, 1=Advanced, 2=Permissions
+  final bool isLoading; // true while uploading
+  final String? errorMessage; // set when something goes wrong
+  final int currentTab; // 0=TrackInfo, 1=Advanced, 2=Permissions
 
   const UploadFormState({
     this.draft,
     this.availableTags = const [],
-    this.isLoading     = false,
+    this.isLoading = false,
     this.errorMessage,
-    this.currentTab    = 0,
+    this.currentTab = 0,
   });
 
   // Has the user filled in everything required to upload?
@@ -48,11 +42,11 @@ class UploadFormState {
     bool clearError = false,
   }) {
     return UploadFormState(
-      draft:         draft         ?? this.draft,
+      draft: draft ?? this.draft,
       availableTags: availableTags ?? this.availableTags,
-      isLoading:     isLoading     ?? this.isLoading,
-      errorMessage:  clearError ? null : errorMessage ?? this.errorMessage,
-      currentTab:    currentTab    ?? this.currentTab,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      currentTab: currentTab ?? this.currentTab,
     );
   }
 }
@@ -65,11 +59,11 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
   // Called when user picks audio file
   void initDraft({
-  required String artistId,
-  required String localAudioPath,
-  required Duration duration,
-  required String fileName,
-}) {
+    required String artistId,
+    required String localAudioPath,
+    required Duration duration,
+    required String fileName,
+  }) {
     // Remove file extension for title pre-fill
     // "summer_vibes.mp3" → "summer_vibes"
     final nameWithoutExtension = fileName.contains('.')
@@ -78,53 +72,43 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
     state = state.copyWith(
       draft: TrackDraft(
-        artistId:       artistId,
+        artistId: artistId,
         localAudioPath: localAudioPath,
-        duration:       duration,
-        audioFileName: fileName,                // store original filename
-        title:          nameWithoutExtension,  // pre-filled
-        artist:         'Your Name',           // replace with real username when auth ready
+        duration: duration,
+        audioFileName: fileName, // store original filename
+        title: nameWithoutExtension, // pre-filled
+        artist: 'Your Name', // replace with real username when auth ready
       ),
-                      
     );
-   }
+  }
 
   // Form field updates
-  void setTitle(String value) => _updateDraft(
-    state.draft!.copyWith(title: value),
-  );
+  void setTitle(String value) =>
+      _updateDraft(state.draft!.copyWith(title: value));
 
-  void setArtist(String value) => _updateDraft(
-    state.draft!.copyWith(artist: value),
-  );
+  void setArtist(String value) =>
+      _updateDraft(state.draft!.copyWith(artist: value));
 
-  void setGenre(String value) => _updateDraft(
-    state.draft!.copyWith(genre: value),
-  );
+  void setGenre(String value) =>
+      _updateDraft(state.draft!.copyWith(genre: value));
 
-  void setDescription(String value) => _updateDraft(
-    state.draft!.copyWith(description: value),
-  );
+  void setDescription(String value) =>
+      _updateDraft(state.draft!.copyWith(description: value));
 
-  void setCaption(String value) => _updateDraft(
-    state.draft!.copyWith(caption: value),
-  );
+  void setCaption(String value) =>
+      _updateDraft(state.draft!.copyWith(caption: value));
 
-  void setIsPublic(bool value) => _updateDraft(
-    state.draft!.copyWith(isPublic: value),
-  );
+  void setIsPublic(bool value) =>
+      _updateDraft(state.draft!.copyWith(isPublic: value));
 
-  void setArtwork(String localPath) => _updateDraft(
-    state.draft!.copyWith(localArtworkPath: localPath),
-  );
+  void setArtwork(String localPath) =>
+      _updateDraft(state.draft!.copyWith(localArtworkPath: localPath));
 
-  void removeArtwork() => _updateDraft(
-    state.draft!.copyWith(clearArtwork: true),
-  );
-  
+  void removeArtwork() =>
+      _updateDraft(state.draft!.copyWith(clearArtwork: true));
 
   //should be added here
-   //added recently 
+  //added recently
   void setUploadProgress(double progress) {
   if (state.draft == null) return;
   _updateDraft(
@@ -212,8 +196,6 @@ Future<void> startUpload({
   void _updateDraft(TrackDraft updated) {
     state = state.copyWith(draft: updated);
   }
-
-
 }
 
 // ── Provider ───────────────────────────────────────────────────────────────

@@ -4,7 +4,6 @@ import '../../domain/repositories/track_repository.dart';
 import '../datasources/track_local_data_source.dart';
 
 class MockTrackRepositoryImpl implements TrackRepository {
-  
   final TrackLocalDataSource localDataSource;
 
   MockTrackRepositoryImpl(this.localDataSource);
@@ -28,18 +27,22 @@ class MockTrackRepositoryImpl implements TrackRepository {
               "title": "Summer Vibes",
               "description": "A chill electronic track",
               "genre": "Electronic",
-              "tags": ["aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee", "bbb22222-cccc-dddd-eeee-ffffffffffff"],
+              "tags": [
+                "aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "bbb22222-cccc-dddd-eeee-ffffffffffff",
+              ],
               "duration": 210,
               "audio_url": "assets/audio/Track_audio_1.mp3", // mock asset
-              "stream_url": "https://cdn.rythmify.com/tracks/e5f6a7b8/stream.mp3",
+              "stream_url":
+                  "https://cdn.rythmify.com/tracks/e5f6a7b8/stream.mp3",
               "artists": "Ahmed Sami, DJ Karim",
-            }
+            },
           };
         }
         throw Exception('Track with ID $id not found in mock data');
       },
     );
-    
+
     return TrackDto.fromJson(trackJson);
   }
 
@@ -61,8 +64,7 @@ class MockTrackRepositoryImpl implements TrackRepository {
     final response = await localDataSource.getTags();
     final List<dynamic> items = response['data']['items'];
     return {
-      for (var item in items)
-        item['id'] as String: item['name'] as String
+      for (var item in items) item['id'] as String: item['name'] as String,
     };
   }
 
@@ -84,5 +86,4 @@ class MockTrackRepositoryImpl implements TrackRepository {
   Future<void> recordPlay(String id) async {
     await Future.delayed(const Duration(milliseconds: 200));
   }
-
 }

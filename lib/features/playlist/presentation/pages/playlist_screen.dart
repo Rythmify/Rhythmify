@@ -7,11 +7,7 @@ class PlaylistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Playlist'),
-        centerTitle: false,
-
-      ),
+      appBar: AppBar(title: const Text('Playlist'), centerTitle: false),
       body: const Center(
         child: Text(
           'This is a dummy page',

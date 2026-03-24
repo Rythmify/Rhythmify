@@ -32,8 +32,7 @@ class TrackRepositoryImpl implements TrackRepository {
     final response = await remoteDataSource.getTags();
     final List<dynamic> items = response['data']['items'];
     return {
-      for (var item in items)
-        item['id'] as String: item['name'] as String
+      for (var item in items) item['id'] as String: item['name'] as String,
     };
   }
 

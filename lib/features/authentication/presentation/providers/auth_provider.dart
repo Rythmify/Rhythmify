@@ -51,26 +51,20 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> checkAuthStatus() async {
-    
-
     if (useMockData) {
-      
       state = const AuthUnauthenticated();
       return;
     }
 
     try {
       final token = await apiClient.getToken();
-      
 
       if (token == null) {
-        
         state = const AuthUnauthenticated();
         return;
       }
 
       final response = await apiClient.dio.get('/users/me');
-      
 
       final data = response.data['data'];
       final user = UserModel.fromJson({
@@ -80,11 +74,11 @@ class AuthNotifier extends Notifier<AuthState> {
         'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
-      
+
       state = AuthAuthenticated(user);
     } catch (e) {
       // ── Handles BadPaddingException and any other errors ──
-      
+
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }
@@ -96,16 +90,13 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthLoading();
     final result = await _signInWithEmail(email: email, password: password);
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) {
-        // ── Tell profile mock which user just logged in ──
-        if (useMockData) {
-          ProfileMockDatasource.setCurrentUser(user.id);
-        }
-        state = AuthAuthenticated(user);
-      },
-    );
+    result.fold((failure) => state = AuthError(failure.message), (user) {
+      // ── Tell profile mock which user just logged in ──
+      if (useMockData) {
+        ProfileMockDatasource.setCurrentUser(user.id);
+      }
+      state = AuthAuthenticated(user);
+    });
   }
 
   Future<void> signUpWithEmailAndPassword({
@@ -123,64 +114,49 @@ class AuthNotifier extends Notifier<AuthState> {
       gender: gender,
       dateOfBirth: dateOfBirth,
     );
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) {
-        // ── Tell profile mock which user just registered ──
-        if (useMockData) {
-          ProfileMockDatasource.setCurrentUser(user.id);
-        }
-        state = AuthAuthenticated(user);
-      },
-    );
+    result.fold((failure) => state = AuthError(failure.message), (user) {
+      // ── Tell profile mock which user just registered ──
+      if (useMockData) {
+        ProfileMockDatasource.setCurrentUser(user.id);
+      }
+      state = AuthAuthenticated(user);
+    });
   }
 
   Future<void> signInWithGoogleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) {
-        if (useMockData) {
-          ProfileMockDatasource.setCurrentUser(user.id);
-        }
-        state = AuthAuthenticated(user);
-      },
-    );
+    result.fold((failure) => state = AuthError(failure.message), (user) {
+      if (useMockData) {
+        ProfileMockDatasource.setCurrentUser(user.id);
+      }
+      state = AuthAuthenticated(user);
+    });
   }
 
   Future<void> signInWithAppleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithApple();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) {
-        if (useMockData) {
-          ProfileMockDatasource.setCurrentUser(user.id);
-        }
-        state = AuthAuthenticated(user);
-      },
-    );
+    result.fold((failure) => state = AuthError(failure.message), (user) {
+      if (useMockData) {
+        ProfileMockDatasource.setCurrentUser(user.id);
+      }
+      state = AuthAuthenticated(user);
+    });
   }
 
   Future<void> signOutUser() async {
     state = const AuthLoading();
     final result = await _signOut();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (_) async {
-        await apiClient.clearToken();
-        state = const AuthUnauthenticated();
-      },
-    );
+    result.fold((failure) => state = AuthError(failure.message), (_) async {
+      await apiClient.clearToken();
+      state = const AuthUnauthenticated();
+    });
   }
 
   Future<void> sendEmailVerification() async {
     final result = await _sendVerificationEmail();
-    result.fold(
-      (failure) => state = AuthError(failure.message),
-      (_) {},
-    );
+    result.fold((failure) => state = AuthError(failure.message), (_) {});
   }
 
   Future<void> resetPassword({required String email}) async {

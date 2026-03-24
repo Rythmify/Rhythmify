@@ -6,17 +6,17 @@ import '../../domain/repositories/audio_repository.dart';
 import '../datasources/audio_handler.dart';
 
 class AudioRepositoryImpl implements AudioRepository {
-
   final RythmifyAudioHandler _audioHandler;
   final _playerStateController = StreamController<AppPlayerState>.broadcast();
   final _queueController = StreamController<List<Track>>.broadcast();
 
   AppPlayerState _currentState = const AppPlayerState();
 
-  AudioRepositoryImpl(this._audioHandler) { _initStreams(); }
+  AudioRepositoryImpl(this._audioHandler) {
+    _initStreams();
+  }
 
-  void _initStreams()
-  {
+  void _initStreams() {
     /// THIS: Listen to Playback Events
     _audioHandler.playbackEventStream.listen((event) {
       _updatePlayerStatusAndPosition(
@@ -35,9 +35,11 @@ class AudioRepositoryImpl implements AudioRepository {
     /// THIS: Listen to track changes
     _audioHandler.currentIndexStream.listen((index) {
       if (index != null && index < _audioHandler.currentQueue.length) {
-        _updateState(_currentState.copyWith(
-          currentTrack: _audioHandler.currentQueue[index],
-        ));
+        _updateState(
+          _currentState.copyWith(
+            currentTrack: _audioHandler.currentQueue[index],
+          ),
+        );
       }
     });
 
@@ -68,12 +70,14 @@ class AudioRepositoryImpl implements AudioRepository {
       processingState ?? _audioHandler.processingState,
       playing ?? _audioHandler.playing,
     );
-    
-    _updateState(_currentState.copyWith(
-      status: status,
-      bufferedPosition: bufferedPosition ?? _currentState.bufferedPosition,
-      duration: duration ?? _currentState.duration,
-    ));
+
+    _updateState(
+      _currentState.copyWith(
+        status: status,
+        bufferedPosition: bufferedPosition ?? _currentState.bufferedPosition,
+        duration: duration ?? _currentState.duration,
+      ),
+    );
   }
 
   // Translates just_audio --> into Enums
@@ -109,8 +113,7 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> init() async {}
 
   @override
-  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async
-  {
+  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _updateState(_currentState.copyWith(status: PlayerStatus.loading));
     await _audioHandler.loadQueue(tracks, initialIndex: initialIndex);
     _queueController.add(tracks);
@@ -144,12 +147,12 @@ class AudioRepositoryImpl implements AudioRepository {
   @override
   Future<void> updateTrackInfo(String id, Track updatedTrack) async {
     await _audioHandler.updateTrackInfo(id, updatedTrack);
-    
+
     // If the updated track is the current one, push a new state
     if (_currentState.currentTrack?.id == id) {
       _updateState(_currentState.copyWith(currentTrack: updatedTrack));
     }
-    
+
     // Also update the queue stream
     _queueController.add(_audioHandler.currentQueue);
   }

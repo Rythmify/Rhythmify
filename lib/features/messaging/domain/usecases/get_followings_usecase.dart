@@ -4,12 +4,9 @@ import 'package:rythmify/features/messaging/domain/repositories/messaging_reposi
 class GetFollowingsUsecase {
   final MessagingRepository repo;
 
-  GetFollowingsUsecase({
-    required this.repo
-  });
+  GetFollowingsUsecase({required this.repo});
 
-  Future<List<PotentialConversation>> call(String myId)
-  {
+  Future<List<PotentialConversation>> call(String myId) {
     return repo.getFollowings(myId);
   }
 }

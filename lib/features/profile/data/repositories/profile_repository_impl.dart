@@ -69,8 +69,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String filePath,
   }) async {
     try {
-      final profile =
-          await remoteDatasource.uploadCoverPhoto(filePath: filePath);
+      final profile = await remoteDatasource.uploadCoverPhoto(
+        filePath: filePath,
+      );
       return Right(profile);
     } catch (e) {
       return Left(_mapError(e.toString()));
@@ -88,9 +89,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> followUser({
-    required String userId,
-  }) async {
+  Future<Either<Failure, void>> followUser({required String userId}) async {
     try {
       await remoteDatasource.followUser(userId: userId);
       return const Right(null);
@@ -100,9 +99,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> unfollowUser({
-    required String userId,
-  }) async {
+  Future<Either<Failure, void>> unfollowUser({required String userId}) async {
     try {
       await remoteDatasource.unfollowUser(userId: userId);
       return const Right(null);

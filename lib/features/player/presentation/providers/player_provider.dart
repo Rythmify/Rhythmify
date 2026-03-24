@@ -4,26 +4,31 @@ import '../../../../core/domain/entities/track.dart';
 import 'player_dependency_providers.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
 
-final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(() {
-  return PlayerNotifier();
-});
+final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
+  () {
+    return PlayerNotifier();
+  },
+);
 
 class PlayerNotifier extends Notifier<AppPlayerState> {
   @override
-  AppPlayerState build()
-  {
+  AppPlayerState build() {
     final getStreamUseCase = ref.read(getPlayerStateStreamUseCaseProvider);
 
-    getStreamUseCase.call().listen((newState)
-    {
+    getStreamUseCase.call().listen((newState) {
       state = newState; // This tell the UI to rebuild
     });
 
     return const AppPlayerState(); // Initial empty state
   }
 
-  Future<void> loadAndPlayQueue(List<Track> tracks, {int initialIndex = 0}) async {
-    await ref.read(loadQueueUseCaseProvider).call(tracks, initialIndex: initialIndex);
+  Future<void> loadAndPlayQueue(
+    List<Track> tracks, {
+    int initialIndex = 0,
+  }) async {
+    await ref
+        .read(loadQueueUseCaseProvider)
+        .call(tracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }
 
@@ -35,22 +40,22 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   ///==========================================================================
 
   Future<void> playOptimistic(Track initialTrack) async {
-    await loadAndPlayQueue([initialTrack]);      // Immediate Playback
-    _updateTrackInBackground(initialTrack.id);   // Background Concurrent Updates
+    await loadAndPlayQueue([initialTrack]); // Immediate Playback
+    _updateTrackInBackground(initialTrack.id); // Background Concurrent Updates
   }
 
   Future<void> _updateTrackInBackground(String trackId) async {
-      final results = await Future.wait([
-        ref.read(getTrackDetailsUseCaseProvider).call(trackId),
-        ref.read(getWaveformUseCaseProvider).call(trackId),
-      ]);
+    final results = await Future.wait([
+      ref.read(getTrackDetailsUseCaseProvider).call(trackId),
+      ref.read(getWaveformUseCaseProvider).call(trackId),
+    ]);
 
-      final fullTrack = results[0] as Track;
-      final waveform = results[1] as List<double>;
-      final updatedTrack = fullTrack.copyWith(
-        waveformData: waveform,
-      );
-      await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);    // Update State Manager
+    final fullTrack = results[0] as Track;
+    final waveform = results[1] as List<double>;
+    final updatedTrack = fullTrack.copyWith(waveformData: waveform);
+    await ref
+        .read(updateTrackInfoUseCaseProvider)
+        .call(trackId, updatedTrack); // Update State Manager
   }
 
   void togglePlayPause() {

@@ -46,10 +46,12 @@ final getMoreOfWhatYouLikeProvider = Provider(
 //======UI providers======
 
 //trending tracks
-final trendingTracksProvider =
-    FutureProvider.family<List<Track>, String>((ref, genre) {
-      return ref.read(getTrendingTracksProvider).call(genre);
-    });
+final trendingTracksProvider = FutureProvider.family<List<Track>, String>((
+  ref,
+  genre,
+) {
+  return ref.read(getTrendingTracksProvider).call(genre);
+});
 
 ///hot tracks
 final hotTracksProvider = FutureProvider<List<Track>>((ref) {

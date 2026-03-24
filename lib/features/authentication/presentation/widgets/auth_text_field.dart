@@ -29,7 +29,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      key: Key('auth_${widget.hint.toLowerCase().replaceAll(' ', '_')}_text_field'),
+      key: Key(
+        'auth_${widget.hint.toLowerCase().replaceAll(' ', '_')}_text_field',
+      ),
       controller: widget.controller,
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
@@ -62,17 +64,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         suffixIcon: widget.isPassword
             ? IconButton(

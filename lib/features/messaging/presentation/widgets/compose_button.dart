@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 class ComposeButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  const ComposeButton({
-    super.key,
-    this.onPressed
-  });
+  const ComposeButton({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

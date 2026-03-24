@@ -11,19 +11,28 @@ class UploadTrackScreen extends ConsumerStatefulWidget {
   const UploadTrackScreen({super.key});
 
   @override
-  ConsumerState<UploadTrackScreen> createState() =>
-      _UploadTrackScreenState();
+  ConsumerState<UploadTrackScreen> createState() => _UploadTrackScreenState();
 }
 
 class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     with SingleTickerProviderStateMixin {
-
   late TabController _tabController;
 
   static const List<String> _genres = [
-    'Electronic', 'Hip-Hop', 'Rock', 'Pop', 'Jazz',
-    'Classical', 'R&B / Soul', 'Ambient', 'Folk',
-    'Metal', 'Country', 'Reggae', 'Podcast', 'Other',
+    'Electronic',
+    'Hip-Hop',
+    'Rock',
+    'Pop',
+    'Jazz',
+    'Classical',
+    'R&B / Soul',
+    'Ambient',
+    'Folk',
+    'Metal',
+    'Country',
+    'Reggae',
+    'Podcast',
+    'Other',
   ];
 
   @override
@@ -87,10 +96,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       backgroundColor: AppTheme.background,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(
-          Icons.close_rounded,
-          color: AppTheme.appBarItems,
-        ),
+        icon: const Icon(Icons.close_rounded, color: AppTheme.appBarItems),
         onPressed: () {
           ref.read(uploadFormProvider.notifier).reset();
           context.pop();
@@ -102,23 +108,17 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
           padding: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
           child: TextButton(
             style: TextButton.styleFrom(
-              backgroundColor: state.canSave
-                  ? Colors.white
-                  : AppTheme.surface,
+              backgroundColor: state.canSave ? Colors.white : AppTheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
-            onPressed: state.canSave
-                ? () => _handleSave(context)
-                : null,
+            onPressed: state.canSave ? () => _handleSave(context) : null,
             child: Text(
               'Save',
               style: AppTheme.labelLarge.copyWith(
-                color: state.canSave
-                    ? Colors.black
-                    : AppTheme.textSecondary,
+                color: state.canSave ? Colors.black : AppTheme.textSecondary,
               ),
             ),
           ),
@@ -132,9 +132,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
   Widget _buildTabBar() {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.white12, width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.white12, width: 1)),
       ),
       child: TabBar(
         controller: _tabController,
@@ -197,7 +195,6 @@ class _TrackInfoTab extends ConsumerStatefulWidget {
 }
 
 class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
-
   late TextEditingController _titleController;
   late TextEditingController _artistController;
   late TextEditingController _tagController;
@@ -206,9 +203,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   void initState() {
     super.initState();
     final draft = ref.read(uploadFormProvider).draft;
-    _titleController  = TextEditingController(text: draft?.title  ?? '');
+    _titleController = TextEditingController(text: draft?.title ?? '');
     _artistController = TextEditingController(text: draft?.artist ?? '');
-    _tagController    = TextEditingController();
+    _tagController = TextEditingController();
   }
 
   @override
@@ -221,8 +218,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
 
   @override
   Widget build(BuildContext context) {
-    final state    = ref.watch(uploadFormProvider);
-    final draft    = state.draft;
+    final state = ref.watch(uploadFormProvider);
+    final draft = state.draft;
     final notifier = ref.read(uploadFormProvider.notifier);
 
     return SingleChildScrollView(
@@ -230,7 +227,6 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // ── Top: dashed frame + audio info ─────────────────────────
           const AudioPickerWidget(),
           const SizedBox(height: 28),
@@ -244,8 +240,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           const SizedBox(height: 10),
           _InputField(
             controller: _titleController,
-            hint:       '',
-            onChanged:  notifier.setTitle,
+            hint: '',
+            onChanged: notifier.setTitle,
           ),
           const SizedBox(height: 24),
 
@@ -259,23 +255,20 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           const SizedBox(height: 10),
           _InputField(
             controller: _artistController,
-            hint:       'Add any other collaborators of the track',
-            onChanged:  notifier.setArtist,
+            hint: 'Add any other collaborators of the track',
+            onChanged: notifier.setArtist,
           ),
           const SizedBox(height: 24),
 
           // ── Genre ──────────────────────────────────────────────────
           _FieldLabel(label: 'Genre'),
           const SizedBox(height: 6),
-          Text(
-            'Help fans discover your track',
-            style: AppTheme.bodyMedium,
-          ),
+          Text('Help fans discover your track', style: AppTheme.bodyMedium),
           const SizedBox(height: 10),
           _GenrePicker(
-            genres:        widget.genres,
+            genres: widget.genres,
             selectedGenre: draft?.genre,
-            onChanged:     notifier.setGenre,
+            onChanged: notifier.setGenre,
           ),
           const SizedBox(height: 24),
 
@@ -288,10 +281,10 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           ),
           const SizedBox(height: 10),
           _TagsInput(
-            controller:   _tagController,
+            controller: _tagController,
             selectedTags: draft?.tags ?? [],
-            onAdd:        notifier.addTag,
-            onRemove:     notifier.removeTag,
+            onAdd: notifier.addTag,
+            onRemove: notifier.removeTag,
           ),
           const SizedBox(height: 24),
 
@@ -299,9 +292,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           _FieldLabel(label: 'Description'),
           const SizedBox(height: 10),
           _InputField(
-            hint:      'Add any details about your track for fans',
-            onChanged:  notifier.setDescription,
-            maxLines:   4,
+            hint: 'Add any details about your track for fans',
+            onChanged: notifier.setDescription,
+            maxLines: 4,
           ),
           const SizedBox(height: 24),
 
@@ -309,7 +302,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           _FieldLabel(label: 'Caption'),
           const SizedBox(height: 10),
           _InputField(
-            hint:     'Add any caption to your post (optional)',
+            hint: 'Add any caption to your post (optional)',
             onChanged: notifier.setCaption,
           ),
           const SizedBox(height: 24),
@@ -318,7 +311,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           _FieldLabel(label: 'Privacy'),
           const SizedBox(height: 16),
           _PrivacySelector(
-            isPublic:  draft?.isPublic ?? true,
+            isPublic: draft?.isPublic ?? true,
             onChanged: notifier.setIsPublic,
           ),
           const SizedBox(height: 32),
@@ -331,19 +324,21 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
               final parentDraft = parentState.draft;
               if (parentDraft == null) return;
 
-              UploadMockStore.add(MockTrackSubmission(
-                title:            parentDraft.title         ?? '',
-                artist:           parentDraft.artist        ?? '',
-                genre:            parentDraft.genre,
-                tags:             parentDraft.tags,
-                description:      parentDraft.description,
-                caption:          parentDraft.caption,
-                isPublic:         parentDraft.isPublic,
-                localAudioPath:   parentDraft.localAudioPath,
-                localArtworkPath: parentDraft.localArtworkPath,
-                duration:         parentDraft.duration,
-                submittedAt:      DateTime.now(),
-              ));
+              UploadMockStore.add(
+                MockTrackSubmission(
+                  title: parentDraft.title ?? '',
+                  artist: parentDraft.artist ?? '',
+                  genre: parentDraft.genre,
+                  tags: parentDraft.tags,
+                  description: parentDraft.description,
+                  caption: parentDraft.caption,
+                  isPublic: parentDraft.isPublic,
+                  localAudioPath: parentDraft.localAudioPath,
+                  localArtworkPath: parentDraft.localArtworkPath,
+                  duration: parentDraft.duration,
+                  submittedAt: DateTime.now(),
+                ),
+              );
 
               _simulateUpload();
             },
@@ -376,11 +371,7 @@ class _AdvancedTab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.tune_rounded,
-            color: AppTheme.textSecondary,
-            size: 48,
-          ),
+          Icon(Icons.tune_rounded, color: AppTheme.textSecondary, size: 48),
           const SizedBox(height: 16),
           Text('Advanced settings', style: AppTheme.titleMedium),
           const SizedBox(height: 8),
@@ -442,8 +433,8 @@ class _FieldLabel extends StatelessWidget {
           const Text(
             '*',
             style: TextStyle(
-              color:      Colors.red,
-              fontSize:   14,
+              color: Colors.red,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -464,27 +455,24 @@ class _InputField extends StatelessWidget {
   const _InputField({
     required this.hint,
     required this.onChanged,
-    this.maxLines  = 1,
+    this.maxLines = 1,
     this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller:  controller,
-      onChanged:   onChanged,
-      maxLines:    maxLines,
-      style:       AppTheme.bodyLarge,
+      controller: controller,
+      onChanged: onChanged,
+      maxLines: maxLines,
+      style: AppTheme.bodyLarge,
       cursorColor: Colors.white,
       decoration: InputDecoration(
-        hintText:  hint,
+        hintText: hint,
         hintStyle: AppTheme.bodyMedium,
-        filled:    true,
+        filled: true,
         fillColor: AppTheme.background,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 0,
-          vertical:   12,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white24),
         ),
@@ -511,7 +499,7 @@ class _GenrePicker extends StatelessWidget {
 
   void _showPicker(BuildContext context) {
     showModalBottomSheet(
-      context:         context,
+      context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -519,23 +507,18 @@ class _GenrePicker extends StatelessWidget {
       builder: (_) => ListView.builder(
         itemCount: genres.length,
         itemBuilder: (_, i) {
-          final genre      = genres[i];
+          final genre = genres[i];
           final isSelected = genre == selectedGenre;
           return ListTile(
             title: Text(
               genre,
               style: TextStyle(
-                color:      isSelected ? Colors.white : Colors.grey,
-                fontWeight: isSelected
-                    ? FontWeight.w600
-                    : FontWeight.normal,
+                color: isSelected ? Colors.white : Colors.grey,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             trailing: isSelected
-                ? const Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                  )
+                ? const Icon(Icons.check_rounded, color: Colors.white)
                 : null,
             onTap: () {
               onChanged(genre);
@@ -554,9 +537,7 @@ class _GenrePicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Colors.white24),
-          ),
+          border: Border(bottom: BorderSide(color: Colors.white24)),
         ),
         child: Row(
           children: [
@@ -564,9 +545,7 @@ class _GenrePicker extends StatelessWidget {
               child: Text(
                 selectedGenre ?? 'Help fans discover your track',
                 style: TextStyle(
-                  color:    selectedGenre != null
-                      ? Colors.white
-                      : Colors.grey,
+                  color: selectedGenre != null ? Colors.white : Colors.grey,
                   fontSize: 14,
                 ),
               ),
@@ -577,12 +556,12 @@ class _GenrePicker extends StatelessWidget {
                 Icon(
                   Icons.keyboard_arrow_up_rounded,
                   color: Colors.grey,
-                  size:  18,
+                  size: 18,
                 ),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: Colors.grey,
-                  size:  18,
+                  size: 18,
                 ),
               ],
             ),
@@ -617,26 +596,20 @@ class _TagsInput extends StatelessWidget {
       children: [
         // Input field
         TextField(
-          controller:  controller,
-          enabled:     !atLimit,
-          style: const TextStyle(
-            color:    Colors.white,
-            fontSize: 14,
-          ),
+          controller: controller,
+          enabled: !atLimit,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
           cursorColor: Colors.white,
           decoration: InputDecoration(
             hintText: atLimit
                 ? 'Maximum 10 tags reached'
                 : 'Add tags to describe track for reachability',
-            hintStyle: const TextStyle(
-              color:    Colors.grey,
-              fontSize: 14,
-            ),
-            filled:    true,
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+            filled: true,
             fillColor: AppTheme.background,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 0,
-              vertical:   12,
+              vertical: 12,
             ),
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.white24),
@@ -651,7 +624,7 @@ class _TagsInput extends StatelessWidget {
           onSubmitted: (value) {
             final tag = value.trim().toLowerCase();
             if (tag.isEmpty) return;
-            if (atLimit)     return;
+            if (atLimit) return;
             onAdd(tag);
             controller.clear();
           },
@@ -661,7 +634,7 @@ class _TagsInput extends StatelessWidget {
         // Selected tags
         if (selectedTags.isNotEmpty) ...[
           Wrap(
-            spacing:    8,
+            spacing: 8,
             runSpacing: 8,
             children: selectedTags.map((tag) {
               return GestureDetector(
@@ -669,12 +642,12 @@ class _TagsInput extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
-                    vertical:    6,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color:        Colors.white12,
+                    color: Colors.white12,
                     borderRadius: BorderRadius.circular(20),
-                    border:       Border.all(color: Colors.white24),
+                    border: Border.all(color: Colors.white24),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -682,7 +655,7 @@ class _TagsInput extends StatelessWidget {
                       Text(
                         tag,
                         style: const TextStyle(
-                          color:    Colors.white,
+                          color: Colors.white,
                           fontSize: 12,
                         ),
                       ),
@@ -690,7 +663,7 @@ class _TagsInput extends StatelessWidget {
                       const Icon(
                         Icons.close_rounded,
                         color: Colors.white54,
-                        size:  12,
+                        size: 12,
                       ),
                     ],
                   ),
@@ -701,10 +674,7 @@ class _TagsInput extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${selectedTags.length}/10 tags',
-            style: const TextStyle(
-              color:    Colors.grey,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 11),
           ),
         ],
       ],
@@ -716,27 +686,24 @@ class _PrivacySelector extends StatelessWidget {
   final bool isPublic;
   final ValueChanged<bool> onChanged;
 
-  const _PrivacySelector({
-    required this.isPublic,
-    required this.onChanged,
-  });
+  const _PrivacySelector({required this.isPublic, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         _PrivacyOption(
-          title:      'Public',
-          subtitle:   'Anyone can find this',
+          title: 'Public',
+          subtitle: 'Anyone can find this',
           isSelected: isPublic,
-          onTap:      () => onChanged(true),
+          onTap: () => onChanged(true),
         ),
         const SizedBox(height: 20),
         _PrivacyOption(
-          title:      'Unlisted (Private)',
-          subtitle:   'Anyone with private link can access',
+          title: 'Unlisted (Private)',
+          subtitle: 'Anyone with private link can access',
           isSelected: !isPublic,
-          onTap:      () => onChanged(false),
+          onTap: () => onChanged(false),
         ),
       ],
     );
@@ -767,7 +734,7 @@ class _PrivacyOption extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Container(
-              width:  20,
+              width: 20,
               height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -779,7 +746,7 @@ class _PrivacyOption extends StatelessWidget {
               child: isSelected
                   ? Center(
                       child: Container(
-                        width:  10,
+                        width: 10,
                         height: 10,
                         decoration: const BoxDecoration(
                           color: Colors.white,
@@ -798,18 +765,15 @@ class _PrivacyOption extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color:      isSelected ? Colors.white : Colors.grey,
-                  fontSize:   14,
+                  color: isSelected ? Colors.white : Colors.grey,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color:    Colors.grey,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],
           ),
@@ -825,31 +789,26 @@ class _SaveButton extends StatelessWidget {
   final bool enabled;
   final VoidCallback onPressed;
 
-  const _SaveButton({
-    required this.enabled,
-    required this.onPressed,
-  });
+  const _SaveButton({required this.enabled, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width:  double.infinity,
+      width: double.infinity,
       height: 48,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: enabled ? Colors.white : AppTheme.surface,
           foregroundColor: enabled ? Colors.black : Colors.grey,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         onPressed: enabled ? onPressed : null,
         child: Text(
           'Save',
           style: TextStyle(
-            color:      enabled ? Colors.black : Colors.grey,
-            fontSize:   15,
+            color: enabled ? Colors.black : Colors.grey,
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),

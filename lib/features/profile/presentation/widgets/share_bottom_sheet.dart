@@ -42,10 +42,7 @@ class ShareBottomSheet extends StatelessWidget {
           /// ── Profile preview ────────────────────────────────────
           Row(
             children: [
-              ProfileAvatar(
-                avatarUrl: profile.avatarUrl,
-                radius: 24,
-              ),
+              ProfileAvatar(avatarUrl: profile.avatarUrl, radius: 24),
               const SizedBox(width: 12),
 
               Column(
@@ -61,8 +58,6 @@ class ShareBottomSheet extends StatelessWidget {
               ),
 
               const Spacer(),
-
-              
             ],
           ),
 
@@ -92,16 +87,12 @@ class ShareBottomSheet extends StatelessWidget {
                   icon: Icons.copy,
                   label: 'Copy Link',
                   onTap: () {
-                    Clipboard.setData(
-                      ClipboardData(text: _profileUrl),
-                    );
+                    Clipboard.setData(ClipboardData(text: _profileUrl));
 
                     Navigator.pop(context);
 
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Link copied to clipboard'),
-                      ),
+                      const SnackBar(content: Text('Link copied to clipboard')),
                     );
                   },
                 ),
@@ -120,10 +111,10 @@ class ShareBottomSheet extends StatelessWidget {
                     Share.share(_profileUrl);
                   },
                 ),
-                 
-                 const SizedBox(width: 16),
 
-                     _shareOption(
+                const SizedBox(width: 16),
+
+                _shareOption(
                   context,
                   key: const Key('profile_share_status_button'),
                   icon: FontAwesomeIcons.whatsapp,
@@ -137,7 +128,7 @@ class ShareBottomSheet extends StatelessWidget {
                 ),
 
                 const SizedBox(width: 16),
-                
+
                 _shareOption(
                   context,
                   key: const Key('profile_share_stories_button'),
