@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../presentation/providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../providers/home_providers.dart';
 
+/// Widget that displays the "Discover with Stations" section.
+///
+/// This widget:
+/// - Watches discoverStationsProvider for station data
+/// - Displays loading indicator while fetching data
+/// - Displays error message if fetching fails
+/// - Displays a horizontal list of StationCard widgets when data is available
 class DiscoverWithStationsSection extends ConsumerWidget {
   const DiscoverWithStationsSection({super.key});
 
+  /// Builds the UI for the Discover with Stations section.
+  ///
+  /// Parameters:
+  /// - context: Build context for rendering widgets
+  /// - ref: Riverpod reference used to watch providers
+  ///
+  /// Returns:
+  /// - A widget containing section title, loading/error state, and station list UI
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncStations = ref.watch(discoverStationsProvider);
@@ -53,8 +68,19 @@ class DiscoverWithStationsSection extends ConsumerWidget {
   }
 }
 
+/// A UI card that represents a single music discovery station.
+///
+/// Each card shows:
+/// - Station image (network or fallback asset)
+/// - "STATIONS" overlay label
+/// - Artists used as the recommendation seed
+///
+/// This widget is purely presentational and does not manage state.
 class StationCard extends StatelessWidget {
+  /// Artist name(s) used to generate the station.
   final String artists;
+
+  /// Image URL or local asset path for station artwork.
   final String imagePath;
 
   const StationCard({
@@ -64,6 +90,13 @@ class StationCard extends StatelessWidget {
     required this.imagePath,
   });
 
+  /// Builds the UI for a single station card.
+  ///
+  /// Parameters:
+  /// - context: Build context for rendering UI
+  ///
+  /// Returns:
+  /// - A styled station card widget with image and text overlay
   @override
   Widget build(BuildContext context) {
     return SizedBox(
