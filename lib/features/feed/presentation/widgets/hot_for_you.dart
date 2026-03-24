@@ -10,18 +10,29 @@ import '../../../player/domain/entities/player_state.dart';
 import '../providers/home_providers.dart';
 import 'dart:ui';
 
-// =====================
-//  HOT FOR YOU SECTION
-// =====================
-
+/// Widget that renders the "Hot For You" section.
+///
+/// This widget:
+/// - Observes [hotTracksProvider]
+/// - Displays loading indicator while fetching data
+/// - Displays error message if request fails
+/// - Shows a single featured track when data is available
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
 
+  /// Builds the Hot For You section UI.
+  ///
+  /// Parameters:
+  /// - context: Build context for rendering UI
+  /// - ref: Riverpod reference used to watch providers
+  ///
+  /// Returns:
+  /// - A widget that displays loading, error, or a featured track card
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncHotTracks = ref.watch(hotTracksProvider);
     return Column(
-      key: const Key('hot_for_you_section'), //key for hot fpr you section
+      key: const Key('hot_for_you_section'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
@@ -31,7 +42,7 @@ class HotForYouSection extends ConsumerWidget {
 
         asyncHotTracks.when(
           loading: () => const Center(
-            key: Key('hot_for_you_loading'), //loading state key
+            key: Key('hot_for_you_loading'),
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
 
@@ -56,11 +67,18 @@ class HotForYouSection extends ConsumerWidget {
   }
 }
 
-// ==================
-//  HOT FOR YOU CARD
-// ==================
-
+/// Card widget that displays a featured "Hot For You" track.
+///
+/// This widget is responsible for:
+/// - Displaying track artwork, title, and artist
+/// - Handling play/pause interaction via player state
+/// - Showing animated vinyl rotation when playing
+///
+/// It interacts with:
+/// - [playerStateProvider] for playback state
+/// - [Track] entity from domain layer
 class HotForYouCard extends ConsumerStatefulWidget {
+  /// The track to be displayed in the card.
   final Track track;
 
   const HotForYouCard({super.key, required this.track});
@@ -73,6 +91,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
+  /// Initializes animation controller for vinyl rotation effect.
   @override
   void initState() {
     super.initState();
@@ -83,6 +102,12 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     );
   }
 
+  /// Builds the UI for the Hot For You card.
+  ///
+  /// This method:
+  /// - Reads player state from Riverpod
+  /// - Controls animation based on playback status
+  /// - Displays track metadata and playback controls
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerStateProvider);
@@ -91,7 +116,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
     final isThisTrack = playerState.currentTrack?.id == widget.track.id;
 
-    // Control rotation
     if (isPlaying && isThisTrack) {
       _controller.repeat();
     } else {
@@ -101,7 +125,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        key: Key('hot_track_card_${widget.track.id}'), //hot track card key
+        key: Key('hot_track_card_${widget.track.id}'),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey, width: 0.5),
 
@@ -111,113 +135,108 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             fit: BoxFit.cover,
           ),
         ),
-        child:
-            /// Content
-            FrostedGlassBox(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+        child: FrostedGlassBox(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        // Album + CD
-                        buildAlbum(),
+                    buildAlbum(),
 
-                        const SizedBox(width: 20),
+                    const SizedBox(width: 20),
 
-                        // Title + Artist
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.track.title,
-                                key: const Key('hot_for_you_track_title_text'),
-                                style: AppTheme.bodyNormal,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              Text(
-                                widget.track.artist,
-                                key: const Key('hot_for_you_track_artist_text'),
-                                style: AppTheme.bodyNormal.copyWith(
-                                  color: AppTheme.semiWhite,
-                                ),
-                              ),
-                            ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.track.title,
+                            key: const Key('hot_for_you_track_title_text'),
+                            style: AppTheme.bodyNormal,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
 
-                        // Play Button
-                        IconButton(
-                          key: const Key('hot_for_you_play_icon_button'),
-                          iconSize: 60,
-                          icon: Icon(
-                            isPlaying && isThisTrack
-                                ? Icons.pause_circle
-                                : Icons.play_circle,
-                            color: AppTheme.textPrimary,
+                          const SizedBox(height: 4),
+
+                          Text(
+                            widget.track.artist,
+                            key: const Key('hot_for_you_track_artist_text'),
+                            style: AppTheme.bodyNormal.copyWith(
+                              color: AppTheme.semiWhite,
+                            ),
                           ),
-                          onPressed: () {
-                            if (isThisTrack) {
-                              ref
-                                  .read(playerStateProvider.notifier)
-                                  .togglePlayPause();
-                            } else {
-                              ref
-                                  .read(playerStateProvider.notifier)
-                                  .loadAndPlayQueue([widget.track]);
-                            }
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    //like text
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.favorite,
-                          color: AppTheme.semiWhite,
-                          size: 18,
-                        ),
-
-                        const SizedBox(width: 6),
-
-                        Text(
-                          //key for track likes
-                          "${formatCount(widget.track.likeCount)} people liked your track",
-                          key: const Key('hot_for_you_like_count_text'),
-                          style: AppTheme.bodyNormal.copyWith(
-                            fontSize: 12,
-                            color: AppTheme.semiWhite,
-                          ),
-                        ),
-                      ],
+                    IconButton(
+                      key: const Key('hot_for_you_play_icon_button'),
+                      iconSize: 60,
+                      icon: Icon(
+                        isPlaying && isThisTrack
+                            ? Icons.pause_circle
+                            : Icons.play_circle,
+                        color: AppTheme.textPrimary,
+                      ),
+                      onPressed: () {
+                        if (isThisTrack) {
+                          ref
+                              .read(playerStateProvider.notifier)
+                              .togglePlayPause();
+                        } else {
+                          ref
+                              .read(playerStateProvider.notifier)
+                              .loadAndPlayQueue([widget.track]);
+                        }
+                      },
                     ),
                   ],
                 ),
-              ),
+
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.favorite,
+                      color: AppTheme.semiWhite,
+                      size: 18,
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    Text(
+                      "${formatCount(widget.track.likeCount)} people liked your track",
+                      key: const Key('hot_for_you_like_count_text'),
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.semiWhite,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
+        ),
       ),
     );
   }
 
-  //cd+track design
+  /// Builds the album + rotating vinyl UI component.
+  ///
+  /// Returns:
+  /// - A widget showing static album cover and animated CD effect
   Widget buildAlbum() {
     return SizedBox(
-      key: Key('hot_album_${widget.track.id}'), //key for track+cd
+      key: Key('hot_album_${widget.track.id}'),
       width: 100,
       height: 70,
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          //rotating cd
           Positioned(
             left: 30,
             child: RotationTransition(
@@ -227,11 +246,11 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                 height: 70,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black, // classic vinyl
+                  color: Colors.black,
                 ),
                 child: Center(
                   child: Container(
-                    width: 22, // center hole image
+                    width: 22,
                     height: 22,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -246,7 +265,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             ),
           ),
 
-          // static track cover box
           Container(
             width: 65,
             height: 70,
@@ -268,7 +286,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     );
   }
 
-  //number formatting
+  /// Formats large numbers into human-readable strings (K, M).
   String formatCount(int count) {
     if (count >= 1000000) {
       return '${(count / 1000000).toStringAsFixed(1)}M';
@@ -286,7 +304,14 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
   }
 }
 
-//frosted glass(blurry background effect)
+/// Frosted glass effect container used for UI styling.
+///
+/// This widget applies:
+/// - Background blur effect
+/// - Semi-transparent overlay
+/// - Rounded corners
+///
+/// It is purely presentational and used for visual enhancement.
 class FrostedGlassBox extends StatelessWidget {
   final Widget child;
 
@@ -309,8 +334,7 @@ class FrostedGlassBox extends StatelessWidget {
             ),
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withAlpha(150), // subtle tint
-
+                color: Colors.black.withAlpha(150),
                 border: Border.all(
                   color: Colors.white.withAlpha(50),
                   width: 0.5,
