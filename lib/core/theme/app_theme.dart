@@ -21,7 +21,7 @@ class AppTheme {
   static const Color shareCircle = Color.fromARGB(255, 58, 58, 58);
   static const Color lighterSurface = Color.fromARGB(255, 46, 46, 46);
   static const Color iconBg = Color(0xFF121212);
-  static const Color babyBlue = Color(0xFF91C0FF);
+  static const Color babyBlue = Color(0xFF99C5FF);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
