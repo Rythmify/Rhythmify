@@ -60,7 +60,7 @@ class FullPlayerPage extends ConsumerWidget {
               top: 60,
               left: 16,
               child: TrackInfoBox(
-                summary: summary,
+                trackInfo: summary,
                 onNavigateBehindTrack: () =>
                     _triggerNavigation(context, summary.id),
               ),

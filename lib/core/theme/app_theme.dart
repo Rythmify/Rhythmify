@@ -22,6 +22,8 @@ class AppTheme {
   static const Color lighterSurface = Color.fromARGB(255, 46, 46, 46);
   static const Color iconBg = Color(0xFF121212);
   static const Color babyBlue = Color(0xFF99C5FF);
+  static const Color fadedWhite = Color(0xFFD8D8D8);
+  static const Color perfectGrey =Color.fromARGB(255, 44, 44, 44);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
@@ -60,6 +62,20 @@ class AppTheme {
     fontWeight: FontWeight.w800,
     letterSpacing: -0.25,
     color: textPrimary,
+  );
+
+  static TextStyle get trackTitle => GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
+   static TextStyle get artistTitle => GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.25,
+    color: semiWhite,
   );
 
   // ==========================================

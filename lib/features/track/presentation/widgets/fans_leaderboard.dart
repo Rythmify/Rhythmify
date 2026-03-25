@@ -36,7 +36,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
         Container(
           width: double.infinity,
           decoration: const BoxDecoration(
-            color: AppTheme.lighterSurface,
+            color: AppTheme.perfectGrey,
             borderRadius: BorderRadius.all(Radius.circular(32)),
           ),
           child: Column(
@@ -60,7 +60,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                             : Alignment.centerRight,
                         duration: const Duration(
                           milliseconds: 200,
-                        ), // Animation speed
+                        ),
                         curve: Curves.easeInOut,
                         child: FractionallySizedBox(
                           widthFactor: 0.5,
@@ -72,7 +72,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                                 width: 0.8,
                               ),
                               borderRadius: BorderRadius.circular(20),
-                              color: AppTheme.lighterSurface,
+                              color: AppTheme.perfectGrey,
                             ),
                           ),
                         ),
