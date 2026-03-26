@@ -3,6 +3,7 @@ import '../repositories/track_repository.dart';
 /// [RecordPlay] is a mutation use case that tracks when a track is played.
 ///
 /// It notifies the [TrackRepository] to increment the play count for the track.
+
 class RecordPlay {
   final TrackRepository repository;
 

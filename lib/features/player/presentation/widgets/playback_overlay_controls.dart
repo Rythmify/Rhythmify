@@ -9,6 +9,7 @@ import '../../domain/entities/player_state.dart';
 /// provide clear control options over the background artwork.
 ///
 /// Depends on [playerStateProvider].
+
 class PlaybackOverlayControls extends ConsumerWidget {
   const PlaybackOverlayControls({super.key});
 
@@ -25,49 +26,51 @@ class PlaybackOverlayControls extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        color: isPaused
-            ? Colors.black.withValues(alpha: 0.6)
-            : Colors.transparent,
-        child: isPaused
-            ? Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildCircleControlButton(
-                      key: const Key(
-                        'player_overlay_skip_previous_gesturedetector',
-                      ),
-                      icon: Icons.skip_previous,
-                      onTap: () => ref
-                          .read(playerStateProvider.notifier)
-                          .skipToPrevious(),
+        color: isPaused ? Colors.black.withValues(alpha: 0.6) : Colors.transparent,
+        child: isPaused ? 
+          Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  _buildCircleControlButton(
+                    key: const Key(
+                      'player_overlay_skip_previous_gesturedetector',
                     ),
-                    const SizedBox(width: 32),
-                    _buildCircleControlButton(
-                      key: const Key(
-                        'player_overlay_play_pause_gesturedetector',
-                      ),
-                      icon: Icons.play_arrow,
-                      size: 55,
-                      iconSize: 35,
-                      color: const Color.fromARGB(255, 18, 18, 18),
-                      onTap: () => ref
-                          .read(playerStateProvider.notifier)
-                          .togglePlayPause(),
+                    icon: Icons.skip_previous,
+                    onTap: () => ref
+                        .read(playerStateProvider.notifier)
+                        .skipToPrevious(),
+                  ),
+
+                  const SizedBox(width: 100),  // contorol separation
+
+                  _buildCircleControlButton(
+                    key: const Key(
+                      'player_overlay_play_pause_gesturedetector',
                     ),
-                    const SizedBox(width: 32),
-                    _buildCircleControlButton(
-                      key: const Key(
-                        'player_overlay_skip_next_gesturedetector',
-                      ),
-                      icon: Icons.skip_next,
-                      onTap: () =>
-                          ref.read(playerStateProvider.notifier).skipToNext(),
+                    icon: Icons.play_arrow,
+                    size: 50,
+                    iconSize: 30,
+                    color: const Color.fromARGB(255, 18, 18, 18),
+                    onTap: () => ref
+                        .read(playerStateProvider.notifier)
+                        .togglePlayPause(),
+                  ),
+                  const SizedBox(width: 100),  // contorol separation
+
+                  _buildCircleControlButton(
+                    key: const Key(
+                      'player_overlay_skip_next_gesturedetector',
                     ),
-                  ],
-                ),
-              )
-            : const SizedBox.shrink(),
+                    icon: Icons.skip_next,
+                    onTap: () =>
+                        ref.read(playerStateProvider.notifier).skipToNext(),
+                  ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(),
       ),
     );
   }
@@ -77,8 +80,8 @@ class PlaybackOverlayControls extends ConsumerWidget {
     Key? key,
     required IconData icon,
     required VoidCallback onTap,
-    double size = 42,
-    double iconSize = 25,
+    double size = 40,
+    double iconSize = 30,
     Color? color,
   }) {
     return GestureDetector(

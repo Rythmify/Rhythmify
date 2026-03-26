@@ -4,6 +4,7 @@ import '../repositories/track_repository.dart';
 ///
 /// It coordinates with [TrackRepository] to notify the system of the change in
 /// repost status for the track with [id].
+
 class ToggleRepost {
   final TrackRepository repository;
 
@@ -13,6 +14,7 @@ class ToggleRepost {
   ///
   /// [isCurrentlyReposted] represents the current status, and this call
   /// will trigger a request to set it to the opposite status.
+  
   Future<void> call(String id, bool isCurrentlyReposted) async {
     if (id.isEmpty) return;
     await repository.toggleRepost(id, !isCurrentlyReposted);

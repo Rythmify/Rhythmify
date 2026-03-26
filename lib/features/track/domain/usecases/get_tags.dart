@@ -4,6 +4,7 @@ import '../repositories/track_repository.dart';
 ///
 /// This use case interacts with the [TrackRepository] to fetch a mapping
 /// of tag IDs to names, which is used for categorizing tracks.
+
 class GetTags {
   final TrackRepository repository;
 

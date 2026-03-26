@@ -5,6 +5,7 @@ import '../repositories/track_repository.dart';
 ///
 /// It coordinates with [TrackRepository] to provide a collection
 /// of tracks for various feed and collection views.
+
 class GetTracks {
   final TrackRepository repository;
 

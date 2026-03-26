@@ -14,6 +14,20 @@ final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
   },
 );
 
+/// A temporary state strictly for the UI to track the seek bar while dragging.
+final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(() {
+  return SeekDragNotifier();
+});
+
+class SeekDragNotifier extends Notifier<Duration?> {
+  @override
+  Duration? build() => null;
+
+  void setPosition(Duration? position) {
+    state = position;
+  }
+}
+
 /// Manages the [AppPlayerState] and coordinates playback actions.
 ///
 /// The state represents the current playback status, track info, and progress.
@@ -21,13 +35,20 @@ final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
 /// - [PlayerStatus.playing]: Audio is currently being emitted.
 /// - [PlayerStatus.paused]: Playback is halted at the current position.
 class PlayerNotifier extends Notifier<AppPlayerState> {
+
+  bool _isDragging = false;
+
+
+
   @override
   AppPlayerState build() {
     final getStreamUseCase = ref.read(getPlayerStateStreamUseCaseProvider);
 
     // Listen to the domain stream and update the presentation state.
     getStreamUseCase.call().listen((newState) {
-      state = newState;
+      if (!_isDragging) {
+        state = newState;
+      }
     });
 
     return const AppPlayerState();
@@ -93,5 +114,16 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// Seeks to a specific [position] in the current track.
   void seek(Duration position) {
     ref.read(seekPositionUseCaseProvider).call(position);
+  }
+
+  /// This updates the Riverpod state so the artwork moves instantly, 
+  /// but it does NOT trigger an actual audio player seek.
+  void updatePosition(Duration position) {
+    state = state.copyWith(position: position);
+  }
+
+  /// This tells whether i am moving the slider or not
+  void setDragging(bool isDragging) {
+    _isDragging = isDragging;
   }
 }

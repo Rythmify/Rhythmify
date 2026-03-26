@@ -30,9 +30,7 @@ class TrackDetailsSection extends StatelessWidget {
                   track.description!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: AppTheme.bodyMedium.copyWith(color: Colors.white ),
                 ),
                 GestureDetector(
                   key: const Key('behind_the_track_show_more_description_gesture_detector'),

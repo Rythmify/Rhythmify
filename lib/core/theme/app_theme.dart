@@ -11,19 +11,20 @@ class AppTheme {
   static const Color surface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.grey;
-  static const Color semiWhite = Color.fromARGB(255, 188, 188, 188);
+  static const Color semiWhite = Color(0xFFBCBCBC);
   static const Color appBarItems = Color(0xFFD6D6D6);
   static const Color link = Color(0xFF2F80ED);
   static const Color whatsApp = Color(0xFF25D366);
   static const Color whatsAppStatus = Color(0xFF128C7E);
   static const Color instagram = Color(0xFFE1306C);
   static const Color sms = Color(0xFF2F80ED);
-  static const Color shareCircle = Color.fromARGB(255, 58, 58, 58);
-  static const Color lighterSurface = Color.fromARGB(255, 46, 46, 46);
+  static const Color shareCircle = Color(0xFF3A3A3A);
+  static const Color lighterSurface = Color(0xFF2E2E2E);
   static const Color iconBg = Color(0xFF121212);
   static const Color babyBlue = Color(0xFF99C5FF);
   static const Color fadedWhite = Color(0xFFD8D8D8);
-  static const Color perfectGrey =Color.fromARGB(255, 44, 44, 44);
+  static const Color perfectGrey =Color(0xFF2C2C2C);
+  static const Color miniPlayer =Color(0xFF36363F);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
@@ -141,9 +142,9 @@ class AppTheme {
     color: textSecondary,
   );
 
-  // ==========================================
-  // ------------  THE MAIN THEME  ------------
-  // ==========================================
+  // ========================================
+  // ------------ THE MAIN THEME ------------
+  // ========================================
 
   static ThemeData get darkTheme {
     return ThemeData(
