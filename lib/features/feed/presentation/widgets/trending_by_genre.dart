@@ -33,11 +33,6 @@ final List<Color> genreColors = [
 ];
 
 /// Main widget that renders trending tracks grouped by genre.
-///
-/// This widget:
-/// - Manages a TabController for genre navigation
-/// - Displays a TabBar for genre selection
-/// - Displays a TabBarView with trending tracks per genre
 class TrendingByGenre extends StatefulWidget {
   const TrendingByGenre({super.key});
 
@@ -49,14 +44,12 @@ class _TrendingByGenreState extends State<TrendingByGenre>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  /// Initializes the tab controller for genre switching.
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: genres.length, vsync: this);
   }
 
-  /// Builds the trending by genre UI section.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -69,19 +62,79 @@ class _TrendingByGenreState extends State<TrendingByGenre>
         ),
         const SizedBox(height: 10),
 
-        GenreTabBar(tabController: _tabController),
+        AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            final selectedIndex = _tabController.index;
+            final currentColor = genreColors[selectedIndex];
 
-        const SizedBox(height: 2),
+            return Stack(
+              children: [
+                // USING POSITIONED.FILL FIXES THE COLLAPSED HEIGHT ISSUE
+                Positioned.fill(
+                  child: Container(color: AppTheme.background),
+                ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(-0.4, -0.3),
+                        radius: 0.49,
+                        colors: [
+                          currentColor.withValues(alpha: 0.35),
+                          currentColor.withValues(alpha: 0.12),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
 
-        SizedBox(
-          height: 250,
-          child: GenreTabView(tabController: _tabController),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(0.2, -0.1),
+                        radius: 0.5,
+                        colors: [
+                          currentColor.withValues(alpha: 0.28),
+                          currentColor.withValues(alpha: 0.18),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.4, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // CONTENT LAYER
+                ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22,tileMode: TileMode.decal,),
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GenreTabBar(tabController: _tabController),
+                          SizedBox(
+                            height: 250,
+                            child: GenreTabView(tabController: _tabController),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
-  /// Disposes the TabController when widget is removed.
   @override
   void dispose() {
     _tabController.dispose();
@@ -90,16 +143,11 @@ class _TrendingByGenreState extends State<TrendingByGenre>
 }
 
 /// Tab bar widget for selecting music genres.
-///
-/// This widget:
-/// - Displays selectable genre chips
-/// - Updates visual state based on selected tab
 class GenreTabBar extends StatelessWidget {
   final TabController tabController;
 
   const GenreTabBar({super.key, required this.tabController});
 
-  /// Builds the genre selection tab bar.
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -113,7 +161,6 @@ class GenreTabBar extends StatelessWidget {
           dividerColor: Colors.transparent,
           labelPadding: const EdgeInsets.symmetric(horizontal: 4),
           indicator: const BoxDecoration(),
-
           tabs: List.generate(genres.length, (index) {
             final isSelected = tabController.index == index;
             final color = genreColors[index];
@@ -125,13 +172,13 @@ class GenreTabBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
-                  vertical: 6,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: isSelected ? color : const Color(0xFF5A6B60),
-                    width: 1.5,
+                    color: isSelected ? color : AppTheme.semiWhite,
+                    width: 1.2,
                   ),
                 ),
                 child: Text(
@@ -150,116 +197,49 @@ class GenreTabBar extends StatelessWidget {
 }
 
 /// Tab view that displays trending tracks for each genre.
-///
-/// This widget:
-/// - Listens to genre selection changes
-/// - Fetches trending tracks via Riverpod
-/// - Displays tracks in a horizontally grouped layout
 class GenreTabView extends ConsumerWidget {
   final TabController tabController;
 
   const GenreTabView({super.key, required this.tabController});
 
-  /// Builds the tab view with genre-based trending tracks.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      height: 250,
-      child: AnimatedBuilder(
-        animation: tabController,
-        builder: (context, _) {
-          final selectedIndex = tabController.index;
-          final currentColor = genreColors[selectedIndex];
+    return TabBarView(
+      key: const Key('genre_tab_view'),
+      controller: tabController,
+      children: genres.map((genre) {
+        final asyncTracks = ref.watch(
+          trendingTracksProvider(genre),
+        );
 
-          return Stack(
-            children: [
-              Container(color: AppTheme.background),
-
-              Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(-0.4, -0.3),
-                    radius: 0.49,
-                    colors: [
-                      currentColor.withValues(alpha: 0.35),
-                      currentColor.withValues(alpha: 0.12),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
+        return asyncTracks.when(
+          data: (tracks) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 20),
+              child: _TrendingHorizontalColumns(tracks: tracks),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Text(
+              'Error: $e',
+              key: Key(
+                'trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}',
               ),
-
-              Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(0.2, -0.1),
-                    radius: 0.6,
-                    colors: [
-                      currentColor.withValues(alpha: 0.28),
-                      currentColor.withValues(alpha: 0.18),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.4, 1.0],
-                  ),
-                ),
-              ),
-
-              ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-                  child: Container(
-                    color: Colors.transparent,
-                    child: TabBarView(
-                      key: const Key('genre_tab_view'),
-                      controller: tabController,
-                      children: genres.map((genre) {
-                        final asyncTracks = ref.watch(
-                          trendingTracksProvider(genre),
-                        );
-
-                        return asyncTracks.when(
-                          data: (tracks) {
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 30),
-                              child: _TrendingHorizontalColumns(tracks: tracks),
-                            );
-                          },
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                          error: (e, _) => Center(
-                            child: Text(
-                              'Error: $e',
-                              key: Key(
-                                'trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}',
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
 /// Internal widget that displays trending tracks in horizontal grouped columns.
-///
-/// This widget:
-/// - Splits track list into chunks of 3
-/// - Displays each chunk as a vertical column inside horizontal scroll
 class _TrendingHorizontalColumns extends ConsumerWidget {
   final List<Track> tracks;
 
   const _TrendingHorizontalColumns({required this.tracks});
 
-  /// Builds grouped horizontal track layout.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<List<Track>> chunks = [];
@@ -282,15 +262,12 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
           return Column(
             children: chunk.map((track) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-
+                padding: const EdgeInsets.only(bottom: 0),
                 child: SizedBox(
-                  width: 340,
-
+                  width: 330,
                   child: ListTile(
                     key: Key('item_${track.id}'),
                     contentPadding: EdgeInsets.zero,
-
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: SizedBox(
@@ -302,21 +279,17 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                         ),
                       ),
                     ),
-
                     title: Text(
                       track.title,
                       style: const TextStyle(fontSize: 14, color: Colors.white),
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     subtitle: Text(
                       track.artist,
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     trailing: const Icon(Icons.more_vert, color: Colors.white),
-
                     onTap: () {
                       final playerState = ref.read(playerStateProvider);
                       final currentTrack = playerState.currentTrack;
