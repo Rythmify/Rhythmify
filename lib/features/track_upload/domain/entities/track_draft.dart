@@ -37,6 +37,20 @@ class TrackDraft {
   final UploadStatus status;
   final double uploadProgress;
 
+  final UploadStatus audioStatus; // tracks the audio file upload
+  final double audioUploadProgress;
+
+  // the purple track info button
+  // Add this inside TrackDraft class
+  int get checklistCount {
+    int count = 0;
+    if (title != null && title!.trim().isNotEmpty) count++;
+    if (localArtworkPath != null) count++;
+    if (genre != null && genre!.trim().isNotEmpty) count++;
+    if (description != null && description!.trim().isNotEmpty) count++;
+    return count; // 0 to 4
+  }
+
   const TrackDraft({
     this.audioFileName,
     required this.artistId,
@@ -52,6 +66,8 @@ class TrackDraft {
     this.isPublic = true,
     this.status = UploadStatus.draft,
     this.uploadProgress = 0.0,
+    this.audioStatus = UploadStatus.uploading, // ← starts uploading
+    this.audioUploadProgress = 0.0,
   });
 
   TrackDraft copyWith({
@@ -71,6 +87,8 @@ class TrackDraft {
     bool? isPublic,
     UploadStatus? status,
     double? uploadProgress,
+    UploadStatus? audioStatus, // ← ADD
+    double? audioUploadProgress, // ← ADD
     bool clearArtwork = false,
     bool clearDescription = false,
     bool clearCaption = false,
@@ -94,6 +112,8 @@ class TrackDraft {
       isPublic: isPublic ?? this.isPublic,
       status: status ?? this.status,
       uploadProgress: uploadProgress ?? this.uploadProgress,
+      audioStatus: audioStatus ?? this.audioStatus, // ← ADD
+      audioUploadProgress: audioUploadProgress ?? this.audioUploadProgress,
     );
   }
 

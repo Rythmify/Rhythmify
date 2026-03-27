@@ -74,15 +74,13 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   @override
   UploadFormState build() => const UploadFormState();
 
-  // Called when user picks audio file
+  // Replace initDraft with this version that also starts upload
   void initDraft({
     required String artistId,
     required String localAudioPath,
     required Duration duration,
     required String fileName,
   }) {
-    // Remove file extension for title pre-fill
-    // "summer_vibes.mp3" → "summer_vibes"
     final nameWithoutExtension = fileName.contains('.')
         ? fileName.substring(0, fileName.lastIndexOf('.'))
         : fileName;
@@ -92,11 +90,42 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
         artistId: artistId,
         localAudioPath: localAudioPath,
         duration: duration,
-        audioFileName: fileName, // store original filename
-        title: nameWithoutExtension, // pre-filled
-        artist: 'Your Name', // replace with real username when auth ready
+        audioFileName: fileName,
+        title: nameWithoutExtension,
+        artist: 'Your Name',
+        // Start as uploading immediately
+        status: UploadStatus.draft,
+        uploadProgress: 0.0,
+        audioStatus: UploadStatus.uploading, // ← button starts uploading
+        audioUploadProgress: 0.0,
       ),
     );
+  }
+
+  // Called by the screen right after initDraft
+  // Simulates upload for now — replace with real upload later
+  void startAudioUpload() async {
+    if (state.draft == null) return;
+
+    // Reset audio upload progress
+    _updateDraft(
+      state.draft!.copyWith(
+        audioStatus: UploadStatus.uploading,
+        audioUploadProgress: 0.0,
+      ),
+    );
+
+    // Simulate progress — replace with real upload later
+    for (int i = 1; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (state.draft == null) return;
+      _updateDraft(
+        state.draft!.copyWith(
+          audioUploadProgress: i / 10,
+          audioStatus: i < 10 ? UploadStatus.uploading : UploadStatus.success,
+        ),
+      );
+    }
   }
 
   void setTitle(String value) =>

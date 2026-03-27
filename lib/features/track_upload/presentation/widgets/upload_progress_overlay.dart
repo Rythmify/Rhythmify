@@ -31,6 +31,11 @@ class UploadProgressOverlay extends ConsumerWidget {
     final isUploading = draft.status == UploadStatus.uploading;
     final isSuccess = draft.status == UploadStatus.success;
     final isError = draft.status == UploadStatus.error;
+    // Only show overlay for Save upload — NOT for audio file upload
+    // draft.status starts as 'draft' and only changes when Save is pressed
+    if (draft.status == UploadStatus.draft) {
+      return const SizedBox.shrink();
+    }
 
     if (!isUploading && !isSuccess && !isError) {
       return const SizedBox.shrink();
