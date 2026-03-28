@@ -175,39 +175,78 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     );
   }
 
+  ////////////////////IMPORTANT///////////////////////
   void _handleSave(BuildContext context) {
+    debugPrint('=== SAVE BUTTON PRESSED ===');
+
     final state = ref.read(uploadFormProvider);
     final draft = state.draft;
-    if (draft == null) return;
 
-    debugPrint('=== STARTING UPLOAD ===');
-    debugPrint('Title:  ${draft.title}');
-    debugPrint('Artist: ${draft.artist}');
-    debugPrint('Genre:  ${draft.genre}');
+    debugPrint('canSave: ${state.canSave}');
+    debugPrint('title: ${draft?.title}');
+    debugPrint('artist: ${draft?.artist}');
 
-    // Store in mock for now
-    UploadMockStore.add(
-      MockTrackSubmission(
-        title: draft.title ?? '',
-        artist: draft.artist ?? '',
-        genre: draft.genre,
-        tags: draft.tags,
-        description: draft.description,
-        caption: null,
-        isPublic: draft.isPublic,
-        localAudioPath: draft.localAudioPath,
-        localArtworkPath: draft.localArtworkPath,
-        duration: draft.duration,
-        submittedAt: DateTime.now(),
-      ),
-    );
+    if (draft == null) {
+      debugPrint('STOPPED: draft is null');
+      return;
+    }
 
-    // TODO: replace with real upload when backend connected
-    // ref.read(uploadFormProvider.notifier).startUpload(
-    //   ref: ref,
-    //   onSuccess: (id) => debugPrint('SUCCESS: $id'),
-    //   onError:   (e)  => debugPrint('ERROR: $e'),
-    // );
+    // ── Step 1: Mock store — always runs ──────────────────────────────
+    try {
+      UploadMockStore.add(
+        MockTrackSubmission(
+          title: draft.title ?? '',
+          artist: draft.artist ?? '',
+          genre: draft.genre,
+          tags: draft.tags,
+          description: draft.description,
+          caption: null,
+          isPublic: draft.isPublic,
+          localAudioPath: draft.localAudioPath,
+          localArtworkPath: draft.localArtworkPath,
+          duration: draft.duration,
+          submittedAt: DateTime.now(),
+        ),
+      );
+      debugPrint('=== MOCK STORED ===');
+    } catch (e) {
+      debugPrint('=== MOCK ERROR: $e ===');
+    }
+
+    // ── Step 2: Backend upload ─────────────────────────────────────────
+    ref
+        .read(uploadFormProvider.notifier)
+        .startUpload(
+          ref: ref,
+          onSuccess: (trackId) {
+            debugPrint('=== BACKEND SUCCESS === Track ID: $trackId');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  backgroundColor: Color(0xFF1DB954),
+                  content: Text(
+                    'Track uploaded successfully!',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            }
+          },
+          onError: (error) {
+            debugPrint('=== BACKEND ERROR === $error');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red.shade800,
+                  content: Text(
+                    'Upload failed: $error',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            }
+          },
+        );
   }
 }
 
@@ -369,9 +408,17 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
               ),
               onPressed: state.canSave
                   ? () {
+                      debugPrint('=== BOTTOM SAVE TAPPED ===');
                       final parent = context
                           .findAncestorStateOfType<_UploadTrackScreenState>();
-                      parent?._handleSave(context);
+                      if (parent != null) {
+                        debugPrint('Found parent state — calling _handleSave');
+                        parent._handleSave(context);
+                      } else {
+                        debugPrint(
+                          'ERROR: Could not find _UploadTrackScreenState',
+                        );
+                      }
                     }
                   : null,
               child: Text(
