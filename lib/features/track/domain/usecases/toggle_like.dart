@@ -14,7 +14,7 @@ class ToggleLike {
   ///
   /// [isCurrentlyLiked] is the current state of the track, and this call
   /// will trigger a request to set it to the opposite state.
-  
+
   Future<void> call(String id, bool isCurrentlyLiked) async {
     if (id.isEmpty) return;
     await repository.toggleLike(id, !isCurrentlyLiked);

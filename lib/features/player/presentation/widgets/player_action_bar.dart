@@ -26,21 +26,26 @@ class PlayerActionBar extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-
           // ------ Like Icon ------
           Row(
             children: [
               Icon(
                 key: const Key('player_action_bar_favorite_icon'),
-                (trackAsync.value?.isLiked ?? false) ? Icons.favorite : Icons.favorite_border,
-                color: (trackAsync.value?.isLiked ?? false) ? AppTheme.primaryBrand : Colors.white,
+                (trackAsync.value?.isLiked ?? false)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: (trackAsync.value?.isLiked ?? false)
+                    ? AppTheme.primaryBrand
+                    : Colors.white,
               ),
               const SizedBox(width: 6),
               trackAsync.when(
                 data: (track) => Text(
                   Formatters.formatCount(track.likeCount),
                   key: const Key('player_action_bar_like_count_text'),
-                  style: AppTheme.bodyNormal.copyWith(color: track.isLiked ? AppTheme.primaryBrand : Colors.white),
+                  style: AppTheme.bodyNormal.copyWith(
+                    color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                  ),
                 ),
                 loading: () => const SizedBox(
                   width: 10,
@@ -82,7 +87,9 @@ class PlayerActionBar extends ConsumerWidget {
                   width: 10,
                   height: 10,
                   child: CircularProgressIndicator(
-                    key: Key('player_action_bar_comment_count_loading_indicator'),
+                    key: Key(
+                      'player_action_bar_comment_count_loading_indicator',
+                    ),
                     strokeWidth: 2,
                     color: Colors.white,
                   ),

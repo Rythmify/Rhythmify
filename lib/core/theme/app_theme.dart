@@ -23,8 +23,8 @@ class AppTheme {
   static const Color iconBg = Color(0xFF121212);
   static const Color babyBlue = Color(0xFF99C5FF);
   static const Color fadedWhite = Color(0xFFD8D8D8);
-  static const Color perfectGrey =Color(0xFF2C2C2C);
-  static const Color miniPlayer =Color(0xFF36363F);
+  static const Color perfectGrey = Color(0xFF2C2C2C);
+  static const Color miniPlayer = Color(0xFF36363F);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
@@ -72,7 +72,7 @@ class AppTheme {
     color: textPrimary,
   );
 
-   static TextStyle get artistTitle => GoogleFonts.inter(
+  static TextStyle get artistTitle => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.25,

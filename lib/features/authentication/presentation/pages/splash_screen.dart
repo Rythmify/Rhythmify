@@ -24,34 +24,32 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
-  with SingleTickerProviderStateMixin {
-    late AnimationController _controller;
-    late Animation<double> _fade;
-    late Animation<double> _scale;
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fade;
+  late Animation<double> _scale;
 
   bool _isMinimumTimeElapsed = false;
 
   @override
-  void initState() { super.initState();
+  void initState() {
+    super.initState();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
 
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    );
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
-    _scale = Tween<double>(begin: 0.85, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _scale = Tween<double>(
+      begin: 0.85,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
     // Start the mandatory 1800ms branding timer
-    Future.delayed(const Duration(milliseconds: 1800), ()
-    {
+    Future.delayed(const Duration(milliseconds: 1800), () {
       if (mounted) {
         _isMinimumTimeElapsed = true;
         _attemptNavigation();
@@ -59,20 +57,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     // Safety timeout [5 seconds max wait]
-    Future.delayed(const Duration(seconds: 5), ()
-    {
+    Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         final authState = ref.read(authProvider);
         if (authState is AuthLoading) {
-          context.go('/onboarding'); 
+          context.go('/onboarding');
         }
       }
     });
   }
 
   /// Checks if both the timer is done AND the auth state is ready.
-  void _attemptNavigation()
-  {
+  void _attemptNavigation() {
     // Don't navigate if the 1.8 seconds haven't passed yet
     if (!_isMinimumTimeElapsed) return;
 
@@ -92,8 +88,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   @override
-  Widget build(BuildContext context)
-  {
+  Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       _attemptNavigation();
     });
@@ -113,8 +108,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.semiWhite
-                            .withValues(alpha: 0.1 * _fade.value),
+                        color: AppTheme.semiWhite.withValues(
+                          alpha: 0.1 * _fade.value,
+                        ),
                         blurRadius: 30 * _fade.value,
                         spreadRadius: 16 * _fade.value,
                       ),

@@ -70,36 +70,39 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
                 setState(() {
                   _dragValue = value;
                 });
-                
+
                 // 2. Tell the UI (like the blur and artwork) that we are dragging
-                ref.read(seekDragPositionProvider.notifier).setPosition(Duration(milliseconds: value.toInt()));
+                ref
+                    .read(seekDragPositionProvider.notifier)
+                    .setPosition(Duration(milliseconds: value.toInt()));
               },
-              
+
               onChanged: (value) {
                 // 1. Move the slider thumb locally
                 setState(() {
                   _dragValue = value;
                 });
-                
+
                 // 2. Move the artwork background instantly via the temporary provider
-                ref.read(seekDragPositionProvider.notifier).setPosition(Duration(milliseconds: value.toInt()));
+                ref
+                    .read(seekDragPositionProvider.notifier)
+                    .setPosition(Duration(milliseconds: value.toInt()));
               },
-              
+
               onChangeEnd: (value) {
                 final newPosition = Duration(milliseconds: value.toInt());
-                
+
                 // 1. Tell the ACTUAL audio package to skip to the new spot
                 ref.read(playerStateProvider.notifier).seek(newPosition);
-                
+
                 // 2. Clear the drag state so the background snaps back to listening to the audio stream
                 ref.read(seekDragPositionProvider.notifier).setPosition(null);
-                
+
                 // 3. Clear the local slider state
                 setState(() {
                   _dragValue = null;
                 });
               },
-
             ),
           ),
         ],

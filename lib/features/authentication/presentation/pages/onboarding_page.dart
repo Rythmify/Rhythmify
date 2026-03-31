@@ -42,13 +42,15 @@ class OnboardingPage extends StatelessWidget {
           ),
 
           // Foreground: blob background + buttons
-          Align( alignment: Alignment.bottomCenter,
+          Align(
+            alignment: Alignment.bottomCenter,
 
             // Animation Sliding from down to up
             child: TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 1.0, end: 0.0),
               duration: const Duration(milliseconds: 600),
-              curve: Curves.easeOutCubic, // Gives it a nice, natural deceleration
+              curve:
+                  Curves.easeOutCubic, // Gives it a nice, natural deceleration
               builder: (context, value, child) {
                 return FractionalTranslation(
                   translation: Offset(0, value),

@@ -7,7 +7,7 @@ import '../../domain/entities/player_state.dart';
 /// A dynamic background widget that scrolls the track artwork based on playback progress.
 ///
 /// It also applies a blur effect when the player is paused to emphasize controls.
-/// 
+///
 /// Depends on [playerStateProvider].
 
 class ScrollingArtworkBackground extends ConsumerWidget {
@@ -17,14 +17,21 @@ class ScrollingArtworkBackground extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final position = ref.watch(playerStateProvider.select((state) => state.position));
-    final duration = ref.watch(playerStateProvider.select((state) => state.duration));
-    final status = ref.watch(playerStateProvider.select((state) => state.status));
+    final position = ref.watch(
+      playerStateProvider.select((state) => state.position),
+    );
+    final duration = ref.watch(
+      playerStateProvider.select((state) => state.duration),
+    );
+    final status = ref.watch(
+      playerStateProvider.select((state) => state.status),
+    );
     final dragPosition = ref.watch(seekDragPositionProvider);
     final activePosition = dragPosition ?? position;
-    
+
     final bool isDragging = dragPosition != null;
-    final bool isPaused = status == PlayerStatus.paused || status == PlayerStatus.initial;
+    final bool isPaused =
+        status == PlayerStatus.paused || status == PlayerStatus.initial;
 
     double progress = 0.0;
     if (duration.inMilliseconds > 0) {
@@ -33,7 +40,7 @@ class ScrollingArtworkBackground extends ConsumerWidget {
 
     // Alignment logic (for scrolling)
     final double alignmentX = -1.0 + (progress * 2.0);
-    
+
     // Unifying the animation config
     const animationDuration = Duration(milliseconds: 200);
     const animationCurve = Curves.easeOutCubic;
@@ -42,7 +49,11 @@ class ScrollingArtworkBackground extends ConsumerWidget {
     final double imageScale = (isPaused || isDragging) ? 1.05 : 1.0;
     final bool isNetworkImage = artworkUrl.startsWith('http');
 
-    Widget errorPlaceholder(BuildContext context, Object error, StackTrace? stackTrace) {
+    Widget errorPlaceholder(
+      BuildContext context,
+      Object error,
+      StackTrace? stackTrace,
+    ) {
       return Container(
         width: MediaQuery.of(context).size.width,
         color: Colors.grey[900],
@@ -55,26 +66,26 @@ class ScrollingArtworkBackground extends ConsumerWidget {
     // Direct alignment for smooth finger tracking
     Widget buildArtwork(String keySuffix) {
       return isNetworkImage
-        ? Image.network(
-            artworkUrl,
-            key: Key('player_artwork_network_$keySuffix'),
-            height: MediaQuery.of(context).size.height,
-            fit: BoxFit.fitHeight,
-            alignment: Alignment(alignmentX, 0.0), 
-            errorBuilder: errorPlaceholder,
-          )
-        : Image.asset(
-            artworkUrl,
-            key: Key('player_artwork_asset_$keySuffix'),
-            height: MediaQuery.of(context).size.height,
-            fit: BoxFit.fitHeight,
-            alignment: Alignment(alignmentX, 0.0), 
-            errorBuilder: errorPlaceholder,
-          );
+          ? Image.network(
+              artworkUrl,
+              key: Key('player_artwork_network_$keySuffix'),
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.fitHeight,
+              alignment: Alignment(alignmentX, 0.0),
+              errorBuilder: errorPlaceholder,
+            )
+          : Image.asset(
+              artworkUrl,
+              key: Key('player_artwork_asset_$keySuffix'),
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.fitHeight,
+              alignment: Alignment(alignmentX, 0.0),
+              errorBuilder: errorPlaceholder,
+            );
     }
 
     return Container(
-      color: Colors.black, 
+      color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -100,7 +111,11 @@ class ScrollingArtworkBackground extends ConsumerWidget {
                 curve: animationCurve,
                 alignment: Alignment.center,
                 child: ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0,tileMode: TileMode.mirror),
+                  imageFilter: ImageFilter.blur(
+                    sigmaX: 25.0,
+                    sigmaY: 25.0,
+                    tileMode: TileMode.mirror,
+                  ),
                   child: buildArtwork('blur'),
                 ),
               ),

@@ -7,8 +7,8 @@ import '../../../../core/utils/formatters.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
-/// Displays formatted counts for likes, comments, and reposts. It also includes 
-/// a primary play/pause button that interacts directly with the [playerStateProvider] 
+/// Displays formatted counts for likes, comments, and reposts. It also includes
+/// a primary play/pause button that interacts directly with the [playerStateProvider]
 /// to control playback or load the track into the active queue.
 ///
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
@@ -43,10 +43,7 @@ class TrackActionBar extends ConsumerWidget {
             Formatters.formatCount(track.commentCount),
           ),
           const SizedBox(width: 12),
-          const Icon(
-            Icons.more_vert,
-            color: AppTheme.fadedWhite,
-          ),
+          const Icon(Icons.more_vert, color: AppTheme.fadedWhite),
           const Spacer(),
           GestureDetector(
             key: const Key('behind_the_track_play_pause_gesture_detector'),
@@ -54,7 +51,9 @@ class TrackActionBar extends ConsumerWidget {
               if (isThisTrack) {
                 ref.read(playerStateProvider.notifier).togglePlayPause();
               } else {
-                ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+                ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+                  track,
+                ]);
               }
             },
             child: Container(

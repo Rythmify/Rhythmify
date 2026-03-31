@@ -4,8 +4,8 @@ import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
-/// Displays formatted counts for likes, comments, and reposts. It also includes 
-/// a primary play/pause button that interacts directly with the [playerStateProvider] 
+/// Displays formatted counts for likes, comments, and reposts. It also includes
+/// a primary play/pause button that interacts directly with the [playerStateProvider]
 /// to control playback or load the track into the active queue.
 ///
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
@@ -30,10 +30,12 @@ class TrackDetailsSection extends StatelessWidget {
                   track.description!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTheme.bodyMedium.copyWith(color: Colors.white ),
+                  style: AppTheme.bodyMedium.copyWith(color: Colors.white),
                 ),
                 GestureDetector(
-                  key: const Key('behind_the_track_show_more_description_gesture_detector'),
+                  key: const Key(
+                    'behind_the_track_show_more_description_gesture_detector',
+                  ),
                   onTap: () {
                     CustomBottomSheet.show(
                       context: context,
@@ -91,7 +93,7 @@ class TrackDetailsSection extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 24,
-                backgroundImage: AssetImage('assets/images/track_1.jpg'), 
+                backgroundImage: AssetImage('assets/images/track_1.jpg'),
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -14,7 +14,7 @@ class ToggleRepost {
   ///
   /// [isCurrentlyReposted] represents the current status, and this call
   /// will trigger a request to set it to the opposite status.
-  
+
   Future<void> call(String id, bool isCurrentlyReposted) async {
     if (id.isEmpty) return;
     await repository.toggleRepost(id, !isCurrentlyReposted);

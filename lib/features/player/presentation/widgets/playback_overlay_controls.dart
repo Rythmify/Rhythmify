@@ -26,51 +26,52 @@ class PlaybackOverlayControls extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        color: isPaused ? Colors.black.withValues(alpha: 0.6) : Colors.transparent,
-        child: isPaused ? 
-          Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-
-                  _buildCircleControlButton(
-                    key: const Key(
-                      'player_overlay_skip_previous_gesturedetector',
+        color: isPaused
+            ? Colors.black.withValues(alpha: 0.6)
+            : Colors.transparent,
+        child: isPaused
+            ? Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildCircleControlButton(
+                      key: const Key(
+                        'player_overlay_skip_previous_gesturedetector',
+                      ),
+                      icon: Icons.skip_previous,
+                      onTap: () => ref
+                          .read(playerStateProvider.notifier)
+                          .skipToPrevious(),
                     ),
-                    icon: Icons.skip_previous,
-                    onTap: () => ref
-                        .read(playerStateProvider.notifier)
-                        .skipToPrevious(),
-                  ),
 
-                  const SizedBox(width: 100),  // contorol separation
+                    const SizedBox(width: 100), // contorol separation
 
-                  _buildCircleControlButton(
-                    key: const Key(
-                      'player_overlay_play_pause_gesturedetector',
+                    _buildCircleControlButton(
+                      key: const Key(
+                        'player_overlay_play_pause_gesturedetector',
+                      ),
+                      icon: Icons.play_arrow,
+                      size: 50,
+                      iconSize: 30,
+                      color: const Color.fromARGB(255, 18, 18, 18),
+                      onTap: () => ref
+                          .read(playerStateProvider.notifier)
+                          .togglePlayPause(),
                     ),
-                    icon: Icons.play_arrow,
-                    size: 50,
-                    iconSize: 30,
-                    color: const Color.fromARGB(255, 18, 18, 18),
-                    onTap: () => ref
-                        .read(playerStateProvider.notifier)
-                        .togglePlayPause(),
-                  ),
-                  const SizedBox(width: 100),  // contorol separation
+                    const SizedBox(width: 100), // contorol separation
 
-                  _buildCircleControlButton(
-                    key: const Key(
-                      'player_overlay_skip_next_gesturedetector',
+                    _buildCircleControlButton(
+                      key: const Key(
+                        'player_overlay_skip_next_gesturedetector',
+                      ),
+                      icon: Icons.skip_next,
+                      onTap: () =>
+                          ref.read(playerStateProvider.notifier).skipToNext(),
                     ),
-                    icon: Icons.skip_next,
-                    onTap: () =>
-                        ref.read(playerStateProvider.notifier).skipToNext(),
-                  ),
-                ],
-              ),
-            )
-          : const SizedBox.shrink(),
+                  ],
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }

@@ -58,9 +58,7 @@ class _FansLeaderboardState extends State<FansLeaderboard> {
                         alignment: _selectedTab == 0
                             ? Alignment.centerLeft
                             : Alignment.centerRight,
-                        duration: const Duration(
-                          milliseconds: 200,
-                        ),
+                        duration: const Duration(milliseconds: 200),
                         curve: Curves.easeInOut,
                         child: FractionallySizedBox(
                           widthFactor: 0.5,

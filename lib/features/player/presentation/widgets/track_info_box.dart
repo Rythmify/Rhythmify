@@ -33,9 +33,10 @@ class TrackInfoBox extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: 
-            ConstrainedBox(
-              constraints: BoxConstraints( maxWidth: MediaQuery.sizeOf(context).width * 0.5),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.5,
+              ),
 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,8 +45,8 @@ class TrackInfoBox extends StatelessWidget {
                   Text(
                     trackInfo.title,
                     style: AppTheme.titleMedium,
-                    maxLines: 2, 
-                    overflow: TextOverflow.ellipsis, 
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     trackInfo.artist,
@@ -53,8 +54,8 @@ class TrackInfoBox extends StatelessWidget {
                       fontSize: 16,
                       color: AppTheme.semiWhite,
                     ),
-                    maxLines: 2, 
-                    overflow: TextOverflow.ellipsis, 
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

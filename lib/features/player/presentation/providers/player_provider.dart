@@ -15,9 +15,11 @@ final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
 );
 
 /// A temporary state strictly for the UI to track the seek bar while dragging.
-final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(() {
-  return SeekDragNotifier();
-});
+final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(
+  () {
+    return SeekDragNotifier();
+  },
+);
 
 class SeekDragNotifier extends Notifier<Duration?> {
   @override
@@ -35,10 +37,7 @@ class SeekDragNotifier extends Notifier<Duration?> {
 /// - [PlayerStatus.playing]: Audio is currently being emitted.
 /// - [PlayerStatus.paused]: Playback is halted at the current position.
 class PlayerNotifier extends Notifier<AppPlayerState> {
-
   bool _isDragging = false;
-
-
 
   @override
   AppPlayerState build() {
@@ -116,7 +115,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     ref.read(seekPositionUseCaseProvider).call(position);
   }
 
-  /// This updates the Riverpod state so the artwork moves instantly, 
+  /// This updates the Riverpod state so the artwork moves instantly,
   /// but it does NOT trigger an actual audio player seek.
   void updatePosition(Duration position) {
     state = state.copyWith(position: position);

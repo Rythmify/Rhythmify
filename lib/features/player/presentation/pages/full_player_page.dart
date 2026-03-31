@@ -54,7 +54,9 @@ class FullPlayerPage extends ConsumerWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: ScrollingArtworkBackground(artworkUrl: trackInfo.artworkUrl),
+              child: ScrollingArtworkBackground(
+                artworkUrl: trackInfo.artworkUrl,
+              ),
             ),
 
             const Positioned.fill(child: PlaybackOverlayControls()),
@@ -106,7 +108,9 @@ class FullPlayerPage extends ConsumerWidget {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(
-                        trackInfo.isArtistFollowed ? Icons.person_add_alt_1 : Icons.person_add_alt,
+                        trackInfo.isArtistFollowed
+                            ? Icons.person_add_alt_1
+                            : Icons.person_add_alt,
                         color: Colors.black,
                         size: 20,
                       ),

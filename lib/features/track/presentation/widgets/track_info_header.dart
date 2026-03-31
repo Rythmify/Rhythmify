@@ -10,7 +10,7 @@ import '../../../../core/utils/formatters.dart';
 /// Expects a [track] entity containing the necessary metadata.
 
 class TrackInfoHeader extends StatelessWidget {
-  final dynamic track; 
+  final dynamic track;
 
   const TrackInfoHeader({super.key, required this.track});
 
@@ -22,7 +22,6 @@ class TrackInfoHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.grey.withValues(alpha: 0.7),
@@ -67,34 +66,54 @@ class TrackInfoHeader extends StatelessWidget {
 
                 Row(
                   children: [
-                    const Icon( Icons.play_arrow , size: 19, color: AppTheme.semiWhite),
+                    const Icon(
+                      Icons.play_arrow,
+                      size: 19,
+                      color: AppTheme.semiWhite,
+                    ),
 
                     const SizedBox(width: 3),
                     Text(
                       Formatters.formatCount(track.playCount),
-                      style: AppTheme.labelSmall.copyWith(fontSize: 12,color: AppTheme.semiWhite,),
+                      style: AppTheme.labelSmall.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.semiWhite,
+                      ),
                     ),
 
                     const SizedBox(width: 5),
                     const Text(
-                      "•" , style: TextStyle(color: AppTheme.semiWhite), ),
+                      "•",
+                      style: TextStyle(color: AppTheme.semiWhite),
+                    ),
 
                     const SizedBox(width: 5),
                     Text(
                       Formatters.formatDuration(track.duration),
-                      style: AppTheme.labelSmall.copyWith(fontSize: 12,color: AppTheme.semiWhite,),
+                      style: AppTheme.labelSmall.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.semiWhite,
+                      ),
                     ),
 
                     const SizedBox(width: 5),
-                    const Text( "•" , style: TextStyle(color: AppTheme.semiWhite) ),
+                    const Text(
+                      "•",
+                      style: TextStyle(color: AppTheme.semiWhite),
+                    ),
 
                     const SizedBox(width: 5),
                     Text(
                       Formatters.formatDate(
                         track.releaseDate != null
-                            ? DateTime.tryParse(track.releaseDate!) ?? track.createdAt : track.createdAt,
+                            ? DateTime.tryParse(track.releaseDate!) ??
+                                  track.createdAt
+                            : track.createdAt,
                       ),
-                      style: AppTheme.labelSmall.copyWith(fontSize: 12 , color: AppTheme.semiWhite ),
+                      style: AppTheme.labelSmall.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.semiWhite,
+                      ),
                     ),
                   ],
                 ),

@@ -45,7 +45,7 @@ class MiniPlayer extends ConsumerWidget {
               width: 0.7,
             ),
           ),
-          
+
           child: Row(
             children: [
               const SizedBox(width: 5),
@@ -56,7 +56,6 @@ class MiniPlayer extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       track.title,
                       key: const Key('player_mini_player_title_text'),
@@ -78,9 +77,13 @@ class MiniPlayer extends ConsumerWidget {
               IconButton(
                 key: const Key('player_mini_player_follow_icon_button'),
                 icon: Icon(
-                  track.isArtistFollowed ? Icons.person_add_alt_1 : Icons.person_add_alt,
+                  track.isArtistFollowed
+                      ? Icons.person_add_alt_1
+                      : Icons.person_add_alt,
                 ),
-                color: track.isArtistFollowed ? AppTheme.primaryBrand : Colors.white,
+                color: track.isArtistFollowed
+                    ? AppTheme.primaryBrand
+                    : Colors.white,
                 onPressed: () {},
               ),
 
@@ -90,9 +93,10 @@ class MiniPlayer extends ConsumerWidget {
                   track.isLiked ? Icons.favorite : Icons.favorite_border,
                 ),
                 color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
-                onPressed: () { ref
-                  .read(trackInteractionProvider)
-                  .handleToggleLike(track.id, track.isLiked);
+                onPressed: () {
+                  ref
+                      .read(trackInteractionProvider)
+                      .handleToggleLike(track.id, track.isLiked);
                 },
               ),
             ],

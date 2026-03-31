@@ -9,8 +9,8 @@ import '../widgets/track_info_header.dart';
 
 /// A page that displays detailed information and engagement data for a specific track.
 ///
-/// This page acts as the main scaffold, fetching data via [trackDetailsProvider] 
-/// and orchestrating the [TrackInfoHeader], [TrackActionBar], [TrackDetailsSection], 
+/// This page acts as the main scaffold, fetching data via [trackDetailsProvider]
+/// and orchestrating the [TrackInfoHeader], [TrackActionBar], [TrackDetailsSection],
 /// and [FansLeaderboard] widgets to provide a comprehensive view of the track.
 ///
 /// Requires a [trackId] to fetch the relevant track data.
@@ -21,7 +21,7 @@ class BehindTheTrackPage extends ConsumerWidget {
   const BehindTheTrackPage({super.key, required this.trackId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref){
+  Widget build(BuildContext context, WidgetRef ref) {
     final trackAsync = ref.watch(trackDetailsProvider(trackId));
 
     return Scaffold(
@@ -50,7 +50,7 @@ class BehindTheTrackPage extends ConsumerWidget {
 
                         style: IconButton.styleFrom(
                           backgroundColor: AppTheme.surface,
-                          shape:   const CircleBorder(),
+                          shape: const CircleBorder(),
                           padding: const EdgeInsets.all(8),
                         ),
                       ),

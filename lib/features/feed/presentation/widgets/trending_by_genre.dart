@@ -71,9 +71,7 @@ class _TrendingByGenreState extends State<TrendingByGenre>
             return Stack(
               children: [
                 // USING POSITIONED.FILL FIXES THE COLLAPSED HEIGHT ISSUE
-                Positioned.fill(
-                  child: Container(color: AppTheme.background),
-                ),
+                Positioned.fill(child: Container(color: AppTheme.background)),
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -111,7 +109,11 @@ class _TrendingByGenreState extends State<TrendingByGenre>
                 // CONTENT LAYER
                 ClipRect(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22,tileMode: TileMode.decal,),
+                    filter: ImageFilter.blur(
+                      sigmaX: 22,
+                      sigmaY: 22,
+                      tileMode: TileMode.decal,
+                    ),
                     child: Container(
                       color: Colors.transparent,
                       child: Column(
@@ -208,9 +210,7 @@ class GenreTabView extends ConsumerWidget {
       key: const Key('genre_tab_view'),
       controller: tabController,
       children: genres.map((genre) {
-        final asyncTracks = ref.watch(
-          trendingTracksProvider(genre),
-        );
+        final asyncTracks = ref.watch(trendingTracksProvider(genre));
 
         return asyncTracks.when(
           data: (tracks) {
