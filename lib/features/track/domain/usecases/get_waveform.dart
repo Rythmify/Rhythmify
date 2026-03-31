@@ -4,6 +4,7 @@ import '../repositories/track_repository.dart';
 ///
 /// It communicates with the [TrackRepository] to get a list of doubles
 /// representing the track's waveform amplitude.
+
 class GetWaveform {
   final TrackRepository repository;
 

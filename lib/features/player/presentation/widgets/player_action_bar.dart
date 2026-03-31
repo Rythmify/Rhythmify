@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 /// Includes like count, comments, sharing, and playlist management.
 ///
 /// Depends on [trackDetailsProvider].
+
 class PlayerActionBar extends ConsumerWidget {
   /// The ID of the track for which to display actions.
   final String trackId;
@@ -25,19 +26,26 @@ class PlayerActionBar extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // ------ Like Icon ------
           Row(
             children: [
-              const Icon(
-                key: Key('player_action_bar_favorite_icon'),
-                Icons.favorite_border,
-                color: Colors.white,
+              Icon(
+                key: const Key('player_action_bar_favorite_icon'),
+                (trackAsync.value?.isLiked ?? false)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: (trackAsync.value?.isLiked ?? false)
+                    ? AppTheme.primaryBrand
+                    : Colors.white,
               ),
               const SizedBox(width: 6),
               trackAsync.when(
                 data: (track) => Text(
                   Formatters.formatCount(track.likeCount),
                   key: const Key('player_action_bar_like_count_text'),
-                  style: AppTheme.bodyNormal,
+                  style: AppTheme.bodyNormal.copyWith(
+                    color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                  ),
                 ),
                 loading: () => const SizedBox(
                   width: 10,
@@ -59,21 +67,57 @@ class PlayerActionBar extends ConsumerWidget {
               ),
             ],
           ),
-          const Icon(
-            key: Key('player_action_bar_comment_icon'),
-            Icons.chat_bubble_outline,
-            color: Colors.white,
+
+          // ------ Comment Icon ------
+          Row(
+            children: [
+              const Icon(
+                key: Key('player_action_bar_comment_icon'),
+                Icons.chat_outlined,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 6),
+              trackAsync.when(
+                data: (track) => Text(
+                  Formatters.formatCount(track.commentCount),
+                  key: const Key('player_action_bar_comment_count_text'),
+                  style: AppTheme.bodyNormal,
+                ),
+                loading: () => const SizedBox(
+                  width: 10,
+                  height: 10,
+                  child: CircularProgressIndicator(
+                    key: Key(
+                      'player_action_bar_comment_count_loading_indicator',
+                    ),
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                error: (a, b) => const Text(
+                  '0',
+                  key: Key('player_action_bar_comment_count_error_text'),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
           const Icon(
             key: Key('player_action_bar_share_icon'),
             Icons.share_outlined,
             color: Colors.white,
           ),
+
           const Icon(
             key: Key('player_action_bar_playlist_icon'),
-            Icons.playlist_play,
+            Icons.queue_music,
+            size: 25,
             color: Colors.white,
           ),
+
           const Icon(
             key: Key('player_action_bar_more_icon'),
             Icons.more_vert,

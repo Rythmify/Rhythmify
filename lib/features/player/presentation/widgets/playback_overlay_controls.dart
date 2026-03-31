@@ -9,6 +9,7 @@ import '../../domain/entities/player_state.dart';
 /// provide clear control options over the background artwork.
 ///
 /// Depends on [playerStateProvider].
+
 class PlaybackOverlayControls extends ConsumerWidget {
   const PlaybackOverlayControls({super.key});
 
@@ -42,20 +43,23 @@ class PlaybackOverlayControls extends ConsumerWidget {
                           .read(playerStateProvider.notifier)
                           .skipToPrevious(),
                     ),
-                    const SizedBox(width: 32),
+
+                    const SizedBox(width: 100), // contorol separation
+
                     _buildCircleControlButton(
                       key: const Key(
                         'player_overlay_play_pause_gesturedetector',
                       ),
                       icon: Icons.play_arrow,
-                      size: 55,
-                      iconSize: 35,
+                      size: 50,
+                      iconSize: 30,
                       color: const Color.fromARGB(255, 18, 18, 18),
                       onTap: () => ref
                           .read(playerStateProvider.notifier)
                           .togglePlayPause(),
                     ),
-                    const SizedBox(width: 32),
+                    const SizedBox(width: 100), // contorol separation
+
                     _buildCircleControlButton(
                       key: const Key(
                         'player_overlay_skip_next_gesturedetector',
@@ -77,8 +81,8 @@ class PlaybackOverlayControls extends ConsumerWidget {
     Key? key,
     required IconData icon,
     required VoidCallback onTap,
-    double size = 42,
-    double iconSize = 25,
+    double size = 40,
+    double iconSize = 30,
     Color? color,
   }) {
     return GestureDetector(

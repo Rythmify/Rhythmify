@@ -8,14 +8,14 @@ import '../../../../core/theme/app_theme.dart';
 /// track information.
 class TrackInfoBox extends StatelessWidget {
   /// The summary metadata of the track to display.
-  final Track summary;
+  final Track trackInfo;
 
   /// Callback to navigate to the detailed track information page.
   final VoidCallback onNavigateBehindTrack;
 
   const TrackInfoBox({
     super.key,
-    required this.summary,
+    required this.trackInfo,
     required this.onNavigateBehindTrack,
   });
 
@@ -33,19 +33,29 @@ class TrackInfoBox extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: RichText(
-              text: TextSpan(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.5,
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextSpan(
-                    text: '${summary.title}\n',
+                  Text(
+                    trackInfo.title,
                     style: AppTheme.titleMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  TextSpan(
-                    text: summary.artist,
+                  Text(
+                    trackInfo.artist,
                     style: AppTheme.titleMedium.copyWith(
                       fontSize: 16,
                       color: AppTheme.semiWhite,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

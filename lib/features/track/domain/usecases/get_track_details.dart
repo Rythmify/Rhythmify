@@ -4,6 +4,7 @@ import '../repositories/track_repository.dart';
 /// [GetTrackDetails] is a use case responsible for fetching a single track's full details.
 ///
 /// It ensures that a valid track ID is provided before querying the [TrackRepository].
+
 class GetTrackDetails {
   final TrackRepository repository;
 
