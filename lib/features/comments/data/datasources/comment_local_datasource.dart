@@ -46,7 +46,7 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     if (_isInitialized) return;
 
     try {
-      final jsonString = await rootBundle.loadString('assets/mock_comments.json');
+      final jsonString = await rootBundle.loadString('assets/mocks/mock_comments.json');
       final List<dynamic> jsonData = jsonDecode(jsonString);
 
       _db = jsonData.map((json) => CommentDto.fromJson(json)).toList();

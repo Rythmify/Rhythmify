@@ -1,0 +1,141 @@
+import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/time_utils.dart';
+import '../../domain/entities/comment.dart';
+
+class CommentCard extends StatelessWidget {
+  final Comment comment;
+  final VoidCallback? onLike;
+  final VoidCallback? onReply;
+  final VoidCallback? onMore;
+  final VoidCallback? onShowReplies;
+  final bool isReply;
+
+  const CommentCard({
+    super.key,
+    required this.comment,
+    this.onLike,
+    this.onReply,
+    this.onMore,
+    this.onShowReplies,
+    this.isReply = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: isReply ? 48.0 : 16.0,
+        right: 16.0,
+        top: 8.0,
+        bottom: 8.0,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: isReply ? 12 : 16,
+            backgroundImage: comment.userPfp != null
+                ? NetworkImage(comment.userPfp!)
+                : null,
+            child: comment.userPfp == null
+                ? Icon(Icons.person, size: isReply ? 12 : 16)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      comment.userDisplayName,
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'at ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
+                      style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text('·', style: TextStyle(color: Colors.white70)),
+                    const SizedBox(width: 4),
+                    Text(
+                      TimeUtils.formatRelativeDate(comment.createdAt),
+                      style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  comment.content,
+                  style: AppTheme.bodyNormal.copyWith(fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (!isReply) ...[
+                      GestureDetector(
+                        onTap: onReply,
+                        child: Text(
+                          'Reply',
+                          style: AppTheme.labelSmall.copyWith(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    GestureDetector(
+                      onTap: onMore,
+                      child: const Icon(
+                        Icons.more_vert,
+                        size: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+                if (!isReply && comment.replyCount > 0)
+                  TextButton.icon(
+                    onPressed: onShowReplies,
+                    icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+                    label: Text('Show ${comment.replyCount} replies'),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: AppTheme.primaryBrand,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              IconButton(
+                onPressed: onLike,
+                icon: Icon(
+                  comment.isLikedByMe ? Icons.favorite : Icons.favorite_border,
+                  size: 16,
+                  color: comment.isLikedByMe ? Colors.red : Colors.white70,
+                ),
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
+              ),
+              Text(
+                comment.likesCount.toString(),
+                style: AppTheme.labelSmall.copyWith(fontSize: 10),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

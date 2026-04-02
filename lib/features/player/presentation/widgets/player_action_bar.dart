@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../track/presentation/providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -69,41 +70,52 @@ class PlayerActionBar extends ConsumerWidget {
           ),
 
           // ------ Comment Icon ------
-          Row(
-            children: [
-              const Icon(
-                key: Key('player_action_bar_comment_icon'),
-                Icons.chat_outlined,
-                color: Colors.white,
-              ),
-              const SizedBox(width: 6),
-              trackAsync.when(
-                data: (track) => Text(
-                  Formatters.formatCount(track.commentCount),
-                  key: const Key('player_action_bar_comment_count_text'),
-                  style: AppTheme.bodyNormal,
+          GestureDetector(
+            onTap: () {
+              trackAsync.whenData((track) {
+                context.pushNamed(
+                  'comments',
+                  pathParameters: {'trackId': track.id},
+                  extra: track,
+                );
+              });
+            },
+            child: Row(
+              children: [
+                const Icon(
+                  key: Key('player_action_bar_comment_icon'),
+                  Icons.chat_outlined,
+                  color: Colors.white,
                 ),
-                loading: () => const SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(
-                    key: Key(
-                      'player_action_bar_comment_count_loading_indicator',
+                const SizedBox(width: 6),
+                trackAsync.when(
+                  data: (track) => Text(
+                    Formatters.formatCount(track.commentCount),
+                    key: const Key('player_action_bar_comment_count_text'),
+                    style: AppTheme.bodyNormal,
+                  ),
+                  loading: () => const SizedBox(
+                    width: 10,
+                    height: 10,
+                    child: CircularProgressIndicator(
+                      key: Key(
+                        'player_action_bar_comment_count_loading_indicator',
+                      ),
+                      strokeWidth: 2,
+                      color: Colors.white,
                     ),
-                    strokeWidth: 2,
-                    color: Colors.white,
+                  ),
+                  error: (a, b) => const Text(
+                    '0',
+                    key: Key('player_action_bar_comment_count_error_text'),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                error: (a, b) => const Text(
-                  '0',
-                  key: Key('player_action_bar_comment_count_error_text'),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           const Icon(
             key: Key('player_action_bar_share_icon'),
