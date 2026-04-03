@@ -7,6 +7,8 @@ import 'package:audio_service/audio_service.dart';
 import 'features/player/data/datasources/audio_handler.dart';
 import 'features/player/presentation/providers/player_dependency_providers.dart';
 
+// import'core/network/api_client.dart';
+
 late AudioHandler globalAudioHandler;
 
 void main() async {
@@ -24,6 +26,12 @@ void main() async {
       androidStopForegroundOnPause: true,
     ),
   );
+  //added by hana to test upload module 
+  // TEMPORARY — hardcoded test token from Postman
+  // Remove when M1 authentication is properly integrated
+  // await apiClient.saveToken(
+  //   'YOUR_TOKEN_FROM_POSTMAN_HERE',
+  // );
 
   runApp(
     ProviderScope(

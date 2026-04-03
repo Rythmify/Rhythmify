@@ -24,9 +24,6 @@ import 'package:dartz/dartz.dart';
 import 'package:rythmify/core/error/failures.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
-import 'package:rythmify/core/error/failures.dart';
-import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
-import 'package:rythmify/features/track_upload/domain/repositories/upload_track_repository.dart';
 
 class UploadTrackUseCase {
   final UploadTrackRepository repository;
@@ -48,6 +45,7 @@ class UploadTrackUseCase {
         : null;
 
     // Double-check audio file still exists on device
+    //commented for teting will uncomment later
     if (!audioFile.existsSync()) {
       return const Left(
         FileFailure('Audio file no longer exists on your device.'),
