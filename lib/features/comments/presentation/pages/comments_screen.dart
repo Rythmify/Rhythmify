@@ -23,10 +23,8 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
-  // NEW: Focus node to control the keyboard
   final FocusNode _focusNode = FocusNode(); 
   
-  // NEW: State for tracking replies
   String? _replyingToCommentId;
   String? _replyingToUsername;
   final Set<String> _expandedCommentIds = {};
@@ -41,7 +39,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   void dispose() {
     _commentController.dispose();
     _scrollController.dispose();
-    _focusNode.dispose(); // Don't forget to dispose
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -51,7 +49,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     }
   }
 
-  // NEW: Helper to toggle reply visibility
   void _toggleReplies(String commentId) {
     setState(() {
       if (_expandedCommentIds.contains(commentId)) {
@@ -62,7 +59,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     });
   }
 
-  // NEW: Helper to cancel a pending reply
   void _cancelReply() {
     setState(() {
       _replyingToCommentId = null;
@@ -117,12 +113,19 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     final position = ref.read(playerStateProvider).position;
     
     if (_replyingToCommentId != null) {
+      final parentId = _replyingToCommentId!;
+      
       // Post a reply
-      ref.read(commentRepliesProvider(_replyingToCommentId!).notifier).postReply(
+      ref.read(commentRepliesProvider(parentId).notifier).postReply(
         widget.track.id,
         _commentController.text,
         position.inSeconds,
       );
+      
+      // FIX 3: Automatically expand the replies section so the user can see their new reply
+      setState(() {
+        _expandedCommentIds.add(parentId);
+      });
     } else {
       // Post a top-level comment
       ref.read(trackCommentsProvider(widget.track.id).notifier).postNewComment(
@@ -131,7 +134,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       );
     }
 
-    _cancelReply(); // Reset state and close keyboard
+    _cancelReply();
   }
 
   @override
@@ -144,9 +147,16 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        // FIX 2: Added dark grey circle background behind the X icon
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundColor: Colors.grey[900],
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
         titleSpacing: 0,
         title: Text(
@@ -162,13 +172,12 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       ),
       body: Column(
         children: [
+          // FIX 1: Moved track header outside of the scroll view so it remains static
+          _buildTrackHeader(),
           Expanded(
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
-                SliverToBoxAdapter(
-                  child: _buildTrackHeader(),
-                ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -185,13 +194,14 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                         children: [
                           CommentCard(
                             comment: comment,
+                            isExpanded: isExpanded, // FIX 5: Pass the expanded state down
                             onLike: () => ref.read(trackCommentsProvider(widget.track.id).notifier).toggleLike(comment.id),
                             onReply: () {
                               setState(() {
                                 _replyingToCommentId = comment.id;
                                 _replyingToUsername = comment.userDisplayName;
                               });
-                              _focusNode.requestFocus(); // Opens keyboard
+                              _focusNode.requestFocus(); 
                             },
                             onMore: () {
                               showModalBottomSheet(context: context, builder: (c) => const SizedBox(height: 200));
@@ -199,7 +209,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                             onShowReplies: () => _toggleReplies(comment.id),
                           ),
                           
-                          // NEW: Render replies if expanded
                           if (isExpanded)
                             Consumer(
                               builder: (context, ref, child) {
@@ -239,7 +248,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   }
 
   Widget _buildTrackHeader() {
-    // ... (Keep your exact existing _buildTrackHeader implementation)
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -310,7 +318,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // NEW: Reply banner
           if (_replyingToUsername != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0, left: 4.0, right: 4.0),
@@ -337,7 +344,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
               Expanded(
                 child: TextField(
                   controller: _commentController,
-                  focusNode: _focusNode, // NEW: Attach the focus node
+                  focusNode: _focusNode,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Add a comment...',

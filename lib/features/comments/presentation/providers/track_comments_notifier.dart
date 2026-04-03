@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../profile/presentation/providers/profile_state.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/repositories/comment_repository.dart';
 import 'track_comments_state.dart';
@@ -57,6 +59,17 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  void incrementReplyCount(String commentId) {
+    state = state.copyWith(
+      comments: state.comments.map((c) {
+        if (c.id == commentId) {
+          return c.copyWith(replyCount: c.replyCount + 1);
+        }
+        return c;
+      }).toList(),
+    );
+  }
+
   Future<void> fetchNextPage() async {
     if (state.hasReachedMax || state.isFetchingNextPage) return;
     await fetchComments();
@@ -74,12 +87,23 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
     final user = authState.user;
 
+    // --- Grab the profile from your ProfileNotifier ---
+    final profileState = ref.read(profileProvider);
+    String? profilePic;
+    String? displayName = user.displayName;
+
+    if (profileState is ProfileLoaded) {
+      profilePic = profileState.profile.avatarUrl; 
+      displayName = profileState.profile.displayName; 
+    }
+    // -------------------------------------------------------
+
     final tempComment = Comment(
       id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
       trackId: trackId,
       userId: user.id,
-      userDisplayName: user.displayName,
-      userPfp: null,
+      userDisplayName: displayName,
+      userPfp: profilePic,
       content: content,
       trackTimestamp: trackTimestamp,
       createdAt: DateTime.now(),
@@ -99,9 +123,13 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         content: content,
         trackTimestamp: trackTimestamp,
       );
+      final populatedRealComment = realComment.copyWith(
+        userDisplayName: displayName,
+        userPfp: profilePic,
+      );
 
       state = state.copyWith(
-        comments: state.comments.map((c) => c.id == tempComment.id ? realComment : c).toList(),
+        comments: state.comments.map((c) => c.id == tempComment.id ? populatedRealComment : c).toList(),
       );
     } catch (e) {
       state = state.copyWith(

@@ -29,35 +29,50 @@ class Comment extends Equatable {
     this.parentId,
   });
 
-  // For local UI optimistic updates
-  // (ex: liking a comment)
-  
+  // Updated copyWith to accept all properties
   Comment copyWith({
+    String? id,
+    String? trackId,
+    String? userId,
+    String? userDisplayName,
+    String? userPfp,
+    String? content,
+    int? trackTimestamp,
+    DateTime? createdAt,
     int? likesCount,
     bool? isLikedByMe,
     int? replyCount,
+    String? parentId,
   }) {
     return Comment(
-      id: id,
-      trackId: trackId,
-      userId: userId,
-      userDisplayName: userDisplayName,
-      userPfp: userPfp,
-      content: content,
-      trackTimestamp: trackTimestamp,
-      createdAt: createdAt,
+      id: id ?? this.id,
+      trackId: trackId ?? this.trackId,
+      userId: userId ?? this.userId,
+      userDisplayName: userDisplayName ?? this.userDisplayName,
+      userPfp: userPfp ?? this.userPfp,
+      content: content ?? this.content,
+      trackTimestamp: trackTimestamp ?? this.trackTimestamp,
+      createdAt: createdAt ?? this.createdAt,
       likesCount: likesCount ?? this.likesCount,
       isLikedByMe: isLikedByMe ?? this.isLikedByMe,
       replyCount: replyCount ?? this.replyCount,
-      parentId: parentId,
+      parentId: parentId ?? this.parentId,
     );
   }
 
   @override
-  List<Object?> get props =>
-  [
-    id, trackId, userId, userDisplayName,
-    userPfp, content, trackTimestamp, createdAt, 
-    likesCount, isLikedByMe, replyCount, parentId,
-  ];
+  List<Object?> get props => [
+        id,
+        trackId,
+        userId,
+        userDisplayName,
+        userPfp,
+        content,
+        trackTimestamp,
+        createdAt,
+        likesCount,
+        isLikedByMe,
+        replyCount,
+        parentId,
+      ];
 }
