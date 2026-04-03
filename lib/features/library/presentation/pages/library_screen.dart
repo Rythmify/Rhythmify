@@ -11,9 +11,7 @@ class LibraryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final currentUserEmail = authState is AuthAuthenticated
-        ? authState.user.email
-        : '';
+    final currentUserEmail = authState is AuthAuthenticated ? authState.user.email : '';
 
     return Scaffold(
       appBar: AppBar(
@@ -22,7 +20,7 @@ class LibraryScreen extends ConsumerWidget {
         actions: [
           TextButton(
             key: const Key('library_get_pro_text_button'),
-            onPressed: () {},
+            onPressed: () => context.push('/upgrade'),
             child: Text(
               'GET PRO',
               style: AppTheme.labelLarge.copyWith(
@@ -46,14 +44,10 @@ class LibraryScreen extends ConsumerWidget {
             child: GestureDetector(
               key: const Key('library_profile_avatar_gesture_detector'),
               onTap: () => context.push('/profile/me'),
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 18,
                 backgroundColor: AppTheme.surface,
-                child: const Icon(
-                  Icons.person,
-                  color: AppTheme.textSecondary,
-                  size: 20,
-                ),
+                child: Icon(Icons.person, color: AppTheme.textSecondary, size: 20),
               ),
             ),
           ),
@@ -64,49 +58,37 @@ class LibraryScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _libraryItem(
-              context,
-              label: 'Your likes',
-              onTap: () => context.push('/profile/me/likes'),
-            ),
-            _libraryItem(
-              context,
-              label: 'Playlists',
-              onTap: () => context.push('/library/playlist'),
-            ),
-            _libraryItem(context, label: 'Albums', onTap: () {}),
-            _libraryItem(context, label: 'Following', onTap: () {}),
-            _libraryItem(context, label: 'Stations', onTap: () {}),
-            _libraryItem(context, label: 'Your insights', onTap: () {}),
+            _libraryItem(context, label: 'Your likes', icon: Icons.favorite_border, key: const Key('library_likes_item'), onTap: () => context.push('/profile/me/likes')),
+            _libraryItem(context, label: 'Recently played', icon: Icons.history, key: const Key('library_history_item'), onTap: () => context.push('/library/history')),
+            _libraryItem(context, label: 'Playlists', icon: Icons.queue_music, key: const Key('library_playlists_item'), onTap: () => context.push('/library/playlists')),
+            _libraryItem(context, label: 'Albums', icon: Icons.album_outlined, key: const Key('library_albums_item'), onTap: () {}),
+            _libraryItem(context, label: 'Following', icon: Icons.people_outline, key: const Key('library_following_item'), onTap: () => context.push('/library/following')),
+            _libraryItem(context, label: 'Stations', icon: Icons.radio, key: const Key('library_stations_item'), onTap: () => context.push('/library/stations')),
+            _libraryItem(context, label: 'Your uploads', icon: Icons.cloud_upload_outlined, key: const Key('library_uploads_item'), onTap: () => context.push('/library/uploads')),
+            _libraryItem(context, label: 'Your insights', icon: Icons.bar_chart, key: const Key('library_insights_item'), onTap: () => context.push('/library/insights')),
 
             const SizedBox(height: 16),
-            if (currentUserEmail.isNotEmpty)
+            if (currentUserEmail.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Logged in as $currentUserEmail',
-                  style: AppTheme.labelSmall,
-                ),
+                child: Text('Logged in as $currentUserEmail', style: AppTheme.labelSmall),
               ),
-            if (currentUserEmail.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        ref.read(authProvider.notifier).signOutUser(),
+                    onPressed: () => ref.read(authProvider.notifier).signOutUser(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Text('DEV LOGOUT'),
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),
@@ -116,19 +98,21 @@ class LibraryScreen extends ConsumerWidget {
   Widget _libraryItem(
     BuildContext context, {
     required String label,
+    required IconData icon,
     required VoidCallback onTap,
+    Key? key,
   }) {
     return Column(
       children: [
         GestureDetector(
-          key: Key(
-            'library_${label.toLowerCase().replaceAll(' ', '_')}_item_gesture_detector',
-          ),
+          key: key,
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               children: [
+                Icon(icon, color: AppTheme.textSecondary, size: 22),
+                const SizedBox(width: 14),
                 Expanded(child: Text(label, style: AppTheme.titleMedium)),
                 const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
               ],
