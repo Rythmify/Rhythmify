@@ -29,8 +29,26 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
     ref.read(searchQueryProvider.notifier).update('');
   }
 
+  void _onSubmitted(String value) {
+    if (value.trim().isNotEmpty) {
+      ref.read(searchSubmittedProvider.notifier).submit();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = ref.read(searchQueryProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(searchQueryProvider, (_, next) {
+      if (_controller.text != next) {
+        _controller.text = next;
+        _controller.selection = TextSelection.collapsed(offset: next.length);
+      }
+    });
     final query = ref.watch(searchQueryProvider);
 
     return TapRegion(
@@ -42,6 +60,7 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
+            onSubmitted: _onSubmitted,
             decoration: InputDecoration(
               hintText: 'Search',
               contentPadding: const EdgeInsets.symmetric(vertical: 0),

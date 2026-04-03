@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/search_suggestions_list.dart';
+import '../widgets/search_results_tab.dart';
 import '../widgets/vibes_grid.dart';
 import '../pages/vibes_genre_page.dart';
 
@@ -12,6 +13,14 @@ class SearchScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(searchQueryProvider);
+    final submitted = ref.watch(searchSubmittedProvider); // ← new
+
+    // reset submitted when query is cleared
+    ref.listen(searchQueryProvider, (_, next) {
+      if (next.trim().isEmpty) {
+        ref.read(searchSubmittedProvider.notifier).reset();
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Search'), centerTitle: false),
@@ -19,7 +28,9 @@ class SearchScreen extends ConsumerWidget {
         children: [
           const SearchBarWidget(),
 
-          if (query.trim().isNotEmpty)
+          if (submitted)
+            const Expanded(child: SearchResultsTabs()) // ← new
+          else if (query.trim().isNotEmpty)
             const Expanded(child: SearchSuggestionsList())
           else
             Expanded(

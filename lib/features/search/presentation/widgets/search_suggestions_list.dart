@@ -23,6 +23,12 @@ class SearchSuggestionsList extends ConsumerWidget {
             return ListTile(
               title: Text(suggestions[i].text),
               trailing: const Icon(Icons.north_west, size: 16),
+              onTap: () {
+                ref
+                    .read(searchQueryProvider.notifier)
+                    .update(suggestions[i].text);
+                ref.read(searchSubmittedProvider.notifier).submit();
+              },
             );
           },
         );
