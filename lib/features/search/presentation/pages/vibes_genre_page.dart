@@ -1,49 +1,116 @@
 import 'package:flutter/material.dart';
+import '../widgets/vibes_genre_all_tab.dart';
+
+const _genreImages = {
+  'hiphop': 'assets/images/vibes_hiphop.jpeg',
+  'electronic': 'assets/images/vibes_electronic.jpeg',
+  'pop': 'assets/images/vibes_pop.jpeg',
+  'rnb': 'assets/images/vibes_rb.jpeg',
+  'party': 'assets/images/vibes_party.jpeg',
+  'chill': 'assets/images/vibes_chill.jpeg',
+  'techno': 'assets/images/vibes_techno.jpeg',
+  'workout': 'assets/images/vibes_workout.jpeg',
+};
+
+const _genreTitles = {
+  'hiphop': 'Hip Hop & Rap',
+  'electronic': 'Electronic',
+  'pop': 'Pop',
+  'rnb': 'R&B',
+  'party': 'Party',
+  'chill': 'Chill',
+  'techno': 'Techno',
+  'workout': 'Workout',
+};
 
 class GenrePage extends StatelessWidget {
-  final String genre;
-
   const GenrePage({super.key, required this.genre});
+  final String genre;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(genre)),
+    final imagePath = _genreImages[genre] ?? 'assets/images/placeholder.png';
+    final title = _genreTitles[genre] ?? genre;
 
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            "$genre Music",
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
+    final tabs = [
+      GenreAllTab(genreId: genre),
+      const Center(child: Text('Trending — coming soon')),
+      const Center(child: Text('Playlists — coming soon')),
+      const Center(child: Text('Albums — coming soon')),
+    ];
 
-          const SizedBox(height: 20),
-
-          const Text("Trending Tracks"),
-          const SizedBox(height: 10),
-
-          ...List.generate(
-            6,
-            (i) => ListTile(
-              leading: const Icon(Icons.music_note),
-              title: Text("$genre Track ${i + 1}"),
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        body: Column(
+          children: [
+            // ── Header Image ─────────────────────────────
+            Stack(
+              children: [
+                Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Container(height: 220, color: Colors.grey[900]),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top,
+                  left: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(blurRadius: 6, color: Colors.black)],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
 
-          const SizedBox(height: 20),
+            // ── TabBar ───────────────────────────────────
+            const TabBar(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              isScrollable: false,
+              tabAlignment: TabAlignment.fill,
+              dividerColor: Colors.transparent,
 
-          const Text("Playlists"),
-          const SizedBox(height: 10),
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 2,
+                  color: Colors.white, // your active color
+                ),
+                insets: EdgeInsets.symmetric(horizontal: 16),
+              ),
 
-          ...List.generate(
-            3,
-            (i) => ListTile(
-              leading: const Icon(Icons.playlist_play),
-              title: Text("$genre Playlist ${i + 1}"),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelStyle: TextStyle(fontSize: 16),
+
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(text: 'All'),
+                Tab(text: 'Trending'),
+                Tab(text: 'Playlists'),
+                Tab(text: 'Albums'),
+              ],
             ),
-          ),
-        ],
+
+            // ── TabBarView ───────────────────────────────
+            Expanded(child: TabBarView(children: tabs)),
+          ],
+        ),
       ),
     );
   }
