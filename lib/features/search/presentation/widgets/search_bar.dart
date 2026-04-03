@@ -11,10 +11,12 @@ class SearchBarWidget extends ConsumerStatefulWidget {
 
 class _SearchBarState extends ConsumerState<SearchBarWidget> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose(); // ← before super.dispose()
     super.dispose();
   }
 
@@ -31,21 +33,33 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
   Widget build(BuildContext context) {
     final query = ref.watch(searchQueryProvider);
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: _controller,
-        decoration: InputDecoration(
-          hintText: 'Search',
-
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: query.trim().isNotEmpty
-              ? IconButton(icon: const Icon(Icons.clear), onPressed: _onClear)
-              : null,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-          filled: true,
+    return TapRegion(
+      onTapOutside: (_) => _focusNode.unfocus(),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          height: 35,
+          child: TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            decoration: InputDecoration(
+              hintText: 'Search',
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: query.trim().isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: _onClear,
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              filled: true,
+            ),
+            onChanged: _onChanged,
+          ),
         ),
-        onChanged: _onChanged,
       ),
     );
   }
