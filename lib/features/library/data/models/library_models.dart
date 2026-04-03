@@ -1,6 +1,4 @@
 import '../../domain/entities/library_entities.dart';
-import '../../../../core/domain/entities/track.dart';
-import '../../../../core/data/models/track_dto.dart';
 
 // ── FollowedUser ──────────────────────────────────────────────────────────────
 
