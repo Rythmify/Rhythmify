@@ -96,15 +96,15 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
       parentId: parentId,
     );
 
-    // 4. Instantly show the reply in the UI
+    // Instantly show the reply in the UI
     state = state.copyWith(
       comments: [...state.comments, tempReply],
     );
 
-    // 5. Instantly increment the parent comment's "Show Replies" counter
+    // Instantly increment the parent comment's "Show Replies" counter
     ref.read(trackCommentsProvider(trackId).notifier).incrementReplyCount(parentId);
 
-    // 6. Send to Server
+    // Send to Server
     try {
       final postComment = ref.read(postCommentProvider);
       final realReply = await postComment(
