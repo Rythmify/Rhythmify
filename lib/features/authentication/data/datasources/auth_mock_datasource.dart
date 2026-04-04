@@ -12,9 +12,9 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     },
     {
       'email': 'bassel@rythmify.com',
-      'password': 'Bassel123!',
+      'password': 'Biso1234',
       'id': 'user-002',
-      'display_name': 'Bassel Alaa',
+      'display_name': 'Biso The King',
     },
     {
       'email': 'rana@rythmify.com',

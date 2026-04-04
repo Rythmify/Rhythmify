@@ -10,7 +10,7 @@ class CommentCard extends StatelessWidget {
   final VoidCallback? onMore;
   final VoidCallback? onShowReplies;
   final bool isReply;
-  final bool isExpanded; // FIX 5: Added to track if replies are currently shown
+  final bool isExpanded;
 
   const CommentCard({
     super.key,
@@ -106,7 +106,6 @@ class CommentCard extends StatelessWidget {
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
                     onPressed: onShowReplies,
-                    // FIX 5: Dynamically toggle the arrow and text based on isExpanded
                     icon: Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 16),
                     label: Text(isExpanded ? 'Show less' : 'Show ${comment.replyCount} replies'),
                     style: TextButton.styleFrom(
