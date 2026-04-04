@@ -63,16 +63,14 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     // Determine if mini player should be visible based on the current route
     final routerState = GoRouterState.of(context);
     final location = routerState.uri.path;
-    final isChatRoute = location.contains(
-      '/chat',
-    ); // Match '/chat' or '/chat/:id'
+    final isChatRoute = location.contains('/chat');
     final isVisible = !isChatRoute;
 
     // We use a local variable to capture the minSize during build
     final currentMinSize = _minSize;
 
     // Displacement for the "go down" animation.
-    // We move it by the full screen height to be absolutely sure it's gone.
+    // We move it by the full screen height to be absolutely sure it's gone on chat routes.
     final double displacement = isVisible ? 0 : screenHeight;
 
     return Scaffold(
@@ -163,39 +161,38 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
             ),
 
           // 3. Bottom Navigation (Floating on top)
-          if (!isChatRoute)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: AnimatedBuilder(
-                animation: _draggableController,
-                builder: (context, child) {
-                  double t = 0.0;
-                  if (_draggableController.isAttached) {
-                    t =
-                        ((_draggableController.size - currentMinSize) /
-                                (_maxSize - currentMinSize))
-                            .clamp(0.0, 1.0);
-                  }
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedBuilder(
+              animation: _draggableController,
+              builder: (context, child) {
+                double t = 0.0;
+                if (_draggableController.isAttached) {
+                  t =
+                      ((_draggableController.size - currentMinSize) /
+                              (_maxSize - currentMinSize))
+                          .clamp(0.0, 1.0);
+                }
 
-                  return IgnorePointer(
-                    ignoring: t > 0.2, // Disable clicks as it slides away
-                    child: Transform.translate(
-                      offset: Offset(0, _navBarHeight * t),
-                      child: Opacity(
-                        opacity: (1 - t).clamp(0.0, 1.0),
-                        child: child,
-                      ),
+                return IgnorePointer(
+                  ignoring: t > 0.2, // Disable clicks as it slides away
+                  child: Transform.translate(
+                    offset: Offset(0, _navBarHeight * t),
+                    child: Opacity(
+                      opacity: (1 - t).clamp(0.0, 1.0),
+                      child: child,
                     ),
-                  );
-                },
-                child: BottomNavigation(
-                  key: const Key('main_bottom_navigation_bar'),
-                  navigationShell: widget.navigationShell,
-                ),
+                  ),
+                );
+              },
+              child: BottomNavigation(
+                key: const Key('main_bottom_navigation_bar'),
+                navigationShell: widget.navigationShell,
               ),
             ),
+          ),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// A [FloatingActionButton] used to initiate the composition of a new message.
 class ComposeButton extends StatelessWidget {
   final VoidCallback? onPressed;
   const ComposeButton({super.key, this.onPressed});

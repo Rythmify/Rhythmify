@@ -4,8 +4,12 @@ import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
+/// Mock implementation of [DatasourceInterface] for testing and development.
+///
+/// This class provides simulated messaging data and delayed responses to mimic
+/// network latency without making actual API calls.
 class MockDatasourceImplement implements DatasourceInterface {
-  // All known users — used in followings, search, and conversations
+  /// Internal storage for simulated users.
   final Map<String, PotentialConversationModel> _allUsers = {
     'u2': PotentialConversationModel(
       participantId: 'u2',
@@ -58,9 +62,10 @@ class MockDatasourceImplement implements DatasourceInterface {
     ),
   };
 
-  // Followings — subset of all users (u2, u3 already have conversations)
+  /// Simulated IDs of users followed by the current user.
   final List<String> _followingIds = ['u2', 'u3', 'u4', 'u5', 'u6'];
 
+  /// Internal storage for simulated conversations.
   late final List<ConversationModel> _conversations = [
     ConversationModel(
       conversationId: 'c1',
@@ -82,6 +87,7 @@ class MockDatasourceImplement implements DatasourceInterface {
     ),
   ];
 
+  /// Internal storage for simulated messages indexed by conversation ID.
   final Map<String, List<MessageModel>> _messagesByConversation = {
     'c1': [
       MessageModel(

@@ -1,3 +1,5 @@
+
+
 /// Widget: AudioPickerWidget
 ///
 /// Displays selected audio file information and artwork picker.
@@ -12,11 +14,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/track_upload/presentation/widgets/upload_button_widget.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
+
 
 class AudioPickerWidget extends ConsumerWidget {
   const AudioPickerWidget({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
-import 'package:rythmify/features/messaging/presentation/pages/chat_screen.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/search_conversation_tile.dart';
 
@@ -29,15 +29,14 @@ class SearchBody extends ConsumerWidget {
           participantAvatar: user.avatar,
           participantCountry: user.location,
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChatScreen(
-                  conv: previousConv,
-                  newParticipantId: user.participantId,
-                  newParticipantName: user.participantName,
-                ),
-              ),
+            final chatId = previousConv?.conversationId ?? 'new';
+            context.go(
+              '/home/inbox/chat/$chatId',
+              extra: {
+                'conv': previousConv,
+                'newParticipantId': user.participantId,
+                'newParticipantName': user.participantName,
+              },
             );
           },
         );

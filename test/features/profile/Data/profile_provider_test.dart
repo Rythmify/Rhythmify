@@ -257,7 +257,7 @@ List<Track> makeTracks(int count) =>
 // Factory
 // ---------------------------------------------------------------------------
 
-_ProfileNotifierUnderTest makeNotifier(MockProfileRepository repo) =>
+_ProfileNotifierUnderTest _makeNotifier(MockProfileRepository repo) =>
     _ProfileNotifierUnderTest(
       getProfileUC: GetProfileUseCase(repo),
       updateProfileUC: UpdateProfileUseCase(repo),
@@ -298,7 +298,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockProfileRepository();
-    notifier = makeNotifier(mockRepo);
+    notifier = _makeNotifier(mockRepo);
     // Initialise the notifier
     final provider = NotifierProvider<_ProfileNotifierUnderTest, ProfileState>(
       () => notifier,

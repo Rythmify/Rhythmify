@@ -4,6 +4,12 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../providers/player_provider.dart';
 
+/// A seekable progress bar displaying the current playback position and duration.
+///
+/// This widget allows users to jump to different parts of a track and
+/// provides visual feedback on current progress.
+///
+/// Depends on [playerStateProvider].
 class PlayerProgressBar extends ConsumerStatefulWidget {
   const PlayerProgressBar({super.key});
 
@@ -12,11 +18,11 @@ class PlayerProgressBar extends ConsumerStatefulWidget {
 }
 
 class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
+  /// Local state to manage smooth dragging without being interrupted by the position stream.
   double? _dragValue;
 
   @override
   Widget build(BuildContext context) {
-    // Watch the global position and duration
     final position = ref.watch(
       playerStateProvider.select((state) => state.position),
     );
@@ -28,7 +34,6 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
         ? duration.inMilliseconds.toDouble()
         : 1.0;
 
-    // Use the local drag value if it exists, otherwise use the stream position
     final currentPos =
         _dragValue ??
         position.inMilliseconds.toDouble().clamp(0.0, maxDuration);
@@ -49,9 +54,7 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 6,
-              ), // Added small thumb for better visual feedback
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
               activeTrackColor: AppTheme.primaryBrand,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
@@ -61,23 +64,43 @@ class _PlayerProgressBarState extends ConsumerState<PlayerProgressBar> {
               min: 0,
               max: maxDuration,
               value: currentPos,
+
               onChangeStart: (value) {
+                // 1. Keep the slider thumb smooth locally
                 setState(() {
                   _dragValue = value;
                 });
-              },
-              onChanged: (value) {
-                setState(() {
-                  _dragValue = value;
-                });
-              },
-              onChangeEnd: (value) {
-                // Only trigger the actual seek when the user releases their finger
+
+                // 2. Tell the UI (like the blur and artwork) that we are dragging
                 ref
-                    .read(playerStateProvider.notifier)
-                    .seek(Duration(milliseconds: value.toInt()));
+                    .read(seekDragPositionProvider.notifier)
+                    .setPosition(Duration(milliseconds: value.toInt()));
+              },
+
+              onChanged: (value) {
+                // 1. Move the slider thumb locally
                 setState(() {
-                  _dragValue = null; // Resume following the stream
+                  _dragValue = value;
+                });
+
+                // 2. Move the artwork background instantly via the temporary provider
+                ref
+                    .read(seekDragPositionProvider.notifier)
+                    .setPosition(Duration(milliseconds: value.toInt()));
+              },
+
+              onChangeEnd: (value) {
+                final newPosition = Duration(milliseconds: value.toInt());
+
+                // 1. Tell the ACTUAL audio package to skip to the new spot
+                ref.read(playerStateProvider.notifier).seek(newPosition);
+
+                // 2. Clear the drag state so the background snaps back to listening to the audio stream
+                ref.read(seekDragPositionProvider.notifier).setPosition(null);
+
+                // 3. Clear the local slider state
+                setState(() {
+                  _dragValue = null;
                 });
               },
             ),

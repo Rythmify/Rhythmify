@@ -1,5 +1,8 @@
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 
+/// A map of mock [Message] lists indexed by conversation ID.
+///
+/// Used for providing simulated message histories in previews, tests, and development.
 final Map<String, List<Message>> mockMessagesByConversation = {
   'c1': [
     Message(

@@ -1,18 +1,53 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/domain/entities/track.dart';
 
-enum PlayerStatus { initial, loading, playing, paused, stopped, error }
+/// Represents the current playback status of the audio player.
+enum PlayerStatus {
+  /// Initial state before any track is loaded.
+  initial,
 
+  /// Audio is being buffered or loaded.
+  loading,
+
+  /// Audio is currently playing.
+  playing,
+
+  /// Audio is paused.
+  paused,
+
+  /// Playback has stopped or finished.
+  stopped,
+
+  /// An error occurred during playback.
+  error,
+}
+
+/// Represents the global state of the audio player, including current track,
+/// playback position, duration, and playback modes.
+///
+/// This entity is used across the [Domain] and [Presentation] layers to
+/// represent the UI state of the player.
 class AppPlayerState extends Equatable {
+  /// The current status of the player.
   final PlayerStatus status;
-  final Track? currentTrack;
-  final Duration position;
-  final Duration bufferedPosition;
-  final Duration duration;
-  final bool isShuffleModeEnabled;
-  final String loopMode;
 
-  /// 'off', 'all', 'one'
+  /// The currently active track, if any.
+  final Track? currentTrack;
+
+  /// The current playback position.
+  final Duration position;
+
+  /// The current buffered position.
+  final Duration bufferedPosition;
+
+  /// The total duration of the current track.
+  final Duration duration;
+
+  /// Whether shuffle mode is currently active.
+  final bool isShuffleModeEnabled;
+
+  /// The current loop mode (e.g., 'off', 'all', 'one').
+  final String loopMode;
 
   const AppPlayerState({
     this.status = PlayerStatus.initial,
@@ -24,6 +59,7 @@ class AppPlayerState extends Equatable {
     this.loopMode = 'off',
   });
 
+  /// Returns a copy of the current state with the given fields replaced.
   AppPlayerState copyWith({
     PlayerStatus? status,
     Track? currentTrack,
@@ -44,8 +80,6 @@ class AppPlayerState extends Equatable {
     );
   }
 
-  /// If the variables inside this list match,
-  /// consider the whole object identical
   @override
   List<Object?> get props => [
     status,

@@ -1,3 +1,4 @@
+
 /// Widget: UploadButtonWidget
 ///
 /// Animated button displaying upload progress.
@@ -9,8 +10,15 @@
 ///
 /// Notes:
 /// - Uses AnimationController for smooth transitions
+
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+
+enum UploadButtonState { uploading, processing, done }
+
+
+
+
 
 class UploadButtonWidget extends StatelessWidget {
   final UploadStatus status;

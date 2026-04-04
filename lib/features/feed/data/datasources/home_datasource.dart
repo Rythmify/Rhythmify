@@ -30,7 +30,6 @@ class HomeDatasource {
 
     final tracks = jsonList.map((json) => TrackDto.fromJson(json)).toList();
 
-    // TODO: Filter tracks by genre when backend supports it
     return tracks;
   }
 

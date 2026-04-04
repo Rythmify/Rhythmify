@@ -1,5 +1,9 @@
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 
+/// Data model representing a [Message].
+///
+/// This class extends [Message] and provides methods for JSON serialization
+/// and deserialization to interact with the [RemoteDataSource].
 class MessageModel extends Message {
   MessageModel({
     required super.messageId,
@@ -12,6 +16,7 @@ class MessageModel extends Message {
     required super.createdAt,
   });
 
+  /// Factory constructor to create a [MessageModel] from a JSON object.
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
       messageId: json['id'],
@@ -25,6 +30,7 @@ class MessageModel extends Message {
     );
   }
 
+  /// Converts this [MessageModel] instance into a JSON object.
   Map<String, dynamic> toJson() {
     return {
       'id': messageId,

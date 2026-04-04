@@ -1,3 +1,5 @@
+
+
 /// Domain Repository Interface: UploadTrackRepository
 ///
 /// Defines the contract for track upload operations.
@@ -7,7 +9,7 @@
 /// - Upload audio track with metadata
 ///
 /// Notes:
-/// - Returns Either<Failure, Result> for error handling
+/// - Returns Either `<Failure, Result>` for error handling
 /// - Implementation is provided in the Data layer
 /// - Domain layer does NOT know how data is fetched/uploaded
 import 'dart:io';

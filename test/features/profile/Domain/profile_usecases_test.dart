@@ -618,5 +618,5 @@ void main() {
 }
 
 extension on Either<Failure, void> {
-  get value => null;
+  dynamic get value => null;
 }

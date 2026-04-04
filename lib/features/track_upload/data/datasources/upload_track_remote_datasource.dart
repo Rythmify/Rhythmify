@@ -1,3 +1,9 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:mime/mime.dart';
+import 'package:rythmify/core/network/api_client.dart';
+import '../models/upload_response_model.dart';
+
 /// Data Source: UploadTrackRemoteDataSource
 ///
 /// Handles all remote API operations related to track upload.
@@ -13,11 +19,6 @@
 /// - Uses Dio for HTTP requests
 /// - Uses MultipartFile for sending audio and image files
 /// - Does NOT return domain entities, only data models
-import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:mime/mime.dart';
-import 'package:rythmify/core/network/api_client.dart';
-import '../models/upload_response_model.dart';
 
 class UploadTrackRemoteDataSource {
   // Uses the shared ApiClient your team leader built

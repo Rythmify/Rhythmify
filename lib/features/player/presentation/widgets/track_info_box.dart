@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// A widget that displays the current track's title and artist.
+///
+/// It also includes a "Behind this track" button for navigating to detailed
+/// track information.
 class TrackInfoBox extends StatelessWidget {
-  final Track summary;
+  /// The summary metadata of the track to display.
+  final Track trackInfo;
+
+  /// Callback to navigate to the detailed track information page.
   final VoidCallback onNavigateBehindTrack;
 
   const TrackInfoBox({
     super.key,
-    required this.summary,
+    required this.trackInfo,
     required this.onNavigateBehindTrack,
   });
 
@@ -26,19 +33,29 @@ class TrackInfoBox extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: RichText(
-              text: TextSpan(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.5,
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextSpan(
-                    text: '${summary.title}\n',
+                  Text(
+                    trackInfo.title,
                     style: AppTheme.titleMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  TextSpan(
-                    text: summary.artist,
+                  Text(
+                    trackInfo.artist,
                     style: AppTheme.titleMedium.copyWith(
                       fontSize: 16,
                       color: AppTheme.semiWhite,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

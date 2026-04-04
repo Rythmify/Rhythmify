@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/player_provider.dart';
 import '../../domain/entities/player_state.dart';
 
+/// An overlay widget that displays primary playback controls (prev, play/pause, next).
+///
+/// This overlay is typically shown when the player is in a paused state to
+/// provide clear control options over the background artwork.
+///
+/// Depends on [playerStateProvider].
+
 class PlaybackOverlayControls extends ConsumerWidget {
   const PlaybackOverlayControls({super.key});
 
@@ -19,7 +26,6 @@ class PlaybackOverlayControls extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        // Replaced heavy BackdropFilter with a smooth, dark overlay
         color: isPaused
             ? Colors.black.withValues(alpha: 0.6)
             : Colors.transparent,
@@ -37,20 +43,23 @@ class PlaybackOverlayControls extends ConsumerWidget {
                           .read(playerStateProvider.notifier)
                           .skipToPrevious(),
                     ),
-                    const SizedBox(width: 32),
+
+                    const SizedBox(width: 100), // contorol separation
+
                     _buildCircleControlButton(
                       key: const Key(
                         'player_overlay_play_pause_gesturedetector',
                       ),
                       icon: Icons.play_arrow,
-                      size: 55,
-                      iconSize: 35,
+                      size: 50,
+                      iconSize: 30,
                       color: const Color.fromARGB(255, 18, 18, 18),
                       onTap: () => ref
                           .read(playerStateProvider.notifier)
                           .togglePlayPause(),
                     ),
-                    const SizedBox(width: 32),
+                    const SizedBox(width: 100), // contorol separation
+
                     _buildCircleControlButton(
                       key: const Key(
                         'player_overlay_skip_next_gesturedetector',
@@ -67,12 +76,13 @@ class PlaybackOverlayControls extends ConsumerWidget {
     );
   }
 
+  /// Helper to build consistent circular control buttons.
   Widget _buildCircleControlButton({
     Key? key,
     required IconData icon,
     required VoidCallback onTap,
-    double size = 42,
-    double iconSize = 25,
+    double size = 40,
+    double iconSize = 30,
     Color? color,
   }) {
     return GestureDetector(

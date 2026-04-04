@@ -1,5 +1,9 @@
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 
+/// Data model representing a [Conversation].
+///
+/// This class extends [Conversation] and provides methods for JSON serialization
+/// and deserialization to interact with the [RemoteDataSource].
 class ConversationModel extends Conversation {
   ConversationModel({
     required super.conversationId,
@@ -11,6 +15,7 @@ class ConversationModel extends Conversation {
     required super.unReadCount,
   });
 
+  /// Factory constructor to create a [ConversationModel] from a JSON object.
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     final participant = json['participant'] as Map<String, dynamic>? ?? {};
     final lastMessage = json['last_message'] as Map<String, dynamic>? ?? {};
@@ -29,6 +34,7 @@ class ConversationModel extends Conversation {
     );
   }
 
+  /// Converts this [ConversationModel] instance into a JSON object.
   Map<String, dynamic> toJson() {
     return {
       'id': conversationId,

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// A widget that displays a circular avatar for a user.
+///
+/// It shows a [NetworkImage] if [img] is provided and not empty,
+/// otherwise it falls back to a default [Icons.person] icon.
 class Avatar extends StatelessWidget {
   final String? img;
   final double radius;
