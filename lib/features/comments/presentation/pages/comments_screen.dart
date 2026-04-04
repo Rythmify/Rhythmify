@@ -1,5 +1,7 @@
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../domain/repositories/comment_repository.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/comment_replies_notifier.dart';
@@ -352,6 +354,12 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
   }
 
   Widget _buildBottomInput(Duration playerPosition) {
+    final authState = ref.watch(authProvider);
+  
+  String? pfpUrl;
+  if (authState is AuthAuthenticated) {
+    pfpUrl = authState.user.avatarUrl; 
+  }
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -384,10 +392,17 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
             ),
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, color: Colors.white),
+                backgroundColor: Colors.grey[800],
+                backgroundImage: pfpUrl != null
+                    ? (pfpUrl.startsWith('http') || pfpUrl.startsWith('https')
+                        ? NetworkImage(pfpUrl) as ImageProvider
+                        : AssetImage(pfpUrl))
+                    : null,
+                child: pfpUrl == null
+                    ? const Icon(Icons.person, color: Colors.white, size: 18)
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(

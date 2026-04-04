@@ -9,18 +9,21 @@ class AuthMockDatasource implements AuthRemoteDatasource {
       'password': 'Karim123!',
       'id': 'user-001',
       'display_name': 'KarimWI',
+      'avatar_url': 'https://avatars.githubusercontent.com/u/1?v=4',
     },
     {
       'email': 'bassel@rythmify.com',
       'password': 'Biso1234',
       'id': 'user-002',
       'display_name': 'Biso The King',
+      'avatar_url': 'https://avatars.githubusercontent.com/u/2?v=4',
     },
     {
       'email': 'rana@rythmify.com',
       'password': 'Rana1234!',
       'id': 'user-004',
       'display_name': 'Rana Elgharabawy',
+      'avatar_url': 'https://avatars.githubusercontent.com/u/3?v=4',
     },
   ];
 
@@ -44,6 +47,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
       id: user['id']!,
       email: user['email']!,
       displayName: user['display_name']!,
+      avatarUrl: user['avatar_url'],
       isEmailVerified: true,
       token: 'mock-jwt-token-${user['id']}',
     );
@@ -101,6 +105,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
       id: 'user-001',
       email: 'karim@gmail.com',
       displayName: 'KarimWI',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
       isEmailVerified: true,
       token: 'mock-google-token-xyz',
     );
@@ -113,6 +118,7 @@ class AuthMockDatasource implements AuthRemoteDatasource {
       id: 'user-001',
       email: 'karim@icloud.com',
       displayName: 'KarimWI',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
       isEmailVerified: true,
       token: 'mock-apple-token-xyz',
     );

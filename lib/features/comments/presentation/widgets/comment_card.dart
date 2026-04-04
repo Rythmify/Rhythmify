@@ -35,15 +35,37 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: isReply ? 12 : 16,
-            backgroundImage: comment.userPfp != null
-                ? NetworkImage(comment.userPfp!)
-                : null,
-            child: comment.userPfp == null
-                ? Icon(Icons.person, size: isReply ? 12 : 16)
-                : null,
-          ),
+          Container(
+  width: isReply ? 24 : 32,
+  height: isReply ? 24 : 32,
+  decoration: const BoxDecoration(
+    color: Colors.grey,
+    shape: BoxShape.circle,
+  ),
+  child: ClipOval(
+    child: comment.userPfp == null
+        ? Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20)
+        : (comment.userPfp!.startsWith('http') || comment.userPfp!.startsWith('https')
+            ? Image.network(
+                comment.userPfp!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: isReply ? 16 : 20,
+                ),
+              )
+            : Image.asset(
+                comment.userPfp!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: isReply ? 16 : 20,
+                ),
+              )),
+  ),
+),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

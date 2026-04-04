@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../../profile/presentation/providers/profile_state.dart';
-import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/track_comments_notifier.dart';
 import 'track_comments_state.dart';
@@ -64,29 +62,18 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   }
 
   Future<void> postReply(String trackId, String content, int trackTimestamp) async {
-    // 1. Get Auth State
+    // Get Auth State
     final authState = ref.read(authProvider);
     if (authState is! AuthAuthenticated) return;
+    
     final user = authState.user;
 
-    // 2. Grab Profile State (for Avatar and Name)
-    final profileState = ref.read(profileProvider);
-    String? profilePic;
-    String? displayName = user.displayName;
-
-    if (profileState is ProfileLoaded) {
-      // NOTE: Make sure '.avatarUrl' and '.displayName' match your Profile model!
-      profilePic = profileState.profile.avatarUrl; 
-      displayName = profileState.profile.displayName; 
-    }
-
-    // 3. Create the Optimistic Temporary Reply
     final tempReply = Comment(
       id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
       trackId: trackId,
       userId: user.id,
-      userDisplayName: displayName,
-      userPfp: profilePic,                    
+      userDisplayName: user.displayName,
+      userPfp: user.avatarUrl,                    
       content: content,
       trackTimestamp: trackTimestamp,
       createdAt: DateTime.now(),
@@ -114,18 +101,15 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
         parentId: parentId,
       );
 
-      // 7. Force the server response to keep your profile data
       final populatedRealReply = realReply.copyWith(
-        userDisplayName: displayName,
-        userPfp: profilePic,
+        userDisplayName: user.displayName,
+        userPfp: user.avatarUrl,
       );
 
-      // 8. Swap the temporary reply with the final real one
       state = state.copyWith(
         comments: state.comments.map((c) => c.id == tempReply.id ? populatedRealReply : c).toList(),
       );
     } catch (e) {
-      // 9. If it fails, remove the temporary reply
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != tempReply.id).toList(),
       );
