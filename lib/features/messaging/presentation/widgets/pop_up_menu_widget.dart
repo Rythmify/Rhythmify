@@ -34,8 +34,10 @@ class PopUpMenuWidget extends ConsumerWidget {
                 context: parentContext,
                 builder: (parentContext) => const ConfirmBlock(),
               );
-              
-              Navigator.pop(context);
+              if(context.mounted)
+              {
+                Navigator.pop(context);
+              }
 
               if (shouldBlock == true) {
                 await ref.read(blockUserProvider.notifier).blockUser(participantId: participantId);
