@@ -122,7 +122,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'id': data['user_id'].toString(),
         'email': data['email'],
         'display_name': data['display_name'],
-        'avatar_url': data['avatar_url'],
+        'avatar_url': data['avatar_url'] ?? '',
         'is_email_verified': false,
         'token': null,
       });
