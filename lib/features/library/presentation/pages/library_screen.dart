@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../providers/library_providers.dart';
+import '../../domain/entities/library_entities.dart';
 
+/// The Library main screen — a navigation hub matching SoundCloud's layout.
+///
+/// Structure:
+/// - "Transfer your gems" import banner card at the top
+/// - Vertical [ListView] of menu items with chevrons
+/// - "Recently played" horizontal row with "See All" button
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 
@@ -12,23 +20,14 @@ class LibraryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final currentUserEmail = authState is AuthAuthenticated ? authState.user.email : '';
+    final historyState = ref.watch(historyProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Library'),
         centerTitle: false,
         actions: [
-          TextButton(
-            key: const Key('library_get_pro_text_button'),
-            onPressed: () => context.push('/upgrade'),
-            child: Text(
-              'GET PRO',
-              style: AppTheme.labelLarge.copyWith(
-                color: AppTheme.primaryBrand,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
@@ -36,7 +35,7 @@ class LibraryScreen extends ConsumerWidget {
           ),
           IconButton(
             key: const Key('library_settings_icon_button'),
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push('/library/settings'),
           ),
           Padding(
@@ -53,74 +52,246 @@ class LibraryScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _libraryItem(context, label: 'Your likes', icon: Icons.favorite_border, key: const Key('library_likes_item'), onTap: () => context.push('/profile/me/likes')),
-            _libraryItem(context, label: 'Recently played', icon: Icons.history, key: const Key('library_history_item'), onTap: () => context.push('/library/history')),
-            _libraryItem(context, label: 'Playlists', icon: Icons.queue_music, key: const Key('library_playlists_item'), onTap: () => context.push('/library/playlists')),
-            _libraryItem(context, label: 'Albums', icon: Icons.album_outlined, key: const Key('library_albums_item'), onTap: () {}),
-            _libraryItem(context, label: 'Following', icon: Icons.people_outline, key: const Key('library_following_item'), onTap: () => context.push('/library/following')),
-            _libraryItem(context, label: 'Stations', icon: Icons.radio, key: const Key('library_stations_item'), onTap: () => context.push('/library/stations')),
-            _libraryItem(context, label: 'Your uploads', icon: Icons.cloud_upload_outlined, key: const Key('library_uploads_item'), onTap: () => context.push('/library/uploads')),
-            _libraryItem(context, label: 'Your insights', icon: Icons.bar_chart, key: const Key('library_insights_item'), onTap: () => context.push('/library/insights')),
+      body: ListView(
+        key: const Key('library_main_scroll_view'),
+        children: [
+          // ── Import banner card ────────────────────────────────────────────
+          _ImportBannerCard(onImport: () {}),
 
+          const SizedBox(height: 8),
+
+          // ── Menu items ────────────────────────────────────────────────────
+          _menuItem(context, label: 'Your likes', key: const Key('library_likes_item'), onTap: () => context.push('/profile/me/likes')),
+          _menuItem(context, label: 'Playlists', key: const Key('library_playlists_item'), onTap: () => context.push('/library/playlists')),
+          _menuItem(context, label: 'Albums', key: const Key('library_albums_item'), onTap: () {}),
+          _menuItem(context, label: 'Following', key: const Key('library_following_item'), onTap: () => context.push('/library/following')),
+          _menuItem(context, label: 'Stations', key: const Key('library_stations_item'), onTap: () => context.push('/library/stations')),
+          _menuItem(context, label: 'Your insights', key: const Key('library_insights_item'), onTap: () => context.push('/library/insights')),
+          _menuItem(context, label: 'Your uploads', key: const Key('library_uploads_item'), onTap: () => context.push('/library/uploads')),
+
+          const SizedBox(height: 8),
+
+          // ── Recently played row ───────────────────────────────────────────
+          _RecentlyPlayedSection(
+            entries: historyState.entries.take(10).toList(),
+            onSeeAll: () => context.push('/library/history'),
+          ),
+
+          // ── Dev logout ────────────────────────────────────────────────────
+          if (currentUserEmail.isNotEmpty) ...[
             const SizedBox(height: 16),
-            if (currentUserEmail.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('Logged in as $currentUserEmail', style: AppTheme.labelSmall),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => ref.read(authProvider.notifier).signOutUser(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Text('Logged in as $currentUserEmail', style: AppTheme.labelSmall),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => ref.read(authProvider.notifier).signOutUser(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('DEV LOGOUT'),
                     ),
-                    child: const Text('DEV LOGOUT'),
                   ),
-                ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 120),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuItem(BuildContext context, {required String label, required VoidCallback onTap, Key? key}) {
+    return Column(
+      children: [
+        ListTile(
+          key: key,
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          title: Text(label, style: AppTheme.titleMedium.copyWith(fontSize: 17, fontWeight: FontWeight.w500)),
+          trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+        ),
+        const Divider(color: AppTheme.surface, height: 1, indent: 16, endIndent: 16),
+      ],
+    );
+  }
+}
+
+// ── Import Banner Card ─────────────────────────────────────────────────────────
+
+class _ImportBannerCard extends StatelessWidget {
+  final VoidCallback onImport;
+
+  const _ImportBannerCard({required this.onImport});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Container(
+        key: const Key('library_import_banner_card'),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A3E),
+          borderRadius: BorderRadius.circular(12),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A237E), Color(0xFF0D47A1)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Background vinyl illustration placeholder
+            Positioned(
+              right: 12,
+              top: 0,
+              bottom: 0,
+              child: Opacity(
+                opacity: 0.35,
+                child: Icon(Icons.album, size: 100, color: Colors.blue[200]),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Close button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                      key: const Key('library_import_banner_close_gesture'),
+                      onTap: () {},
+                      child: const Icon(Icons.close, color: Colors.white54, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Transfer your gems',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Import your music from Spotify, Apple\nMusic and more in just 3 steps.',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    key: const Key('library_import_now_button'),
+                    onPressed: onImport,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                      elevation: 0,
+                    ),
+                    child: const Text('Import Now', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Recently Played Section ────────────────────────────────────────────────────
+
+class _RecentlyPlayedSection extends StatelessWidget {
+  final List<RecentlyPlayedEntry> entries;
+  final VoidCallback onSeeAll;
+
+  const _RecentlyPlayedSection({required this.entries, required this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text('Recently played', style: AppTheme.titleMedium.copyWith(fontSize: 17)),
+              const Spacer(),
+              TextButton(
+                key: const Key('library_recently_played_see_all_button'),
+                onPressed: onSeeAll,
+                child: Text('See All', style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand)),
               ),
             ],
+          ),
+        ),
+        // Horizontal list of recently played items
+        SizedBox(
+          height: 110,
+          child: ListView.builder(
+            key: const Key('library_recently_played_list_view'),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: entries.length,
+            itemBuilder: (context, index) {
+              final entry = entries[index];
+              return _RecentlyPlayedItem(entry: entry);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentlyPlayedItem extends StatelessWidget {
+  final RecentlyPlayedEntry entry;
+
+  const _RecentlyPlayedItem({required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      key: Key('library_recently_played_item_${entry.trackId}_gesture'),
+      onTap: () {},
+      child: Container(
+        width: 75,
+        margin: const EdgeInsets.only(right: 12),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: entry.artworkUrl != null
+                  ? Image.network(entry.artworkUrl!, width: 75, height: 75, fit: BoxFit.cover, errorBuilder: (c, u, e) => _placeholder())
+                  : _placeholder(),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              entry.title,
+              style: AppTheme.labelSmall.copyWith(fontSize: 11),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _libraryItem(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-    Key? key,
-  }) {
-    return Column(
-      children: [
-        GestureDetector(
-          key: key,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              children: [
-                Icon(icon, color: AppTheme.textSecondary, size: 22),
-                const SizedBox(width: 14),
-                Expanded(child: Text(label, style: AppTheme.titleMedium)),
-                const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
-              ],
-            ),
-          ),
-        ),
-        const Divider(color: AppTheme.surface, height: 1),
-      ],
-    );
-  }
+  Widget _placeholder() => Container(
+    width: 75, height: 75,
+    color: AppTheme.surface,
+    child: const Icon(Icons.music_note, color: AppTheme.textSecondary),
+  );
 }

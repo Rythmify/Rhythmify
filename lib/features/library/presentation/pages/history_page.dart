@@ -1,15 +1,18 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
+import '../../../track/presentation/widgets/track_card.dart';
+import '../../../../core/domain/entities/track.dart';
 
-/// Full paginated listening history with clear-all action.
+/// Listening history page matching SoundCloud's layout.
 ///
-/// Groups entries by date (Today, Yesterday, Older).
-/// Pull-to-refresh reloads from page 1.
-/// Scrolling near the bottom loads the next page.
+/// Structure:
+/// - Delete (trash) icon + shuffle + play all action row
+/// - [TrackCard] list using the shared widget
+/// - Date-grouped headers (Today, Yesterday, This Week, Older)
+/// - Pagination on scroll
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
 
@@ -45,10 +48,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         content: Text('This will permanently delete your entire listening history.', style: AppTheme.bodyMedium),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: AppTheme.labelLarge)),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.redAccent)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Clear', style: TextStyle(color: Colors.redAccent))),
         ],
       ),
     );
@@ -61,19 +61,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('Listening History'),
-        centerTitle: false,
-        actions: [
-          if (state.entries.isNotEmpty)
-            IconButton(
-              key: const Key('history_clear_icon_button'),
-              icon: const Icon(Icons.delete_sweep_outlined),
-              tooltip: 'Clear history',
-              onPressed: _confirmClear,
-            ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Listening history'), centerTitle: false),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () => ref.read(historyProvider.notifier).load(refresh: true),
@@ -83,15 +71,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Widget _buildBody(HistoryState state) {
-    if (state.isClearing) {
+    if (state.isClearing || (state.isLoading && state.entries.isEmpty)) {
       return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
     }
 
-    if (state.isLoading && state.entries.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
-    }
-
-    if (state.entries.isEmpty && !state.isLoading) {
+    if (state.entries.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -106,112 +90,117 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       );
     }
 
-    // Group entries by date label
+    // Build flat list with date-label headers inserted
     final grouped = _group(state.entries);
     final sections = grouped.keys.toList();
 
-    return ListView.builder(
-      key: const Key('history_list_view'),
-      controller: _scrollController,
-      padding: const EdgeInsets.only(bottom: 120),
-      itemCount: sections.length + 1, // +1 for pagination footer
-      itemBuilder: (context, sectionIndex) {
-        if (sectionIndex == sections.length) {
-          return state.isLoading
-              ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand, strokeWidth: 2)))
-              : const SizedBox.shrink();
-        }
-        final label = sections[sectionIndex];
-        final entries = grouped[label]!;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Text(label, style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary)),
-            ),
-            ...entries.map((e) => _HistoryTile(entry: e)),
-          ],
-        );
-      },
+    // Flatten into a mixed list of [String header | RecentlyPlayedEntry]
+    final flatItems = <Object>[];
+    for (final section in sections) {
+      flatItems.add(section); // String header
+      flatItems.addAll(grouped[section]!);
+    }
+    // Append pagination sentinel
+    flatItems.add(_Sentinel(isLoading: state.isLoading));
+
+    return Column(
+      children: [
+        // ── Action row: delete + shuffle + play ────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(
+                key: const Key('history_clear_icon_button'),
+                icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary),
+                tooltip: 'Clear history',
+                onPressed: _confirmClear,
+              ),
+              const Spacer(),
+              IconButton(
+                key: const Key('history_shuffle_icon_button'),
+                icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
+                onPressed: () {},
+              ),
+              FloatingActionButton.small(
+                key: const Key('history_play_all_fab'),
+                heroTag: 'history_play',
+                backgroundColor: Colors.white,
+                onPressed: () {},
+                child: const Icon(Icons.play_arrow, color: Colors.black, size: 22),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ),
+
+        // ── Track list ─────────────────────────────────────────────────────
+        Expanded(
+          child: ListView.builder(
+            key: const Key('history_list_view'),
+            controller: _scrollController,
+            itemCount: flatItems.length,
+            itemBuilder: (context, index) {
+              final item = flatItems[index];
+
+              // Date header
+              if (item is String) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+                  child: Text(item, style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary)),
+                );
+              }
+
+              // Pagination sentinel
+              if (item is _Sentinel) {
+                return item.isLoading
+                    ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand, strokeWidth: 2)))
+                    : const SizedBox.shrink();
+              }
+
+              // Track row — convert RecentlyPlayedEntry → lightweight Track for TrackCard
+              final entry = item as RecentlyPlayedEntry;
+              final track = Track(
+                id: entry.trackId,
+                userId: '',
+                title: entry.title,
+                artist: entry.artistName,
+                audioUrl: '',
+                duration: Duration(seconds: entry.durationSeconds),
+                createdAt: entry.playedAt,
+                coverImage: entry.artworkUrl,
+              );
+              return TrackCard(
+                key: Key('history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}'),
+                track: track,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  /// Groups entries into Today / Yesterday / This Week / Older buckets.
   Map<String, List<RecentlyPlayedEntry>> _group(List<RecentlyPlayedEntry> entries) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final weekAgo = today.subtract(const Duration(days: 7));
-
     final result = <String, List<RecentlyPlayedEntry>>{};
-
     for (final e in entries) {
       final d = DateTime(e.playedAt.year, e.playedAt.month, e.playedAt.day);
       final String label;
-      if (!d.isBefore(today)) {
-        label = 'Today';
-      } else if (!d.isBefore(yesterday)) {
-        label = 'Yesterday';
-      } else if (!d.isBefore(weekAgo)) {
-        label = 'This Week';
-      } else {
-        label = 'Older';
-      }
+      if (!d.isBefore(today)) label = 'Today';
+      else if (!d.isBefore(yesterday)) label = 'Yesterday';
+      else if (!d.isBefore(weekAgo)) label = 'This Week';
+      else label = 'Older';
       result.putIfAbsent(label, () => []).add(e);
     }
     return result;
   }
 }
 
-class _HistoryTile extends StatelessWidget {
-  final RecentlyPlayedEntry entry;
-
-  const _HistoryTile({required this.entry});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      key: Key('history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}_list_tile'),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: entry.artworkUrl != null
-            ? CachedNetworkImage(
-                imageUrl: entry.artworkUrl!,
-                width: 48, height: 48, fit: BoxFit.cover,
-                errorWidget: (c, u, e) => _placeholder(),
-              )
-            : _placeholder(),
-      ),
-      title: Text(
-        entry.title,
-        key: Key('history_item_${entry.trackId}_title_text'),
-        style: AppTheme.labelLarge,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        entry.artistName,
-        key: Key('history_item_${entry.trackId}_artist_text'),
-        style: AppTheme.labelSmall,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: Text(
-        _relativeTime(entry.playedAt),
-        key: Key('history_item_${entry.trackId}_time_text'),
-        style: AppTheme.labelSmall,
-      ),
-    );
-  }
-
-  Widget _placeholder() => Container(width: 48, height: 48, color: AppTheme.surface, child: const Icon(Icons.music_note, color: AppTheme.textSecondary, size: 20));
-
-  String _relativeTime(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${dt.day}/${dt.month}/${dt.year}';
-  }
+class _Sentinel {
+  final bool isLoading;
+  const _Sentinel({required this.isLoading});
 }

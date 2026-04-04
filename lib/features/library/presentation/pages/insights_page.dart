@@ -1,118 +1,217 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 
-/// Analytics dashboard showing listener stats for the creator's uploaded tracks.
-///
-/// Displays a summary card with totals at the top, then a per-track breakdown.
-class InsightsPage extends ConsumerWidget {
+
+/// - "SoundCloud" tab: if user has uploads, shows per-track stats.
+///   If empty, shows marketing screen with "Upload" CTA button.
+/// - "All Platforms" tab: premium upsell marketing screen
+///   with "Goes to premium 'Pro'" CTA button.
+class InsightsPage extends ConsumerStatefulWidget {
   const InsightsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(insightsProvider);
+  ConsumerState<InsightsPage> createState() => _InsightsPageState();
+}
 
+class _InsightsPageState extends ConsumerState<InsightsPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(title: const Text('Your Insights'), centerTitle: false),
-      body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(e.toString(), style: AppTheme.bodyMedium),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                key: const Key('insights_retry_button'),
-                onPressed: () => ref.invalidate(insightsProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+      appBar: AppBar(
+        title: const Text('Your insights'),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            key: const Key('insights_share_icon_button'),
+            icon: const Icon(Icons.share_outlined),
+            onPressed: () {},
           ),
+          IconButton(
+            key: const Key('insights_cast_icon_button'),
+            icon: const Icon(Icons.cast),
+            onPressed: () {},
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppTheme.primaryBrand,
+          indicatorWeight: 2,
+          labelColor: Colors.white,
+          unselectedLabelColor: AppTheme.textSecondary,
+          labelStyle: AppTheme.labelLarge,
+          tabs: const [
+            Tab(text: 'SoundCloud'),
+            Tab(text: 'All Platforms'),
+          ],
         ),
-        data: (insights) {
-          if (insights.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.bar_chart, color: AppTheme.textSecondary, size: 56),
-                  const SizedBox(height: 16),
-                  Text('No insights yet', style: AppTheme.titleMedium.copyWith(color: AppTheme.textSecondary)),
-                  const SizedBox(height: 8),
-                  Text('Upload tracks to see your listener stats.', style: AppTheme.bodyMedium, textAlign: TextAlign.center),
-                ],
-              ),
-            );
-          }
-
-          // Compute totals
-          final totalPlays = insights.fold(0, (s, i) => s + i.totalPlays);
-          final totalListeners = insights.fold(0, (s, i) => s + i.uniqueListeners);
-          final totalLikes = insights.fold(0, (s, i) => s + i.likes);
-
-          return ListView(
-            key: const Key('insights_list_view'),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-            children: [
-              // ── Summary card ──────────────────────────────────────────────
-              _SummaryCard(
-                totalPlays: totalPlays,
-                totalListeners: totalListeners,
-                totalLikes: totalLikes,
-              ),
-              const SizedBox(height: 24),
-              Text('By Track', style: AppTheme.titleMedium),
-              const SizedBox(height: 12),
-              // ── Per-track rows ─────────────────────────────────────────────
-              ...insights.map((insight) => _InsightTrackCard(insight: insight)),
-            ],
-          );
-        },
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _SoundCloudTab(),
+          _AllPlatformsTab(),
+        ],
       ),
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final int totalPlays;
-  final int totalListeners;
-  final int totalLikes;
+// ── SoundCloud tab ─────────────────────────────────────────────────────────────
 
-  const _SummaryCard({
-    required this.totalPlays,
-    required this.totalListeners,
-    required this.totalLikes,
-  });
+class _SoundCloudTab extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(insightsProvider);
+
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
+      error: (e, _) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(e.toString(), style: AppTheme.bodyMedium),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              key: const Key('insights_sc_retry_button'),
+              onPressed: () => ref.invalidate(insightsProvider),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+      data: (insights) => insights.isEmpty
+          ? _SoundCloudEmptyState()
+          : _SoundCloudDataView(insights: insights),
+    );
+  }
+}
+
+/// Marketing empty state for the SoundCloud tab.
+class _SoundCloudEmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('insights_sc_empty_state'),
+      children: [
+        // Feature graphic
+        Container(
+          width: double.infinity,
+          height: 220,
+          color: Colors.black,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Waveform / analytics illustration placeholder
+              Icon(Icons.equalizer_rounded, size: 140, color: AppTheme.primaryBrand.withValues(alpha: 0.3)),
+              Icon(Icons.analytics_outlined, size: 80, color: AppTheme.primaryBrand.withValues(alpha: 0.7)),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Get unmatched insights into your listeners that you won\'t find anywhere else.',
+                  key: Key('insights_sc_headline_text'),
+                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.3),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'SoundCloud is the only platform that lets you easily identify and connect with your top fans based on their listening and engagement habits.',
+                  key: Key('insights_sc_body_text'),
+                  style: AppTheme.bodyMedium.copyWith(height: 1.5),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'To get started, all it takes is an upload.',
+                  style: AppTheme.bodyMedium,
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    key: const Key('insights_sc_upload_button'),
+                    onPressed: () => context.push('/upload-track'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.textPrimary,
+                      side: const BorderSide(color: AppTheme.textSecondary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Upload', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Data view shown when the user has uploads.
+class _SoundCloudDataView extends StatelessWidget {
+  final List<TrackInsight> insights;
+  const _SoundCloudDataView({required this.insights});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: const Key('insights_summary_card'),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('All time', style: AppTheme.labelSmall),
-          const SizedBox(height: 16),
-          Row(
+    final totalPlays = insights.fold(0, (s, i) => s + i.totalPlays);
+    final totalListeners = insights.fold(0, (s, i) => s + i.uniqueListeners);
+    final totalLikes = insights.fold(0, (s, i) => s + i.likes);
+
+    return ListView(
+      key: const Key('insights_sc_data_list_view'),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+      children: [
+        // Summary card
+        Container(
+          key: const Key('insights_summary_card'),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.3)),
+          ),
+          child: Row(
             children: [
               Expanded(child: _StatItem(icon: Icons.play_arrow, label: 'Plays', value: _fmt(totalPlays), key: const Key('insights_total_plays_stat'))),
               Expanded(child: _StatItem(icon: Icons.people_outline, label: 'Listeners', value: _fmt(totalListeners), key: const Key('insights_total_listeners_stat'))),
               Expanded(child: _StatItem(icon: Icons.favorite_border, label: 'Likes', value: _fmt(totalLikes), key: const Key('insights_total_likes_stat'))),
             ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+        Text('By Track', style: AppTheme.titleMedium),
+        const SizedBox(height: 12),
+        ...insights.map((insight) => _InsightTrackCard(insight: insight)),
+      ],
     );
   }
 
@@ -122,6 +221,76 @@ class _SummaryCard extends StatelessWidget {
     return n.toString();
   }
 }
+
+// ── All Platforms tab ──────────────────────────────────────────────────────────
+
+class _AllPlatformsTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('insights_all_platforms_tab'),
+      children: [
+        // Feature graphic
+        Container(
+          width: double.infinity,
+          height: 220,
+          color: Colors.black,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(Icons.devices_rounded, size: 140, color: Colors.purple.withValues(alpha: 0.2)),
+              Icon(Icons.multitrack_audio_rounded, size: 80, color: Colors.purpleAccent.withValues(alpha: 0.7)),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Unlock key performance and audience insights across multiple platforms for your music',
+                  key: Key('insights_ap_headline_text'),
+                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.3),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Access audience and performance insights for your distributed tracks from Spotify, Apple Music, and SoundCloud all from one dashboard.',
+                  key: Key('insights_ap_body_text'),
+                  style: AppTheme.bodyMedium.copyWith(height: 1.5),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Upgrade your account, upload and distribute your track to get started.',
+                  style: AppTheme.bodyMedium,
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    key: const Key('insights_ap_upgrade_button'),
+                    onPressed: () => context.push('/upgrade'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.textPrimary,
+                      side: const BorderSide(color: AppTheme.textSecondary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Upgrade to Pro', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Shared sub-widgets ─────────────────────────────────────────────────────────
 
 class _StatItem extends StatelessWidget {
   final IconData icon;
@@ -146,7 +315,6 @@ class _StatItem extends StatelessWidget {
 
 class _InsightTrackCard extends StatelessWidget {
   final TrackInsight insight;
-
   const _InsightTrackCard({required this.insight});
 
   @override
@@ -159,7 +327,6 @@ class _InsightTrackCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Track header
           Row(
             children: [
               ClipRRect(
@@ -169,19 +336,10 @@ class _InsightTrackCard extends StatelessWidget {
                     : _placeholder(),
               ),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  insight.title,
-                  key: Key('insights_track_${insight.trackId}_title_text'),
-                  style: AppTheme.labelLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              Expanded(child: Text(insight.title, key: Key('insights_track_${insight.trackId}_title_text'), style: AppTheme.labelLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
           const SizedBox(height: 14),
-          // Stats row
           Row(
             children: [
               Expanded(child: _MiniStat(icon: Icons.play_arrow, value: _fmt(insight.totalPlays), label: 'plays', key: Key('insights_track_${insight.trackId}_plays_stat'))),
@@ -196,11 +354,7 @@ class _InsightTrackCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(width: 44, height: 44, color: AppTheme.lighterSurface, child: const Icon(Icons.music_note, color: AppTheme.textSecondary, size: 20));
-
-  String _fmt(int n) {
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
-    return n.toString();
-  }
+  String _fmt(int n) => n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}K' : n.toString();
 }
 
 class _MiniStat extends StatelessWidget {
