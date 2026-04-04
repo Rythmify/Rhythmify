@@ -6,6 +6,7 @@ import '../widgets/search_suggestions_list.dart';
 import '../widgets/search_results_tab.dart';
 import '../widgets/vibes_grid.dart';
 import '../pages/vibes_genre_page.dart';
+import '../providers/vibes_providers.dart';
 
 class SearchScreen extends ConsumerWidget {
   const SearchScreen({super.key});
@@ -13,9 +14,8 @@ class SearchScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(searchQueryProvider);
-    final submitted = ref.watch(searchSubmittedProvider); // ← new
+    final submitted = ref.watch(searchSubmittedProvider);
 
-    // reset submitted when query is cleared
     ref.listen(searchQueryProvider, (_, next) {
       if (next.trim().isEmpty) {
         ref.read(searchSubmittedProvider.notifier).reset();
@@ -29,36 +29,43 @@ class SearchScreen extends ConsumerWidget {
           const SearchBarWidget(),
 
           if (submitted)
-            const Expanded(child: SearchResultsTabs()) // ← new
+            const Expanded(child: SearchResultsTabs())
           else if (query.trim().isNotEmpty)
             const Expanded(child: SearchSuggestionsList())
           else
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(15, 10, 0, 16),
-                    child: Text(
-                      'Vibes',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
+              child: ref
+                  .watch(vibesProvider)
+                  .when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Error: $e')),
+                    data: (vibes) => ListView(
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(15, 10, 0, 16),
+                          child: Text(
+                            'Vibes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        VibesGrid(
+                          vibes: vibes,
+                          onVibeTap: (vibe) => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GenrePage(genre: vibe.id),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  VibesGrid(
-                    vibes: vibes,
-                    onVibeTap: (vibe) => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => GenrePage(genre: vibe.id),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
         ],
       ),

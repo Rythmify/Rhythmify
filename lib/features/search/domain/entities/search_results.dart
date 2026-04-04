@@ -1,7 +1,6 @@
+import 'package:rythmify/features/profile/domain/entities/profile_entity.dart';
+
 import '../../../../core/domain/entities/track.dart';
-// import '../../../playlist/domain/entities/playlist.dart';  // uncomment when ready
-// import '../../../profile/domain/entities/profile.dart';
-// import '../../../album/domain/entities/album.dart';
 
 class SearchResults {
   const SearchResults({
@@ -13,6 +12,6 @@ class SearchResults {
 
   final List<Track> tracks;
   final List<dynamic> playlists; // replace dynamic with Playlist when ready
-  final List<dynamic> profiles; // replace dynamic with Profile when ready
+  final List<ProfileEntity> profiles;
   final List<dynamic> albums; // replace dynamic with Album when ready
 }

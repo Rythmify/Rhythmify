@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 class GenreProfileCard extends StatelessWidget {
   const GenreProfileCard({super.key, required this.profile});
-  final Map<String, String> profile;
+  final ProfileEntity profile;
 
   @override
   Widget build(BuildContext context) {
@@ -13,16 +14,16 @@ class GenreProfileCard extends StatelessWidget {
           CircleAvatar(
             radius: 40,
             backgroundColor: Colors.grey[800],
-            backgroundImage: profile['avatarUrl'] != null
-                ? AssetImage(profile['avatarUrl']!)
+            backgroundImage: profile.avatarUrl != null
+                ? NetworkImage(profile.avatarUrl!)
                 : null,
-            child: profile['avatarUrl'] == null
+            child: profile.avatarUrl == null
                 ? const Icon(Icons.person, size: 36, color: Colors.white)
                 : null,
           ),
           const SizedBox(height: 6),
           Text(
-            profile['username'] ?? '',
+            profile.displayName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -33,8 +34,8 @@ class GenreProfileCard extends StatelessWidget {
             onPressed: () {},
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              backgroundColor: Color(0xffffffff),
-              foregroundColor: Color.fromARGB(255, 0, 0, 0),
+              backgroundColor: const Color(0xffffffff),
+              foregroundColor: const Color(0xff000000),
               minimumSize: const Size(0, 30),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               textStyle: const TextStyle(fontSize: 13),

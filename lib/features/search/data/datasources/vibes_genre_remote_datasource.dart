@@ -1,8 +1,12 @@
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/vibes_genre_content.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 abstract class GenreRemoteSource {
   Future<GenreContent> getGenreContent(String genreId);
+  Future<List<Track>> getGenreTrendingTracks(String genreId);
+  Future<List<Map<String, String>>> getGenrePlaylists(String genreId);
+  Future<List<Map<String, String>>> getGenreAlbums(String genreId);
 }
 
 class GenreRemoteSourceMock implements GenreRemoteSource {
@@ -235,16 +239,80 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
 
   static final _profiles = {
     'hiphop': [
-      {'id': 'pr1', 'username': 'Kendrick Lamar'},
-      {'id': 'pr2', 'username': 'Drake'},
-      {'id': 'pr3', 'username': 'Travis Scott'},
-      {'id': 'pr4', 'username': 'Post Malone'},
+      ProfileEntity(
+        id: 'pr1',
+        displayName: 'Kendrick Lamar',
+        username: 'kendricklamar',
+        followersCount: 5000000,
+        followingCount: 100,
+        tracksCount: 40,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr2',
+        displayName: 'Drake',
+        username: 'drake',
+        followersCount: 8000000,
+        followingCount: 200,
+        tracksCount: 60,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr3',
+        displayName: 'Travis Scott',
+        username: 'travisscott',
+        followersCount: 4000000,
+        followingCount: 150,
+        tracksCount: 35,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr4',
+        displayName: 'Post Malone',
+        username: 'postmalone',
+        followersCount: 6000000,
+        followingCount: 180,
+        tracksCount: 45,
+        isFollowing: false,
+      ),
     ],
     'electronic': [
-      {'id': 'pr5', 'username': 'Avicii'},
-      {'id': 'pr6', 'username': 'deadmau5'},
-      {'id': 'pr7', 'username': 'Zedd'},
-      {'id': 'pr8', 'username': 'Martin Garrix'},
+      ProfileEntity(
+        id: 'pr5',
+        displayName: 'Avicii',
+        username: 'avicii',
+        followersCount: 7000000,
+        followingCount: 50,
+        tracksCount: 30,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr6',
+        displayName: 'deadmau5',
+        username: 'deadmau5',
+        followersCount: 3000000,
+        followingCount: 80,
+        tracksCount: 25,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr7',
+        displayName: 'Zedd',
+        username: 'zedd',
+        followersCount: 4000000,
+        followingCount: 120,
+        tracksCount: 28,
+        isFollowing: false,
+      ),
+      ProfileEntity(
+        id: 'pr8',
+        displayName: 'Martin Garrix',
+        username: 'martingarrix',
+        followersCount: 5000000,
+        followingCount: 90,
+        tracksCount: 32,
+        isFollowing: false,
+      ),
     ],
   };
 
@@ -259,5 +327,23 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
       profiles: _profiles[genreId] ?? [],
       discoverTracks: tracks,
     );
+  }
+
+  @override
+  Future<List<Track>> getGenreTrendingTracks(String genreId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return _tracks[genreId] ?? [];
+  }
+
+  @override
+  Future<List<Map<String, String>>> getGenrePlaylists(String genreId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return _playlists[genreId] ?? [];
+  }
+
+  @override
+  Future<List<Map<String, String>>> getGenreAlbums(String genreId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return _albums[genreId] ?? [];
   }
 }

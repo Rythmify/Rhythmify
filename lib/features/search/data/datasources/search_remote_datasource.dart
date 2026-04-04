@@ -1,6 +1,7 @@
 import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_results.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 abstract class SearchRemoteSource {
   Future<List<SearchSuggestion>> getSuggestions(String query);
@@ -77,6 +78,49 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
     ),
   ];
 
+  static final _mockProfiles = [
+    ProfileEntity(
+      id: 'pr1',
+      displayName: 'The Weeknd',
+      username: 'theweeknd',
+      avatarUrl: null,
+      followersCount: 5000000,
+      followingCount: 100,
+      tracksCount: 50,
+      isFollowing: false,
+    ),
+    ProfileEntity(
+      id: 'pr1',
+      displayName: 'The Weeknd',
+      username: 'theweeknd',
+      avatarUrl: null,
+      followersCount: 5000000,
+      followingCount: 100,
+      tracksCount: 50,
+      isFollowing: false,
+    ),
+    ProfileEntity(
+      id: 'pr2',
+      displayName: 'Billie Eilish',
+      username: 'billieeilish',
+      avatarUrl: null,
+      followersCount: 8000000,
+      followingCount: 200,
+      tracksCount: 30,
+      isFollowing: false,
+    ),
+    ProfileEntity(
+      id: 'pr3',
+      displayName: 'Ed Sheeran',
+      username: 'edsheeran',
+      avatarUrl: null,
+      followersCount: 6000000,
+      followingCount: 150,
+      tracksCount: 60,
+      isFollowing: false,
+    ),
+  ];
+
   @override
   Future<List<SearchSuggestion>> getSuggestions(String query) async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -90,6 +134,7 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
   Future<SearchResults> getSearchResults(String query) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final q = query.toLowerCase().trim();
+
     final tracks = _mockTracks
         .where(
           (t) =>
@@ -97,6 +142,15 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
               t.artist.toLowerCase().contains(q),
         )
         .toList();
-    return SearchResults(tracks: tracks);
+
+    final profiles = _mockProfiles
+        .where(
+          (p) =>
+              p.displayName.toLowerCase().contains(q) ||
+              (p.username?.toLowerCase().contains(q) ?? false),
+        )
+        .toList();
+
+    return SearchResults(tracks: tracks, profiles: profiles);
   }
 }

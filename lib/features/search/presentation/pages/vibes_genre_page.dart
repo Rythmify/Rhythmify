@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/vibes_genre_all_tab.dart';
+import '../widgets/vibes_genre_trending_tab.dart';
+import '../widgets/vibes_genre_playlists_tab.dart';
+import '../widgets/vibes_genre_albums_tab.dart';
 
 const _genreImages = {
   'hiphop': 'assets/images/vibes_hiphop.jpeg',
@@ -34,9 +37,9 @@ class GenrePage extends StatelessWidget {
 
     final tabs = [
       GenreAllTab(genreId: genre),
-      const Center(child: Text('Trending — coming soon')),
-      const Center(child: Text('Playlists — coming soon')),
-      const Center(child: Text('Albums — coming soon')),
+      GenreTrendingTab(genreId: genre),
+      GenrePlaylistsTab(genreId: genre),
+      GenreAlbumsTab(genreId: genre),
     ];
 
     return DefaultTabController(

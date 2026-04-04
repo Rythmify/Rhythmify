@@ -1,4 +1,5 @@
 import '../../../../core/domain/entities/track.dart';
+import '../../../profile/domain/entities/profile_entity.dart';
 
 class GenreContent {
   const GenreContent({
@@ -13,6 +14,6 @@ class GenreContent {
   final List<Map<String, String>>
   playlists; // {id, title, creatorName, coverImage}
   final List<Map<String, String>> albums; // {id, title, artistName, coverImage}
-  final List<Map<String, String>> profiles; // {id, username, avatarUrl}
+  final List<ProfileEntity> profiles; // {id, username, avatarUrl}
   final List<Track> discoverTracks;
 }

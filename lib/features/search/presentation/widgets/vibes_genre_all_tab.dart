@@ -6,6 +6,10 @@ import '../widgets/vibes_genre_albums.dart';
 import '../widgets/vibes_genre_playlists.dart';
 import '../widgets/vibes_genre_profiles.dart';
 import '../widgets/track_tile.dart';
+import '../pages/vibes_genre_seeall_page.dart';
+import '../widgets/vibes_genre_playlists_tab.dart';
+import '../widgets/vibes_genre_albums_tab.dart';
+import '../widgets/vibes_genre_trending_tab.dart';
 
 class GenreAllTab extends ConsumerWidget {
   const GenreAllTab({super.key, required this.genreId});
@@ -19,7 +23,7 @@ class GenreAllTab extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (content) => ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         children: [
           // ── Trending ─────────────────────────────────────
           Row(
@@ -29,7 +33,18 @@ class GenreAllTab extends ConsumerWidget {
                 'Trending',
                 style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
               ),
-              TextButton(onPressed: () {}, child: const Text('See all')),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GenreSeeAllPage(
+                      title: 'Trending',
+                      child: GenreTrendingTab(genreId: genreId),
+                    ),
+                  ),
+                ),
+                child: const Text('See all'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -60,7 +75,18 @@ class GenreAllTab extends ConsumerWidget {
                 'Playlists',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              TextButton(onPressed: () {}, child: const Text('See all')),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GenreSeeAllPage(
+                      title: 'Playlists',
+                      child: GenrePlaylistsTab(genreId: genreId),
+                    ),
+                  ),
+                ),
+                child: const Text('See all'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -89,7 +115,18 @@ class GenreAllTab extends ConsumerWidget {
                 'Albums',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              TextButton(onPressed: () {}, child: const Text('See all')),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GenreSeeAllPage(
+                      title: 'Albums',
+                      child: GenreAlbumsTab(genreId: genreId),
+                    ),
+                  ),
+                ),
+                child: const Text('See all'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
