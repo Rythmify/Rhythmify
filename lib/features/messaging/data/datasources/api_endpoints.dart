@@ -41,4 +41,7 @@ class ApiEndPoints {
 
   /// Returns the endpoint to search for users based on a [query].
   static String getSearchedUsers(String query) => '/search?q=$query&type=users';
+
+  /// Returns the endpoint to check if a user with [participantId] is blocked by current user.
+  static String isBlocked(String userId) => '/users/$userId/follow-status';
 }

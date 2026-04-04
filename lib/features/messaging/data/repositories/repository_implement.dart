@@ -81,4 +81,14 @@ class RepositoryImplement implements MessagingRepository {
   Future<List<PotentialConversation>> getSearchedUsers(String query) {
     return dataSource.getSearchedUsers(query);
   }
+
+  @override
+  Future<bool> isBlocked(String participantId) {
+    return dataSource.isBlocked(participantId);
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) {
+    return dataSource.isBlockedBy(participantId);
+  }
 }

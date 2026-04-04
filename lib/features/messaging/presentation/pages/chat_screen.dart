@@ -3,13 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/is_blocked_by_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/unread_messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
+import 'package:rythmify/features/messaging/presentation/widgets/blocked_by_widget.dart';
+import 'package:rythmify/features/messaging/presentation/widgets/blocked_user_widget.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_input_bubble.dart';
+import 'package:rythmify/features/messaging/presentation/widgets/pop_up_menu_widget.dart';
 
 /// A screen that displays the chat conversation between users.
 ///
@@ -61,6 +66,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
+    final isBlockedAsync = ref.watch(isBlockedProvider(widget.conv?.participantId ?? widget.newParticipantId!));
+    final bool isBlocked = isBlockedAsync.value ?? false;
+
+    final isBlockedByAsync = ref.watch(isBlockedByProvider(widget.conv?.participantId ?? widget.newParticipantId!));
+    final bool isBlockedBy = isBlockedByAsync.value ?? false;
+
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
       backgroundColor: Colors.black,
@@ -72,6 +83,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           key: const Key('chat_participant_name_text'),
         ),
         backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            onPressed: (){
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (_) => 
+                  PopUpMenuWidget(
+                    participantId: widget.conv?.participantId ?? widget.newParticipantId!,
+                    parentContext: context
+                  ),
+                backgroundColor: const Color(0xFF121212),
+              );
+            },
+            icon: const Icon( Icons.more_vert, color: Colors.white)
+          )
+        ]
       ),
       body: widget.conv == null
           ? _blanckChatPage()
@@ -117,40 +146,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        top: 8,
-                        bottom: isKeyboardOpen ? 10 : 80, // 85 (NavBar) + 16
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.add, color: Colors.white),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: MessageInputBubble(
-                              controller: controller,
-                              onSubmitted: (text) async {
-                                if (controller.text.trim().isEmpty) return;
-                                await ref
-                                    .read(sendMessageProvider.notifier)
-                                    .sendMessage(
-                                      conversationId:
-                                          widget.conv!.conversationId,
-                                      body: text.trim(),
-                                    );
-
-                                controller.clear();
+                    isBlocked ? BlockedUserWidget(participantId: widget.conv?.participantId ?? widget.newParticipantId!)
+                      :isBlockedBy ? const BlockedByWidget()
+                        :Padding(
+                        padding: EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 8,
+                          bottom: isKeyboardOpen ? 10 : 80, // 85 (NavBar) + 16
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                context.push('/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists');
                               },
+                              icon: const Icon(Icons.add_outlined, color: Colors.white),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: MessageInputBubble(
+                                controller: controller,
+                                onSubmitted: (text) async {
+                                  if (controller.text.trim().isEmpty) return;
+                                  await ref
+                                      .read(sendMessageProvider.notifier)
+                                      .sendMessage(
+                                        conversationId:
+                                            widget.conv!.conversationId,
+                                        body: text.trim(),
+                                      );
+
+                                  controller.clear();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 );
               },
@@ -177,8 +210,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: Row(
             children: [
               IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  context.push('/home/inbox/chat/new/likes-playlists');
+                },
+                icon: const Icon(Icons.add_outlined, color: Colors.white),
               ),
               const SizedBox(width: 8),
               Expanded(

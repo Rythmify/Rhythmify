@@ -139,4 +139,38 @@ class DatasourceImplement implements DatasourceInterface {
         )
         .toList();
   }
+
+  @override
+  Future<bool> isBlocked(String participantId) async {
+    final response = await dio.get(
+      ApiEndPoints.isBlocked(participantId),
+    );
+
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+    final body = response.data as Map<String, dynamic>;
+    final data = body['data'] as Map<String, dynamic>;
+    return data['is_blocking'] as bool;
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) async {
+    final response = await dio.get(
+      ApiEndPoints.isBlocked(participantId), //same endpoint as isBlocked
+    );
+
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+    final body = response.data as Map<String, dynamic>;
+    final data = body['data'] as Map<String, dynamic>;
+    return data['is_blocked_by'] as bool;
+  }
 }

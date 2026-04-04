@@ -48,4 +48,10 @@ abstract class DatasourceInterface {
 
   /// Searches for users based on a [query].
   Future<List<PotentialConversationModel>> getSearchedUsers(String query);
+
+  /// Checks if the user with [participantId] is blocked by current user.
+  Future<bool> isBlocked(String participantId);
+
+  /// Checks if the user with [participantId] has blocked the current user.
+  Future<bool> isBlockedBy(String participantId);
 }

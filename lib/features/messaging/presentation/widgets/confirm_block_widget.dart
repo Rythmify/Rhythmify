@@ -14,11 +14,11 @@ class ConfirmBlock extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, true),
+          onPressed: () => Navigator.pop(context, false),
           child: const Text('CANCEL', style: TextStyle(color: Colors.white)),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text(
             'BLOCK',
             style: TextStyle(color: Colors.deepOrange),

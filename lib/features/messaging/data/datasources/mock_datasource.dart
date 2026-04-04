@@ -9,6 +9,8 @@ import 'package:rythmify/features/messaging/data/models/sent_message_request_mod
 /// This class provides simulated messaging data and delayed responses to mimic
 /// network latency without making actual API calls.
 class MockDatasourceImplement implements DatasourceInterface {
+  final Set<String> _blockedUsers = {};
+  final Set<String> _usersWhoBlockedMe = {'u2'};
   /// Internal storage for simulated users.
   final Map<String, PotentialConversationModel> _allUsers = {
     'u2': PotentialConversationModel(
@@ -286,11 +288,13 @@ class MockDatasourceImplement implements DatasourceInterface {
   @override
   Future<void> blockUser({required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 100));
+    _blockedUsers.add(userId);
   }
 
   @override
   Future<void> unBlockUser({required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 100));
+    _blockedUsers.remove(userId);
   }
 
   @override
@@ -353,4 +357,18 @@ class MockDatasourceImplement implements DatasourceInterface {
         )
         .toList();
   }
+
+  @override
+  Future<bool> isBlocked(String participantId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return _blockedUsers.contains(participantId);
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return _usersWhoBlockedMe.contains(participantId);
+  }
+
+
 }

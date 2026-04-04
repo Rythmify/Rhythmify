@@ -41,7 +41,16 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashFactory: InkRipple.splashFactory,
+        splashColor: const Color(0xFF2F2F2F),
+        highlightColor:Colors.transparent,
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+          primary: Colors.white, // this stops the orange from bleeding in
+        ),
+      ),
+      child:ListTile(
       key: Key('messaging_conversation_item_${participantName}_list_tile'),
       onTap: onTap,
       tileColor: unreadCount == 0
@@ -73,6 +82,6 @@ class ConversationTile extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
