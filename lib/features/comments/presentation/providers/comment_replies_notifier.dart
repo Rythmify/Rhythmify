@@ -117,6 +117,10 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   }
 
   Future<void> toggleLike(String commentId) async {
+    final targetCommentIndex = state.comments.indexWhere((c) => c.id == commentId);
+    if (targetCommentIndex == -1) return;
+    
+    final currentLikeState = state.comments[targetCommentIndex].isLikedByMe;
     final originalComments = [...state.comments];
     
     state = state.copyWith(
@@ -131,10 +135,9 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
         return c;
       }).toList(),
     );
-
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId);
+      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState); 
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

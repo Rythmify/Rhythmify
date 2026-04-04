@@ -75,9 +75,13 @@ abstract class CommentRepository {
 
   /// Toggles the like status of a specific comment for the current user.
   /// 
+  /// [commentId] The unique identifier of the comment.
+  /// [isCurrentlyLiked] The current state of the like to determine the API route.
   /// Returns `true` if the comment is now liked, `false` if unliked.
-  Future<bool> toggleCommentLike(String commentId);
+  Future<bool> toggleCommentLike(String commentId, {required bool isCurrentlyLiked});
 
   /// Deletes a specific comment owned by the current user.
   Future<void> deleteComment(String commentId);
+
+  
 }

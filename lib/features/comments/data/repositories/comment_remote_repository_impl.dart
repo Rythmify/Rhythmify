@@ -1,17 +1,11 @@
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/repositories/comment_repository.dart';
-import '../datasources/comment_local_datasource.dart';
-import '../../data/models/comment_dto.dart';
+import '../datasources/comment_remote_datasource.dart';
 
-/// Concrete implementation of the [CommentRepository].
-/// 
-/// This implementation relies on the [CommentLocalDataSource] to simulate 
-/// network requests. It handles the mapping from Data layer DTOs to Domain layer Entities.
-class MockCommentRepositoryImpl implements CommentRepository {
-  final CommentLocalDataSource _localDataSource;
+class CommentRemoteRepositoryImpl implements CommentRepository {
+  final CommentRemoteDataSource _remoteDataSource;
 
-  MockCommentRepositoryImpl(this._localDataSource);
+  CommentRemoteRepositoryImpl(this._remoteDataSource);
 
   @override
   Future<List<Comment>> getTrackComments({
@@ -21,14 +15,12 @@ class MockCommentRepositoryImpl implements CommentRepository {
     required CommentSortType sortType,
   }) async {
     try {
-      final dtos = await _localDataSource.getTrackComments(
+      final dtos = await _remoteDataSource.getTrackComments(
         trackId: trackId,
         page: page,
         limit: limit,
         sortValue: sortType.apiValue,
       );
-
-      // Map DTOs to Entities
       return dtos.map((dto) => dto.toDomain()).toList();
     } catch (e) {
       throw Exception('Failed to fetch track comments: $e');
@@ -43,13 +35,12 @@ class MockCommentRepositoryImpl implements CommentRepository {
     required CommentSortType sortType,
   }) async {
     try {
-      final dtos = await _localDataSource.getCommentReplies(
+      final dtos = await _remoteDataSource.getCommentReplies(
         commentId: commentId,
         page: page,
         limit: limit,
         sortValue: sortType.apiValue,
       );
-
       return dtos.map((dto) => dto.toDomain()).toList();
     } catch (e) {
       throw Exception('Failed to fetch replies: $e');
@@ -59,15 +50,17 @@ class MockCommentRepositoryImpl implements CommentRepository {
   @override
   Future<Map<int, String>> getFloatingComments(String trackId) async {
     try {
-      // Fetch all comments for the track to simulate building the waveform map
-      final allTrackComments = await _localDataSource.getAllCommentsForTrack(trackId);
-      
+      final allTrackComments = await _remoteDataSource.getAllCommentsForTrack(trackId);
       final Map<int, String> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        if (dto.userPfp == null) continue;
+        // Skip if there's no profile picture to display
+        if (dto.userPfp == null || dto.userPfp!.isEmpty) continue;
 
-        final second = (dto.timestamp / 1000).floor();
+        // Group comments by the exact second to build the O(1) lookup map
+        final second = dto.timestamp; 
+        
+        // We only take the first comment's PFP for a given second to avoid overlap
         if (!floatingMap.containsKey(second)) {
           floatingMap[second] = dto.userPfp!;
         }
@@ -87,43 +80,37 @@ class MockCommentRepositoryImpl implements CommentRepository {
     String? parentId,
   }) async {
     try {
-      final newDto = CommentDto(
-        id: const Uuid().v4(), // Generate a fake UUID
+      final insertedDto = await _remoteDataSource.postComment(
         trackId: trackId,
-        userId: 'current_logged_in_user_id', // Mocked user session
-        userDisplayName: 'Current User',
-        userPfp: 'https://fake-url.com/my-pfp.jpg',
         content: content,
-        timestamp: trackTimestamp,
-        createdAt: DateTime.now().toUtc().toIso8601String(),
-        likeCount: 0,
-        isLikedByMe: false,
-        replyCount: 0,
-        parentCommentId: parentId,
+        trackTimestamp: trackTimestamp,
+        parentId: parentId,
       );
-
-      final insertedDto = await _localDataSource.insertComment(newDto);
       return insertedDto.toDomain();
     } catch (e) {
       throw Exception('Failed to post comment: $e');
     }
   }
 
-@override
+  @override
   Future<bool> toggleCommentLike(String commentId, {required bool isCurrentlyLiked}) async {
     try {
-      // The local mock data source already handles finding the comment 
-      // and flipping its state internally, so we just pass the ID as before.
-      return await _localDataSource.toggleLike(commentId);
+      if (isCurrentlyLiked) {
+        await _remoteDataSource.unlikeComment(commentId);
+        return false; // Successfully unliked, return new state
+      } else {
+        await _remoteDataSource.likeComment(commentId);
+        return true;  // Successfully liked, return new state
+      }
     } catch (e) {
-      throw Exception('Failed to toggle like: $e');
+      throw Exception('Failed to toggle like status: $e');
     }
   }
 
   @override
   Future<void> deleteComment(String commentId) async {
     try {
-      await _localDataSource.deleteComment(commentId);
+      await _remoteDataSource.deleteComment(commentId);
     } catch (e) {
       throw Exception('Failed to delete comment: $e');
     }

@@ -29,16 +29,17 @@ class CommentDto {
     this.parentCommentId,
   });
 
-  factory CommentDto.fromJson(Map<String, dynamic> json)
-  {
+  factory CommentDto.fromJson(Map<String, dynamic> json) {
+    final author = json['author'] as Map<String, dynamic>? ?? {};
+
     return CommentDto(
-      id: json['id'] as String,
+      id: json['comment_id'] as String,
       trackId: json['track_id'] as String,
       userId: json['user_id'] as String,
-      userDisplayName: json['user_display_name'] as String,
-      userPfp: json['user_pfp'] as String?,
+      userDisplayName: author['display_name'] as String? ?? 'Unknown User',
+      userPfp: author['avatar_url'] as String?,
       content: json['content'] as String,
-      timestamp: json['timestamp'] as int? ?? 0,
+      timestamp: json['track_timestamp'] as int? ?? 0,
       createdAt: json['created_at'] as String,
       likeCount: json['like_count'] as int? ?? 0,
       isLikedByMe: json['is_liked_by_me'] as bool? ?? false,
