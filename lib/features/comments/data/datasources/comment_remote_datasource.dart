@@ -110,7 +110,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
       data: {
         'content': content,
         'track_timestamp': trackTimestamp,
-        if (parentId != null) 'parent_comment_id': parentId,
+        'parent_comment_id': ?parentId,
       },
     );
 
