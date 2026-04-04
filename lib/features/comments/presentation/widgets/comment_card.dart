@@ -36,36 +36,36 @@ class CommentCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-  width: isReply ? 24 : 32,
-  height: isReply ? 24 : 32,
-  decoration: const BoxDecoration(
-    color: Colors.grey,
-    shape: BoxShape.circle,
-  ),
-  child: ClipOval(
-    child: comment.userPfp == null
-        ? Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20)
-        : (comment.userPfp!.startsWith('http') || comment.userPfp!.startsWith('https')
-            ? Image.network(
-                comment.userPfp!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: isReply ? 16 : 20,
-                ),
-              )
-            : Image.asset(
-                comment.userPfp!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: isReply ? 16 : 20,
-                ),
-              )),
-  ),
-),
+            width: isReply ? 32 : 40,
+            height: isReply ? 32 : 40,
+            decoration: const BoxDecoration(
+              color: Colors.grey,
+              shape: BoxShape.circle,
+            ),
+            child: ClipOval(
+              child: comment.userPfp == null
+                  ? Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20)
+                  : (comment.userPfp!.startsWith('http') || comment.userPfp!.startsWith('https')
+                    ? Image.network(
+                        comment.userPfp!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: isReply ? 16 : 20,
+                        ),
+                      )
+                    : Image.asset(
+                        comment.userPfp!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: isReply ? 16 : 20,
+                        ),
+                      )),
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -81,16 +81,34 @@ class CommentCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      'at ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
-                      style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'at  ',
+                          style: AppTheme.commentLabel.copyWith(color: Colors.white70),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[850],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            TimeUtils.formatTrackTimestamp(comment.trackTimestamp),
+                            style: AppTheme.commentLabel.copyWith(
+                              color: Colors.blueAccent,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 4),
                     const Text('·', style: TextStyle(color: Colors.white70)),
                     const SizedBox(width: 4),
                     Text(
                       TimeUtils.formatRelativeDate(comment.createdAt),
-                      style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                      style: AppTheme.commentLabel.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -99,7 +117,7 @@ class CommentCard extends StatelessWidget {
                   comment.content,
                   style: AppTheme.bodyNormal.copyWith(fontSize: 14),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     if (!isReply) ...[
@@ -107,24 +125,29 @@ class CommentCard extends StatelessWidget {
                         onTap: onReply,
                         child: Text(
                           'Reply',
-                          style: AppTheme.labelSmall.copyWith(
+                          style: AppTheme.commentLabel.copyWith(
                             color: Colors.white70,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 12
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 25),
                     ],
                     GestureDetector(
                       onTap: onMore,
                       child: const Icon(
                         Icons.more_vert,
-                        size: 16,
+                        size: 18,
                         color: Colors.white70,
                       ),
                     ),
+                    
                   ],
                 ),
+
+                // This is what makes the main spacing between comments
+                const SizedBox(height: 8),
+
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
                     onPressed: onShowReplies,
