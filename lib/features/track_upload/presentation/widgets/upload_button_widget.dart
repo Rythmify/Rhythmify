@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-
-enum UploadButtonState { uploading, processing, done }
-
 /// Widget: UploadButtonWidget
 ///
 /// Animated button displaying upload progress.
@@ -14,96 +10,41 @@ enum UploadButtonState { uploading, processing, done }
 /// Notes:
 /// - Uses AnimationController for smooth transitions
 
-class UploadButtonWidget extends StatefulWidget {
-  final UploadButtonState buttonState;
-  final double progress; // 0.0 to 1.0
+import 'package:flutter/material.dart';
+import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
+
+enum UploadButtonState { uploading, processing, done }
+
+class UploadButtonWidget extends StatelessWidget {
+  final UploadStatus status;
+  final double progress;
   final VoidCallback? onReplace;
 
   const UploadButtonWidget({
     super.key,
-    required this.buttonState,
+    required this.status,
     required this.progress,
     this.onReplace,
   });
 
   @override
-  State<UploadButtonWidget> createState() => _UploadButtonWidgetState();
-}
-
-class _UploadButtonWidgetState extends State<UploadButtonWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _progressAnimation;
-  double _previousProgress = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.progress,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    _controller.forward();
-  }
-
-  @override
-  void didUpdateWidget(UploadButtonWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.progress != widget.progress) {
-      _progressAnimation =
-          Tween<double>(begin: _previousProgress, end: widget.progress).animate(
-            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-          );
-      _previousProgress = widget.progress;
-      _controller.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // ── STATE 3: Done ────────────────────────────────────────────────
-    if (widget.buttonState == UploadButtonState.done) {
-      return GestureDetector(
-        key: const Key('track_upload_replace_button_gesture_detector'),
-        onTap: widget.onReplace,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Green circle with checkmark
-            Container(
-              width: 22,
-              height: 22,
-              decoration: const BoxDecoration(
-                color: Color(0xFF1DB954),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                color: Colors.white,
-                size: 14,
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Replace button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+    // ── STATE: Done → show Replace button ────────────────────────────
+    if (status == UploadStatus.success) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Replace button
+          GestureDetector(
+            onTap: onReplace,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white38),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
                 'Replace',
-                key: Key('track_upload_replace_button_text'),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,
@@ -111,53 +52,79 @@ class _UploadButtonWidgetState extends State<UploadButtonWidget>
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 10),
+
+          // Green circle with checkmark
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFF1DB954),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+        ],
       );
     }
 
-    // ── STATE 1 & 2: Uploading / Processing ──────────────────────────
-    return AnimatedBuilder(
-      animation: _progressAnimation,
-      builder: (context, child) {
-        final progress = _progressAnimation.value;
-        final isProcessing = widget.buttonState == UploadButtonState.processing;
+    // ── STATE: Uploading or Processing ───────────────────────────────
+    final isProcessing = status == UploadStatus.uploading && progress >= 1.0;
+    final label = isProcessing
+        ? 'PREPARING TO PROCESS'
+        : 'UPLOADING ${(progress * 100).toInt()}%';
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox(
-            width: double.infinity,
-            height: 38,
-            child: Stack(
-              children: [
-                // Background — dark grey
-                Container(color: const Color(0xFF2E2E2E)),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        height: 36,
+        child: Stack(
+          children: [
+            // Grey background
+            Container(color: const Color(0xFF2A2A2A)),
 
-                // Green fill — grows left to right
-                FractionallySizedBox(
-                  widthFactor: isProcessing ? 1.0 : progress,
-                  child: Container(color: const Color(0xFF1DB954)),
-                ),
+            // Green fill growing left to right
+            FractionallySizedBox(
+              widthFactor: isProcessing ? 1.0 : progress.clamp(0.0, 1.0),
+              child: Container(color: const Color(0xFF1DB954)),
+            ),
 
-                // Text on top
-                Center(
-                  child: Text(
-                    isProcessing
-                        ? 'Preparing to process'
-                        : 'Uploading ${(progress * 100).toInt()}%',
-                    key: const Key('track_upload_status_text'),
+            // Label on top
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-              ],
+                  if (isProcessing) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onReplace,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }

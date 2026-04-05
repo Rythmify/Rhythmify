@@ -91,41 +91,36 @@ class HomeScreen extends ConsumerWidget {
             /// - Initializes upload state in provider
             /// - Navigates to '/upload-track' route on success
             onPressed: () async {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.audio,
+                allowMultiple: false,
+              );
+
+              if (result == null || result.files.isEmpty) return;
+              final picked = result.files.first;
+              if (picked.path == null) return;
+
+              Duration duration = Duration.zero;
               try {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.audio,
-                  allowMultiple: false,
-                );
+                final player = AudioPlayer();
+                final detected = await player.setFilePath(picked.path!);
+                duration = detected ?? Duration.zero;
+                await player.dispose();
+              } catch (_) {}
 
-                if (result == null || result.files.isEmpty) return;
-                final picked = result.files.first;
-                if (picked.path == null) return;
+              ref
+                  .read(uploadFormProvider.notifier)
+                  .initDraft(
+                    artistId: 'dev_user_001',
+                    localAudioPath: picked.path!,
+                    duration: duration,
+                    fileName: picked.name,
+                  );
 
-                Duration duration = Duration.zero;
-                try {
-                  final player = AudioPlayer();
-                  final detected = await player.setFilePath(picked.path!);
-                  duration = detected ?? Duration.zero;
-                  await player.dispose();
-                } catch (_) {}
-
-                ref
-                    .read(uploadFormProvider.notifier)
-                    .initDraft(
-                      artistId: 'dev_user_001',
-                      localAudioPath: picked.path!,
-                      duration: duration,
-                      fileName: picked.name,
-                    );
-
-                if (context.mounted) context.push('/upload-track');
-              } catch (e) {
-                /// Displays error feedback if file selection or processing fails.
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                }
+              if (context.mounted) {
+                context.push('/upload-track');
+                // Start audio upload right after navigating
+                ref.read(uploadFormProvider.notifier).startAudioUpload();
               }
             },
           ),
