@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'package:audio_service/audio_service.dart';
@@ -15,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ── Initialize Firebase ───────────────────────────────
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   globalAudioHandler = await AudioService.init(
     builder: () => RythmifyAudioHandler(),
