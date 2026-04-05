@@ -16,8 +16,7 @@ class GetFollowingUseCase {
   Future<Either<Failure, List<FollowedUser>>> call({
     int page = 1,
     int limit = 20,
-  }) =>
-      repository.getFollowing(page: page, limit: limit);
+  }) => repository.getFollowing(page: page, limit: limit);
 }
 
 /// Unfollows a user.
@@ -51,12 +50,11 @@ class CreatePlaylistUseCase {
     required String name,
     String? description,
     required bool isPublic,
-  }) =>
-      repository.createPlaylist(
-        name: name,
-        description: description,
-        isPublic: isPublic,
-      );
+  }) => repository.createPlaylist(
+    name: name,
+    description: description,
+    isPublic: isPublic,
+  );
 }
 
 /// Deletes a playlist owned by the current user.
@@ -80,8 +78,7 @@ class GetMyUploadsUseCase {
   Future<Either<Failure, List<UploadedTrack>>> call({
     int page = 1,
     int limit = 20,
-  }) =>
-      repository.getMyUploads(page: page, limit: limit);
+  }) => repository.getMyUploads(page: page, limit: limit);
 }
 
 /// Toggles a track's public/private visibility.
@@ -92,8 +89,7 @@ class ToggleTrackVisibilityUseCase {
   Future<Either<Failure, void>> call({
     required String trackId,
     required bool isPublic,
-  }) =>
-      repository.toggleTrackVisibility(trackId: trackId, isPublic: isPublic);
+  }) => repository.toggleTrackVisibility(trackId: trackId, isPublic: isPublic);
 }
 
 /// Permanently deletes an uploaded track.
@@ -139,8 +135,7 @@ class GetListeningHistoryUseCase {
   Future<Either<Failure, List<RecentlyPlayedEntry>>> call({
     int page = 1,
     int limit = 20,
-  }) =>
-      repository.getListeningHistory(page: page, limit: limit);
+  }) => repository.getListeningHistory(page: page, limit: limit);
 }
 
 /// Clears all listening history.
@@ -173,9 +168,6 @@ class GetLikedTracksLibraryUseCase {
   final LibraryRepository repository;
   GetLikedTracksLibraryUseCase(this.repository);
 
-  Future<Either<Failure, List<Track>>> call({
-    int page = 1,
-    int limit = 20,
-  }) =>
+  Future<Either<Failure, List<Track>>> call({int page = 1, int limit = 20}) =>
       repository.getLikedTracks(page: page, limit: limit);
 }

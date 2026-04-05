@@ -20,7 +20,6 @@ final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });
 
-
 class ProfileNotifier extends Notifier<ProfileState> {
   late final GetProfileUseCase _getProfile;
   late final UpdateProfileUseCase _updateProfile;

@@ -24,7 +24,8 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         ref.read(followingProvider.notifier).load();
       }
     });
@@ -45,7 +46,8 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
       appBar: AppBar(title: const Text('Following'), centerTitle: false),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
-        onRefresh: () => ref.read(followingProvider.notifier).load(refresh: true),
+        onRefresh: () =>
+            ref.read(followingProvider.notifier).load(refresh: true),
         child: _buildBody(context, state),
       ),
     );
@@ -53,7 +55,9 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
 
   Widget _buildBody(BuildContext context, FollowingState state) {
     if (state.isLoading && state.users.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+      );
     }
 
     if (state.error != null && state.users.isEmpty) {
@@ -65,7 +69,8 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
             const SizedBox(height: 16),
             ElevatedButton(
               key: const Key('following_retry_button'),
-              onPressed: () => ref.read(followingProvider.notifier).load(refresh: true),
+              onPressed: () =>
+                  ref.read(followingProvider.notifier).load(refresh: true),
               child: const Text('Retry'),
             ),
           ],
@@ -78,11 +83,23 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.people_outline, color: AppTheme.textSecondary, size: 56),
+            const Icon(
+              Icons.people_outline,
+              color: AppTheme.textSecondary,
+              size: 56,
+            ),
             const SizedBox(height: 16),
-            Text('Not following anyone yet', style: AppTheme.titleMedium.copyWith(color: AppTheme.textSecondary)),
+            Text(
+              'Not following anyone yet',
+              style: AppTheme.titleMedium.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Artists you follow will appear here.', style: AppTheme.bodyMedium),
+            Text(
+              'Artists you follow will appear here.',
+              style: AppTheme.bodyMedium,
+            ),
           ],
         ),
       );
@@ -95,7 +112,15 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
       itemBuilder: (context, index) {
         if (index == state.users.length) {
           return state.isLoading
-              ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand, strokeWidth: 2)))
+              ? const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryBrand,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
               : const SizedBox.shrink();
         }
         return _UserTile(user: state.users[index]);
@@ -115,12 +140,21 @@ class _UserTile extends ConsumerWidget {
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: const Text('Unfollow?', style: TextStyle(color: Colors.white)),
-        content: Text('Stop following ${user.displayName}?', style: AppTheme.bodyMedium),
+        content: Text(
+          'Stop following ${user.displayName}?',
+          style: AppTheme.bodyMedium,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: AppTheme.labelLarge)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: AppTheme.labelLarge),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Unfollow', style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand)),
+            child: Text(
+              'Unfollow',
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
+            ),
           ),
         ],
       ),
@@ -139,8 +173,12 @@ class _UserTile extends ConsumerWidget {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: AppTheme.surface,
-        backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
-        child: user.avatarUrl == null ? const Icon(Icons.person, color: AppTheme.textSecondary) : null,
+        backgroundImage: user.avatarUrl != null
+            ? CachedNetworkImageProvider(user.avatarUrl!)
+            : null,
+        child: user.avatarUrl == null
+            ? const Icon(Icons.person, color: AppTheme.textSecondary)
+            : null,
       ),
       title: Row(
         children: [
@@ -171,7 +209,10 @@ class _UserTile extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           shape: const StadiumBorder(),
         ),
-        child: const Text('Following', style: TextStyle(color: Colors.white, fontSize: 12)),
+        child: const Text(
+          'Following',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        ),
       ),
     );
   }

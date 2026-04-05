@@ -6,7 +6,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 
-
 /// - "SoundCloud" tab: if user has uploads, shows per-track stats.
 ///   If empty, shows marketing screen with "Upload" CTA button.
 /// - "All Platforms" tab: premium upsell marketing screen
@@ -68,10 +67,7 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _SoundCloudTab(),
-          _AllPlatformsTab(),
-        ],
+        children: [_SoundCloudTab(), _AllPlatformsTab()],
       ),
     );
   }
@@ -85,7 +81,9 @@ class _SoundCloudTab extends ConsumerWidget {
     final async = ref.watch(insightsProvider);
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+      ),
       error: (e, _) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -123,8 +121,16 @@ class _SoundCloudEmptyState extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               // Waveform / analytics illustration placeholder
-              Icon(Icons.equalizer_rounded, size: 140, color: AppTheme.primaryBrand.withValues(alpha: 0.3)),
-              Icon(Icons.analytics_outlined, size: 80, color: AppTheme.primaryBrand.withValues(alpha: 0.7)),
+              Icon(
+                Icons.equalizer_rounded,
+                size: 140,
+                color: AppTheme.primaryBrand.withValues(alpha: 0.3),
+              ),
+              Icon(
+                Icons.analytics_outlined,
+                size: 80,
+                color: AppTheme.primaryBrand.withValues(alpha: 0.7),
+              ),
             ],
           ),
         ),
@@ -138,7 +144,12 @@ class _SoundCloudEmptyState extends StatelessWidget {
                 const Text(
                   'Get unmatched insights into your listeners that you won\'t find anywhere else.',
                   key: Key('insights_sc_headline_text'),
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.3),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.3,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -160,10 +171,18 @@ class _SoundCloudEmptyState extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textPrimary,
                       side: const BorderSide(color: AppTheme.textSecondary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text('Upload', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    child: const Text(
+                      'Upload',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -197,13 +216,36 @@ class _SoundCloudDataView extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppTheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: AppTheme.primaryBrand.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
-              Expanded(child: _StatItem(icon: Icons.play_arrow, label: 'Plays', value: _fmt(totalPlays), key: const Key('insights_total_plays_stat'))),
-              Expanded(child: _StatItem(icon: Icons.people_outline, label: 'Listeners', value: _fmt(totalListeners), key: const Key('insights_total_listeners_stat'))),
-              Expanded(child: _StatItem(icon: Icons.favorite_border, label: 'Likes', value: _fmt(totalLikes), key: const Key('insights_total_likes_stat'))),
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.play_arrow,
+                  label: 'Plays',
+                  value: _fmt(totalPlays),
+                  key: const Key('insights_total_plays_stat'),
+                ),
+              ),
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.people_outline,
+                  label: 'Listeners',
+                  value: _fmt(totalListeners),
+                  key: const Key('insights_total_listeners_stat'),
+                ),
+              ),
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.favorite_border,
+                  label: 'Likes',
+                  value: _fmt(totalLikes),
+                  key: const Key('insights_total_likes_stat'),
+                ),
+              ),
             ],
           ),
         ),
@@ -238,8 +280,16 @@ class _AllPlatformsTab extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(Icons.devices_rounded, size: 140, color: Colors.purple.withValues(alpha: 0.2)),
-              Icon(Icons.multitrack_audio_rounded, size: 80, color: Colors.purpleAccent.withValues(alpha: 0.7)),
+              Icon(
+                Icons.devices_rounded,
+                size: 140,
+                color: Colors.purple.withValues(alpha: 0.2),
+              ),
+              Icon(
+                Icons.multitrack_audio_rounded,
+                size: 80,
+                color: Colors.purpleAccent.withValues(alpha: 0.7),
+              ),
             ],
           ),
         ),
@@ -253,7 +303,12 @@ class _AllPlatformsTab extends StatelessWidget {
                 const Text(
                   'Unlock key performance and audience insights across multiple platforms for your music',
                   key: Key('insights_ap_headline_text'),
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.3),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.3,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -275,10 +330,18 @@ class _AllPlatformsTab extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.textPrimary,
                       side: const BorderSide(color: AppTheme.textSecondary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text('Upgrade to Pro', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    child: const Text(
+                      'Upgrade to Pro',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -297,7 +360,12 @@ class _StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const _StatItem({required this.icon, required this.label, required this.value, super.key});
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +391,10 @@ class _InsightTrackCard extends StatelessWidget {
       key: Key('insights_track_${insight.trackId}_card'),
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -332,20 +403,62 @@ class _InsightTrackCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: insight.artworkUrl != null
-                    ? CachedNetworkImage(imageUrl: insight.artworkUrl!, width: 44, height: 44, fit: BoxFit.cover, errorWidget: (c, u, e) => _placeholder())
+                    ? CachedNetworkImage(
+                        imageUrl: insight.artworkUrl!,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        errorWidget: (c, u, e) => _placeholder(),
+                      )
                     : _placeholder(),
               ),
               const SizedBox(width: 10),
-              Expanded(child: Text(insight.title, key: Key('insights_track_${insight.trackId}_title_text'), style: AppTheme.labelLarge, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                child: Text(
+                  insight.title,
+                  key: Key('insights_track_${insight.trackId}_title_text'),
+                  style: AppTheme.labelLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(child: _MiniStat(icon: Icons.play_arrow, value: _fmt(insight.totalPlays), label: 'plays', key: Key('insights_track_${insight.trackId}_plays_stat'))),
-              Expanded(child: _MiniStat(icon: Icons.people_outline, value: _fmt(insight.uniqueListeners), label: 'listeners', key: Key('insights_track_${insight.trackId}_listeners_stat'))),
-              Expanded(child: _MiniStat(icon: Icons.favorite_border, value: _fmt(insight.likes), label: 'likes', key: Key('insights_track_${insight.trackId}_likes_stat'))),
-              Expanded(child: _MiniStat(icon: Icons.repeat, value: _fmt(insight.reposts), label: 'reposts', key: Key('insights_track_${insight.trackId}_reposts_stat'))),
+              Expanded(
+                child: _MiniStat(
+                  icon: Icons.play_arrow,
+                  value: _fmt(insight.totalPlays),
+                  label: 'plays',
+                  key: Key('insights_track_${insight.trackId}_plays_stat'),
+                ),
+              ),
+              Expanded(
+                child: _MiniStat(
+                  icon: Icons.people_outline,
+                  value: _fmt(insight.uniqueListeners),
+                  label: 'listeners',
+                  key: Key('insights_track_${insight.trackId}_listeners_stat'),
+                ),
+              ),
+              Expanded(
+                child: _MiniStat(
+                  icon: Icons.favorite_border,
+                  value: _fmt(insight.likes),
+                  label: 'likes',
+                  key: Key('insights_track_${insight.trackId}_likes_stat'),
+                ),
+              ),
+              Expanded(
+                child: _MiniStat(
+                  icon: Icons.repeat,
+                  value: _fmt(insight.reposts),
+                  label: 'reposts',
+                  key: Key('insights_track_${insight.trackId}_reposts_stat'),
+                ),
+              ),
             ],
           ),
         ],
@@ -353,8 +466,18 @@ class _InsightTrackCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(width: 44, height: 44, color: AppTheme.lighterSurface, child: const Icon(Icons.music_note, color: AppTheme.textSecondary, size: 20));
-  String _fmt(int n) => n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}K' : n.toString();
+  Widget _placeholder() => Container(
+    width: 44,
+    height: 44,
+    color: AppTheme.lighterSurface,
+    child: const Icon(
+      Icons.music_note,
+      color: AppTheme.textSecondary,
+      size: 20,
+    ),
+  );
+  String _fmt(int n) =>
+      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}K' : n.toString();
 }
 
 class _MiniStat extends StatelessWidget {
@@ -362,7 +485,12 @@ class _MiniStat extends StatelessWidget {
   final String value;
   final String label;
 
-  const _MiniStat({required this.icon, required this.value, required this.label, super.key});
+  const _MiniStat({
+    required this.icon,
+    required this.value,
+    required this.label,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

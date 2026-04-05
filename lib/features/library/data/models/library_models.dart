@@ -17,7 +17,8 @@ class FollowedUserModel extends FollowedUser {
       id: json['id'] as String? ?? json['user_id'] as String? ?? '',
       displayName: json['display_name'] as String? ?? '',
       username: json['username'] as String?,
-      avatarUrl: json['profile_picture'] as String? ?? json['avatar_url'] as String?,
+      avatarUrl:
+          json['profile_picture'] as String? ?? json['avatar_url'] as String?,
       followersCount: json['followers_count'] as int? ?? 0,
       isVerified: json['is_verified'] as bool? ?? false,
     );
@@ -39,7 +40,10 @@ class LibraryPlaylistModel extends LibraryPlaylist {
     required super.createdAt,
   });
 
-  factory LibraryPlaylistModel.fromJson(Map<String, dynamic> json, {bool isOwned = true}) {
+  factory LibraryPlaylistModel.fromJson(
+    Map<String, dynamic> json, {
+    bool isOwned = true,
+  }) {
     return LibraryPlaylistModel(
       id: json['playlist_id'] as String? ?? json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
@@ -74,7 +78,8 @@ class UploadedTrackModel extends UploadedTrack {
     return UploadedTrackModel(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      artworkUrl: json['artwork_url'] as String? ?? json['cover_image'] as String?,
+      artworkUrl:
+          json['artwork_url'] as String? ?? json['cover_image'] as String?,
       playCount: json['play_count'] as int? ?? 0,
       likeCount: json['like_count'] as int? ?? 0,
       isPublic: json['is_public'] as bool? ?? true,
@@ -129,13 +134,15 @@ class RecentlyPlayedEntryModel extends RecentlyPlayedEntry {
   factory RecentlyPlayedEntryModel.fromJson(Map<String, dynamic> json) {
     // Supports both /me/history and /me/listening-history shapes
     final track = json['track'] as Map<String, dynamic>? ?? json;
-    final playedAt = json['last_played_at'] as String? ?? json['played_at'] as String?;
+    final playedAt =
+        json['last_played_at'] as String? ?? json['played_at'] as String?;
 
     return RecentlyPlayedEntryModel(
       trackId: track['id'] as String? ?? '',
       title: track['title'] as String? ?? '',
       artistName: track['artist'] as String? ?? '',
-      artworkUrl: track['artwork_url'] as String? ?? track['cover_image'] as String?,
+      artworkUrl:
+          track['artwork_url'] as String? ?? track['cover_image'] as String?,
       durationSeconds: track['duration'] as int? ?? 0,
       playedAt: playedAt != null
           ? DateTime.tryParse(playedAt) ?? DateTime.now()

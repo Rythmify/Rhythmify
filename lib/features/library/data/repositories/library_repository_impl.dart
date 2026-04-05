@@ -23,7 +23,10 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required int limit,
   }) async {
     try {
-      final result = await remoteDatasource.getFollowing(page: page, limit: limit);
+      final result = await remoteDatasource.getFollowing(
+        page: page,
+        limit: limit,
+      );
       return Right(result);
     } catch (e) {
       return Left(_map(e.toString()));
@@ -71,7 +74,9 @@ class LibraryRepositoryImpl implements LibraryRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deletePlaylist({required String playlistId}) async {
+  Future<Either<Failure, void>> deletePlaylist({
+    required String playlistId,
+  }) async {
     try {
       await remoteDatasource.deletePlaylist(playlistId: playlistId);
       return const Right(null);
@@ -88,7 +93,10 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required int limit,
   }) async {
     try {
-      final result = await remoteDatasource.getMyUploads(page: page, limit: limit);
+      final result = await remoteDatasource.getMyUploads(
+        page: page,
+        limit: limit,
+      );
       return Right(result);
     } catch (e) {
       return Left(_map(e.toString()));
@@ -101,7 +109,10 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required bool isPublic,
   }) async {
     try {
-      await remoteDatasource.toggleTrackVisibility(trackId: trackId, isPublic: isPublic);
+      await remoteDatasource.toggleTrackVisibility(
+        trackId: trackId,
+        isPublic: isPublic,
+      );
       return const Right(null);
     } catch (e) {
       return Left(_map(e.toString()));
@@ -148,7 +159,10 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required int limit,
   }) async {
     try {
-      final result = await remoteDatasource.getListeningHistory(page: page, limit: limit);
+      final result = await remoteDatasource.getListeningHistory(
+        page: page,
+        limit: limit,
+      );
       return Right(result);
     } catch (e) {
       return Left(_map(e.toString()));
@@ -185,21 +199,28 @@ class LibraryRepositoryImpl implements LibraryRepository {
     required int limit,
   }) async {
     try {
-      final result = await remoteDatasource.getLikedTracks(page: page, limit: limit);
+      final result = await remoteDatasource.getLikedTracks(
+        page: page,
+        limit: limit,
+      );
       // Convert UploadedTrackModel → Track entity using TrackDto mapping
-      final tracks = result.map((t) => TrackDto.fromJson({
-        'id': t.id,
-        'title': t.title,
-        'artist': '',
-        'artwork_url': t.artworkUrl,
-        'audio_url': '',
-        'duration': 0,
-        'play_count': t.playCount,
-        'like_count': t.likeCount,
-        'is_liked': true,
-        'status': t.status,
-        'created_at': t.createdAt.toIso8601String(),
-      })).toList();
+      final tracks = result
+          .map(
+            (t) => TrackDto.fromJson({
+              'id': t.id,
+              'title': t.title,
+              'artist': '',
+              'artwork_url': t.artworkUrl,
+              'audio_url': '',
+              'duration': 0,
+              'play_count': t.playCount,
+              'like_count': t.likeCount,
+              'is_liked': true,
+              'status': t.status,
+              'created_at': t.createdAt.toIso8601String(),
+            }),
+          )
+          .toList();
       return Right(tracks);
     } catch (e) {
       return Left(_map(e.toString()));
@@ -209,10 +230,14 @@ class LibraryRepositoryImpl implements LibraryRepository {
   // ── Error mapping ──────────────────────────────────────────────────────────
 
   Failure _map(String error) {
-    if (error.contains('RESOURCE_NOT_FOUND')) return const ServerFailure('Resource not found.');
-    if (error.contains('PERMISSION_DENIED')) return const ServerFailure('Permission denied.');
-    if (error.contains('RATE_LIMIT_EXCEEDED')) return const TooManyRequestsFailure();
-    if (error.contains('network') || error.contains('socket')) return const NetworkFailure();
+    if (error.contains('RESOURCE_NOT_FOUND'))
+      return const ServerFailure('Resource not found.');
+    if (error.contains('PERMISSION_DENIED'))
+      return const ServerFailure('Permission denied.');
+    if (error.contains('RATE_LIMIT_EXCEEDED'))
+      return const TooManyRequestsFailure();
+    if (error.contains('network') || error.contains('socket'))
+      return const NetworkFailure();
     return ServerFailure(error);
   }
 }

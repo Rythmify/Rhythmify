@@ -16,12 +16,16 @@ const bool useLibraryMockData = true;
 // Infrastructure providers
 // ─────────────────────────────────────────────────────────────────────────────
 
-final _libraryDatasourceProvider = Provider((ref) => useLibraryMockData
-    ? LibraryMockDatasource()
-    : LibraryRemoteDatasourceImpl(client: apiClient));
+final _libraryDatasourceProvider = Provider(
+  (ref) => useLibraryMockData
+      ? LibraryMockDatasource()
+      : LibraryRemoteDatasourceImpl(client: apiClient),
+);
 
 final _libraryRepositoryProvider = Provider(
-  (ref) => LibraryRepositoryImpl(remoteDatasource: ref.read(_libraryDatasourceProvider)),
+  (ref) => LibraryRepositoryImpl(
+    remoteDatasource: ref.read(_libraryDatasourceProvider),
+  ),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -41,13 +45,17 @@ class FollowingState extends Equatable {
     this.error,
   });
 
-  FollowingState copyWith({List<FollowedUser>? users, bool? isLoading, bool? hasMore, String? error}) =>
-      FollowingState(
-        users: users ?? this.users,
-        isLoading: isLoading ?? this.isLoading,
-        hasMore: hasMore ?? this.hasMore,
-        error: error ?? this.error,
-      );
+  FollowingState copyWith({
+    List<FollowedUser>? users,
+    bool? isLoading,
+    bool? hasMore,
+    String? error,
+  }) => FollowingState(
+    users: users ?? this.users,
+    isLoading: isLoading ?? this.isLoading,
+    hasMore: hasMore ?? this.hasMore,
+    error: error ?? this.error,
+  );
 
   @override
   List<Object?> get props => [users, isLoading, hasMore, error];
@@ -69,12 +77,22 @@ class FollowingNotifier extends Notifier<FollowingState> {
 
   Future<void> load({bool refresh = false}) async {
     if (state.isLoading && !refresh) return;
-    if (refresh) { _page = 1; state = state.copyWith(users: [], isLoading: true, hasMore: true, error: null); }
-    else { state = state.copyWith(isLoading: true); }
+    if (refresh) {
+      _page = 1;
+      state = state.copyWith(
+        users: [],
+        isLoading: true,
+        hasMore: true,
+        error: null,
+      );
+    } else {
+      state = state.copyWith(isLoading: true);
+    }
 
     final result = await _getFollowing(page: _page, limit: 20);
     result.fold(
-      (failure) => state = state.copyWith(isLoading: false, error: failure.message),
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
       (users) {
         _page++;
         state = state.copyWith(
@@ -94,7 +112,9 @@ class FollowingNotifier extends Notifier<FollowingState> {
   }
 }
 
-final followingProvider = NotifierProvider<FollowingNotifier, FollowingState>(() => FollowingNotifier());
+final followingProvider = NotifierProvider<FollowingNotifier, FollowingState>(
+  () => FollowingNotifier(),
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Playlists state & provider
@@ -106,10 +126,24 @@ class PlaylistsState extends Equatable {
   final bool isSaving;
   final String? error;
 
-  const PlaylistsState({this.playlists = const [], this.isLoading = false, this.isSaving = false, this.error});
+  const PlaylistsState({
+    this.playlists = const [],
+    this.isLoading = false,
+    this.isSaving = false,
+    this.error,
+  });
 
-  PlaylistsState copyWith({List<LibraryPlaylist>? playlists, bool? isLoading, bool? isSaving, String? error}) =>
-      PlaylistsState(playlists: playlists ?? this.playlists, isLoading: isLoading ?? this.isLoading, isSaving: isSaving ?? this.isSaving, error: error ?? this.error);
+  PlaylistsState copyWith({
+    List<LibraryPlaylist>? playlists,
+    bool? isLoading,
+    bool? isSaving,
+    String? error,
+  }) => PlaylistsState(
+    playlists: playlists ?? this.playlists,
+    isLoading: isLoading ?? this.isLoading,
+    isSaving: isSaving ?? this.isSaving,
+    error: error ?? this.error,
+  );
 
   @override
   List<Object?> get props => [playlists, isLoading, isSaving, error];
@@ -139,24 +173,48 @@ class PlaylistsNotifier extends Notifier<PlaylistsState> {
     );
   }
 
-  Future<bool> create({required String name, String? description, required bool isPublic}) async {
+  Future<bool> create({
+    required String name,
+    String? description,
+    required bool isPublic,
+  }) async {
     state = state.copyWith(isSaving: true);
-    final result = await _create(name: name, description: description, isPublic: isPublic);
+    final result = await _create(
+      name: name,
+      description: description,
+      isPublic: isPublic,
+    );
     return result.fold(
-      (f) { state = state.copyWith(isSaving: false, error: f.message); return false; },
-      (p) { state = state.copyWith(playlists: [p, ...state.playlists], isSaving: false); return true; },
+      (f) {
+        state = state.copyWith(isSaving: false, error: f.message);
+        return false;
+      },
+      (p) {
+        state = state.copyWith(
+          playlists: [p, ...state.playlists],
+          isSaving: false,
+        );
+        return true;
+      },
     );
   }
 
   Future<void> delete(String playlistId) async {
     final prev = state.playlists;
-    state = state.copyWith(playlists: prev.where((p) => p.id != playlistId).toList());
+    state = state.copyWith(
+      playlists: prev.where((p) => p.id != playlistId).toList(),
+    );
     final result = await _delete(playlistId: playlistId);
-    result.fold((f) => state = state.copyWith(playlists: prev, error: f.message), (_) {});
+    result.fold(
+      (f) => state = state.copyWith(playlists: prev, error: f.message),
+      (_) {},
+    );
   }
 }
 
-final playlistsProvider = NotifierProvider<PlaylistsNotifier, PlaylistsState>(() => PlaylistsNotifier());
+final playlistsProvider = NotifierProvider<PlaylistsNotifier, PlaylistsState>(
+  () => PlaylistsNotifier(),
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Uploads state & provider
@@ -168,10 +226,24 @@ class UploadsState extends Equatable {
   final bool hasMore;
   final String? error;
 
-  const UploadsState({this.tracks = const [], this.isLoading = false, this.hasMore = true, this.error});
+  const UploadsState({
+    this.tracks = const [],
+    this.isLoading = false,
+    this.hasMore = true,
+    this.error,
+  });
 
-  UploadsState copyWith({List<UploadedTrack>? tracks, bool? isLoading, bool? hasMore, String? error}) =>
-      UploadsState(tracks: tracks ?? this.tracks, isLoading: isLoading ?? this.isLoading, hasMore: hasMore ?? this.hasMore, error: error ?? this.error);
+  UploadsState copyWith({
+    List<UploadedTrack>? tracks,
+    bool? isLoading,
+    bool? hasMore,
+    String? error,
+  }) => UploadsState(
+    tracks: tracks ?? this.tracks,
+    isLoading: isLoading ?? this.isLoading,
+    hasMore: hasMore ?? this.hasMore,
+    error: error ?? this.error,
+  );
 
   @override
   List<Object?> get props => [tracks, isLoading, hasMore];
@@ -194,36 +266,69 @@ class UploadsNotifier extends Notifier<UploadsState> {
   }
 
   Future<void> load({bool refresh = false}) async {
-    if (refresh) { _page = 1; state = state.copyWith(tracks: [], isLoading: true, hasMore: true); }
-    else { if (!state.hasMore) return; state = state.copyWith(isLoading: true); }
+    if (refresh) {
+      _page = 1;
+      state = state.copyWith(tracks: [], isLoading: true, hasMore: true);
+    } else {
+      if (!state.hasMore) return;
+      state = state.copyWith(isLoading: true);
+    }
 
     final result = await _get(page: _page, limit: 20);
     result.fold(
       (f) => state = state.copyWith(isLoading: false, error: f.message),
-      (t) { _page++; state = state.copyWith(tracks: [...state.tracks, ...t], isLoading: false, hasMore: t.length == 20); },
+      (t) {
+        _page++;
+        state = state.copyWith(
+          tracks: [...state.tracks, ...t],
+          isLoading: false,
+          hasMore: t.length == 20,
+        );
+      },
     );
   }
 
   Future<void> toggleVisibility(String trackId, bool isPublic) async {
     final prev = state.tracks;
     state = state.copyWith(
-      tracks: prev.map((t) => t.id == trackId
-          ? UploadedTrack(id: t.id, title: t.title, artworkUrl: t.artworkUrl, playCount: t.playCount, likeCount: t.likeCount, isPublic: isPublic, status: t.status, createdAt: t.createdAt)
-          : t).toList(),
+      tracks: prev
+          .map(
+            (t) => t.id == trackId
+                ? UploadedTrack(
+                    id: t.id,
+                    title: t.title,
+                    artworkUrl: t.artworkUrl,
+                    playCount: t.playCount,
+                    likeCount: t.likeCount,
+                    isPublic: isPublic,
+                    status: t.status,
+                    createdAt: t.createdAt,
+                  )
+                : t,
+          )
+          .toList(),
     );
     final result = await _toggleVis(trackId: trackId, isPublic: isPublic);
-    result.fold((f) => state = state.copyWith(tracks: prev, error: f.message), (_) {});
+    result.fold(
+      (f) => state = state.copyWith(tracks: prev, error: f.message),
+      (_) {},
+    );
   }
 
   Future<void> deleteTrack(String trackId) async {
     final prev = state.tracks;
     state = state.copyWith(tracks: prev.where((t) => t.id != trackId).toList());
     final result = await _delete(trackId: trackId);
-    result.fold((f) => state = state.copyWith(tracks: prev, error: f.message), (_) {});
+    result.fold(
+      (f) => state = state.copyWith(tracks: prev, error: f.message),
+      (_) {},
+    );
   }
 }
 
-final uploadsProvider = NotifierProvider<UploadsNotifier, UploadsState>(() => UploadsNotifier());
+final uploadsProvider = NotifierProvider<UploadsNotifier, UploadsState>(
+  () => UploadsNotifier(),
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Insights provider (simple FutureProvider)
@@ -246,10 +351,27 @@ class HistoryState extends Equatable {
   final bool isClearing;
   final String? error;
 
-  const HistoryState({this.entries = const [], this.isLoading = false, this.hasMore = true, this.isClearing = false, this.error});
+  const HistoryState({
+    this.entries = const [],
+    this.isLoading = false,
+    this.hasMore = true,
+    this.isClearing = false,
+    this.error,
+  });
 
-  HistoryState copyWith({List<RecentlyPlayedEntry>? entries, bool? isLoading, bool? hasMore, bool? isClearing, String? error}) =>
-      HistoryState(entries: entries ?? this.entries, isLoading: isLoading ?? this.isLoading, hasMore: hasMore ?? this.hasMore, isClearing: isClearing ?? this.isClearing, error: error ?? this.error);
+  HistoryState copyWith({
+    List<RecentlyPlayedEntry>? entries,
+    bool? isLoading,
+    bool? hasMore,
+    bool? isClearing,
+    String? error,
+  }) => HistoryState(
+    entries: entries ?? this.entries,
+    isLoading: isLoading ?? this.isLoading,
+    hasMore: hasMore ?? this.hasMore,
+    isClearing: isClearing ?? this.isClearing,
+    error: error ?? this.error,
+  );
 
   @override
   List<Object?> get props => [entries, isLoading, hasMore, isClearing];
@@ -270,13 +392,25 @@ class HistoryNotifier extends Notifier<HistoryState> {
   }
 
   Future<void> load({bool refresh = false}) async {
-    if (refresh) { _page = 1; state = state.copyWith(entries: [], isLoading: true, hasMore: true); }
-    else { if (!state.hasMore) return; state = state.copyWith(isLoading: true); }
+    if (refresh) {
+      _page = 1;
+      state = state.copyWith(entries: [], isLoading: true, hasMore: true);
+    } else {
+      if (!state.hasMore) return;
+      state = state.copyWith(isLoading: true);
+    }
 
     final result = await _get(page: _page, limit: 20);
     result.fold(
       (f) => state = state.copyWith(isLoading: false, error: f.message),
-      (e) { _page++; state = state.copyWith(entries: [...state.entries, ...e], isLoading: false, hasMore: e.length == 20); },
+      (e) {
+        _page++;
+        state = state.copyWith(
+          entries: [...state.entries, ...e],
+          isLoading: false,
+          hasMore: e.length == 20,
+        );
+      },
     );
   }
 
@@ -285,12 +419,18 @@ class HistoryNotifier extends Notifier<HistoryState> {
     final result = await _clear();
     result.fold(
       (f) => state = state.copyWith(isClearing: false, error: f.message),
-      (_) => state = state.copyWith(entries: [], isClearing: false, hasMore: false),
+      (_) => state = state.copyWith(
+        entries: [],
+        isClearing: false,
+        hasMore: false,
+      ),
     );
   }
 }
 
-final historyProvider = NotifierProvider<HistoryNotifier, HistoryState>(() => HistoryNotifier());
+final historyProvider = NotifierProvider<HistoryNotifier, HistoryState>(
+  () => HistoryNotifier(),
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stations provider

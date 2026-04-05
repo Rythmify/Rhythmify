@@ -19,7 +19,9 @@ class LibraryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final currentUserEmail = authState is AuthAuthenticated ? authState.user.email : '';
+    final currentUserEmail = authState is AuthAuthenticated
+        ? authState.user.email
+        : '';
     final historyState = ref.watch(historyProvider);
 
     return Scaffold(
@@ -46,7 +48,11 @@ class LibraryScreen extends ConsumerWidget {
               child: const CircleAvatar(
                 radius: 18,
                 backgroundColor: AppTheme.surface,
-                child: Icon(Icons.person, color: AppTheme.textSecondary, size: 20),
+                child: Icon(
+                  Icons.person,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -61,13 +67,48 @@ class LibraryScreen extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // ── Menu items ────────────────────────────────────────────────────
-          _menuItem(context, label: 'Your likes', key: const Key('library_likes_item'), onTap: () => context.push('/profile/me/likes')),
-          _menuItem(context, label: 'Playlists', key: const Key('library_playlists_item'), onTap: () => context.push('/library/playlists')),
-          _menuItem(context, label: 'Albums', key: const Key('library_albums_item'), onTap: () {}),
-          _menuItem(context, label: 'Following', key: const Key('library_following_item'), onTap: () => context.push('/library/following')),
-          _menuItem(context, label: 'Stations', key: const Key('library_stations_item'), onTap: () => context.push('/library/stations')),
-          _menuItem(context, label: 'Your insights', key: const Key('library_insights_item'), onTap: () => context.push('/library/insights')),
-          _menuItem(context, label: 'Your uploads', key: const Key('library_uploads_item'), onTap: () => context.push('/library/uploads')),
+          _menuItem(
+            context,
+            label: 'Your likes',
+            key: const Key('library_likes_item'),
+            onTap: () => context.push('/profile/me/likes'),
+          ),
+          _menuItem(
+            context,
+            label: 'Playlists',
+            key: const Key('library_playlists_item'),
+            onTap: () => context.push('/library/playlists'),
+          ),
+          _menuItem(
+            context,
+            label: 'Albums',
+            key: const Key('library_albums_item'),
+            onTap: () {},
+          ),
+          _menuItem(
+            context,
+            label: 'Following',
+            key: const Key('library_following_item'),
+            onTap: () => context.push('/library/following'),
+          ),
+          _menuItem(
+            context,
+            label: 'Stations',
+            key: const Key('library_stations_item'),
+            onTap: () => context.push('/library/stations'),
+          ),
+          _menuItem(
+            context,
+            label: 'Your insights',
+            key: const Key('library_insights_item'),
+            onTap: () => context.push('/library/insights'),
+          ),
+          _menuItem(
+            context,
+            label: 'Your uploads',
+            key: const Key('library_uploads_item'),
+            onTap: () => context.push('/library/uploads'),
+          ),
 
           const SizedBox(height: 8),
 
@@ -84,16 +125,22 @@ class LibraryScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  Text('Logged in as $currentUserEmail', style: AppTheme.labelSmall),
+                  Text(
+                    'Logged in as $currentUserEmail',
+                    style: AppTheme.labelSmall,
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => ref.read(authProvider.notifier).signOutUser(),
+                      onPressed: () =>
+                          ref.read(authProvider.notifier).signOutUser(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text('DEV LOGOUT'),
                     ),
@@ -109,17 +156,39 @@ class LibraryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _menuItem(BuildContext context, {required String label, required VoidCallback onTap, Key? key}) {
+  Widget _menuItem(
+    BuildContext context, {
+    required String label,
+    required VoidCallback onTap,
+    Key? key,
+  }) {
     return Column(
       children: [
         ListTile(
           key: key,
           onTap: onTap,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          title: Text(label, style: AppTheme.titleMedium.copyWith(fontSize: 17, fontWeight: FontWeight.w500)),
-          trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
+          title: Text(
+            label,
+            style: AppTheme.titleMedium.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: AppTheme.textSecondary,
+          ),
         ),
-        const Divider(color: AppTheme.surface, height: 1, indent: 16, endIndent: 16),
+        const Divider(
+          color: AppTheme.surface,
+          height: 1,
+          indent: 16,
+          endIndent: 16,
+        ),
       ],
     );
   }
@@ -170,13 +239,21 @@ class _ImportBannerCard extends StatelessWidget {
                     child: GestureDetector(
                       key: const Key('library_import_banner_close_gesture'),
                       onTap: () {},
-                      child: const Icon(Icons.close, color: Colors.white54, size: 18),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white54,
+                        size: 18,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   const Text(
                     'Transfer your gems',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   const Text(
@@ -191,10 +268,16 @@ class _ImportBannerCard extends StatelessWidget {
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
                       shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 10,
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text('Import Now', style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: const Text(
+                      'Import Now',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ],
               ),
@@ -225,12 +308,20 @@ class _RecentlyPlayedSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Text('Recently played', style: AppTheme.titleMedium.copyWith(fontSize: 17)),
+              Text(
+                'Recently played',
+                style: AppTheme.titleMedium.copyWith(fontSize: 17),
+              ),
               const Spacer(),
               TextButton(
                 key: const Key('library_recently_played_see_all_button'),
                 onPressed: onSeeAll,
-                child: Text('See All', style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand)),
+                child: Text(
+                  'See All',
+                  style: AppTheme.labelLarge.copyWith(
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
               ),
             ],
           ),
@@ -272,7 +363,13 @@ class _RecentlyPlayedItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: entry.artworkUrl != null
-                  ? Image.network(entry.artworkUrl!, width: 75, height: 75, fit: BoxFit.cover, errorBuilder: (c, u, e) => _placeholder())
+                  ? Image.network(
+                      entry.artworkUrl!,
+                      width: 75,
+                      height: 75,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, u, e) => _placeholder(),
+                    )
                   : _placeholder(),
             ),
             const SizedBox(height: 6),
@@ -290,7 +387,8 @@ class _RecentlyPlayedItem extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    width: 75, height: 75,
+    width: 75,
+    height: 75,
     color: AppTheme.surface,
     child: const Icon(Icons.music_note, color: AppTheme.textSecondary),
   );

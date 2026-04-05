@@ -21,7 +21,13 @@ class FollowedUser extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, displayName, avatarUrl, followersCount, isVerified];
+  List<Object?> get props => [
+    id,
+    displayName,
+    avatarUrl,
+    followersCount,
+    isVerified,
+  ];
 }
 
 // ─────────────────────────────────────────────
@@ -35,7 +41,7 @@ class LibraryPlaylist extends Equatable {
   final int trackCount;
   final int likeCount;
   final bool isPublic;
-  final bool isOwned;        // true = created by me, false = saved/liked
+  final bool isOwned; // true = created by me, false = saved/liked
   final DateTime createdAt;
 
   const LibraryPlaylist({
@@ -64,7 +70,7 @@ class UploadedTrack extends Equatable {
   final int playCount;
   final int likeCount;
   final bool isPublic;
-  final String status;   // "ready" | "processing" | "failed"
+  final String status; // "ready" | "processing" | "failed"
   final DateTime createdAt;
 
   const UploadedTrack({

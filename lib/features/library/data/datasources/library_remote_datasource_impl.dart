@@ -59,7 +59,12 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
       );
       final List items = res.data['data']['items'] as List? ?? [];
       return items
-          .map((e) => LibraryPlaylistModel.fromJson(e as Map<String, dynamic>, isOwned: true))
+          .map(
+            (e) => LibraryPlaylistModel.fromJson(
+              e as Map<String, dynamic>,
+              isOwned: true,
+            ),
+          )
           .toList();
     } on DioException catch (e) {
       _handleError(e);
@@ -74,12 +79,17 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
     required bool isPublic,
   }) async {
     try {
-      final res = await client.dio.post('/playlists', data: {
-        'name': name,
-        if (description != null) 'description': description,
-        'is_public': isPublic,
-      });
-      return LibraryPlaylistModel.fromJson(res.data['data'] as Map<String, dynamic>);
+      final res = await client.dio.post(
+        '/playlists',
+        data: {
+          'name': name,
+          if (description != null) 'description': description,
+          'is_public': isPublic,
+        },
+      );
+      return LibraryPlaylistModel.fromJson(
+        res.data['data'] as Map<String, dynamic>,
+      );
     } on DioException catch (e) {
       _handleError(e);
       rethrow;
@@ -149,7 +159,10 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
   @override
   Future<List<TrackInsightModel>> getMyInsights() async {
     try {
-      final res = await client.dio.get('/tracks/me', queryParameters: {'limit': 50});
+      final res = await client.dio.get(
+        '/tracks/me',
+        queryParameters: {'limit': 50},
+      );
       final List data = res.data['data'] as List? ?? [];
       return data
           .map((e) => TrackInsightModel.fromTrack(e as Map<String, dynamic>))
@@ -168,7 +181,9 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
       final res = await client.dio.get('/me/history');
       final List data = res.data['data'] as List? ?? [];
       return data
-          .map((e) => RecentlyPlayedEntryModel.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => RecentlyPlayedEntryModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (e) {
       _handleError(e);
@@ -188,7 +203,9 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
       );
       final List data = res.data['data'] as List? ?? [];
       return data
-          .map((e) => RecentlyPlayedEntryModel.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => RecentlyPlayedEntryModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (e) {
       _handleError(e);
@@ -211,7 +228,10 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
   @override
   Future<List<LibraryStationModel>> getStations() async {
     try {
-      final res = await client.dio.get('/home/stations', queryParameters: {'limit': 20});
+      final res = await client.dio.get(
+        '/home/stations',
+        queryParameters: {'limit': 20},
+      );
       final List data = res.data['data'] as List? ?? [];
       return data
           .map((e) => LibraryStationModel.fromJson(e as Map<String, dynamic>))

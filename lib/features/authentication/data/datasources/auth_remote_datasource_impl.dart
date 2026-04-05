@@ -149,12 +149,13 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       // Backend expects: 456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
+        serverClientId:
+            '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
       );
-      
+
       // Sign out first to ensure account picker shows
       await googleSignIn.signOut();
-      
+
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {

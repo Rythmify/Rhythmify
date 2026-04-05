@@ -19,7 +19,9 @@ class StationsPage extends ConsumerWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(title: const Text('Stations'), centerTitle: false),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
         error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -34,7 +36,8 @@ class StationsPage extends ConsumerWidget {
             ],
           ),
         ),
-        data: (stations) => stations.isEmpty ? _buildEmpty(context) : _buildList(stations),
+        data: (stations) =>
+            stations.isEmpty ? _buildEmpty(context) : _buildList(stations),
       ),
     );
   }
@@ -69,7 +72,10 @@ class StationsPage extends ConsumerWidget {
                 foregroundColor: AppTheme.textPrimary,
                 side: const BorderSide(color: AppTheme.textSecondary),
                 shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Begin search'),
             ),
@@ -103,7 +109,13 @@ class _StationTile extends StatelessWidget {
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: station.coverUrl != null
-            ? CachedNetworkImage(imageUrl: station.coverUrl!, width: 52, height: 52, fit: BoxFit.cover, errorWidget: (c, u, e) => _placeholder())
+            ? CachedNetworkImage(
+                imageUrl: station.coverUrl!,
+                width: 52,
+                height: 52,
+                fit: BoxFit.cover,
+                errorWidget: (c, u, e) => _placeholder(),
+              )
             : _placeholder(),
       ),
       title: Text(
@@ -118,9 +130,18 @@ class _StationTile extends StatelessWidget {
         key: Key('station_item_${station.id}_meta_text'),
         style: AppTheme.labelSmall,
       ),
-      trailing: const Icon(Icons.more_vert, color: AppTheme.textSecondary, size: 20),
+      trailing: const Icon(
+        Icons.more_vert,
+        color: AppTheme.textSecondary,
+        size: 20,
+      ),
     );
   }
 
-  Widget _placeholder() => Container(width: 52, height: 52, color: AppTheme.lighterSurface, child: const Icon(Icons.radio, color: AppTheme.textSecondary));
+  Widget _placeholder() => Container(
+    width: 52,
+    height: 52,
+    color: AppTheme.lighterSurface,
+    child: const Icon(Icons.radio, color: AppTheme.textSecondary),
+  );
 }

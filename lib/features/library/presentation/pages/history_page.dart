@@ -27,7 +27,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         ref.read(historyProvider.notifier).load();
       }
     });
@@ -44,11 +45,26 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.surface,
-        title: const Text('Clear history?', style: TextStyle(color: Colors.white)),
-        content: Text('This will permanently delete your entire listening history.', style: AppTheme.bodyMedium),
+        title: const Text(
+          'Clear history?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          'This will permanently delete your entire listening history.',
+          style: AppTheme.bodyMedium,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: AppTheme.labelLarge)),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Clear', style: TextStyle(color: Colors.redAccent))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: AppTheme.labelLarge),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Clear',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
         ],
       ),
     );
@@ -61,7 +77,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(title: const Text('Listening history'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Listening history'),
+        centerTitle: false,
+      ),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () => ref.read(historyProvider.notifier).load(refresh: true),
@@ -72,7 +91,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
   Widget _buildBody(HistoryState state) {
     if (state.isClearing || (state.isLoading && state.entries.isEmpty)) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+      );
     }
 
     if (state.entries.isEmpty) {
@@ -82,9 +103,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           children: [
             const Icon(Icons.history, color: AppTheme.textSecondary, size: 56),
             const SizedBox(height: 16),
-            Text('No listening history', style: AppTheme.titleMedium.copyWith(color: AppTheme.textSecondary)),
+            Text(
+              'No listening history',
+              style: AppTheme.titleMedium.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Tracks you play will appear here.', style: AppTheme.bodyMedium),
+            Text(
+              'Tracks you play will appear here.',
+              style: AppTheme.bodyMedium,
+            ),
           ],
         ),
       );
@@ -112,7 +141,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             children: [
               IconButton(
                 key: const Key('history_clear_icon_button'),
-                icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: AppTheme.textSecondary,
+                ),
                 tooltip: 'Clear history',
                 onPressed: _confirmClear,
               ),
@@ -127,7 +159,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 heroTag: 'history_play',
                 backgroundColor: Colors.white,
                 onPressed: () {},
-                child: const Icon(Icons.play_arrow, color: Colors.black, size: 22),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Colors.black,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 8),
             ],
@@ -147,14 +183,27 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               if (item is String) {
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-                  child: Text(item, style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary)),
+                  child: Text(
+                    item,
+                    style: AppTheme.labelLarge.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
                 );
               }
 
               // Pagination sentinel
               if (item is _Sentinel) {
                 return item.isLoading
-                    ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand, strokeWidth: 2)))
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
                     : const SizedBox.shrink();
               }
 
@@ -171,7 +220,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 coverImage: entry.artworkUrl,
               );
               return TrackCard(
-                key: Key('history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}'),
+                key: Key(
+                  'history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}',
+                ),
                 track: track,
               );
             },
@@ -181,7 +232,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     );
   }
 
-  Map<String, List<RecentlyPlayedEntry>> _group(List<RecentlyPlayedEntry> entries) {
+  Map<String, List<RecentlyPlayedEntry>> _group(
+    List<RecentlyPlayedEntry> entries,
+  ) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
@@ -190,10 +243,14 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     for (final e in entries) {
       final d = DateTime(e.playedAt.year, e.playedAt.month, e.playedAt.day);
       final String label;
-      if (!d.isBefore(today)) label = 'Today';
-      else if (!d.isBefore(yesterday)) label = 'Yesterday';
-      else if (!d.isBefore(weekAgo)) label = 'This Week';
-      else label = 'Older';
+      if (!d.isBefore(today))
+        label = 'Today';
+      else if (!d.isBefore(yesterday))
+        label = 'Yesterday';
+      else if (!d.isBefore(weekAgo))
+        label = 'This Week';
+      else
+        label = 'Older';
       result.putIfAbsent(label, () => []).add(e);
     }
     return result;
