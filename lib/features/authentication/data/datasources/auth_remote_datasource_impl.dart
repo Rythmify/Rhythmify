@@ -145,7 +145,16 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      // IMPORTANT: This MUST match the backend's GOOGLE_CLIENT_ID
+      // Backend expects: 456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
+      );
+      
+      // Sign out first to ensure account picker shows
+      await googleSignIn.signOut();
+      
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -155,19 +164,22 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get Google ID token');
+      }
+
+      // For Firebase integration (optional - can remove if not needed)
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      final firebaseUser = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final idToken = await firebaseUser.user!.getIdToken();
-
+      // Send the Google OAuth ID token to backend
+      // This is what the backend validates with google-auth-library
       final response = await client.dio.post(
         '/auth/google',
-        data: {'id_token': idToken},
+        data: {'id_token': googleAuth.idToken},
       );
 
       final data = response.data['data'];
