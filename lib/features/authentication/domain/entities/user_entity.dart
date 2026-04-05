@@ -44,5 +44,12 @@ class UserEntity extends Equatable {
   /// Two [UserEntity] instances are equal if all of these fields match.
 
   @override
-  List<Object?> get props => [id, email, displayName, avatarUrl, isEmailVerified, token];
+  List<Object?> get props => [
+    id,
+    email,
+    displayName,
+    avatarUrl,
+    isEmailVerified,
+    token,
+  ];
 }

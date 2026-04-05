@@ -28,15 +28,15 @@ abstract class CommentLocalDataSource {
 }
 
 /// Mock implementation utilizing a JSON file to simulate an API response.
-/// 
-/// This reads from `assets/mock_comments.json` on the first call, stores the 
-/// objects in memory, and performs standard database operations (filtering, 
+///
+/// This reads from `assets/mock_comments.json` on the first call, stores the
+/// objects in memory, and performs standard database operations (filtering,
 /// sorting, paginating) on that in-memory list.
 class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   // In-memory "database" table
   List<CommentDto> _db = [];
   bool _isInitialized = false;
-  
+
   // Simulate network/database latency
   final Duration _delay = const Duration(milliseconds: 500);
 
@@ -46,7 +46,9 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     if (_isInitialized) return;
 
     try {
-      final jsonString = await rootBundle.loadString('assets/mocks/mock_comments.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/mocks/mock_comments.json',
+      );
       final List<dynamic> jsonData = jsonDecode(jsonString);
 
       _db = jsonData.map((json) => CommentDto.fromJson(json)).toList();
@@ -67,7 +69,9 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     await Future.delayed(_delay);
 
     // Filter: Match track ID AND ensure it's a root comment (no parent)
-    var results = _db.where((c) => c.trackId == trackId && c.parentCommentId == null).toList();
+    var results = _db
+        .where((c) => c.trackId == trackId && c.parentCommentId == null)
+        .toList();
 
     // Sort: Mimic SQL ORDER BY
     _sortComments(results, sortValue);
@@ -75,7 +79,7 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     // Paginate: Mimic SQL LIMIT & OFFSET
     final startIndex = (page - 1) * limit;
     if (startIndex >= results.length) return [];
-    
+
     return results.skip(startIndex).take(limit).toList();
   }
 
@@ -95,7 +99,7 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= results.length) return [];
-    
+
     return results.skip(startIndex).take(limit).toList();
   }
 
@@ -111,15 +115,17 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   Future<CommentDto> insertComment(CommentDto comment) async {
     await _initDatabase();
     await Future.delayed(_delay);
-    
+
     _db.add(comment);
-    
+
     // If it's a reply, increment the replyCount of the parent comment
     if (comment.parentCommentId != null) {
-      final parentIndex = _db.indexWhere((c) => c.id == comment.parentCommentId);
+      final parentIndex = _db.indexWhere(
+        (c) => c.id == comment.parentCommentId,
+      );
       if (parentIndex != -1) {
         final parent = _db[parentIndex];
-       
+
         _db[parentIndex] = CommentDto(
           id: parent.id,
           trackId: parent.trackId,
@@ -143,13 +149,15 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   Future<bool> toggleLike(String commentId) async {
     await _initDatabase();
     await Future.delayed(_delay);
-    
+
     final index = _db.indexWhere((c) => c.id == commentId);
     if (index == -1) throw Exception('Comment not found in mock JSON');
 
     final comment = _db[index];
     final isNowLiked = !comment.isLikedByMe;
-    final newLikeCount = isNowLiked ? comment.likeCount + 1 : comment.likeCount - 1;
+    final newLikeCount = isNowLiked
+        ? comment.likeCount + 1
+        : comment.likeCount - 1;
 
     // Update row
     _db[index] = CommentDto(
@@ -180,9 +188,15 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   /// Internal helper to sort comments by the requested strategy.
   void _sortComments(List<CommentDto> comments, String sortValue) {
     if (sortValue == 'newest') {
-      comments.sort((a, b) => DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)));
+      comments.sort(
+        (a, b) =>
+            DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)),
+      );
     } else if (sortValue == 'oldest') {
-      comments.sort((a, b) => DateTime.parse(a.createdAt).compareTo(DateTime.parse(b.createdAt)));
+      comments.sort(
+        (a, b) =>
+            DateTime.parse(a.createdAt).compareTo(DateTime.parse(b.createdAt)),
+      );
     } else if (sortValue == 'top') {
       comments.sort((a, b) => b.likeCount.compareTo(a.likeCount));
     }

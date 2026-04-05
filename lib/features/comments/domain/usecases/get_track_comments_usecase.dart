@@ -8,7 +8,7 @@ class GetTrackCommentsUseCase {
   GetTrackCommentsUseCase(this._repository);
 
   /// Executes the use case.
-  /// 
+  ///
   /// Delegates the sorting and pagination parameters to the backend via the repository.
   Future<List<Comment>> call({
     required String trackId,

@@ -12,7 +12,8 @@ class FloatingCommentBar extends ConsumerStatefulWidget {
   ConsumerState<FloatingCommentBar> createState() => _FloatingCommentBarState();
 }
 
-class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar> with SingleTickerProviderStateMixin {
+class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   String? _currentCommentPfp;
@@ -25,7 +26,10 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar> with Si
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
   }
 
   @override
@@ -38,7 +42,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar> with Si
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerStateProvider);
     final trackId = playerState.currentTrack?.id;
-    
+
     if (trackId == null) return const SizedBox.shrink();
 
     final floatingCommentsAsync = ref.watch(floatingCommentsProvider(trackId));

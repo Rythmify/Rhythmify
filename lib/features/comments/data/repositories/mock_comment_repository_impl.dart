@@ -5,8 +5,8 @@ import '../datasources/comment_local_datasource.dart';
 import '../../data/models/comment_dto.dart';
 
 /// Concrete implementation of the [CommentRepository].
-/// 
-/// This implementation relies on the [CommentLocalDataSource] to simulate 
+///
+/// This implementation relies on the [CommentLocalDataSource] to simulate
 /// network requests. It handles the mapping from Data layer DTOs to Domain layer Entities.
 class MockCommentRepositoryImpl implements CommentRepository {
   final CommentLocalDataSource _localDataSource;
@@ -60,8 +60,10 @@ class MockCommentRepositoryImpl implements CommentRepository {
   Future<Map<int, String>> getFloatingComments(String trackId) async {
     try {
       // Fetch all comments for the track to simulate building the waveform map
-      final allTrackComments = await _localDataSource.getAllCommentsForTrack(trackId);
-      
+      final allTrackComments = await _localDataSource.getAllCommentsForTrack(
+        trackId,
+      );
+
       final Map<int, String> floatingMap = {};
 
       for (var dto in allTrackComments) {
@@ -109,10 +111,13 @@ class MockCommentRepositoryImpl implements CommentRepository {
     }
   }
 
-@override
-  Future<bool> toggleCommentLike(String commentId, {required bool isCurrentlyLiked}) async {
+  @override
+  Future<bool> toggleCommentLike(
+    String commentId, {
+    required bool isCurrentlyLiked,
+  }) async {
     try {
-      // The local mock data source already handles finding the comment 
+      // The local mock data source already handles finding the comment
       // and flipping its state internally, so we just pass the ID as before.
       return await _localDataSource.toggleLike(commentId);
     } catch (e) {

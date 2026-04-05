@@ -44,26 +44,31 @@ class CommentCard extends StatelessWidget {
             ),
             child: ClipOval(
               child: comment.userPfp == null
-                  ? Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20)
-                  : (comment.userPfp!.startsWith('http') || comment.userPfp!.startsWith('https')
-                    ? Image.network(
-                        comment.userPfp!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: isReply ? 16 : 20,
-                        ),
-                      )
-                    : Image.asset(
-                        comment.userPfp!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: isReply ? 16 : 20,
-                        ),
-                      )),
+                  ? Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: isReply ? 16 : 20,
+                    )
+                  : (comment.userPfp!.startsWith('http') ||
+                            comment.userPfp!.startsWith('https')
+                        ? Image.network(
+                            comment.userPfp!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: isReply ? 16 : 20,
+                            ),
+                          )
+                        : Image.asset(
+                            comment.userPfp!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: isReply ? 16 : 20,
+                            ),
+                          )),
             ),
           ),
           const SizedBox(width: 12),
@@ -86,16 +91,23 @@ class CommentCard extends StatelessWidget {
                       children: [
                         Text(
                           'at  ',
-                          style: AppTheme.commentLabel.copyWith(color: Colors.white70),
+                          style: AppTheme.commentLabel.copyWith(
+                            color: Colors.white70,
+                          ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 3,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey[850],
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            TimeUtils.formatTrackTimestamp(comment.trackTimestamp),
+                            TimeUtils.formatTrackTimestamp(
+                              comment.trackTimestamp,
+                            ),
                             style: AppTheme.commentLabel.copyWith(
                               color: Colors.blueAccent,
                             ),
@@ -108,7 +120,9 @@ class CommentCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       TimeUtils.formatRelativeDate(comment.createdAt),
-                      style: AppTheme.commentLabel.copyWith(color: Colors.white70),
+                      style: AppTheme.commentLabel.copyWith(
+                        color: Colors.white70,
+                      ),
                     ),
                   ],
                 ),
@@ -127,7 +141,7 @@ class CommentCard extends StatelessWidget {
                           'Reply',
                           style: AppTheme.commentLabel.copyWith(
                             color: Colors.white70,
-                            fontSize: 12
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -141,7 +155,6 @@ class CommentCard extends StatelessWidget {
                         color: Colors.white70,
                       ),
                     ),
-                    
                   ],
                 ),
 
@@ -151,8 +164,17 @@ class CommentCard extends StatelessWidget {
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
                     onPressed: onShowReplies,
-                    icon: Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 16),
-                    label: Text(isExpanded ? 'Show less' : 'Show ${comment.replyCount} replies'),
+                    icon: Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 16,
+                    ),
+                    label: Text(
+                      isExpanded
+                          ? 'Show less'
+                          : 'Show ${comment.replyCount} replies',
+                    ),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,

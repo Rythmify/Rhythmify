@@ -38,7 +38,10 @@ class PlayerActionBar extends ConsumerWidget {
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 16,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -56,14 +59,18 @@ class PlayerActionBar extends ConsumerWidget {
                         Formatters.formatCount(track.likeCount),
                         key: const Key('player_action_bar_like_count_text'),
                         style: AppTheme.bodyNormal.copyWith(
-                          color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                          color: track.isLiked
+                              ? AppTheme.primaryBrand
+                              : Colors.white,
                         ),
                       ),
                       loading: () => const SizedBox(
                         width: 10,
                         height: 10,
                         child: CircularProgressIndicator(
-                          key: Key('player_action_bar_like_count_loading_indicator'),
+                          key: Key(
+                            'player_action_bar_like_count_loading_indicator',
+                          ),
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
@@ -97,7 +104,10 @@ class PlayerActionBar extends ConsumerWidget {
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),  // This changes the inkwell height and width
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ), // This changes the inkwell height and width
                 child: Row(
                   children: [
                     const Icon(
@@ -146,7 +156,10 @@ class PlayerActionBar extends ConsumerWidget {
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 child: Icon(
                   key: Key('player_action_bar_share_icon'),
                   Icons.share_outlined,
@@ -164,7 +177,10 @@ class PlayerActionBar extends ConsumerWidget {
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 child: Icon(
                   key: Key('player_action_bar_playlist_icon'),
                   Icons.queue_music,
@@ -183,7 +199,10 @@ class PlayerActionBar extends ConsumerWidget {
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 16,
+                ),
                 child: Icon(
                   key: Key('player_action_bar_more_icon'),
                   Icons.more_vert,

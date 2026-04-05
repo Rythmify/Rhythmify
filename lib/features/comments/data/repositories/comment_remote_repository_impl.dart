@@ -50,7 +50,9 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   @override
   Future<Map<int, String>> getFloatingComments(String trackId) async {
     try {
-      final allTrackComments = await _remoteDataSource.getAllCommentsForTrack(trackId);
+      final allTrackComments = await _remoteDataSource.getAllCommentsForTrack(
+        trackId,
+      );
       final Map<int, String> floatingMap = {};
 
       for (var dto in allTrackComments) {
@@ -58,8 +60,8 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
         if (dto.userPfp == null || dto.userPfp!.isEmpty) continue;
 
         // Group comments by the exact second to build the O(1) lookup map
-        final second = dto.timestamp; 
-        
+        final second = dto.timestamp;
+
         // We only take the first comment's PFP for a given second to avoid overlap
         if (!floatingMap.containsKey(second)) {
           floatingMap[second] = dto.userPfp!;
@@ -93,14 +95,17 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
-  Future<bool> toggleCommentLike(String commentId, {required bool isCurrentlyLiked}) async {
+  Future<bool> toggleCommentLike(
+    String commentId, {
+    required bool isCurrentlyLiked,
+  }) async {
     try {
       if (isCurrentlyLiked) {
         await _remoteDataSource.unlikeComment(commentId);
         return false; // Successfully unliked, return new state
       } else {
         await _remoteDataSource.likeComment(commentId);
-        return true;  // Successfully liked, return new state
+        return true; // Successfully liked, return new state
       }
     } catch (e) {
       throw Exception('Failed to toggle like status: $e');

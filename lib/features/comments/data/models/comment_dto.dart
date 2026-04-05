@@ -7,7 +7,7 @@ class CommentDto {
   final String userDisplayName;
   final String? userPfp;
   final String content;
-  final int timestamp; 
+  final int timestamp;
   final String createdAt;
   final int likeCount;
   final bool isLikedByMe;

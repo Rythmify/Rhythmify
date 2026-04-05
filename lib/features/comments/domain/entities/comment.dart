@@ -62,17 +62,17 @@ class Comment extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        trackId,
-        userId,
-        userDisplayName,
-        userPfp,
-        content,
-        trackTimestamp,
-        createdAt,
-        likesCount,
-        isLikedByMe,
-        replyCount,
-        parentId,
-      ];
+    id,
+    trackId,
+    userId,
+    userDisplayName,
+    userPfp,
+    content,
+    trackTimestamp,
+    createdAt,
+    likesCount,
+    isLikedByMe,
+    replyCount,
+    parentId,
+  ];
 }

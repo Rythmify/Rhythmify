@@ -46,7 +46,9 @@ final commentLocalDataSourceProvider = Provider<CommentLocalDataSource>((ref) {
 });
 
 /// Provides the remote data source (real backend).
-final commentRemoteDataSourceProvider = Provider<CommentRemoteDataSource>((ref) {
+final commentRemoteDataSourceProvider = Provider<CommentRemoteDataSource>((
+  ref,
+) {
   final client = ref.watch(apiClientProvider);
   return CommentRemoteDataSourceImpl(client);
 });
@@ -71,7 +73,7 @@ final commentRepositoryProvider = Provider<CommentRepository>((ref) {
 /// -----------------------------------
 /// DOMAIN LAYER PROVIDERS (USE CASES)
 /// -----------------------------------
-/// These stay EXACTLY the same! They only know about the abstract 'CommentRepository', 
+/// These stay EXACTLY the same! They only know about the abstract 'CommentRepository',
 /// so they don't care if the data comes from the JSON file or the Azure backend.
 
 final getTrackCommentsProvider = Provider<GetTrackCommentsUseCase>((ref) {

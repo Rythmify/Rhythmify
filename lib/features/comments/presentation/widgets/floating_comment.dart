@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class FloatingComment extends StatelessWidget {
   final String? imageUrl;
-  
+
   const FloatingComment({super.key, this.imageUrl});
 
   @override
@@ -14,10 +14,7 @@ class FloatingComment extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 1),
         image: imageUrl != null
-            ? DecorationImage(
-                image: NetworkImage(imageUrl!),
-                fit: BoxFit.cover,
-              )
+            ? DecorationImage(image: NetworkImage(imageUrl!), fit: BoxFit.cover)
             : null,
       ),
       child: imageUrl == null

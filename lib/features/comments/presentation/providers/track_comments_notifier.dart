@@ -7,15 +7,21 @@ import 'track_comments_state.dart';
 import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-final trackCommentsProvider = StateNotifierProvider.family<TrackCommentsNotifier, TrackCommentsState, String>((ref, trackId) {
-  return TrackCommentsNotifier(ref, trackId);
-});
+final trackCommentsProvider =
+    StateNotifierProvider.family<
+      TrackCommentsNotifier,
+      TrackCommentsState,
+      String
+    >((ref, trackId) {
+      return TrackCommentsNotifier(ref, trackId);
+    });
 
 class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
   final String trackId;
 
-  TrackCommentsNotifier(this.ref, this.trackId) : super(TrackCommentsState.initial()) {
+  TrackCommentsNotifier(this.ref, this.trackId)
+    : super(TrackCommentsState.initial()) {
     fetchComments();
   }
 
@@ -52,7 +58,6 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         );
       }
     } catch (e) {
-      
       state = state.copyWith(isFetchingNextPage: false);
     }
   }
@@ -99,9 +104,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
       replyCount: 0,
     );
 
-    state = state.copyWith(
-      comments: [tempComment, ...state.comments],
-    );
+    state = state.copyWith(comments: [tempComment, ...state.comments]);
 
     try {
       final postComment = ref.read(postCommentProvider);
@@ -116,7 +119,9 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
       );
 
       state = state.copyWith(
-        comments: state.comments.map((c) => c.id == tempComment.id ? populatedRealComment : c).toList(),
+        comments: state.comments
+            .map((c) => c.id == tempComment.id ? populatedRealComment : c)
+            .toList(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -126,12 +131,14 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   }
 
   Future<void> toggleLike(String commentId) async {
-    final targetCommentIndex = state.comments.indexWhere((c) => c.id == commentId);
+    final targetCommentIndex = state.comments.indexWhere(
+      (c) => c.id == commentId,
+    );
     if (targetCommentIndex == -1) return;
-    
+
     final currentLikeState = state.comments[targetCommentIndex].isLikedByMe;
     final originalComments = [...state.comments];
-    
+
     state = state.copyWith(
       comments: state.comments.map((c) {
         if (c.id == commentId) {
@@ -146,7 +153,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState); 
+      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

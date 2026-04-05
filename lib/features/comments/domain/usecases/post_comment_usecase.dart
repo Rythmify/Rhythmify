@@ -8,8 +8,8 @@ class PostCommentUseCase {
   PostCommentUseCase(this._repository);
 
   /// Executes the use case.
-  /// 
-  /// If [parentId] is null, it creates a root comment. 
+  ///
+  /// If [parentId] is null, it creates a root comment.
   /// If [parentId] is provided, it creates a reply.
   Future<Comment> call({
     required String trackId,

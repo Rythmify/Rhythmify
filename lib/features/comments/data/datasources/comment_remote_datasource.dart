@@ -1,5 +1,5 @@
 import '../../data/models/comment_dto.dart';
-import '../../../../core/network/api_client.dart'; 
+import '../../../../core/network/api_client.dart';
 
 abstract class CommentRemoteDataSource {
   Future<List<CommentDto>> getTrackComments({
@@ -53,7 +53,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
         'limit': limit,
         'offset': offset,
         // The API defaults to sort, passing it down from the repository
-        'sort': sortValue, 
+        'sort': sortValue,
       },
     );
 
@@ -72,11 +72,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
 
     final response = await _apiClient.dio.get(
       '/comments/$commentId/replies',
-      queryParameters: {
-        'limit': limit,
-        'offset': offset,
-        'sort': sortValue,
-      },
+      queryParameters: {'limit': limit, 'offset': offset, 'sort': sortValue},
     );
 
     final items = response.data['data']['items'] as List;
@@ -88,10 +84,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
     // Fetches a large batch for the audio waveform floating comments
     final response = await _apiClient.dio.get(
       '/tracks/$trackId/comments',
-      queryParameters: {
-        'limit': 1000, 
-        'offset': 0,
-      },
+      queryParameters: {'limit': 1000, 'offset': 0},
     );
 
     final items = response.data['data']['items'] as List;

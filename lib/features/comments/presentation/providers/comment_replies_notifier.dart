@@ -7,15 +7,21 @@ import 'track_comments_state.dart';
 import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-final commentRepliesProvider = StateNotifierProvider.family<CommentRepliesNotifier, TrackCommentsState, String>((ref, parentId) {
-  return CommentRepliesNotifier(ref, parentId);
-});
+final commentRepliesProvider =
+    StateNotifierProvider.family<
+      CommentRepliesNotifier,
+      TrackCommentsState,
+      String
+    >((ref, parentId) {
+      return CommentRepliesNotifier(ref, parentId);
+    });
 
 class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
   final String parentId;
 
-  CommentRepliesNotifier(this.ref, this.parentId) : super(TrackCommentsState.initial()) {
+  CommentRepliesNotifier(this.ref, this.parentId)
+    : super(TrackCommentsState.initial()) {
     fetchReplies();
   }
 
@@ -61,11 +67,15 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     await fetchReplies();
   }
 
-  Future<void> postReply(String trackId, String content, int trackTimestamp) async {
+  Future<void> postReply(
+    String trackId,
+    String content,
+    int trackTimestamp,
+  ) async {
     // Get Auth State
     final authState = ref.read(authProvider);
     if (authState is! AuthAuthenticated) return;
-    
+
     final user = authState.user;
 
     final tempReply = Comment(
@@ -73,7 +83,7 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
       trackId: trackId,
       userId: user.id,
       userDisplayName: user.displayName,
-      userPfp: user.avatarUrl,                    
+      userPfp: user.avatarUrl,
       content: content,
       trackTimestamp: trackTimestamp,
       createdAt: DateTime.now(),
@@ -84,12 +94,12 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     );
 
     // Instantly show the reply in the UI
-    state = state.copyWith(
-      comments: [...state.comments, tempReply],
-    );
+    state = state.copyWith(comments: [...state.comments, tempReply]);
 
     // Instantly increment the parent comment's "Show Replies" counter
-    ref.read(trackCommentsProvider(trackId).notifier).incrementReplyCount(parentId);
+    ref
+        .read(trackCommentsProvider(trackId).notifier)
+        .incrementReplyCount(parentId);
 
     // Send to Server
     try {
@@ -107,7 +117,9 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
       );
 
       state = state.copyWith(
-        comments: state.comments.map((c) => c.id == tempReply.id ? populatedRealReply : c).toList(),
+        comments: state.comments
+            .map((c) => c.id == tempReply.id ? populatedRealReply : c)
+            .toList(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -117,12 +129,14 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   }
 
   Future<void> toggleLike(String commentId) async {
-    final targetCommentIndex = state.comments.indexWhere((c) => c.id == commentId);
+    final targetCommentIndex = state.comments.indexWhere(
+      (c) => c.id == commentId,
+    );
     if (targetCommentIndex == -1) return;
-    
+
     final currentLikeState = state.comments[targetCommentIndex].isLikedByMe;
     final originalComments = [...state.comments];
-    
+
     state = state.copyWith(
       comments: state.comments.map((c) {
         if (c.id == commentId) {
@@ -137,7 +151,7 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState); 
+      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

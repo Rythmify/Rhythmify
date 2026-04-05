@@ -12,8 +12,7 @@ import '../widgets/comment_reply_card.dart';
 import 'package:flutter/material.dart';
 import '../widgets/comment_card.dart';
 
-class CommentsScreen extends ConsumerStatefulWidget
-{
+class CommentsScreen extends ConsumerStatefulWidget {
   final Track track;
   const CommentsScreen({super.key, required this.track});
 
@@ -21,12 +20,11 @@ class CommentsScreen extends ConsumerStatefulWidget
   ConsumerState<CommentsScreen> createState() => _CommentsScreenState();
 }
 
-class _CommentsScreenState extends ConsumerState<CommentsScreen>
-{
+class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode(); 
-  
+  final FocusNode _focusNode = FocusNode();
+
   String? _replyingToCommentId;
   String? _replyingToUsername;
   final Set<String> _expandedCommentIds = {};
@@ -53,7 +51,8 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(trackCommentsProvider(widget.track.id).notifier).fetchNextPage();
     }
   }
@@ -77,8 +76,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
     _commentController.clear();
   }
 
-  void _showSortBottomSheet()
-  {
+  void _showSortBottomSheet() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.grey[900],
@@ -93,9 +91,27 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 16),
-                _buildSortOption(context, ref, 'Newest', CommentSortType.newest, state.sortType),
-                _buildSortOption(context, ref, 'Oldest', CommentSortType.oldest, state.sortType),
-                _buildSortOption(context, ref, 'Track Time', CommentSortType.trackTime, state.sortType),
+                _buildSortOption(
+                  context,
+                  ref,
+                  'Newest',
+                  CommentSortType.newest,
+                  state.sortType,
+                ),
+                _buildSortOption(
+                  context,
+                  ref,
+                  'Oldest',
+                  CommentSortType.oldest,
+                  state.sortType,
+                ),
+                _buildSortOption(
+                  context,
+                  ref,
+                  'Track Time',
+                  CommentSortType.trackTime,
+                  state.sortType,
+                ),
                 const SizedBox(height: 24),
               ],
             );
@@ -105,13 +121,23 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
     );
   }
 
-  Widget _buildSortOption(BuildContext context, WidgetRef ref, String label, CommentSortType type, CommentSortType currentType) {
+  Widget _buildSortOption(
+    BuildContext context,
+    WidgetRef ref,
+    String label,
+    CommentSortType type,
+    CommentSortType currentType,
+  ) {
     final isSelected = type == currentType;
     return ListTile(
       title: Text(label, style: TextStyle(color: Colors.white)),
-      trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.white) : null,
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Colors.white)
+          : null,
       onTap: () {
-        ref.read(trackCommentsProvider(widget.track.id).notifier).toggleSort(type);
+        ref
+            .read(trackCommentsProvider(widget.track.id).notifier)
+            .toggleSort(type);
         Navigator.pop(context);
       },
     );
@@ -119,19 +145,21 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
 
   void _postComment() {
     if (_commentController.text.trim().isEmpty) return;
-    
+
     final position = ref.read(playerStateProvider).position;
-    
+
     if (_replyingToCommentId != null) {
       final parentId = _replyingToCommentId!;
-      
+
       // Post a reply
-      ref.read(commentRepliesProvider(parentId).notifier).postReply(
-        widget.track.id,
-        _commentController.text,
-        position.inSeconds,
-      );
-      
+      ref
+          .read(commentRepliesProvider(parentId).notifier)
+          .postReply(
+            widget.track.id,
+            _commentController.text,
+            position.inSeconds,
+          );
+
       // Automatically expand the replies section
       //so the user can see their new reply
       setState(() {
@@ -139,10 +167,9 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
       });
     } else {
       // Post a top-level comment
-      ref.read(trackCommentsProvider(widget.track.id).notifier).postNewComment(
-        _commentController.text,
-        position.inSeconds,
-      );
+      ref
+          .read(trackCommentsProvider(widget.track.id).notifier)
+          .postNewComment(_commentController.text, position.inSeconds);
     }
 
     _cancelReply();
@@ -151,7 +178,9 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(trackCommentsProvider(widget.track.id));
-    final playerPosition = ref.watch(playerStateProvider.select((s) => s.position));
+    final playerPosition = ref.watch(
+      playerStateProvider.select((s) => s.position),
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -182,74 +211,98 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
       ),
       body: Column(
         children: [
-
           _buildTrackHeader(),
           Expanded(
             child: CustomScrollView(
               controller: _scrollController,
               slivers: [
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index >= state.comments.length) {
-                        return state.isFetchingNextPage 
-                            ? const Padding(padding: EdgeInsets.all(16.0), child: Center(child: CircularProgressIndicator()))
-                            : const SizedBox.shrink();
-                      }
-                      final comment = state.comments[index];
-                      final isExpanded = _expandedCommentIds.contains(comment.id);
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    if (index >= state.comments.length) {
+                      return state.isFetchingNextPage
+                          ? const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          : const SizedBox.shrink();
+                    }
+                    final comment = state.comments[index];
+                    final isExpanded = _expandedCommentIds.contains(comment.id);
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CommentCard(
-                            comment: comment,
-                            isExpanded: isExpanded,
-                            onLike: () => ref.read(trackCommentsProvider(widget.track.id).notifier).toggleLike(comment.id),
-                            onReply: () {
-                              setState(() {
-                                _replyingToCommentId = comment.id;
-                                _replyingToUsername = comment.userDisplayName;
-                              });
-                              _focusNode.requestFocus(); 
-                            },
-                            onMore: () {
-                              showModalBottomSheet(context: context, builder: (c) => const SizedBox(height: 200));
-                            },
-                            onShowReplies: () => _toggleReplies(comment.id),
-                          ),
-                          
-                          if (isExpanded)
-                            Consumer(
-                              builder: (context, ref, child) {
-                                final repliesState = ref.watch(commentRepliesProvider(comment.id));
-                                
-                                if (repliesState.isFetchingNextPage && repliesState.comments.isEmpty) {
-                                  return const Padding(
-                                    padding: EdgeInsets.only(left: 48.0, bottom: 8.0, top: 8.0),
-                                    child: SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                                  );
-                                }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CommentCard(
+                          comment: comment,
+                          isExpanded: isExpanded,
+                          onLike: () => ref
+                              .read(
+                                trackCommentsProvider(widget.track.id).notifier,
+                              )
+                              .toggleLike(comment.id),
+                          onReply: () {
+                            setState(() {
+                              _replyingToCommentId = comment.id;
+                              _replyingToUsername = comment.userDisplayName;
+                            });
+                            _focusNode.requestFocus();
+                          },
+                          onMore: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (c) => const SizedBox(height: 200),
+                            );
+                          },
+                          onShowReplies: () => _toggleReplies(comment.id),
+                        ),
 
-                                return Column(
-                                  children: repliesState.comments.map((reply) {
-                                    return CommentReplyCard(
-                                      reply: reply,
-                                      onLike: () => ref.read(commentRepliesProvider(comment.id).notifier).toggleLike(reply.id),
-                                      onMore: () {
-                                        
-                                         /* Handle more */ 
-                                      },
-                                    );
-                                  }).toList(),
+                        if (isExpanded)
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final repliesState = ref.watch(
+                                commentRepliesProvider(comment.id),
+                              );
+
+                              if (repliesState.isFetchingNextPage &&
+                                  repliesState.comments.isEmpty) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 48.0,
+                                    bottom: 8.0,
+                                    top: 8.0,
+                                  ),
+                                  child: SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
                                 );
-                              },
-                            ),
-                        ],
-                      );
-                    },
-                    childCount: state.comments.length + 1,
-                  ),
+                              }
+
+                              return Column(
+                                children: repliesState.comments.map((reply) {
+                                  return CommentReplyCard(
+                                    reply: reply,
+                                    onLike: () => ref
+                                        .read(
+                                          commentRepliesProvider(
+                                            comment.id,
+                                          ).notifier,
+                                        )
+                                        .toggleLike(reply.id),
+                                    onMore: () {
+                                      /* Handle more */
+                                    },
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                      ],
+                    );
+                  }, childCount: state.comments.length + 1),
                 ),
               ],
             ),
@@ -261,7 +314,9 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
   }
 
   Widget _buildTrackHeader() {
-    final isNetworkImage = widget.track.artworkUrl.startsWith('http') || widget.track.artworkUrl.startsWith('https');
+    final isNetworkImage =
+        widget.track.artworkUrl.startsWith('http') ||
+        widget.track.artworkUrl.startsWith('https');
 
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -274,12 +329,12 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4), 
+                    color: Colors.white.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(5), 
+                  borderRadius: BorderRadius.circular(5),
                   child: isNetworkImage
                       ? Image.network(
                           widget.track.artworkUrl,
@@ -287,7 +342,11 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                           height: 47,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              Container(color: Colors.grey, width: 47, height: 47),
+                              Container(
+                                color: Colors.grey,
+                                width: 47,
+                                height: 47,
+                              ),
                         )
                       : Image.asset(
                           widget.track.artworkUrl,
@@ -295,7 +354,11 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                           height: 47,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              Container(color: Colors.grey, width: 47, height: 47),
+                              Container(
+                                color: Colors.grey,
+                                width: 47,
+                                height: 47,
+                              ),
                         ),
                 ),
               ),
@@ -306,12 +369,16 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                   children: [
                     Text(
                       widget.track.title,
-                      style: AppTheme.bodyNormal.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       widget.track.artist,
-                      style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                      style: AppTheme.labelSmall.copyWith(
+                        color: Colors.white70,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -319,8 +386,8 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
               ),
             ],
           ),
-          
-         const Divider(color: Colors.white24, height: 25),
+
+          const Divider(color: Colors.white24, height: 25),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -334,20 +401,22 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                       color: const Color(0xFF2A2A2A),
                       shape: BoxShape.circle,
                     ),
-                    child: const Text('❤️‍🔥', style: TextStyle(fontSize: 14),
-                    ),
+                    child: const Text('❤️‍🔥', style: TextStyle(fontSize: 14)),
                   ),
                   const SizedBox(width: 10),
                   Text(
                     '${widget.track.likeCount}  people liked that track',
-                    style: AppTheme.labelSmall.copyWith(color: Colors.white70 , fontSize: 12),
+                    style: AppTheme.labelSmall.copyWith(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 10),
-          const Divider(color: Colors.white24, height: 1,),
+          const Divider(color: Colors.white24, height: 1),
         ],
       ),
     );
@@ -355,11 +424,11 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
 
   Widget _buildBottomInput(Duration playerPosition) {
     final authState = ref.watch(authProvider);
-  
-  String? pfpUrl;
-  if (authState is AuthAuthenticated) {
-    pfpUrl = authState.user.avatarUrl; 
-  }
+
+    String? pfpUrl;
+    if (authState is AuthAuthenticated) {
+      pfpUrl = authState.user.avatarUrl;
+    }
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -377,16 +446,32 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
         children: [
           if (_replyingToUsername != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8.0, left: 4.0, right: 4.0),
+              padding: const EdgeInsets.only(
+                bottom: 8.0,
+                left: 4.0,
+                right: 4.0,
+              ),
               child: Row(
                 children: [
-                  Text('Replying to ', style: AppTheme.labelSmall.copyWith(color: Colors.white70)),
-                  Text(_replyingToUsername!, style: AppTheme.labelSmall.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Replying to ',
+                    style: AppTheme.labelSmall.copyWith(color: Colors.white70),
+                  ),
+                  Text(
+                    _replyingToUsername!,
+                    style: AppTheme.labelSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   GestureDetector(
                     onTap: _cancelReply,
-                    child: const Icon(Icons.close, size: 16, color: Colors.white70),
-                  )
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: Colors.white70,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -397,8 +482,8 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                 backgroundColor: Colors.grey[800],
                 backgroundImage: pfpUrl != null
                     ? (pfpUrl.startsWith('http') || pfpUrl.startsWith('https')
-                        ? NetworkImage(pfpUrl) as ImageProvider
-                        : AssetImage(pfpUrl))
+                          ? NetworkImage(pfpUrl) as ImageProvider
+                          : AssetImage(pfpUrl))
                     : null,
                 child: pfpUrl == null
                     ? const Icon(Icons.person, color: Colors.white, size: 18)
@@ -416,9 +501,15 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                     hintStyle: const TextStyle(color: AppTheme.semiWhite),
                     filled: true,
                     fillColor: Colors.grey[900],
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9), 
-                    suffixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0), 
-                    
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    suffixIconConstraints: const BoxConstraints(
+                      minHeight: 0,
+                      minWidth: 0,
+                    ),
+
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
@@ -429,8 +520,13 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            TimeUtils.formatTrackTimestamp(playerPosition.inSeconds),
-                            style: const TextStyle(color: AppTheme.semiWhite, fontWeight: FontWeight.bold),
+                            TimeUtils.formatTrackTimestamp(
+                              playerPosition.inSeconds,
+                            ),
+                            style: const TextStyle(
+                              color: AppTheme.semiWhite,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -443,20 +539,21 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen>
                 GestureDetector(
                   onTap: _postComment,
                   child: Container(
-                    padding: const EdgeInsets.all(9), 
+                    padding: const EdgeInsets.all(9),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.send, 
-                      color: Colors.black, size: 20,
+                      Icons.send,
+                      color: Colors.black,
+                      size: 20,
                     ),
                   ),
                 ),
               ],
             ],
-          )
+          ),
         ],
       ),
     );

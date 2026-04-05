@@ -47,10 +47,10 @@ class TrackCommentsState extends Equatable {
 
   @override
   List<Object?> get props => [
-        comments,
-        currentPage,
-        hasReachedMax,
-        isFetchingNextPage,
-        sortType,
-      ];
+    comments,
+    currentPage,
+    hasReachedMax,
+    isFetchingNextPage,
+    sortType,
+  ];
 }
