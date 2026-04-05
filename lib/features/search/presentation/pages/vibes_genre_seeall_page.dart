@@ -9,6 +9,7 @@ class GenreSeeAllPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const Key('genre_see_all_page'),
       appBar: AppBar(title: Text(title)),
       body: child,
     );

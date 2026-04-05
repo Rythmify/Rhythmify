@@ -38,6 +38,7 @@ class SearchProfileCard extends StatelessWidget {
         ],
       ),
       trailing: ElevatedButton(
+        key: Key('follow_button_${profile.id}'),
         onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
@@ -61,11 +62,16 @@ class ProfilesTab extends ConsumerWidget {
     final results = ref.watch(searchResultsProvider);
 
     return results.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(
+        key: Key('profiles_loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) =>
+          Center(key: const Key('profiles_error'), child: Text('Error: $e')),
       data: (data) {
         if (data.profiles.isEmpty) {
           return Center(
+            key: const Key('profiles_empty'),
             child: Text(
               'No profiles found',
               style: TextStyle(color: Colors.grey[600]),
@@ -73,10 +79,14 @@ class ProfilesTab extends ConsumerWidget {
           );
         }
         return ListView.separated(
+          key: const Key('profiles_list'),
           padding: const EdgeInsets.all(16),
           itemCount: data.profiles.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (_, i) => SearchProfileCard(profile: data.profiles[i]),
+          itemBuilder: (_, i) => SearchProfileCard(
+            key: Key('profile_card_$i'),
+            profile: data.profiles[i],
+          ),
         );
       },
     );

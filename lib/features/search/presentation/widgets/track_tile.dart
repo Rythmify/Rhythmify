@@ -9,11 +9,13 @@ class TrackTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      key: Key('track_tile_${track.id}'),
       contentPadding: EdgeInsets.zero,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.asset(
           track.artworkUrl,
+          key: Key('track_artwork_${track.id}'),
           width: 50,
           height: 50,
           fit: BoxFit.cover,

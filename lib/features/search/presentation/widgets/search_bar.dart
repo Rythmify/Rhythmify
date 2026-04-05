@@ -16,7 +16,7 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
   @override
   void dispose() {
     _controller.dispose();
-    _focusNode.dispose(); // ← before super.dispose()
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -58,6 +58,7 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
         child: SizedBox(
           height: 35,
           child: TextField(
+            key: const Key('search_bar_field'),
             controller: _controller,
             focusNode: _focusNode,
             onSubmitted: _onSubmitted,
@@ -67,6 +68,7 @@ class _SearchBarState extends ConsumerState<SearchBarWidget> {
               prefixIcon: const Icon(Icons.search),
               suffixIcon: query.trim().isNotEmpty
                   ? IconButton(
+                      key: const Key('search_bar_clear_button'),
                       icon: const Icon(Icons.clear),
                       onPressed: _onClear,
                     )

@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../domain/entities/vibes_category.dart';
 
-/// ─────────────────────────────────────────────
-/// VIBES GRID (Masonry)
-/// ─────────────────────────────────────────────
-///
-
 class VibesGrid extends StatelessWidget {
   const VibesGrid({super.key, required this.vibes, required this.onVibeTap});
 
@@ -16,18 +11,17 @@ class VibesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MasonryGridView.count(
+      key: const Key('vibes_masonry_grid'),
       crossAxisCount: 2,
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
       itemCount: vibes.length,
-
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-
       itemBuilder: (context, index) {
         final vibe = vibes[index];
-
         return SizedBox(
+          key: Key('vibe_item_${vibe.id}'),
           height: vibe.height,
           child: _VibeCard(vibe: vibe, onTap: () => onVibeTap(vibe)),
         );
@@ -36,9 +30,6 @@ class VibesGrid extends StatelessWidget {
   }
 }
 
-/// ─────────────────────────────────────────────
-/// CARD
-/// ─────────────────────────────────────────────
 class _VibeCard extends StatelessWidget {
   const _VibeCard({required this.vibe, required this.onTap});
 
@@ -48,6 +39,7 @@ class _VibeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: Key('vibe_card_${vibe.id}'),
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
@@ -59,24 +51,11 @@ class _VibeCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              /// Background image
-              Image.asset(vibe.imagePath, fit: BoxFit.cover),
-
-              /// Title
-              // Positioned(
-              //   left: 12,
-              //   bottom: 12,
-              //   right: 8,
-              //   child: Text(
-              //     vibe.title,
-              //     style: const TextStyle(
-              //       color: Colors.white,
-              //       fontSize: 16,
-              //       fontWeight: FontWeight.bold,
-              //       height: 1.1,
-              //     ),
-              //   ),
-              // ),
+              Image.asset(
+                vibe.imagePath,
+                key: Key('vibe_image_${vibe.id}'),
+                fit: BoxFit.cover,
+              ),
             ],
           ),
         ),

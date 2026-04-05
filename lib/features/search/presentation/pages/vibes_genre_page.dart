@@ -45,13 +45,16 @@ class GenrePage extends StatelessWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
+        key: const Key('genre_page'),
         body: Column(
           children: [
             // ── Header Image ─────────────────────────────
             Stack(
+              key: const Key('genre_header'),
               children: [
                 Image.asset(
                   imagePath,
+                  key: const Key('genre_header_image'),
                   width: double.infinity,
                   height: 220,
                   fit: BoxFit.cover,
@@ -62,6 +65,7 @@ class GenrePage extends StatelessWidget {
                   top: MediaQuery.of(context).padding.top,
                   left: 8,
                   child: IconButton(
+                    key: const Key('genre_back_button'),
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -71,6 +75,7 @@ class GenrePage extends StatelessWidget {
                   left: 16,
                   child: Text(
                     title,
+                    key: const Key('genre_title'),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -84,34 +89,34 @@ class GenrePage extends StatelessWidget {
 
             // ── TabBar ───────────────────────────────────
             const TabBar(
+              key: Key('genre_tab_bar'),
               padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               isScrollable: false,
               tabAlignment: TabAlignment.fill,
               dividerColor: Colors.transparent,
-
               indicator: UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 2,
-                  color: Colors.white, // your active color
-                ),
+                borderSide: BorderSide(width: 2, color: Colors.white),
                 insets: EdgeInsets.symmetric(horizontal: 16),
               ),
-
               indicatorSize: TabBarIndicatorSize.tab,
               labelStyle: TextStyle(fontSize: 16),
-
               labelColor: Colors.white,
               unselectedLabelColor: Colors.grey,
               tabs: [
-                Tab(text: 'All'),
-                Tab(text: 'Trending'),
-                Tab(text: 'Playlists'),
-                Tab(text: 'Albums'),
+                Tab(key: Key('genre_tab_all'), text: 'All'),
+                Tab(key: Key('genre_tab_trending'), text: 'Trending'),
+                Tab(key: Key('genre_tab_playlists'), text: 'Playlists'),
+                Tab(key: Key('genre_tab_albums'), text: 'Albums'),
               ],
             ),
 
             // ── TabBarView ───────────────────────────────
-            Expanded(child: TabBarView(children: tabs)),
+            Expanded(
+              child: TabBarView(
+                key: const Key('genre_tab_view'),
+                children: tabs,
+              ),
+            ),
           ],
         ),
       ),

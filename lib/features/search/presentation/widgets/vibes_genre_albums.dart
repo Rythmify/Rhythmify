@@ -7,12 +7,14 @@ class GenreAlbumCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      key: Key('genre_album_card_${album['id']}'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(0),
           child: Image.asset(
             album['coverImage'] ?? 'assets/images/placeholder.png',
+            key: Key('genre_album_artwork_${album['id']}'),
             width: double.infinity,
             height: 160,
             fit: BoxFit.cover,

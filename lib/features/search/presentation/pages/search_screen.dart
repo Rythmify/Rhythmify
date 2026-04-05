@@ -23,24 +23,38 @@ class SearchScreen extends ConsumerWidget {
     });
 
     return Scaffold(
+      key: const Key('search_screen'),
       appBar: AppBar(title: const Text('Search'), centerTitle: false),
       body: Column(
         children: [
           const SearchBarWidget(),
 
           if (submitted)
-            const Expanded(child: SearchResultsTabs())
+            const Expanded(
+              key: Key('search_results_tabs'),
+              child: SearchResultsTabs(),
+            )
           else if (query.trim().isNotEmpty)
-            const Expanded(child: SearchSuggestionsList())
+            const Expanded(
+              key: Key('search_suggestions_list'),
+              child: SearchSuggestionsList(),
+            )
           else
             Expanded(
+              key: const Key('vibes_section'),
               child: ref
                   .watch(vibesProvider)
                   .when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Center(child: Text('Error: $e')),
+                    loading: () => const Center(
+                      key: Key('vibes_loading'),
+                      child: CircularProgressIndicator(),
+                    ),
+                    error: (e, _) => Center(
+                      key: Key('vibes_error'),
+                      child: Text('Error: $e'),
+                    ),
                     data: (vibes) => ListView(
+                      key: const Key('vibes_list'),
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
                       children: [
                         const Padding(
@@ -55,6 +69,7 @@ class SearchScreen extends ConsumerWidget {
                           ),
                         ),
                         VibesGrid(
+                          key: const Key('vibes_grid'),
                           vibes: vibes,
                           onVibeTap: (vibe) => Navigator.push(
                             context,

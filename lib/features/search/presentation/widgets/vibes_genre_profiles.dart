@@ -12,6 +12,7 @@ class GenreProfileCard extends StatelessWidget {
       child: Column(
         children: [
           CircleAvatar(
+            key: Key('genre_profile_avatar_${profile.id}'),
             radius: 40,
             backgroundColor: Colors.grey[800],
             backgroundImage: profile.avatarUrl != null
@@ -31,6 +32,7 @@ class GenreProfileCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           OutlinedButton(
+            key: Key('genre_profile_follow_${profile.id}'),
             onPressed: () {},
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),

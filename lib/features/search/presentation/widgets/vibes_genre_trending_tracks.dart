@@ -16,8 +16,9 @@ class TrendingTracks extends ConsumerWidget {
     }
 
     return SizedBox(
-      height: 216, // 3 tiles × 72px each
+      height: 216,
       child: ListView.separated(
+        key: const Key('trending_tracks_list'),
         scrollDirection: Axis.horizontal,
         itemCount: chunks.length,
         separatorBuilder: (_, _) => const SizedBox(width: 10),
@@ -30,7 +31,7 @@ class TrendingTracks extends ConsumerWidget {
                 return SizedBox(
                   height: 72,
                   child: ListTile(
-                    key: Key('item_${track.id}'),
+                    key: Key('trending_track_${track.id}'),
                     contentPadding: EdgeInsets.zero,
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
@@ -38,6 +39,7 @@ class TrendingTracks extends ConsumerWidget {
                         track.artworkUrl.isNotEmpty
                             ? track.artworkUrl
                             : 'assets/images/placeholder.png',
+                        key: Key('trending_track_artwork_${track.id}'),
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,

@@ -15,34 +15,30 @@ class SearchResultsTabs extends StatelessWidget {
       child: Column(
         children: [
           const TabBar(
+            key: Key('search_tab_bar'),
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             isScrollable: true,
             tabAlignment: TabAlignment.center,
             dividerColor: Colors.transparent,
             indicator: UnderlineTabIndicator(
-              borderSide: BorderSide(
-                width: 2,
-                color: Colors.white, // your active color
-              ),
+              borderSide: BorderSide(width: 2, color: Colors.white),
               insets: EdgeInsets.symmetric(horizontal: 16),
             ),
-
             indicatorSize: TabBarIndicatorSize.label,
             labelStyle: TextStyle(fontSize: 16),
-
             labelColor: Colors.white,
             unselectedLabelColor: Colors.grey,
-
             tabs: [
-              Tab(text: 'All'),
-              Tab(text: 'Tracks'),
-              Tab(text: 'Profiles'),
-              Tab(text: 'Playlists'),
-              Tab(text: 'Albums'),
+              Tab(key: Key('search_tab_all'), text: 'All'),
+              Tab(key: Key('search_tab_tracks'), text: 'Tracks'),
+              Tab(key: Key('search_tab_profiles'), text: 'Profiles'),
+              Tab(key: Key('search_tab_playlists'), text: 'Playlists'),
+              Tab(key: Key('search_tab_albums'), text: 'Albums'),
             ],
           ),
           const Expanded(
             child: TabBarView(
+              key: Key('search_tab_view'),
               children: [
                 AllTab(),
                 TracksTab(),

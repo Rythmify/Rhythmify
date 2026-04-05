@@ -10,27 +10,13 @@ import '../../../player/domain/entities/player_state.dart';
 import '../providers/home_providers.dart';
 import 'dart:ui';
 
-/// Widget that renders the "Hot For You" section.
-///
-/// This widget:
-/// - Observes [hotTracksProvider]
-/// - Displays loading indicator while fetching data
-/// - Displays error message if request fails
-/// - Shows a single featured track when data is available
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
 
-  /// Builds the Hot For You section UI.
-  ///
-  /// Parameters:
-  /// - context: Build context for rendering UI
-  /// - ref: Riverpod reference used to watch providers
-  ///
-  /// Returns:
-  /// - A widget that displays loading, error, or a featured track card
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncHotTracks = ref.watch(hotTracksProvider);
+    final asyncHotForYou = ref.watch(hotForYouProvider);
+
     return Column(
       key: const Key('hot_for_you_section'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,46 +25,24 @@ class HotForYouSection extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 18, left: 21),
           child: Text("Hot For You 🔥", style: AppTheme.titleLarge),
         ),
-
-        asyncHotTracks.when(
+        asyncHotForYou.when(
           loading: () => const Center(
             key: Key('hot_for_you_loading'),
             child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
-
           error: (e, _) => Text(
             e.toString(),
             key: const Key('hot_for_you_error_text'),
             style: AppTheme.bodyMedium,
           ),
-
-          data: (tracks) {
-            if (tracks.isEmpty) {
-              return const SizedBox();
-            }
-
-            final track = tracks.first;
-
-            return HotForYouCard(track: track);
-          },
+          data: (hotForYou) => HotForYouCard(track: hotForYou.track),
         ),
       ],
     );
   }
 }
 
-/// Card widget that displays a featured "Hot For You" track.
-///
-/// This widget is responsible for:
-/// - Displaying track artwork, title, and artist
-/// - Handling play/pause interaction via player state
-/// - Showing animated vinyl rotation when playing
-///
-/// It interacts with:
-/// - [playerStateProvider] for playback state
-/// - [Track] entity from domain layer
 class HotForYouCard extends ConsumerStatefulWidget {
-  /// The track to be displayed in the card.
   final Track track;
 
   const HotForYouCard({super.key, required this.track});
@@ -91,29 +55,19 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  /// Initializes animation controller for vinyl rotation effect.
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
     );
   }
 
-  /// Builds the UI for the Hot For You card.
-  ///
-  /// This method:
-  /// - Reads player state from Riverpod
-  /// - Controls animation based on playback status
-  /// - Displays track metadata and playback controls
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerStateProvider);
-
     final isPlaying = playerState.status == PlayerStatus.playing;
-
     final isThisTrack = playerState.currentTrack?.id == widget.track.id;
 
     if (isPlaying && isThisTrack) {
@@ -128,7 +82,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
         key: Key('hot_track_card_${widget.track.id}'),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey, width: 0.5),
-
           borderRadius: BorderRadius.circular(12),
           image: DecorationImage(
             image: AssetImage(widget.track.artworkUrl),
@@ -143,9 +96,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                 Row(
                   children: [
                     buildAlbum(),
-
                     const SizedBox(width: 20),
-
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,9 +108,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-
                           const SizedBox(height: 4),
-
                           Text(
                             widget.track.artist,
                             key: const Key('hot_for_you_track_artist_text'),
@@ -170,7 +119,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         ],
                       ),
                     ),
-
                     IconButton(
                       key: const Key('hot_for_you_play_icon_button'),
                       iconSize: 60,
@@ -194,9 +142,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
                 Row(
                   children: [
                     const Icon(
@@ -204,9 +150,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                       color: AppTheme.semiWhite,
                       size: 18,
                     ),
-
                     const SizedBox(width: 6),
-
                     Text(
                       "${formatCount(widget.track.likeCount)} people liked your track",
                       key: const Key('hot_for_you_like_count_text'),
@@ -225,10 +169,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     );
   }
 
-  /// Builds the album + rotating vinyl UI component.
-  ///
-  /// Returns:
-  /// - A widget showing static album cover and animated CD effect
   Widget buildAlbum() {
     return SizedBox(
       key: Key('hot_album_${widget.track.id}'),
@@ -264,7 +204,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
               ),
             ),
           ),
-
           Container(
             width: 65,
             height: 70,
@@ -286,14 +225,9 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     );
   }
 
-  /// Formats large numbers into human-readable strings (K, M).
   String formatCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    }
-    if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    }
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
     return count.toString();
   }
 
@@ -304,14 +238,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
   }
 }
 
-/// Frosted glass effect container used for UI styling.
-///
-/// This widget applies:
-/// - Background blur effect
-/// - Semi-transparent overlay
-/// - Rounded corners
-///
-/// It is purely presentational and used for visual enhancement.
 class FrostedGlassBox extends StatelessWidget {
   final Widget child;
 
@@ -323,7 +249,6 @@ class FrostedGlassBox extends StatelessWidget {
       key: const Key('frosted_glass_repaint_boundary'),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-
         child: Stack(
           children: [
             Positioned.fill(

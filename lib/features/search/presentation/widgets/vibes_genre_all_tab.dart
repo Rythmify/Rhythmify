@@ -20,9 +20,14 @@ class GenreAllTab extends ConsumerWidget {
     final async = ref.watch(genreContentProvider(genreId));
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(
+        key: Key('genre_all_loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) =>
+          Center(key: const Key('genre_all_error'), child: Text('Error: $e')),
       data: (content) => ListView(
+        key: const Key('genre_all_list'),
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         children: [
           // ── Trending ─────────────────────────────────────
@@ -34,6 +39,7 @@ class GenreAllTab extends ConsumerWidget {
                 style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
               ),
               TextButton(
+                key: const Key('genre_trending_see_all'),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -48,7 +54,10 @@ class GenreAllTab extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          TrendingTracks(tracks: content.trendingTracks),
+          TrendingTracks(
+            key: const Key('genre_trending_tracks'),
+            tracks: content.trendingTracks,
+          ),
 
           const SizedBox(height: 24),
 
@@ -59,6 +68,7 @@ class GenreAllTab extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           const SizedBox(
+            key: Key('genre_introducing_placeholder'),
             height: 80,
             child: Center(
               child: Text('Coming soon', style: TextStyle(color: Colors.grey)),
@@ -76,6 +86,7 @@ class GenreAllTab extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton(
+                key: const Key('genre_playlists_see_all'),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -91,6 +102,7 @@ class GenreAllTab extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           GridView.builder(
+            key: const Key('genre_playlists_grid'),
             padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -101,8 +113,10 @@ class GenreAllTab extends ConsumerWidget {
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemBuilder: (_, i) =>
-                GenrePlaylistCard(playlist: content.playlists[i]),
+            itemBuilder: (_, i) => GenrePlaylistCard(
+              key: Key('genre_playlist_card_$i'),
+              playlist: content.playlists[i],
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -116,6 +130,7 @@ class GenreAllTab extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton(
+                key: const Key('genre_albums_see_all'),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -131,6 +146,7 @@ class GenreAllTab extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           GridView.builder(
+            key: const Key('genre_albums_grid'),
             padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -141,7 +157,10 @@ class GenreAllTab extends ConsumerWidget {
               mainAxisSpacing: 12,
               childAspectRatio: 0.8,
             ),
-            itemBuilder: (_, i) => GenreAlbumCard(album: content.albums[i]),
+            itemBuilder: (_, i) => GenreAlbumCard(
+              key: Key('genre_album_card_$i'),
+              album: content.albums[i],
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -155,11 +174,14 @@ class GenreAllTab extends ConsumerWidget {
           SizedBox(
             height: 150,
             child: ListView.separated(
+              key: const Key('genre_profiles_list'),
               scrollDirection: Axis.horizontal,
               itemCount: content.profiles.length,
               separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (_, i) =>
-                  GenreProfileCard(profile: content.profiles[i]),
+              itemBuilder: (_, i) => GenreProfileCard(
+                key: Key('genre_profile_card_$i'),
+                profile: content.profiles[i],
+              ),
             ),
           ),
 
@@ -171,10 +193,11 @@ class GenreAllTab extends ConsumerWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          ...content.discoverTracks.map(
-            (t) => Padding(
+          ...content.discoverTracks.asMap().entries.map(
+            (e) => Padding(
+              key: Key('genre_discover_track_${e.key}'),
               padding: const EdgeInsets.only(bottom: 12),
-              child: TrackTile(track: t),
+              child: TrackTile(track: e.value),
             ),
           ),
         ],

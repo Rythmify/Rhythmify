@@ -1,5 +1,4 @@
 import 'package:rythmify/features/profile/domain/entities/profile_entity.dart';
-
 import '../../../../core/domain/entities/track.dart';
 
 class SearchResults {
@@ -11,7 +10,8 @@ class SearchResults {
   });
 
   final List<Track> tracks;
-  final List<dynamic> playlists; // replace dynamic with Playlist when ready
+  final List<Map<String, String>>
+  playlists; // swap to PlaylistEntity when ready
   final List<ProfileEntity> profiles;
-  final List<dynamic> albums; // replace dynamic with Album when ready
+  final List<Map<String, String>> albums; // swap to AlbumEntity when ready
 }

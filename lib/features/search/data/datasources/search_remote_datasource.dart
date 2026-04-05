@@ -121,6 +121,80 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
     ),
   ];
 
+  static const List<Map<String, String>> _mockPlaylists = [
+    <String, String>{
+      'id': 'pl1',
+      'title': 'Chill Vibes',
+      'creator': 'user_doe',
+      'trackCount': '18',
+      'totalSeconds': '3840', // 1hr 4min
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'pl2',
+      'title': 'Late Night Drive',
+      'creator': 'nocturnalbeats',
+      'trackCount': '12',
+      'totalSeconds': '2700', // 45min
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'pl3',
+      'title': 'Hip Hop Essentials',
+      'creator': 'hh_curator',
+      'trackCount': '30',
+      'totalSeconds': '7200', // 2hr
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'pl4',
+      'title': 'Lo-Fi Beats',
+      'creator': 'lofi_world',
+      'trackCount': '25',
+      'totalSeconds': '5400', // 1hr 30min
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+  ];
+
+  static const List<Map<String, String>> _mockAlbums = [
+    <String, String>{
+      'id': 'al1',
+      'title': 'After Hours',
+      'artist': 'The Weeknd',
+      'year': '2020',
+      'type': 'Album',
+      'trackCount': '14',
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'al2',
+      'title': 'Happier Than Ever',
+      'artist': 'Billie Eilish',
+      'year': '2021',
+      'type': 'Album',
+      'trackCount': '16',
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'al3',
+      'title': 'Divide',
+      'artist': 'Ed Sheeran',
+      'year': '2017',
+      'type': 'Album',
+      'trackCount': '12',
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+    <String, String>{
+      'id': 'al4',
+      'title': 'Starboy',
+      'artist': 'The Weeknd',
+      'year': '2016',
+      'type': 'Album',
+      'trackCount': '18',
+      'artworkUrl': 'assets/images/placeholder.png',
+    },
+  ];
+
   @override
   Future<List<SearchSuggestion>> getSuggestions(String query) async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -151,6 +225,27 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
         )
         .toList();
 
-    return SearchResults(tracks: tracks, profiles: profiles);
+    final playlists = _mockPlaylists
+        .where(
+          (p) =>
+              p['title']!.toLowerCase().contains(q) ||
+              p['creator']!.toLowerCase().contains(q),
+        )
+        .toList();
+
+    final albums = _mockAlbums
+        .where(
+          (a) =>
+              a['title']!.toLowerCase().contains(q) ||
+              a['artist']!.toLowerCase().contains(q),
+        )
+        .toList();
+
+    return SearchResults(
+      tracks: tracks,
+      profiles: profiles,
+      playlists: playlists,
+      albums: albums,
+    );
   }
 }

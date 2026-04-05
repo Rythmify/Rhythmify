@@ -12,11 +12,18 @@ class GenreTrendingTab extends ConsumerWidget {
     final async = ref.watch(genreTracksProvider(genreId));
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(
+        key: Key('genre_trending_loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) => Center(
+        key: const Key('genre_trending_error'),
+        child: Text('Error: $e'),
+      ),
       data: (tracks) {
         if (tracks.isEmpty) {
           return Center(
+            key: const Key('genre_trending_empty'),
             child: Text(
               'No trending tracks',
               style: TextStyle(color: Colors.grey[600]),
@@ -24,6 +31,7 @@ class GenreTrendingTab extends ConsumerWidget {
           );
         }
         return Column(
+          key: const Key('genre_trending_content'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
@@ -35,10 +43,14 @@ class GenreTrendingTab extends ConsumerWidget {
             ),
             Expanded(
               child: ListView.separated(
+                key: const Key('genre_trending_list'),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 itemCount: tracks.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (_, i) => TrackTile(track: tracks[i]),
+                itemBuilder: (_, i) => TrackTile(
+                  key: Key('genre_trending_track_$i'),
+                  track: tracks[i],
+                ),
               ),
             ),
           ],

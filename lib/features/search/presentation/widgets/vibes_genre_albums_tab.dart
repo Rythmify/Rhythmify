@@ -12,11 +12,18 @@ class GenreAlbumsTab extends ConsumerWidget {
     final async = ref.watch(genreAlbumsProvider(genreId));
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(
+        key: Key('genre_albums_loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) => Center(
+        key: const Key('genre_albums_error'),
+        child: Text('Error: $e'),
+      ),
       data: (albums) {
         if (albums.isEmpty) {
           return Center(
+            key: const Key('genre_albums_empty'),
             child: Text(
               'No albums found',
               style: TextStyle(color: Colors.grey[600]),
@@ -24,6 +31,7 @@ class GenreAlbumsTab extends ConsumerWidget {
           );
         }
         return Column(
+          key: const Key('genre_albums_content'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
@@ -35,6 +43,7 @@ class GenreAlbumsTab extends ConsumerWidget {
             ),
             Expanded(
               child: GridView.builder(
+                key: const Key('genre_albums_grid'),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 itemCount: albums.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -43,7 +52,10 @@ class GenreAlbumsTab extends ConsumerWidget {
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,
                 ),
-                itemBuilder: (_, i) => GenreAlbumCard(album: albums[i]),
+                itemBuilder: (_, i) => GenreAlbumCard(
+                  key: Key('genre_album_card_$i'),
+                  album: albums[i],
+                ),
               ),
             ),
           ],

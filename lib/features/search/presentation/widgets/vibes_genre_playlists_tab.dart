@@ -12,11 +12,18 @@ class GenrePlaylistsTab extends ConsumerWidget {
     final async = ref.watch(genrePlaylistsProvider(genreId));
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(
+        key: Key('genre_playlists_loading'),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) => Center(
+        key: const Key('genre_playlists_error'),
+        child: Text('Error: $e'),
+      ),
       data: (playlists) {
         if (playlists.isEmpty) {
           return Center(
+            key: const Key('genre_playlists_empty'),
             child: Text(
               'No playlists found',
               style: TextStyle(color: Colors.grey[600]),
@@ -24,6 +31,7 @@ class GenrePlaylistsTab extends ConsumerWidget {
           );
         }
         return Column(
+          key: const Key('genre_playlists_content'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
@@ -35,6 +43,7 @@ class GenrePlaylistsTab extends ConsumerWidget {
             ),
             Expanded(
               child: GridView.builder(
+                key: const Key('genre_playlists_grid'),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 itemCount: playlists.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -43,8 +52,10 @@ class GenrePlaylistsTab extends ConsumerWidget {
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,
                 ),
-                itemBuilder: (_, i) =>
-                    GenrePlaylistCard(playlist: playlists[i]),
+                itemBuilder: (_, i) => GenrePlaylistCard(
+                  key: Key('genre_playlist_card_$i'),
+                  playlist: playlists[i],
+                ),
               ),
             ),
           ],
