@@ -58,10 +58,10 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
         ref.read(uploadFormProvider.notifier).setTab(_tabController.index);
       }
     });
-      // Fetch real genres from backend
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(uploadFormProvider.notifier).fetchGenres(ref);
-  });
+    // Fetch real genres from backend
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(uploadFormProvider.notifier).fetchGenres(ref);
+    });
   }
 
   @override
@@ -331,9 +331,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                 _FieldLabel(label: 'Genre'),
                 const SizedBox(height: 8),
                 _GenrePicker(
-                  genres:        state.availableGenres.isNotEmpty
-                                   ? state.availableGenres
-                                   : widget.genres,  
+                  genres: state.availableGenres.isNotEmpty
+                      ? state.availableGenres
+                      : widget.genres,
                   selectedGenre: draft?.genre,
                   onChanged: notifier.setGenre,
                 ),

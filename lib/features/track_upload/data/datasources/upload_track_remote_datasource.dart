@@ -54,96 +54,100 @@ class UploadTrackRemoteDataSource {
   // ── Upload Track ───────────────────────────────────────────────────────────
 
   Future<UploadResponseModel> uploadTrack({
-  required File audioFile,
-  File? artworkFile,
-  required String title,
-  required String artist,
-  required String genre,
-  String? description,
-  String? caption,
-  required List<String> tags,
-  required bool isPublic,
-  void Function(double progress)? onProgress,
-}) async {
-  try {
-    final audioMime = lookupMimeType(audioFile.path) ?? 'audio/mpeg';
+    required File audioFile,
+    File? artworkFile,
+    required String title,
+    required String artist,
+    required String genre,
+    String? description,
+    String? caption,
+    required List<String> tags,
+    required bool isPublic,
+    void Function(double progress)? onProgress,
+  }) async {
+    try {
+      final audioMime = lookupMimeType(audioFile.path) ?? 'audio/mpeg';
 
-    // Build fields map with EXACT names from API spec
-    final Map<String, dynamic> fields = {
-      'title':      title,
-      'artists':    artist,               // spec: 'artists'
-      'genre':      genre,
-      'is_public':  isPublic.toString(),
-      'audio_file': await MultipartFile.fromFile(  // spec: 'audio_file'
-        audioFile.path,
-        contentType: DioMediaType.parse(audioMime),
-      ),
-    };
+      // Build fields map with EXACT names from API spec
+      final Map<String, dynamic> fields = {
+        'title': title,
+        'artists': artist, // spec: 'artists'
+        'genre': genre,
+        'is_public': isPublic.toString(),
+        'audio_file': await MultipartFile.fromFile(
+          // spec: 'audio_file'
+          audioFile.path,
+          contentType: DioMediaType.parse(audioMime),
+        ),
+      };
 
-    if (description != null && description.isNotEmpty) {
-      fields['description'] = description;
-    }
+      if (description != null && description.isNotEmpty) {
+        fields['description'] = description;
+      }
 
-    // Cover image — spec: 'cover_image'
-    if (artworkFile != null) {
-      final artMime = lookupMimeType(artworkFile.path) ?? 'image/jpeg';
-      fields['cover_image'] = await MultipartFile.fromFile(  // spec: 'cover_image'
-        artworkFile.path,
-        contentType: DioMediaType.parse(artMime),
+      // Cover image — spec: 'cover_image'
+      if (artworkFile != null) {
+        final artMime = lookupMimeType(artworkFile.path) ?? 'image/jpeg';
+        fields['cover_image'] = await MultipartFile.fromFile(
+          // spec: 'cover_image'
+          artworkFile.path,
+          contentType: DioMediaType.parse(artMime),
+        );
+      }
+
+      final formData = FormData.fromMap(fields);
+
+      // Tags sent as repeated fields — spec: tags is array
+      for (final tag in tags) {
+        formData.fields.add(MapEntry('tags[]', tag));
+      }
+
+      debugPrint('=== SENDING TO BACKEND ===');
+      debugPrint(
+        'Fields: ${formData.fields.map((e) => '${e.key}=${e.value}').toList()}',
       );
+      debugPrint('Files: ${formData.files.map((f) => f.key).toList()}');
+
+      final response = await _dio.post(
+        '/tracks',
+        data: formData,
+        onSendProgress: (sent, total) {
+          if (total > 0 && onProgress != null) {
+            final progress = (sent / total).clamp(0.0, 1.0);
+            onProgress(progress);
+          }
+        },
+      );
+
+      debugPrint('=== RESPONSE ===');
+      debugPrint('Status: ${response.statusCode}');
+      debugPrint('Data: ${response.data}');
+
+      return UploadResponseModel.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      debugPrint('=== ERROR ===');
+      debugPrint('Status: ${e.response?.statusCode}');
+      debugPrint('Data: ${e.response?.data}');
+      throw _handleError(e);
     }
+  }
 
-    final formData = FormData.fromMap(fields);
+  Future<List<String>> fetchGenres() async {
+    try {
+      final response = await _dio.get('/genres');
+      final data = response.data;
+      final rawList = data['data']?['items'] ?? data['data'] ?? [];
 
-    // Tags sent as repeated fields — spec: tags is array
-    for (final tag in tags) {
-      formData.fields.add(MapEntry('tags[]', tag));
+      return (rawList as List<dynamic>)
+          .map((g) => g['name'] as String? ?? '')
+          .where((g) => g.isNotEmpty)
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
-
-    debugPrint('=== SENDING TO BACKEND ===');
-    debugPrint('Fields: ${formData.fields.map((e) => '${e.key}=${e.value}').toList()}');
-    debugPrint('Files: ${formData.files.map((f) => f.key).toList()}');
-
-    final response = await _dio.post(
-      '/tracks',
-      data: formData,
-      onSendProgress: (sent, total) {
-        if (total > 0 && onProgress != null) {
-          final progress = (sent / total).clamp(0.0, 1.0);
-          onProgress(progress);
-        }
-      },
-    );
-
-    debugPrint('=== RESPONSE ===');
-    debugPrint('Status: ${response.statusCode}');
-    debugPrint('Data: ${response.data}');
-
-    return UploadResponseModel.fromJson(
-      response.data as Map<String, dynamic>,
-    );
-
-  } on DioException catch (e) {
-    debugPrint('=== ERROR ===');
-    debugPrint('Status: ${e.response?.statusCode}');
-    debugPrint('Data: ${e.response?.data}');
-    throw _handleError(e);
   }
-}
-Future<List<String>> fetchGenres() async {
-  try {
-    final response = await _dio.get('/genres');
-    final data     = response.data;
-    final rawList  = data['data']?['items'] ?? data['data'] ?? [];
-
-    return (rawList as List<dynamic>)
-        .map((g) => g['name'] as String? ?? '')
-        .where((g) => g.isNotEmpty)
-        .toList();
-  } on DioException catch (e) {
-    throw _handleError(e);
-  }
-}
 
   // ── Error handler ──────────────────────────────────────────────────────────
 
