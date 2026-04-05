@@ -3,6 +3,7 @@ import 'package:rythmify/features/track_upload/data/datasources/upload_track_rem
 import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
+import 'package:flutter/foundation.dart';
 
 /// Provider: UploadFormNotifier & UploadFormState
 ///
@@ -28,6 +29,7 @@ import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usec
 class UploadFormState {
   final TrackDraft? draft; // null until audio is picked
   final List<String> availableTags; // fetched from backend
+  final List<String> availableGenres;  // ← ADD THIS
   final bool isLoading; // true while uploading
   final String? errorMessage; // set when something goes wrong
   final int currentTab; // 0=TrackInfo, 1=Advanced, 2=Permissions
@@ -35,6 +37,7 @@ class UploadFormState {
   const UploadFormState({
     this.draft,
     this.availableTags = const [],
+    this.availableGenres  = const [],  // ← ADD THIS
     this.isLoading = false,
     this.errorMessage,
     this.currentTab = 0,
@@ -51,6 +54,7 @@ class UploadFormState {
   UploadFormState copyWith({
     TrackDraft? draft,
     List<String>? availableTags,
+    List<String>? availableGenres,   // ← ADD THIS
     bool? isLoading,
     String? errorMessage,
     int? currentTab,
@@ -59,6 +63,7 @@ class UploadFormState {
     return UploadFormState(
       draft: draft ?? this.draft,
       availableTags: availableTags ?? this.availableTags,
+      availableGenres: availableGenres ?? this.availableGenres, 
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       currentTab: currentTab ?? this.currentTab,
@@ -205,7 +210,17 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
       },
     );
   }
-
+  //added in back integration to fix 400 error when ftetching genres
+  Future<void> fetchGenres(WidgetRef ref) async {
+  try {
+    final dataSource = ref.read(_uploadDataSourceProvider);
+    final genres     = await dataSource.fetchGenres();
+    state = state.copyWith(availableGenres: genres);
+    debugPrint('Genres loaded: $genres');
+  } catch (e) {
+    debugPrint('Failed to load genres: $e');
+  }
+}
   void addTag(String tag) {
     if (state.draft == null) return;
     if (state.draft!.tags.contains(tag)) return; // no duplicates

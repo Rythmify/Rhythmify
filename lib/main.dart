@@ -30,7 +30,7 @@ void main() async {
   // TEMPORARY — hardcoded test token from Postman
   // Remove when M1 authentication is properly integrated
   await apiClient.saveToken(
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZDAxMjRkZS1mZDQxLTQ2OTItYmI4Ny0yY2NjYTdkNmRkN2EiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzUzNDgwMDYsImV4cCI6MTc3NTM0ODkwNn0.tZOvl9O-KBaEUg6YJ-ns0JkTcLC_p5khN8Bmpu2LPUU',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZDAxMjRkZS1mZDQxLTQ2OTItYmI4Ny0yY2NjYTdkNmRkN2EiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzUzOTIzODgsImV4cCI6MTc3NTM5MzI4OH0.V_FYPxAiskjQLSkBFiPnM03wmIgP8s5dTIlemJSBADU',
   );
 
   runApp(

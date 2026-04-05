@@ -130,6 +130,20 @@ class UploadTrackRemoteDataSource {
     throw _handleError(e);
   }
 }
+Future<List<String>> fetchGenres() async {
+  try {
+    final response = await _dio.get('/genres');
+    final data     = response.data;
+    final rawList  = data['data']?['items'] ?? data['data'] ?? [];
+
+    return (rawList as List<dynamic>)
+        .map((g) => g['name'] as String? ?? '')
+        .where((g) => g.isNotEmpty)
+        .toList();
+  } on DioException catch (e) {
+    throw _handleError(e);
+  }
+}
 
   // ── Error handler ──────────────────────────────────────────────────────────
 
