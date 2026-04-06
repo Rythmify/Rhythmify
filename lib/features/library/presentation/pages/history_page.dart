@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
@@ -68,7 +69,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ],
       ),
     );
-    if (confirm == true) ref.read(historyProvider.notifier).clearHistory();
+    if (confirm == true) {
+      await ref.read(historyProvider.notifier).clearHistory();
+      // Use mounted check before navigation
+      if (mounted) {
+        context.pop();
+      }
+    }
   }
 
   @override

@@ -139,13 +139,23 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('UserEntity — props', () {
-    test('should expose all five fields in props', () {
+    test('should expose all fields in props', () {
       expect(tUser.props, [
         'user-001',
         'karim@rythmify.com',
         'KarimWI',
-        true,
-        'mock-jwt-token-user-001',
+        null, // username
+        null, // avatarUrl
+        null, // coverUrl
+        null, // city
+        null, // country
+        null, // bio
+        null, // followersCount
+        null, // followingCount
+        null, // tracksCount
+        null, // isVerified
+        true, // isEmailVerified
+        'mock-jwt-token-user-001', // token
       ]);
     });
 
