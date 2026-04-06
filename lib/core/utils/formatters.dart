@@ -15,4 +15,15 @@ class Formatters {
   static String formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  static String formatPlaylistDuration(int totalSeconds) {
+    final h = totalSeconds ~/ 3600;
+    final m = (totalSeconds % 3600) ~/ 60;
+    final s = totalSeconds % 60;
+    if (h > 0) {
+      return '$h:$m: $s';
+    } else {
+      return '00:$m:$s';
+    }
+  }
 }
