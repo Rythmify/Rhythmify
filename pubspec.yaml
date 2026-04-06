@@ -78,6 +78,9 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
 
+  
+  
+
 flutter:
   # Defining assets location
   uses-material-design: true
