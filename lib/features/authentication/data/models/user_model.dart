@@ -5,6 +5,7 @@ class UserModel extends UserEntity {
     required super.id,
     required super.email,
     required super.displayName,
+    super.avatarUrl,
     required super.isEmailVerified,
     super.token,
   });
@@ -14,6 +15,7 @@ class UserModel extends UserEntity {
       id: json['id'] as String,
       email: json['email'] as String,
       displayName: json['display_name'] as String? ?? '',
+      avatarUrl: json['avatar_url'] as String?,
       isEmailVerified: json['is_email_verified'] as bool? ?? false,
       token: json['token'] as String?,
     );
@@ -24,6 +26,7 @@ class UserModel extends UserEntity {
       'id': id,
       'email': email,
       'display_name': displayName,
+      'avatar_url': avatarUrl,
       'is_email_verified': isEmailVerified,
       'token': token,
     };
@@ -34,6 +37,7 @@ class UserModel extends UserEntity {
       id: data['id'] as String,
       email: data['email'] as String,
       displayName: data['display_name'] as String? ?? '',
+      avatarUrl: data['avatar_url'] as String?,
       isEmailVerified: data['email_confirmed_at'] != null,
       token: token,
     );

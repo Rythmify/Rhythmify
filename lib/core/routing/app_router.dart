@@ -25,9 +25,13 @@ import '../../features/feed/presentation/pages/feed_screen.dart';
 
 //  Track imports
 import '../../features/track/presentation/pages/behind_the_track.dart';
+import '../../core/domain/entities/track.dart';
 
 //  Player imports
 import '../../features/player/presentation/pages/full_player_page.dart';
+
+//  Comments imports
+import '../../features/comments/presentation/pages/comments_screen.dart';
 
 //  Messaging imports
 import '../../features/messaging/domain/entities/conversation.dart';
@@ -47,6 +51,12 @@ import '../../features/settings/presentation/pages/settings_screen.dart';
 
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
+import '../../features/library/presentation/pages/following_page.dart';
+import '../../features/library/presentation/pages/playlists_page.dart';
+import '../../features/library/presentation/pages/uploads_page.dart';
+import '../../features/library/presentation/pages/stations_page.dart';
+import '../../features/library/presentation/pages/history_page.dart';
+import '../../features/library/presentation/pages/insights_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -108,6 +118,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
+
       // ── Auth routes ──────────────────────────────────────
       GoRoute(
         path: '/onboarding',
@@ -171,6 +182,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
+          // ── Home tab ───────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -236,6 +248,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Feed tab ───────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
@@ -256,6 +269,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Search tab ─────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _searchTabKey,
             routes: [
@@ -275,6 +289,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Library tab ────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _libraryTabKey,
             routes: [
@@ -282,6 +297,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/library',
                 builder: (context, state) => const LibraryScreen(),
                 routes: [
+                  // Existing routes (unchanged)
                   GoRoute(
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
@@ -297,11 +313,38 @@ final routerProvider = Provider<GoRouter>((ref) {
                       return BehindTheTrackPage(trackId: trackId);
                     },
                   ),
+
+                  // ── Library sub-pages (CP-4) ───────────────
+                  GoRoute(
+                    path: 'following',
+                    builder: (context, state) => const FollowingPage(),
+                  ),
+                  GoRoute(
+                    path: 'playlists',
+                    builder: (context, state) => const PlaylistsPage(),
+                  ),
+                  GoRoute(
+                    path: 'uploads',
+                    builder: (context, state) => const UploadsPage(),
+                  ),
+                  GoRoute(
+                    path: 'stations',
+                    builder: (context, state) => const StationsPage(),
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) => const HistoryPage(),
+                  ),
+                  GoRoute(
+                    path: 'insights',
+                    builder: (context, state) => const InsightsPage(),
+                  ),
                 ],
               ),
             ],
           ),
 
+          // ── Upgrade tab ─────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _upgradeTabKey,
             routes: [
@@ -327,6 +370,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
+      ),
+      GoRoute(
+        path: '/comments/:trackId',
+        name: 'comments',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final track = state.extra as Track;
+          return CommentsScreen(track: track);
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

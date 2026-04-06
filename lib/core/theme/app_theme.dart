@@ -142,6 +142,13 @@ class AppTheme {
     color: textSecondary,
   );
 
+  static TextStyle get commentLabel => GoogleFonts.inter(
+    fontSize: 11,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.1,
+    color: textSecondary,
+  );
+
   // ========================================
   // ------------ THE MAIN THEME ------------
   // ========================================
