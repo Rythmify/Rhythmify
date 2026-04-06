@@ -3,6 +3,9 @@ class Track {
   final String userId;
   final String title;
   final String artist;
+  final String? artistPfp;
+  final String? artistCity;
+  final String? artistCountry;
   final String? description; // "Heavy" data (Nullable)
   final String? coverImage;
   final String audioUrl;
@@ -39,6 +42,9 @@ class Track {
     required this.userId,
     required this.title,
     required this.artist,
+    this.artistPfp,
+    this.artistCity,
+    this.artistCountry,
     required this.audioUrl,
     required this.duration,
     required this.createdAt,
@@ -74,6 +80,9 @@ class Track {
     String? userId,
     String? title,
     String? artist,
+    String? artistPfp,
+    String? artistCity,
+    String? artistCountry,
     String? description,
     String? coverImage,
     String? audioUrl,
@@ -105,6 +114,9 @@ class Track {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       artist: artist ?? this.artist,
+      artistPfp: artistPfp ?? this.artistPfp,
+      artistCity: artistCity ?? this.artistCity,
+      artistCountry: artistCountry ?? this.artistCountry,
       description: description ?? this.description,
       coverImage: coverImage ?? this.coverImage,
       audioUrl: audioUrl ?? this.audioUrl,

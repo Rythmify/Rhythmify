@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
+import '../../../../core/domain/entities/track.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -11,7 +12,7 @@ import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
 
 class TrackDetailsSection extends StatelessWidget {
-  final dynamic track;
+  final Track track;
 
   const TrackDetailsSection({super.key, required this.track});
 
@@ -91,9 +92,15 @@ class TrackDetailsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 24,
-                backgroundImage: AssetImage('assets/images/track_1.jpg'),
+                backgroundColor: AppTheme.perfectGrey,
+                backgroundImage: track.artistPfp != null && track.artistPfp!.isNotEmpty
+                    ? NetworkImage(track.artistPfp!)
+                    : null,
+                child: track.artistPfp == null || track.artistPfp!.isEmpty
+                    ? const Icon(Icons.person, color: Colors.white)
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -101,15 +108,22 @@ class TrackDetailsSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "User Display Name",
+                      track.artist.isNotEmpty ? track.artist : "Unknown Artist",
                       style: AppTheme.titleLarge.copyWith(fontSize: 16),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      "user city and country",
-                      style: AppTheme.labelSmall,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    if ((track.artistCity != null && track.artistCity!.isNotEmpty) ||
+                        (track.artistCountry != null && track.artistCountry!.isNotEmpty))
+                      Text(
+                        [
+                          if (track.artistCity != null && track.artistCity!.isNotEmpty)
+                            track.artistCity,
+                          if (track.artistCountry != null && track.artistCountry!.isNotEmpty)
+                            track.artistCountry,
+                        ].join(', '),
+                        style: AppTheme.labelSmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                   ],
                 ),
               ),
