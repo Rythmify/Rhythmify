@@ -43,7 +43,11 @@ class TrackInfoHeader extends StatelessWidget {
                         width: 110,
                         height: 110,
                         color: AppTheme.perfectGrey,
-                        child: const Icon(Icons.music_note, color: Colors.white, size: 40),
+                        child: const Icon(
+                          Icons.music_note,
+                          color: Colors.white,
+                          size: 40,
+                        ),
                       ),
                     )
                   : Image.asset(

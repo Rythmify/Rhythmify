@@ -20,7 +20,8 @@ class TrackDetailsSection extends ConsumerStatefulWidget {
   const TrackDetailsSection({super.key, required this.track});
 
   @override
-  ConsumerState<TrackDetailsSection> createState() => _TrackDetailsSectionState();
+  ConsumerState<TrackDetailsSection> createState() =>
+      _TrackDetailsSectionState();
 }
 
 class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
@@ -149,10 +150,13 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
                       CircleAvatar(
                         radius: 24,
                         backgroundColor: AppTheme.perfectGrey,
-                        backgroundImage: track.artistPfp != null && track.artistPfp!.isNotEmpty
+                        backgroundImage:
+                            track.artistPfp != null &&
+                                track.artistPfp!.isNotEmpty
                             ? NetworkImage(track.artistPfp!)
                             : null,
-                        child: track.artistPfp == null || track.artistPfp!.isEmpty
+                        child:
+                            track.artistPfp == null || track.artistPfp!.isEmpty
                             ? const Icon(Icons.person, color: Colors.white)
                             : null,
                       ),
@@ -162,17 +166,23 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              track.artist.isNotEmpty ? track.artist : "Unknown Artist",
+                              track.artist.isNotEmpty
+                                  ? track.artist
+                                  : "Unknown Artist",
                               style: AppTheme.titleLarge.copyWith(fontSize: 16),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            if ((track.artistCity != null && track.artistCity!.isNotEmpty) ||
-                                (track.artistCountry != null && track.artistCountry!.isNotEmpty))
+                            if ((track.artistCity != null &&
+                                    track.artistCity!.isNotEmpty) ||
+                                (track.artistCountry != null &&
+                                    track.artistCountry!.isNotEmpty))
                               Text(
                                 [
-                                  if (track.artistCity != null && track.artistCity!.isNotEmpty)
+                                  if (track.artistCity != null &&
+                                      track.artistCity!.isNotEmpty)
                                     track.artistCity,
-                                  if (track.artistCountry != null && track.artistCountry!.isNotEmpty)
+                                  if (track.artistCountry != null &&
+                                      track.artistCountry!.isNotEmpty)
                                     track.artistCountry,
                                 ].join(', '),
                                 style: AppTheme.labelSmall,
@@ -193,7 +203,9 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
                   side: BorderSide(
                     color: _isFollowed ? Colors.white : AppTheme.textSecondary,
                   ),
-                  backgroundColor: _isFollowed ? Colors.white : Colors.transparent,
+                  backgroundColor: _isFollowed
+                      ? Colors.white
+                      : Colors.transparent,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),

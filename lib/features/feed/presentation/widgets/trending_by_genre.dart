@@ -268,27 +268,29 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     key: Key('item_${track.id}'),
                     contentPadding: EdgeInsets.zero,
                     leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: track.artworkUrl.startsWith('http') 
-                        ? Image.network(
-                            track.artworkUrl,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
-                          )
-                        : Image.asset(
-                            track.artworkUrl,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
-                          ),
+                      borderRadius: BorderRadius.circular(4),
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: track.artworkUrl.startsWith('http')
+                            ? Image.network(
+                                track.artworkUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image),
+                              )
+                            : Image.asset(
+                                track.artworkUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image),
+                              ),
+                      ),
                     ),
-                  ),
                     title: Text(
                       track.title,
                       style: const TextStyle(fontSize: 14, color: Colors.white),

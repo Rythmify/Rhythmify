@@ -6,7 +6,8 @@ class ApiClient {
   // Use your computer's IP for physical phone connection
   // Change this when we make it online
 
-  static const String _baseUrl = 'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
+  static const String _baseUrl =
+      'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
 
   static const String _tokenKey = 'access_token';
 

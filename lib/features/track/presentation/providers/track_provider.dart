@@ -25,16 +25,18 @@ final trackDetailsProvider = FutureProvider.family<Track, String>((
 ) async {
   final getTrackDetails = ref.watch(getTrackDetailsUseCaseProvider);
   final getProfile = ref.watch(getProfileUseCaseProvider);
-  
+
   final track = await getTrackDetails.call(trackId);
-  
+
   // Fetch profile to populate additional artist details
   final profileResult = await getProfile.call(userId: track.userId);
-  
+
   return profileResult.fold(
     (failure) => track,
     (profile) => track.copyWith(
-      artist: profile.displayName.isNotEmpty ? profile.displayName : track.artist,
+      artist: profile.displayName.isNotEmpty
+          ? profile.displayName
+          : track.artist,
       artistPfp: profile.avatarUrl,
       artistCity: profile.city,
       artistCountry: profile.country,
