@@ -11,8 +11,6 @@ class TrackDto {
       id: data['id'] as String? ?? '',
       userId: data['user_id'] as String? ?? data['artist_id'] as String? ?? '',
       title: data['title'] as String? ?? '',
-      
-      // ✅ FIX: Added data['artists'] as a fallback
       artist:
           data['artist'] as String? ??
           data['artists'] as String? ?? 
@@ -61,7 +59,6 @@ class TrackDto {
 
       genre: data['genre'] as String?,
       
-      // Keep this as is, mapping to the specific artists field if needed separately
       artists: data['artists'] as String?, 
       
       recordLabel: data['record_label'] as String?,

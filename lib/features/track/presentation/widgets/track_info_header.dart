@@ -33,12 +33,31 @@ class TrackInfoHeader extends StatelessWidget {
 
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                track.artworkUrl,
-                width: 110,
-                height: 110,
-                fit: BoxFit.cover,
-              ),
+              child: track.artworkUrl.toString().startsWith('http')
+                  ? Image.network(
+                      track.artworkUrl,
+                      width: 110,
+                      height: 110,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 110,
+                        height: 110,
+                        color: AppTheme.perfectGrey,
+                        child: const Icon(Icons.music_note, color: Colors.white, size: 40),
+                      ),
+                    )
+                  : Image.asset(
+                      track.artworkUrl,
+                      width: 110,
+                      height: 110,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 110,
+                        height: 110,
+                        color: AppTheme.perfectGrey,
+                        child: const Icon(Icons.error, color: Colors.red),
+                      ),
+                    ),
             ),
           ),
 
