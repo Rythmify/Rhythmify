@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -11,13 +14,54 @@ import '../../../../core/domain/entities/track.dart';
 ///
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
 
-class TrackDetailsSection extends StatelessWidget {
+class TrackDetailsSection extends ConsumerStatefulWidget {
   final Track track;
 
   const TrackDetailsSection({super.key, required this.track});
 
   @override
+  ConsumerState<TrackDetailsSection> createState() => _TrackDetailsSectionState();
+}
+
+class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
+  late bool _isFollowed;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFollowed = widget.track.isArtistFollowed;
+  }
+
+  @override
+  void didUpdateWidget(covariant TrackDetailsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.track.isArtistFollowed != widget.track.isArtistFollowed) {
+      _isFollowed = widget.track.isArtistFollowed;
+    }
+  }
+
+  void _toggleFollow() {
+    final prev = _isFollowed;
+    setState(() {
+      _isFollowed = !_isFollowed;
+    });
+
+    final notifier = ref.read(profileProvider.notifier);
+    if (_isFollowed) {
+      notifier.followUser(userId: widget.track.userId).catchError((_) {
+        if (mounted) setState(() => _isFollowed = prev);
+      });
+    } else {
+      notifier.unfollowUser(userId: widget.track.userId).catchError((_) {
+        if (mounted) setState(() => _isFollowed = prev);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final track = widget.track;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,53 +136,71 @@ class TrackDetailsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppTheme.perfectGrey,
-                backgroundImage: track.artistPfp != null && track.artistPfp!.isNotEmpty
-                    ? NetworkImage(track.artistPfp!)
-                    : null,
-                child: track.artistPfp == null || track.artistPfp!.isEmpty
-                    ? const Icon(Icons.person, color: Colors.white)
-                    : null,
-              ),
-              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      track.artist.isNotEmpty ? track.artist : "Unknown Artist",
-                      style: AppTheme.titleLarge.copyWith(fontSize: 16),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if ((track.artistCity != null && track.artistCity!.isNotEmpty) ||
-                        (track.artistCountry != null && track.artistCountry!.isNotEmpty))
-                      Text(
-                        [
-                          if (track.artistCity != null && track.artistCity!.isNotEmpty)
-                            track.artistCity,
-                          if (track.artistCountry != null && track.artistCountry!.isNotEmpty)
-                            track.artistCountry,
-                        ].join(', '),
-                        style: AppTheme.labelSmall,
-                        overflow: TextOverflow.ellipsis,
+                child: InkWell(
+                  onTap: () {
+                    context.push('/profile/${track.userId}');
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: AppTheme.perfectGrey,
+                        backgroundImage: track.artistPfp != null && track.artistPfp!.isNotEmpty
+                            ? NetworkImage(track.artistPfp!)
+                            : null,
+                        child: track.artistPfp == null || track.artistPfp!.isEmpty
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
                       ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              track.artist.isNotEmpty ? track.artist : "Unknown Artist",
+                              style: AppTheme.titleLarge.copyWith(fontSize: 16),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if ((track.artistCity != null && track.artistCity!.isNotEmpty) ||
+                                (track.artistCountry != null && track.artistCountry!.isNotEmpty))
+                              Text(
+                                [
+                                  if (track.artistCity != null && track.artistCity!.isNotEmpty)
+                                    track.artistCity,
+                                  if (track.artistCountry != null && track.artistCountry!.isNotEmpty)
+                                    track.artistCountry,
+                                ].join(', '),
+                                style: AppTheme.labelSmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               OutlinedButton(
                 key: const Key('behind_the_track_follow_outlined_button'),
-                onPressed: () {},
+                onPressed: _toggleFollow,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.textSecondary),
+                  side: BorderSide(
+                    color: _isFollowed ? Colors.white : AppTheme.textSecondary,
+                  ),
+                  backgroundColor: _isFollowed ? Colors.white : Colors.transparent,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
-                child: const Text(
-                  "Follow",
+                child: Text(
+                  _isFollowed ? "Following" : "Follow",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: _isFollowed ? Colors.black : Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
