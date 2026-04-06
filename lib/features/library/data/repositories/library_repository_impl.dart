@@ -230,14 +230,18 @@ class LibraryRepositoryImpl implements LibraryRepository {
   // ── Error mapping ──────────────────────────────────────────────────────────
 
   Failure _map(String error) {
-    if (error.contains('RESOURCE_NOT_FOUND'))
+    if (error.contains('RESOURCE_NOT_FOUND')) {
       return const ServerFailure('Resource not found.');
-    if (error.contains('PERMISSION_DENIED'))
+    }
+    if (error.contains('PERMISSION_DENIED')) {
       return const ServerFailure('Permission denied.');
-    if (error.contains('RATE_LIMIT_EXCEEDED'))
+    }
+    if (error.contains('RATE_LIMIT_EXCEEDED')) {
       return const TooManyRequestsFailure();
-    if (error.contains('network') || error.contains('socket'))
+    }
+    if (error.contains('network') || error.contains('socket')) {
       return const NetworkFailure();
+    }
     return ServerFailure(error);
   }
 }

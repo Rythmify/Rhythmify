@@ -70,7 +70,6 @@ class _TrendingByGenreState extends State<TrendingByGenre>
 
             return Stack(
               children: [
-                // USING POSITIONED.FILL FIXES THE COLLAPSED HEIGHT ISSUE
                 Positioned.fill(child: Container(color: AppTheme.background)),
                 Positioned.fill(
                   child: Container(
@@ -271,12 +270,25 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: SizedBox(
-                        child: Image.asset(
-                          track.artworkUrl,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        ),
+                        width: 50,
+                        height: 50,
+                        child: track.artworkUrl.startsWith('http')
+                            ? Image.network(
+                                track.artworkUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image),
+                              )
+                            : Image.asset(
+                                track.artworkUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image),
+                              ),
                       ),
                     ),
                     title: Text(

@@ -250,14 +250,16 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     for (final e in entries) {
       final d = DateTime(e.playedAt.year, e.playedAt.month, e.playedAt.day);
       final String label;
-      if (!d.isBefore(today))
+      if (!d.isBefore(today)) {
         label = 'Today';
-      else if (!d.isBefore(yesterday))
+      } else if (!d.isBefore(yesterday)) {
         label = 'Yesterday';
-      else if (!d.isBefore(weekAgo))
+      } else if (!d.isBefore(weekAgo)) {
         label = 'This Week';
-      else
+      } else {
         label = 'Older';
+      }
+
       result.putIfAbsent(label, () => []).add(e);
     }
     return result;
