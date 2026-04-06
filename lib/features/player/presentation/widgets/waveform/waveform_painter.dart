@@ -54,36 +54,36 @@ class WaveformPainter extends CustomPainter {
       if ((playheadX - nodeX).abs() < 1.0) {
         if (barX <= nodeX) {
           topColor = Colors.orange;
-          bottomColor = Colors.orange.withOpacity(0.5);
+          bottomColor = Colors.orange.withValues(alpha: 0.5);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withOpacity(0.5);
+          bottomColor = Colors.white.withValues(alpha: 0.5);
         }
       } 
       // Rule: Sliding Left (View is behind actual play -> playhead is to the right)
       else if (playheadX > nodeX) {
         if (barX <= nodeX) {
           topColor = Colors.orange;
-          bottomColor = Colors.orange.withOpacity(0.5);
+          bottomColor = Colors.orange.withValues(alpha: 0.5);
         } else if (barX > nodeX && barX <= playheadX) {
           topColor = Colors.grey;
-          bottomColor = Colors.grey.withOpacity(0.5);
+          bottomColor = Colors.grey.withValues(alpha: 0.5);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withOpacity(0.5);
+          bottomColor = Colors.white.withValues(alpha: 0.5);
         }
       } 
       // Rule: Sliding Right (View is ahead of actual play -> playhead is to the left)
       else {
         if (barX <= playheadX) {
           topColor = Colors.orange;
-          bottomColor = Colors.orange.withOpacity(0.5);
+          bottomColor = Colors.orange.withValues(alpha: 0.5);
         } else if (barX > playheadX && barX <= nodeX) {
           topColor = Colors.grey.shade700;
-          bottomColor = Colors.grey.shade700.withOpacity(0.5);
+          bottomColor = Colors.grey.shade700.withValues(alpha: 0.5);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withOpacity(0.5);
+          bottomColor = Colors.white.withValues(alpha: 0.5);
         }
       }
 
