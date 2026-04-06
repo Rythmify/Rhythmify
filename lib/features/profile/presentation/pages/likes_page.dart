@@ -1,42 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
-import '../widgets/track_list_tile.dart';
+import '../../../track/presentation/widgets/track_card.dart';
 
-/// A dedicated page showing the full paginated list of tracks liked by a user.
+/// Likes page matching SoundCloud's layout.
 ///
-/// Accessible via:
-/// - [LibraryScreen] "Your likes" tile → `/profile/me/likes`
-/// - GoRouter route `/profile/:userId/likes`
-///
-/// ### Loading
-///
-/// Relies on [profileProvider] already being in [ProfileLoaded] state
-/// (loaded by [PublicProfilePage] or [LibraryScreen] beforehand).
-/// Does NOT call [ProfileNotifier.loadProfile] itself — the liked tracks
-/// are already in [ProfileLoaded.likedTracks].
-///
-/// ### Pagination
-///
-/// Attaches a scroll listener to [_scrollController]. When within 200px of
-/// the bottom, calls [ProfileNotifier.loadLikedTracks] to fetch the next page.
-/// A [CircularProgressIndicator] is rendered at the bottom of the list
-/// while [ProfileLoaded.isLoadingTracks] is `true`.
-///
-/// ### Empty state
-///
-/// Renders a centered message when [ProfileLoaded.likedTracks] is empty
-/// and [ProfileLoaded.isLoadingTracks] is `false`.
+/// Structure:
+/// - Rounded search bar at top
+/// - Shuffle + small play FAB action row
+/// - [ListView] of track items using the [TrackCard] widget
 class LikesPage extends ConsumerStatefulWidget {
   /// The ID of the user whose liked tracks to display.
   ///
   /// Pass `'me'` for the authenticated user's own likes.
   final String userId;
 
-  /// Creates a [LikesPage] for the user with [userId].
   const LikesPage({super.key, required this.userId});
 
   @override
@@ -45,6 +26,8 @@ class LikesPage extends ConsumerStatefulWidget {
 
 class _LikesPageState extends ConsumerState<LikesPage> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
@@ -64,6 +47,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -74,7 +58,8 @@ class _LikesPageState extends ConsumerState<LikesPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Likes'),
+        title: const Text('Your likes'),
+        centerTitle: false,
         leading: IconButton(
           key: const Key('likes_back_button'),
           icon: const Icon(Icons.arrow_back),
@@ -98,11 +83,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
     );
   }
 
-  /// Builds the scrollable liked-tracks list or the empty state.
-  ///
-  /// The list has [ProfileLoaded.likedTracks.length + 1] items: the
-  /// extra item at the end renders either the pagination spinner or
-  /// an empty [SizedBox] depending on [ProfileLoaded.isLoadingTracks].
   Widget _buildList(ProfileLoaded state) {
     if (state.likedTracks.isEmpty && !state.isLoadingTracks) {
       return Center(
@@ -125,30 +105,118 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       );
     }
 
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: state.likedTracks.length + 1,
-      itemBuilder: (context, index) {
-        // Pagination footer
-        if (index == state.likedTracks.length) {
-          return state.isLoadingTracks
-              ? const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primaryBrand,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink();
-        }
+    // Filter tracks based on search query
+    final filtered = _query.isEmpty
+        ? state.likedTracks
+        : state.likedTracks
+              .where(
+                (t) =>
+                    t.title.toLowerCase().contains(_query.toLowerCase()) ||
+                    t.artist.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
-        return TrackListTile(
-          key: Key('item_${state.likedTracks[index].id}'),
-          track: state.likedTracks[index],
-        );
-      },
+    return Column(
+      children: [
+        // ── Search bar ──────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Container(
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(21),
+            ),
+            child: TextField(
+              key: const Key('likes_search_text_field'),
+              controller: _searchController,
+              onChanged: (v) => setState(() => _query = v),
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Search ${state.likedTracks.length} tracks',
+                hintStyle: AppTheme.bodyMedium,
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+                suffixIcon: const Icon(
+                  Icons.tune,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 11),
+              ),
+            ),
+          ),
+        ),
+
+        // ── Action row: shuffle + play ─────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(
+                key: const Key('likes_add_icon_button'),
+                icon: const Icon(
+                  Icons.add_circle_outline,
+                  color: AppTheme.textSecondary,
+                ),
+                onPressed: () {},
+              ),
+              const Spacer(),
+              IconButton(
+                key: const Key('likes_shuffle_icon_button'),
+                icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
+                onPressed: () {},
+              ),
+              FloatingActionButton.small(
+                key: const Key('likes_play_all_fab'),
+                heroTag: 'likes_play',
+                backgroundColor: Colors.white,
+                onPressed: () {},
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Colors.black,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ),
+
+        // ── Track list ─────────────────────────────────────────────────────
+        Expanded(
+          child: ListView.builder(
+            key: const Key('likes_list_view'),
+            controller: _scrollController,
+            itemCount: filtered.length + 1,
+            itemBuilder: (context, index) {
+              // Pagination footer
+              if (index == filtered.length) {
+                return state.isLoadingTracks
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    : const SizedBox(height: 120);
+              }
+
+              return TrackCard(
+                key: Key('likes_track_${filtered[index].id}'),
+                track: filtered[index],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -75,8 +75,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// Registers a new user account via `POST /auth/register`.
   ///
   /// Sends `email`, `password`, `display_name`, `gender`,
-  /// `date_of_birth`, and `captcha_token` (currently `'dev-bypass'`
-  /// for development — coordinate with Bassel before production).
+  /// and `date_of_birth` to create a new user account.
   ///
   /// Parses `user_id` (not `id`) from the response per the API spec.
   /// Returns a [UserModel] with `token: null` (token is only issued
@@ -108,7 +107,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           'display_name': displayName,
           'gender': gender,
           'date_of_birth': dateOfBirth,
-          'captcha_token': 'dev-bypass',
         },
       );
 
