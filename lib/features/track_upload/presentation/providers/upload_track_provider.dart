@@ -3,6 +3,7 @@ import 'package:rythmify/features/track_upload/data/datasources/upload_track_rem
 import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
+import 'package:flutter/foundation.dart';
 
 /// Provider: UploadFormNotifier & UploadFormState
 ///
@@ -28,6 +29,7 @@ import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usec
 class UploadFormState {
   final TrackDraft? draft; // null until audio is picked
   final List<String> availableTags; // fetched from backend
+  final List<String> availableGenres; // ← ADD THIS
   final bool isLoading; // true while uploading
   final String? errorMessage; // set when something goes wrong
   final int currentTab; // 0=TrackInfo, 1=Advanced, 2=Permissions
@@ -35,6 +37,7 @@ class UploadFormState {
   const UploadFormState({
     this.draft,
     this.availableTags = const [],
+    this.availableGenres = const [], // ← ADD THIS
     this.isLoading = false,
     this.errorMessage,
     this.currentTab = 0,
@@ -51,6 +54,7 @@ class UploadFormState {
   UploadFormState copyWith({
     TrackDraft? draft,
     List<String>? availableTags,
+    List<String>? availableGenres, // ← ADD THIS
     bool? isLoading,
     String? errorMessage,
     int? currentTab,
@@ -59,6 +63,7 @@ class UploadFormState {
     return UploadFormState(
       draft: draft ?? this.draft,
       availableTags: availableTags ?? this.availableTags,
+      availableGenres: availableGenres ?? this.availableGenres,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       currentTab: currentTab ?? this.currentTab,
@@ -72,15 +77,13 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   @override
   UploadFormState build() => const UploadFormState();
 
-  // Called when user picks audio file
+  // Replace initDraft with this version that also starts upload
   void initDraft({
     required String artistId,
     required String localAudioPath,
     required Duration duration,
     required String fileName,
   }) {
-    // Remove file extension for title pre-fill
-    // "summer_vibes.mp3" → "summer_vibes"
     final nameWithoutExtension = fileName.contains('.')
         ? fileName.substring(0, fileName.lastIndexOf('.'))
         : fileName;
@@ -90,11 +93,42 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
         artistId: artistId,
         localAudioPath: localAudioPath,
         duration: duration,
-        audioFileName: fileName, // store original filename
-        title: nameWithoutExtension, // pre-filled
-        artist: 'Your Name', // replace with real username when auth ready
+        audioFileName: fileName,
+        title: nameWithoutExtension,
+        artist: 'Your Name',
+        // Start as uploading immediately
+        status: UploadStatus.draft,
+        uploadProgress: 0.0,
+        audioStatus: UploadStatus.uploading, // ← button starts uploading
+        audioUploadProgress: 0.0,
       ),
     );
+  }
+
+  // Called by the screen right after initDraft
+  // Simulates upload for now — replace with real upload later
+  void startAudioUpload() async {
+    if (state.draft == null) return;
+
+    // Reset audio upload progress
+    _updateDraft(
+      state.draft!.copyWith(
+        audioStatus: UploadStatus.uploading,
+        audioUploadProgress: 0.0,
+      ),
+    );
+
+    // Simulate progress — replace with real upload later
+    for (int i = 1; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (state.draft == null) return;
+      _updateDraft(
+        state.draft!.copyWith(
+          audioUploadProgress: i / 10,
+          audioStatus: i < 10 ? UploadStatus.uploading : UploadStatus.success,
+        ),
+      );
+    }
   }
 
   void setTitle(String value) =>
@@ -175,6 +209,18 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
         onSuccess(trackId);
       },
     );
+  }
+
+  //added in back integration to fix 400 error when ftetching genres
+  Future<void> fetchGenres(WidgetRef ref) async {
+    try {
+      final dataSource = ref.read(_uploadDataSourceProvider);
+      final genres = await dataSource.fetchGenres();
+      state = state.copyWith(availableGenres: genres);
+      debugPrint('Genres loaded: $genres');
+    } catch (e) {
+      debugPrint('Failed to load genres: $e');
+    }
   }
 
   void addTag(String tag) {

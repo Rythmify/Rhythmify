@@ -21,9 +21,25 @@ class FullPlayerPage extends ConsumerWidget {
   const FullPlayerPage({super.key, this.onCollapse});
 
   /// Navigates to the "Behind the Track" page for additional metadata.
+
+  // void _triggerNavigation(BuildContext context, String trackId) {
+  //   if (onCollapse != null) onCollapse!();
+  //   context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
+  // }
   void _triggerNavigation(BuildContext context, String trackId) {
+    // 1. Debug prints to catch the culprit
+    print('=== DEBUG: NAVIGATING TO BEHIND THE TRACK ===');
+    print('Track ID passed: "$trackId"');
+
     if (onCollapse != null) onCollapse!();
-    context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
+
+    // 2. Encode the ID to safely handle ANY slashes or weird characters
+    // This prevents GoRouter from thinking a slash is a new route path.
+    final safeTrackId = Uri.encodeComponent(trackId);
+
+    // 3. Push using the exact path to avoid cross-branch named route deadlocks.
+    // (Using pushNamed from a root FullPlayerPage into a tabbed shell can sometimes freeze)
+    context.push('/home/behind-the-track/$safeTrackId');
   }
 
   @override

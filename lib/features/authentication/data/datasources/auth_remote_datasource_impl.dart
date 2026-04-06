@@ -62,6 +62,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'id': user['user_id'].toString(),
         'email': user['email'],
         'display_name': user['display_name'],
+        'avatar_url': user['avatar_url'],
         'is_email_verified': user['is_verified'],
         'token': token,
       });
@@ -74,8 +75,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// Registers a new user account via `POST /auth/register`.
   ///
   /// Sends `email`, `password`, `display_name`, `gender`,
-  /// `date_of_birth`, and `captcha_token` (currently `'dev-bypass'`
-  /// for development — coordinate with Bassel before production).
+  /// and `date_of_birth` to create a new user account.
   ///
   /// Parses `user_id` (not `id`) from the response per the API spec.
   /// Returns a [UserModel] with `token: null` (token is only issued
@@ -107,7 +107,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           'display_name': displayName,
           'gender': gender,
           'date_of_birth': dateOfBirth,
-          'captcha_token': 'dev-bypass',
         },
       );
 
@@ -121,6 +120,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'id': data['user_id'].toString(),
         'email': data['email'],
         'display_name': data['display_name'],
+        'avatar_url': data['avatar_url'] ?? '',
         'is_email_verified': false,
         'token': null,
       });
@@ -145,7 +145,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      // IMPORTANT: This MUST match the backend's GOOGLE_CLIENT_ID
+      // Backend expects: 456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId:
+            '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
+      );
+
+      // Sign out first to ensure account picker shows
+      await googleSignIn.signOut();
+
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -155,19 +165,22 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get Google ID token');
+      }
+
+      // For Firebase integration (optional - can remove if not needed)
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      final firebaseUser = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final idToken = await firebaseUser.user!.getIdToken();
-
+      // Send the Google OAuth ID token to backend
+      // This is what the backend validates with google-auth-library
       final response = await client.dio.post(
         '/auth/google',
-        data: {'id_token': idToken},
+        data: {'id_token': googleAuth.idToken},
       );
 
       final data = response.data['data'];

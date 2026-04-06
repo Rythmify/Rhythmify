@@ -13,8 +13,13 @@ class TrackDto {
       title: data['title'] as String? ?? '',
       artist:
           data['artist'] as String? ??
+          data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',
+
+      artistPfp: data['artist_pfp'] as String?,
+      artistCity: data['artist_city'] as String?,
+      artistCountry: data['artist_country'] as String?,
       description: data['description'] as String?,
       coverImage:
           data['cover_image'] as String? ?? data['artwork_url'] as String?,
@@ -53,7 +58,9 @@ class TrackDto {
           : null,
 
       genre: data['genre'] as String?,
+
       artists: data['artists'] as String?,
+
       recordLabel: data['record_label'] as String?,
       releaseDate: data['release_date'] as String?,
       explicitContent: data['explicit_content'] as bool? ?? false,
@@ -69,6 +76,9 @@ class TrackDto {
       'user_id': track.userId,
       'title': track.title,
       'artist': track.artist,
+      'artist_pfp': track.artistPfp,
+      'artist_city': track.artistCity,
+      'artist_country': track.artistCountry,
       'description': track.description,
       'cover_image': track.coverImage,
       'audio_url': track.audioUrl,

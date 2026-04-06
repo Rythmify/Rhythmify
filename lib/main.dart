@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'package:audio_service/audio_service.dart';
 import 'features/player/data/datasources/audio_handler.dart';
 import 'features/player/presentation/providers/player_dependency_providers.dart';
+
+import 'core/network/api_client.dart';
 
 late AudioHandler globalAudioHandler;
 
@@ -13,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ── Initialize Firebase ───────────────────────────────
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   globalAudioHandler = await AudioService.init(
     builder: () => RythmifyAudioHandler(),
@@ -23,6 +26,12 @@ void main() async {
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
     ),
+  );
+  // added by hana to test upload module
+  // TEMPORARY — hardcoded test token from Postman
+  // Remove when M1 authentication is properly integrated
+  await apiClient.saveToken(
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZDAxMjRkZS1mZDQxLTQ2OTItYmI4Ny0yY2NjYTdkNmRkN2EiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzUzOTIzODgsImV4cCI6MTc3NTM5MzI4OH0.V_FYPxAiskjQLSkBFiPnM03wmIgP8s5dTIlemJSBADU',
   );
 
   runApp(

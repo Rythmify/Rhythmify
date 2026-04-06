@@ -194,8 +194,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   ///
   /// Sends [_selectedCountry] (ISO code) as the country, not the
   /// display name. Called by the Save button in the AppBar.
-  void _onSave() {
-    ref
+  /// After saving successfully, navigates back to profile page.
+  Future<void> _onSave() async {
+    await ref
         .read(profileProvider.notifier)
         .updateProfile(
           displayName: _displayNameController.text.trim(),
@@ -203,6 +204,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           country: _selectedCountry,
           bio: _bioController.text.trim(),
         );
+
+    // Navigate back after successful save
+    if (context.mounted) {
+      context.pop();
+    }
   }
 
   /// Shows a bottom sheet with a scrollable country list.
@@ -313,9 +319,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           next is ProfileLoaded &&
           !next.isSaving) {
         setState(() => _hasChanges = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile saved successfully')),
-        );
+        // Don't show snackbar here since we're navigating away
       }
     });
 
