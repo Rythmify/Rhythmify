@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../track/presentation/providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -20,110 +21,197 @@ class PlayerActionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trackAsync = ref.watch(trackDetailsProvider(trackId));
 
-    return Container(
+    // Changed Container to Material so the InkWell tap effects have a canvas to draw on
+    return Material(
       color: AppTheme.background,
-      padding: const EdgeInsets.only(bottom: 36, top: 25, left: 16, right: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // ------ Like Icon ------
-          Row(
-            children: [
-              Icon(
-                key: const Key('player_action_bar_favorite_icon'),
-                (trackAsync.value?.isLiked ?? false)
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: (trackAsync.value?.isLiked ?? false)
-                    ? AppTheme.primaryBrand
-                    : Colors.white,
-              ),
-              const SizedBox(width: 6),
-              trackAsync.when(
-                data: (track) => Text(
-                  Formatters.formatCount(track.likeCount),
-                  key: const Key('player_action_bar_like_count_text'),
-                  style: AppTheme.bodyNormal.copyWith(
-                    color: track.isLiked ? AppTheme.primaryBrand : Colors.white,
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 30, top: 5, left: 16, right: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // ------ 1. Like Action ------
+            InkWell(
+              onTap: () {
+                // Add your like logic here
+              },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 16,
                 ),
-                loading: () => const SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(
-                    key: Key('player_action_bar_like_count_loading_indicator'),
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-                error: (a, b) => const Text(
-                  '0',
-                  key: Key('player_action_bar_like_count_error_text'),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // ------ Comment Icon ------
-          Row(
-            children: [
-              const Icon(
-                key: Key('player_action_bar_comment_icon'),
-                Icons.chat_outlined,
-                color: Colors.white,
-              ),
-              const SizedBox(width: 6),
-              trackAsync.when(
-                data: (track) => Text(
-                  Formatters.formatCount(track.commentCount),
-                  key: const Key('player_action_bar_comment_count_text'),
-                  style: AppTheme.bodyNormal,
-                ),
-                loading: () => const SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(
-                    key: Key(
-                      'player_action_bar_comment_count_loading_indicator',
+                child: Row(
+                  children: [
+                    Icon(
+                      key: const Key('player_action_bar_favorite_icon'),
+                      (trackAsync.value?.isLiked ?? false)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: (trackAsync.value?.isLiked ?? false)
+                          ? AppTheme.primaryBrand
+                          : Colors.white,
                     ),
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-                error: (a, b) => const Text(
-                  '0',
-                  key: Key('player_action_bar_comment_count_error_text'),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                    const SizedBox(width: 6),
+                    trackAsync.when(
+                      data: (track) => Text(
+                        Formatters.formatCount(track.likeCount),
+                        key: const Key('player_action_bar_like_count_text'),
+                        style: AppTheme.bodyNormal.copyWith(
+                          color: track.isLiked
+                              ? AppTheme.primaryBrand
+                              : Colors.white,
+                        ),
+                      ),
+                      loading: () => const SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(
+                          key: Key(
+                            'player_action_bar_like_count_loading_indicator',
+                          ),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      error: (a, b) => const Text(
+                        '0',
+                        key: Key('player_action_bar_like_count_error_text'),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const Icon(
-            key: Key('player_action_bar_share_icon'),
-            Icons.share_outlined,
-            color: Colors.white,
-          ),
+            ),
 
-          const Icon(
-            key: Key('player_action_bar_playlist_icon'),
-            Icons.queue_music,
-            size: 25,
-            color: Colors.white,
-          ),
+            // ------ 2. Comment Action ------
+            InkWell(
+              onTap: () {
+                trackAsync.whenData((track) {
+                  context.pushNamed(
+                    'comments',
+                    pathParameters: {'trackId': track.id},
+                    extra: track,
+                  );
+                });
+              },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ), // This changes the inkwell height and width
+                child: Row(
+                  children: [
+                    const Icon(
+                      key: Key('player_action_bar_comment_icon'),
+                      Icons.chat_outlined,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 6),
+                    trackAsync.when(
+                      data: (track) => Text(
+                        Formatters.formatCount(track.commentCount),
+                        key: const Key('player_action_bar_comment_count_text'),
+                        style: AppTheme.bodyNormal,
+                      ),
+                      loading: () => const SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(
+                          key: Key(
+                            'player_action_bar_comment_count_loading_indicator',
+                          ),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      error: (a, b) => const Text(
+                        '0',
+                        key: Key('player_action_bar_comment_count_error_text'),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-          const Icon(
-            key: Key('player_action_bar_more_icon'),
-            Icons.more_vert,
-            color: Colors.white,
-          ),
-        ],
+            // ------ 3. Share Action ------
+            InkWell(
+              onTap: () {
+                // Add share logic here
+              },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
+                child: Icon(
+                  key: Key('player_action_bar_share_icon'),
+                  Icons.share_outlined,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+
+            // ------ 4. Playlist Action ------
+            InkWell(
+              onTap: () {
+                // Add playlist logic here
+              },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
+                child: Icon(
+                  key: Key('player_action_bar_playlist_icon'),
+                  Icons.queue_music,
+                  size: 25,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+
+            // ------ 5. More Action ------
+            InkWell(
+              onTap: () {
+                // Add more options logic here
+              },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 16,
+                ),
+                child: Icon(
+                  key: Key('player_action_bar_more_icon'),
+                  Icons.more_vert,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

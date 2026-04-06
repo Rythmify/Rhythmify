@@ -345,8 +345,9 @@ class _UploadTile extends ConsumerWidget {
                     ],
                   ),
                 );
-                if (confirm == true)
+                if (confirm == true) {
                   ref.read(uploadsProvider.notifier).deleteTrack(track.id);
+                }
               },
             ),
             const SizedBox(height: 8),

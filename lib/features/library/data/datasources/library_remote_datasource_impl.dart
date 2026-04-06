@@ -83,7 +83,7 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
         '/playlists',
         data: {
           'name': name,
-          if (description != null) 'description': description,
+          'description': ?description,
           'is_public': isPublic,
         },
       );

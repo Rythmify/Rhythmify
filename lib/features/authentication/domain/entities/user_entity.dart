@@ -15,6 +15,9 @@ class UserEntity extends Equatable {
   /// The user's display name shown across the app (e.g. in profiles and comments).
   final String displayName;
 
+  /// The user's avatar URL for their profile picture.
+  final String? avatarUrl;
+
   /// Whether the user has verified their email address.
   /// Users who have not verified their email may be restricted from
   /// certain features depending on backend policy.
@@ -32,6 +35,7 @@ class UserEntity extends Equatable {
     required this.id,
     required this.email,
     required this.displayName,
+    this.avatarUrl,
     required this.isEmailVerified,
     this.token,
   });
@@ -40,5 +44,12 @@ class UserEntity extends Equatable {
   /// Two [UserEntity] instances are equal if all of these fields match.
 
   @override
-  List<Object?> get props => [id, email, displayName, isEmailVerified, token];
+  List<Object?> get props => [
+    id,
+    email,
+    displayName,
+    avatarUrl,
+    isEmailVerified,
+    token,
+  ];
 }

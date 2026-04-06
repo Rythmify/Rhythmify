@@ -12,7 +12,7 @@ class TrackChecklistBadge extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => _showChecklistSheet(context, draft),
-      child: Container(
+      child: SizedBox(
         width: 40,
         height: 40,
         child: Stack(
