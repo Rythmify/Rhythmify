@@ -1,9 +1,10 @@
 import '../repositories/vibes_genre_repository.dart';
+import '../entities/vibes_genre_playlist.dart';
 
 class GetGenrePlaylists {
   final GenreRepository repository;
   GetGenrePlaylists(this.repository);
 
-  Future<List<Map<String, String>>> call(String genreId) =>
+  Future<List<GenrePlaylist>> call(String genreId) =>
       repository.getGenrePlaylists(genreId);
 }

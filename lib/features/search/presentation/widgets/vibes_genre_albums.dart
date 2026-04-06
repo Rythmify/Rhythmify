@@ -1,36 +1,50 @@
 import 'package:flutter/material.dart';
+import '../../domain/entities/vibes_genre_album.dart';
 
 class GenreAlbumCard extends StatelessWidget {
   const GenreAlbumCard({super.key, required this.album});
-  final Map<String, String> album;
+  final GenreAlbum album;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      key: Key('genre_album_card_${album['id']}'),
+      key: Key('genre_album_card_${album.id}'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(0),
-          child: Image.asset(
-            album['coverImage'] ?? 'assets/images/placeholder.png',
-            key: Key('genre_album_artwork_${album['id']}'),
-            width: double.infinity,
-            height: 160,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(height: 160, color: Colors.grey[800]),
-          ),
+          child:
+              album.coverImage.isNotEmpty && album.coverImage.startsWith('http')
+              ? Image.network(
+                  album.coverImage,
+                  key: Key('genre_album_artwork_${album.id}'),
+                  width: double.infinity,
+                  height: 160,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Container(height: 160, color: Colors.grey[800]),
+                )
+              : Image.asset(
+                  album.coverImage.isNotEmpty
+                      ? album.coverImage
+                      : 'assets/images/placeholder.png',
+                  key: Key('genre_album_artwork_${album.id}'),
+                  width: double.infinity,
+                  height: 160,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Container(height: 160, color: Colors.grey[800]),
+                ),
         ),
         const SizedBox(height: 6),
         Text(
-          album['title'] ?? '',
+          album.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         Text(
-          album['artistName'] ?? '',
+          album.ownerName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(color: Colors.grey[400], fontSize: 12),

@@ -1,349 +1,139 @@
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/vibes_genre_content.dart';
-import '../../../profile/domain/entities/profile_entity.dart';
+import '../../domain/entities/vibes_genre_info.dart';
+import '../../domain/entities/vibes_genre_playlist.dart';
+import '../../domain/entities/vibes_genre_album.dart';
+import '../../domain/entities/vibes_genre_artists.dart';
+import '../../domain/entities/vibes_genre_introducing_section.dart';
+import '../../domain/entities/vibes_genre_introducing_playlist.dart';
 
 abstract class GenreRemoteSource {
   Future<GenreContent> getGenreContent(String genreId);
   Future<List<Track>> getGenreTrendingTracks(String genreId);
-  Future<List<Map<String, String>>> getGenrePlaylists(String genreId);
-  Future<List<Map<String, String>>> getGenreAlbums(String genreId);
+  Future<List<GenrePlaylist>> getGenrePlaylists(String genreId);
+  Future<List<GenreAlbum>> getGenreAlbums(String genreId);
+  Future<List<GenreArtist>> getGenreArtists(String genreId);
+  Future<List<Track>> getGenreAllTracks(String genreId);
 }
 
 class GenreRemoteSourceMock implements GenreRemoteSource {
-  static final _tracks = {
-    'hiphop': [
-      Track(
-        id: 'h1',
-        userId: 'u1',
-        title: 'HUMBLE.',
-        artist: 'Kendrick Lamar',
-        audioUrl: '',
-        duration: const Duration(minutes: 2, seconds: 57),
-        createdAt: DateTime(2017, 4, 7),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-      Track(
-        id: 'h2',
-        userId: 'u1',
-        title: 'God\'s Plan',
-        artist: 'Drake',
-        audioUrl: '',
-        duration: const Duration(minutes: 3, seconds: 18),
-        createdAt: DateTime(2018, 1, 19),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-      Track(
-        id: 'h3',
-        userId: 'u2',
-        title: 'SICKO MODE',
-        artist: 'Travis Scott',
-        audioUrl: '',
-        duration: const Duration(minutes: 5, seconds: 12),
-        createdAt: DateTime(2018, 8, 3),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-      Track(
-        id: 'h4',
-        userId: 'u2',
-        title: 'Lucid Dreams',
-        artist: 'Juice WRLD',
-        audioUrl: '',
-        duration: const Duration(minutes: 3, seconds: 59),
-        createdAt: DateTime(2018, 5, 23),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-      Track(
-        id: 'h5',
-        userId: 'u3',
-        title: 'Rockstar',
-        artist: 'Post Malone',
-        audioUrl: '',
-        duration: const Duration(minutes: 3, seconds: 38),
-        createdAt: DateTime(2017, 9, 15),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-      Track(
-        id: 'h6',
-        userId: 'u3',
-        title: 'Old Town Road',
-        artist: 'Lil Nas X',
-        audioUrl: '',
-        duration: const Duration(minutes: 1, seconds: 53),
-        createdAt: DateTime(2019, 4, 5),
-        coverImage: 'assets/images/vibes_hiphop.jpeg',
-        genre: 'Hip Hop',
-      ),
-    ],
-    'electronic': [
-      Track(
-        id: 'e1',
-        userId: 'u4',
-        title: 'Levels',
-        artist: 'Avicii',
-        audioUrl: '',
-        duration: const Duration(minutes: 3, seconds: 19),
-        createdAt: DateTime(2011, 10, 28),
-        coverImage: 'assets/images/vibes_electronic.jpeg',
-        genre: 'Electronic',
-      ),
-      Track(
-        id: 'e2',
-        userId: 'u4',
-        title: 'Strobe',
-        artist: 'deadmau5',
-        audioUrl: '',
-        duration: const Duration(minutes: 10, seconds: 33),
-        createdAt: DateTime(2009, 9, 22),
-        coverImage: 'assets/images/vibes_electronic.jpeg',
-        genre: 'Electronic',
-      ),
-      Track(
-        id: 'e3',
-        userId: 'u5',
-        title: 'Clarity',
-        artist: 'Zedd',
-        audioUrl: '',
-        duration: const Duration(minutes: 4, seconds: 8),
-        createdAt: DateTime(2012, 9, 24),
-        coverImage: 'assets/images/vibes_electronic.jpeg',
-        genre: 'Electronic',
-      ),
-      Track(
-        id: 'e4',
-        userId: 'u5',
-        title: 'Animals',
-        artist: 'Martin Garrix',
-        audioUrl: '',
-        duration: const Duration(minutes: 3, seconds: 37),
-        createdAt: DateTime(2013, 8, 1),
-        coverImage: 'assets/images/vibes_electronic.jpeg',
-        genre: 'Electronic',
-      ),
-    ],
-  };
+  Track get _mockTrack => Track(
+    id: 'e5f6a7b8',
+    userId: 'a1b2c3d4',
+    title: 'Summer Vibes',
+    artist: 'DJ Karim',
+    audioUrl: '',
+    coverImage: 'assets/images/vibes_hiphop.jpeg',
+    duration: const Duration(seconds: 213),
+    playCount: 4200,
+    likeCount: 312,
+    repostCount: 47,
+    createdAt: DateTime(2026, 3, 1),
+    genre: 'Electronic',
+  );
 
-  static final _playlists = {
-    'hiphop': [
-      {
-        'id': 'p1',
-        'title': 'Hip Hop Bangers',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'p2',
-        'title': 'Rap Classics',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'p3',
-        'title': 'New School Rap',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'p4',
-        'title': 'Trap Hits',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-    ],
-    'electronic': [
-      {
-        'id': 'p5',
-        'title': 'EDM Anthems',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'p6',
-        'title': 'House Classics',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'p7',
-        'title': 'Techno Underground',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'p8',
-        'title': 'Festival Hits',
-        'creatorName': 'Rythmify',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-    ],
-  };
+  GenreInfo _mockGenreInfo(String genreId) => GenreInfo(
+    id: genreId,
+    name: genreId,
+    coverImage: 'assets/images/vibes_hiphop.jpeg',
+    trackCount: 340,
+    artistCount: 50,
+    playlistCount: 20,
+    albumCount: 15,
+  );
 
-  static final _albums = {
-    'hiphop': [
-      {
-        'id': 'a1',
-        'title': 'DAMN.',
-        'artistName': 'Kendrick Lamar',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'a2',
-        'title': 'Scorpion',
-        'artistName': 'Drake',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'a3',
-        'title': 'Astroworld',
-        'artistName': 'Travis Scott',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-      {
-        'id': 'a4',
-        'title': 'Hollywood\'s Bleeding',
-        'artistName': 'Post Malone',
-        'coverImage': 'assets/images/vibes_hiphop.jpeg',
-      },
-    ],
-    'electronic': [
-      {
-        'id': 'a5',
-        'title': 'Random Access Memories',
-        'artistName': 'Daft Punk',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'a6',
-        'title': 'For Lack of a Better Name',
-        'artistName': 'deadmau5',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'a7',
-        'title': 'True',
-        'artistName': 'Avicii',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-      {
-        'id': 'a8',
-        'title': 'Clarity',
-        'artistName': 'Zedd',
-        'coverImage': 'assets/images/vibes_electronic.jpeg',
-      },
-    ],
-  };
+  IntroducingSection get _mockIntroducing => IntroducingSection(
+    playlist: IntroducingPlaylist(
+      playlistId: 'pl-intro-1',
+      ownerUserId: 'u1',
+      name: 'Best of the Genre',
+      description: 'A curated intro playlist',
+      isPublic: true,
+      createdAt: DateTime(2026, 1, 1),
+      trackCount: 20,
+      likeCount: 500,
+      coverImage: 'assets/images/vibes_hiphop.jpeg',
+      previewTrack: _mockTrack,
+    ),
+    tracksPreview: List.generate(3, (_) => _mockTrack),
+  );
 
-  static final _profiles = {
-    'hiphop': [
-      ProfileEntity(
-        id: 'pr1',
-        displayName: 'Kendrick Lamar',
-        username: 'kendricklamar',
-        followersCount: 5000000,
-        followingCount: 100,
-        tracksCount: 40,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr2',
-        displayName: 'Drake',
-        username: 'drake',
-        followersCount: 8000000,
-        followingCount: 200,
-        tracksCount: 60,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr3',
-        displayName: 'Travis Scott',
-        username: 'travisscott',
-        followersCount: 4000000,
-        followingCount: 150,
-        tracksCount: 35,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr4',
-        displayName: 'Post Malone',
-        username: 'postmalone',
-        followersCount: 6000000,
-        followingCount: 180,
-        tracksCount: 45,
-        isFollowing: false,
-      ),
-    ],
-    'electronic': [
-      ProfileEntity(
-        id: 'pr5',
-        displayName: 'Avicii',
-        username: 'avicii',
-        followersCount: 7000000,
-        followingCount: 50,
-        tracksCount: 30,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr6',
-        displayName: 'deadmau5',
-        username: 'deadmau5',
-        followersCount: 3000000,
-        followingCount: 80,
-        tracksCount: 25,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr7',
-        displayName: 'Zedd',
-        username: 'zedd',
-        followersCount: 4000000,
-        followingCount: 120,
-        tracksCount: 28,
-        isFollowing: false,
-      ),
-      ProfileEntity(
-        id: 'pr8',
-        displayName: 'Martin Garrix',
-        username: 'martingarrix',
-        followersCount: 5000000,
-        followingCount: 90,
-        tracksCount: 32,
-        isFollowing: false,
-      ),
-    ],
-  };
+  List<GenrePlaylist> _mockPlaylists(String genreId) => List.generate(
+    4,
+    (i) => GenrePlaylist(
+      id: 'playlist-$genreId-$i',
+      name: 'Playlist ${i + 1}',
+      coverImage: 'assets/images/vibes_hiphop.jpeg',
+      ownerId: 'u1',
+      ownerName: 'Rythmify',
+      trackCount: 20,
+      likeCount: 100,
+      source: 'tagged',
+      createdAt: DateTime(2026, 1, i + 1),
+    ),
+  );
+
+  List<GenreAlbum> _mockAlbums(String genreId) => List.generate(
+    4,
+    (i) => GenreAlbum(
+      id: 'album-$genreId-$i',
+      name: 'Album ${i + 1}',
+      coverImage: 'assets/images/vibes_hiphop.jpeg',
+      ownerId: 'u1',
+      ownerName: 'Artist ${i + 1}',
+      trackCount: 12,
+      likeCount: 200,
+      releaseDate: '2026-01-0${i + 1}',
+    ),
+  );
+
+  List<GenreArtist> _mockArtists(String genreId) => List.generate(
+    4,
+    (i) => GenreArtist(
+      id: 'artist-$genreId-$i',
+      displayName: 'Artist ${i + 1}',
+      username: 'artist${i + 1}',
+      profilePicture: '',
+      isVerified: i == 0,
+      followerCount: 1000 * (i + 1),
+      trackCountInGenre: 10 + i,
+    ),
+  );
 
   @override
   Future<GenreContent> getGenreContent(String genreId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    final tracks = _tracks[genreId] ?? [];
     return GenreContent(
-      trendingTracks: tracks.take(3).toList(),
-      playlists: _playlists[genreId] ?? [],
-      albums: _albums[genreId] ?? [],
-      profiles: _profiles[genreId] ?? [],
-      discoverTracks: tracks,
+      genreInfo: _mockGenreInfo(genreId),
+      introducing: _mockIntroducing,
+      playlists: _mockPlaylists(genreId),
+      albums: _mockAlbums(genreId),
+      artists: _mockArtists(genreId),
+      tracks: List.generate(6, (_) => _mockTrack),
     );
   }
 
   @override
   Future<List<Track>> getGenreTrendingTracks(String genreId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return _tracks[genreId] ?? [];
+    return List.generate(10, (_) => _mockTrack);
   }
 
   @override
-  Future<List<Map<String, String>>> getGenrePlaylists(String genreId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return _playlists[genreId] ?? [];
+  Future<List<GenrePlaylist>> getGenrePlaylists(String genreId) async {
+    return _mockPlaylists(genreId);
   }
 
   @override
-  Future<List<Map<String, String>>> getGenreAlbums(String genreId) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return _albums[genreId] ?? [];
+  Future<List<GenreAlbum>> getGenreAlbums(String genreId) async {
+    return _mockAlbums(genreId);
+  }
+
+  @override
+  Future<List<GenreArtist>> getGenreArtists(String genreId) async {
+    return _mockArtists(genreId);
+  }
+
+  @override
+  Future<List<Track>> getGenreAllTracks(String genreId) async {
+    return List.generate(20, (_) => _mockTrack);
   }
 }
