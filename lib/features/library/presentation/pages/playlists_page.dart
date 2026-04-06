@@ -284,8 +284,9 @@ class _PlaylistTile extends ConsumerWidget {
                       ],
                     ),
                   );
-                  if (confirm == true)
+                  if (confirm == true) {
                     ref.read(playlistsProvider.notifier).delete(playlist.id);
+                  }
                 },
               ),
             const SizedBox(height: 8),
@@ -381,7 +382,7 @@ class _CreatePlaylistSheetState extends State<_CreatePlaylistSheet> {
               Switch(
                 key: const Key('create_playlist_public_switch'),
                 value: _isPublic,
-                activeColor: AppTheme.primaryBrand,
+                activeThumbColor: AppTheme.primaryBrand,
                 onChanged: (v) => setState(() => _isPublic = v),
               ),
             ],
