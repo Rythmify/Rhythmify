@@ -78,10 +78,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             child: GestureDetector(
               key: const Key('library_profile_avatar_gesture_detector'),
               onTap: () => context.push('/profile/me'),
-              child: ProfileAvatar(
-                avatarUrl: currentUserAvatar,
-                radius: 18,
-              ),
+              child: ProfileAvatar(avatarUrl: currentUserAvatar, radius: 18),
             ),
           ),
         ],
@@ -91,10 +88,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         children: [
           // ── Import banner card ────────────────────────────────────────────
           if (_showBanner)
-            _ImportBannerCard(
-              onImport: () {},
-              onClose: _dismissBanner,
-            ),
+            _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
 
           if (_showBanner) const SizedBox(height: 8),
 
@@ -232,10 +226,7 @@ class _ImportBannerCard extends StatelessWidget {
   final VoidCallback onImport;
   final VoidCallback onClose;
 
-  const _ImportBannerCard({
-    required this.onImport,
-    required this.onClose,
-  });
+  const _ImportBannerCard({required this.onImport, required this.onClose});
 
   @override
   Widget build(BuildContext context) {

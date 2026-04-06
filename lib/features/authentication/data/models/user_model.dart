@@ -25,7 +25,8 @@ class UserModel extends UserEntity {
       email: json['email'] as String,
       displayName: json['display_name'] as String? ?? '',
       username: json['username'] as String?,
-      avatarUrl: json['avatar_url'] as String? ?? json['profile_picture'] as String?,
+      avatarUrl:
+          json['avatar_url'] as String? ?? json['profile_picture'] as String?,
       coverUrl: json['cover_url'] as String? ?? json['cover_photo'] as String?,
       city: json['city'] as String?,
       country: json['country'] as String?,
@@ -65,7 +66,8 @@ class UserModel extends UserEntity {
       email: data['email'] as String,
       displayName: data['display_name'] as String? ?? '',
       username: data['username'] as String?,
-      avatarUrl: data['avatar_url'] as String? ?? data['profile_picture'] as String?,
+      avatarUrl:
+          data['avatar_url'] as String? ?? data['profile_picture'] as String?,
       coverUrl: data['cover_url'] as String? ?? data['cover_photo'] as String?,
       city: data['city'] as String?,
       country: data['country'] as String?,

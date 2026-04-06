@@ -173,7 +173,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
         final profileResult = await _getProfile(userId: 'me');
         profileResult.fold(
           (failure) => state = current.copyWith(isSaving: false),
-          (profile) => state = current.copyWith(profile: profile, isSaving: false),
+          (profile) =>
+              state = current.copyWith(profile: profile, isSaving: false),
         );
       },
     );

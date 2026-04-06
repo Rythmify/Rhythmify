@@ -109,10 +109,12 @@ class _LikesPageState extends ConsumerState<LikesPage> {
     final filtered = _query.isEmpty
         ? state.likedTracks
         : state.likedTracks
-            .where((t) =>
-                t.title.toLowerCase().contains(_query.toLowerCase()) ||
-                t.artist.toLowerCase().contains(_query.toLowerCase()))
-            .toList();
+              .where(
+                (t) =>
+                    t.title.toLowerCase().contains(_query.toLowerCase()) ||
+                    t.artist.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
     return Column(
       children: [
@@ -129,9 +131,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               key: const Key('likes_search_text_field'),
               controller: _searchController,
               onChanged: (v) => setState(() => _query = v),
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.textPrimary,
-              ),
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search ${state.likedTracks.length} tracks',
                 hintStyle: AppTheme.bodyMedium,
@@ -146,9 +146,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   size: 20,
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 11,
-                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 11),
               ),
             ),
           ),

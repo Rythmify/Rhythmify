@@ -204,7 +204,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           country: _selectedCountry,
           bio: _bioController.text.trim(),
         );
-    
+
     // Navigate back after successful save
     if (context.mounted) {
       context.pop();
