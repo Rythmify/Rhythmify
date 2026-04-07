@@ -286,7 +286,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       valueListenable: controller,
                                       builder: (context, value, child) {
                                         if (value.text.isEmpty)
-                                          return const SizedBox.shrink();
+                                          {return const SizedBox.shrink();}
                                         return IconButton(
                                           key: const Key(
                                             'chat_screen_send_button',
@@ -417,7 +417,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           valueListenable: controller,
                           builder: (context, value, child) {
                             if (value.text.isEmpty)
-                              return const SizedBox.shrink();
+                              {return const SizedBox.shrink();}
                             return IconButton(
                               key: const Key('chat_screen_send_button'),
                               onPressed: () async {
@@ -448,7 +448,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       final sameSender = curr.senderId == prev.senderId;
       final closeInTime =
-          curr.createdAt.difference(prev.createdAt).inSeconds.abs() <= 10;
+          curr.createdAt.difference(prev.createdAt).inSeconds.abs() <= 5;
 
       if (sameSender && closeInTime) {
         currentGroup.add(curr);

@@ -23,7 +23,8 @@ class MessageInputBubble extends StatelessWidget {
       child: TextFormField(
         key: const Key('messaging_message_input_text_field'),
         controller: controller,
-        maxLength: null,
+        maxLines: null,
+        minLines: 1,
         keyboardType: TextInputType.multiline,
         textInputAction: TextInputAction.newline,
         cursorColor: Colors.white,
