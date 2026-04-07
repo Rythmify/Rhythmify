@@ -1,142 +1,121 @@
-import 'collection_type.dart';
+// ============================================================
+// PlaylistEntity
+// ============================================================
+// This is the data shape for a playlist (or album or station).
+// It holds all the info you need to display a playlist card or
+// the detail page. No HTTP, no Flutter, just pure Dart.
+// ============================================================
 
-/// Domain entity representing a playlist, album, or station.
-///
-/// Sourced from `GET /playlists`, `GET /playlists/{id}`, or
-/// `POST /playlists`. Station entities are constructed from the
-/// `/home/stations` response and set [collectionType] to
-/// [CollectionType.station].
-///
-/// This entity is immutable. Use [copyWith] to produce modified copies.
+/// Tells the UI what "kind" of collection this is.
+/// The UI uses this to show different labels and minor UI tweaks.
+enum PlaylistType {
+  playlist, // Regular user-created playlist
+  album,    // Artist album (same UI, different label)
+  station,  // Auto-generated radio based on a track/artist
+}
+
 class PlaylistEntity {
   const PlaylistEntity({
     required this.id,
-    required this.ownerUserId,
     required this.name,
-    required this.slug,
+    required this.ownerName,
+    required this.ownerId,
     required this.isPublic,
-    required this.collectionType,
+    required this.type,
     required this.trackCount,
-    required this.likeCount,
-    required this.repostCount,
+    required this.totalDuration,
     required this.createdAt,
+    this.coverUrl,
     this.description,
-    this.coverImageUrl,
-    this.releaseDate,
-    this.genreId,
-    this.tags = const [],
-    this.secretToken,
-    this.updatedAt,
-    // Station-only fields — null for playlist/album
-    this.seedArtistId,
+    this.likeCount = 0,
+    this.repostCount = 0,
+    this.isLiked = false,
+    // Station-only fields
+    this.seedTrackTitle,
     this.seedArtistName,
-    this.seedArtistAvatarUrl,
   });
 
   final String id;
-  final String ownerUserId;
   final String name;
-
-  /// URL-friendly slug — used to build the share permalink.
-  final String slug;
-
+  final String ownerName;
+  final String ownerId;
   final bool isPublic;
-
-  /// Discriminator — drives all label, icon, and routing decisions in the UI.
-  final CollectionType collectionType;
-
-  final String? description;
-  final String? coverImageUrl;
-  final String? releaseDate;
-  final String? genreId;
-  final List<String> tags;
-
-  /// Derived counters — not stored on the backend, computed at query time.
+  final PlaylistType type;
   final int trackCount;
+  final Duration totalDuration;
+  final DateTime createdAt;
+  final String? coverUrl;
+  final String? description;
   final int likeCount;
   final int repostCount;
+  final bool isLiked;
 
-  final DateTime createdAt;
-  final DateTime? updatedAt;
-
-  /// Only present when the authenticated user is the playlist owner.
-  /// Used to generate the shareable private link.
-  final String? secretToken;
-
-  // ── Station-only ──────────────────────────────────────────────────────────
-
-  /// The artist whose catalogue seeds this station.
-  /// Only set when [collectionType] is [CollectionType.station].
-  final String? seedArtistId;
+  // Only set when type == PlaylistType.station
+  final String? seedTrackTitle;
   final String? seedArtistName;
-  final String? seedArtistAvatarUrl;
 
-  // ── Derived helpers ───────────────────────────────────────────────────────
+  // ── Helper getters ──────────────────────────────────────────
 
-  /// True when this collection was created by the current user.
-  /// The caller must pass their own userId to check ownership.
-  bool isOwnedBy(String userId) => ownerUserId == userId;
-
-  /// Human-readable label used across cards and headers ("Playlist" / "Album" / "Station").
-  String get typeLabel => labelForCollectionType(collectionType);
-
-  // ── copyWith ──────────────────────────────────────────────────────────────
-
-  PlaylistEntity copyWith({
-    String? id,
-    String? ownerUserId,
-    String? name,
-    String? slug,
-    bool? isPublic,
-    CollectionType? collectionType,
-    String? description,
-    String? coverImageUrl,
-    String? releaseDate,
-    String? genreId,
-    List<String>? tags,
-    int? trackCount,
-    int? likeCount,
-    int? repostCount,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? secretToken,
-    String? seedArtistId,
-    String? seedArtistName,
-    String? seedArtistAvatarUrl,
-    bool clearCover = false,
-    bool clearSecret = false,
-  }) {
-    return PlaylistEntity(
-      id: id ?? this.id,
-      ownerUserId: ownerUserId ?? this.ownerUserId,
-      name: name ?? this.name,
-      slug: slug ?? this.slug,
-      isPublic: isPublic ?? this.isPublic,
-      collectionType: collectionType ?? this.collectionType,
-      description: description ?? this.description,
-      coverImageUrl: clearCover ? null : (coverImageUrl ?? this.coverImageUrl),
-      releaseDate: releaseDate ?? this.releaseDate,
-      genreId: genreId ?? this.genreId,
-      tags: tags ?? this.tags,
-      trackCount: trackCount ?? this.trackCount,
-      likeCount: likeCount ?? this.likeCount,
-      repostCount: repostCount ?? this.repostCount,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      secretToken: clearSecret ? null : (secretToken ?? this.secretToken),
-      seedArtistId: seedArtistId ?? this.seedArtistId,
-      seedArtistName: seedArtistName ?? this.seedArtistName,
-      seedArtistAvatarUrl: seedArtistAvatarUrl ?? this.seedArtistAvatarUrl,
-    );
+  /// The label shown in the UI: "Playlist", "Album", or "Station"
+  String get typeLabel {
+    switch (type) {
+      case PlaylistType.playlist:
+        return 'Playlist';
+      case PlaylistType.album:
+        return 'Album';
+      case PlaylistType.station:
+        return 'Station';
+    }
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PlaylistEntity &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+  /// Formats the total duration like SoundCloud does:
+  /// under 1 hour → "9:25", over 1 hour → "11:04:23"
+  String get formattedDuration {
+    final h = totalDuration.inHours;
+    final m = totalDuration.inMinutes % 60;
+    final s = totalDuration.inSeconds % 60;
+    final mm = m.toString().padLeft(2, '0');
+    final ss = s.toString().padLeft(2, '0');
+    if (h > 0) return '$h:$mm:$ss';
+    return '$mm:$ss';
+  }
 
-  @override
-  int get hashCode => id.hashCode;
+  /// The subtitle line you see under the name in Image 6:
+  /// "Playlist · 3 tracks · 9:25"
+  String get subtitleLine =>
+      '$typeLabel · $trackCount ${trackCount == 1 ? 'track' : 'tracks'} · $formattedDuration';
+
+  // ── copyWith ─────────────────────────────────────────────────
+  // Returns a new PlaylistEntity with some fields changed.
+  // We use this instead of mutating, because Flutter state works
+  // better with immutable objects.
+  PlaylistEntity copyWith({
+    String? name,
+    bool? isPublic,
+    String? description,
+    String? coverUrl,
+    int? trackCount,
+    Duration? totalDuration,
+    bool? isLiked,
+    bool clearCover = false,
+  }) {
+    return PlaylistEntity(
+      id: id,
+      name: name ?? this.name,
+      ownerName: ownerName,
+      ownerId: ownerId,
+      isPublic: isPublic ?? this.isPublic,
+      type: type,
+      trackCount: trackCount ?? this.trackCount,
+      totalDuration: totalDuration ?? this.totalDuration,
+      createdAt: createdAt,
+      coverUrl: clearCover ? null : (coverUrl ?? this.coverUrl),
+      description: description ?? this.description,
+      likeCount: likeCount,
+      repostCount: repostCount,
+      isLiked: isLiked ?? this.isLiked,
+      seedTrackTitle: seedTrackTitle,
+      seedArtistName: seedArtistName,
+    );
+  }
 }

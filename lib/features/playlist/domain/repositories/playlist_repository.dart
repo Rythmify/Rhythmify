@@ -5,7 +5,7 @@ import 'package:dartz/dartz.dart';
 import '../entities/collection_type.dart';
 import '../entities/playlist_entity.dart';
 import 'package:rythmify/core/error/failures.dart';
-import '../entities/playlist_track_item.dart';
+import '../entities/playlist_track.dart';
 import '../entities/station_entity.dart';
 
 /// Abstract contract for all playlist/album/station data operations.
@@ -74,7 +74,7 @@ abstract class PlaylistRepository {
 
   /// Fetches paginated tracks for a playlist via
   /// `GET /playlists/{id}/tracks`.
-  Future<Either<Failure, List<PlaylistTrackItem>>> fetchPlaylistTracks({
+  Future<Either<Failure, List<PlaylistTrack>>> fetchPlaylistTracks({
     required String playlistId,
     String? secretToken,
     int page = 1,
@@ -131,7 +131,7 @@ abstract class PlaylistRepository {
 
   /// Fetches tracks for a specific station via
   /// `GET /home/stations/{artistId}/tracks`.
-  Future<Either<Failure, List<PlaylistTrackItem>>> fetchStationTracks({
+  Future<Either<Failure, List<PlaylistTrack>>> fetchStationTracks({
     required String artistId,
     int limit = 50,
     int offset = 0,

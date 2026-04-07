@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 
 import '../entities/playlist_entity.dart';
 import 'package:rythmify/core/error/failures.dart';
-import '../entities/playlist_track_item.dart';
+import '../entities/playlist_track.dart';
 import '../entities/station_entity.dart';
 import '../repositories/playlist_repository.dart';
 
@@ -69,7 +69,7 @@ class FetchPlaylistTracksUseCase {
   const FetchPlaylistTracksUseCase(this._repository);
   final PlaylistRepository _repository;
 
-  Future<Either<Failure, List<PlaylistTrackItem>>> call({
+  Future<Either<Failure, List<PlaylistTrack>>> call({
     required String playlistId,
     String? secretToken,
     int page = 1,
@@ -289,7 +289,7 @@ class FetchStationTracksUseCase {
   const FetchStationTracksUseCase(this._repository);
   final PlaylistRepository _repository;
 
-  Future<Either<Failure, List<PlaylistTrackItem>>> call({
+  Future<Either<Failure, List<PlaylistTrack>>> call({
     required String artistId,
     int limit = 50,
     int offset = 0,

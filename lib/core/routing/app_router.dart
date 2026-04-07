@@ -43,8 +43,11 @@ import '../../features/messaging/presentation/pages/search_screen.dart'
 //  Track_upload imports
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 
-//  Playlist imports
-import '../../features/playlist/presentation/pages/playlist_screen.dart';
+// ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
+// REMOVED: playlist_screen.dart (doesn't exist — caused error 1)
+// ADDED: our two real screens
+import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
+import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -52,11 +55,13 @@ import '../../features/settings/presentation/pages/settings_screen.dart';
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
 import '../../features/library/presentation/pages/following_page.dart';
-import '../../features/library/presentation/pages/playlists_page.dart';
+// playlists_page.dart now re-exports LibraryPlaylistsScreen — kept for
+// any other code that might reference it, but we import directly above.
 import '../../features/library/presentation/pages/uploads_page.dart';
 import '../../features/library/presentation/pages/stations_page.dart';
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
+// REMOVED: playlists_detail_screen.dart import — we use PlaylistDetailScreen directly
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -67,9 +72,8 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 //  Premium imports
 import '../../features/premium/presentation/pages/upgrade_screen.dart';
 
-///----------------------------------------------------------------------------------------------///
+// ────────────────────────────────────────────────────────────────────────────
 
-// Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
 final _feedTabKey = GlobalKey<NavigatorState>(debugLabel: 'feedTab');
@@ -78,14 +82,12 @@ final _libraryTabKey = GlobalKey<NavigatorState>(debugLabel: 'libraryTab');
 final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // ── Listen to auth state changes to refresh router ────
   ref.listen(authProvider, (a, b) {});
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
 
-    // ── Redirect logic based on auth state ───────────────
     redirect: (context, state) {
       final authState = ref.read(authProvider);
 
@@ -95,16 +97,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
-      // Still loading — do not redirect
       if (authState is AuthLoading) return null;
 
-      // Not logged in — send to onboarding
       if (authState is AuthUnauthenticated || authState is AuthInitial) {
         if (!isAuthRoute) return '/onboarding';
         return null;
       }
 
-      // Logged in — redirect away from auth pages
       if (authState is AuthAuthenticated) {
         if (isAuthRoute) return '/home';
         return null;
@@ -119,7 +118,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
 
-      // ── Auth routes ──────────────────────────────────────
+      // ── Auth routes ────────────────────────────────────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
@@ -156,8 +155,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ───────────────────────────────────
-      // CRITICAL: /profile/edit MUST be before /profile/:userId
+      // ── Profile routes ─────────────────────────────────────────────────────
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
@@ -182,7 +180,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
-          // ── Home tab ───────────────────────────────────────
+          // ── Home tab ─────────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -214,7 +212,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                             );
                           }
 
-                          // Fallback to searching mock data if no extra provided
                           final conv = mockConversations
                               .cast<Conversation?>()
                               .firstWhere(
@@ -248,7 +245,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Feed tab ───────────────────────────────────────
+          // ── Feed tab ─────────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
@@ -269,7 +266,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Search tab ─────────────────────────────────────
+          // ── Search tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _searchTabKey,
             routes: [
@@ -289,7 +286,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Library tab ────────────────────────────────────
+          // ── Library tab ──────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _libraryTabKey,
             routes: [
@@ -297,14 +294,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/library',
                 builder: (context, state) => const LibraryScreen(),
                 routes: [
-                  // Existing routes (unchanged)
                   GoRoute(
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'playlist',
-                    builder: (context, state) => const PlaylistScreen(),
                   ),
                   GoRoute(
                     path: 'behind-the-track/:trackId',
@@ -313,16 +305,42 @@ final routerProvider = Provider<GoRouter>((ref) {
                       return BehindTheTrackPage(trackId: trackId);
                     },
                   ),
-
-                  // ── Library sub-pages (CP-4) ───────────────
                   GoRoute(
                     path: 'following',
                     builder: (context, state) => const FollowingPage(),
                   ),
+
+                  // ── Playlists list ────────────────────────────────────────
                   GoRoute(
                     path: 'playlists',
-                    builder: (context, state) => const PlaylistsPage(),
+                    builder: (context, state) =>
+                        const LibraryPlaylistsScreen(),
                   ),
+
+                  // ── Playlist detail ───────────────────────────────────────
+                  // Navigated to from LibraryPlaylistsScreen when user taps
+                  // a playlist row or after creating a new playlist.
+                  //
+                  // HOW TO NAVIGATE HERE from any widget:
+                  //   context.push(
+                  //     '/library/playlists/pl-001',
+                  //     extra: true,  // true = isOwner
+                  //   );
+                  GoRoute(
+                    path: 'playlists/:playlistId',
+                    builder: (context, state) {
+                      final playlistId =
+                          state.pathParameters['playlistId']!;
+                      // extra is a bool — true if the logged-in user owns
+                      // this playlist. Defaults to false for safety.
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
@@ -344,7 +362,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Upgrade tab ─────────────────────────────────────
+          // ── Upgrade tab ──────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _upgradeTabKey,
             routes: [
@@ -386,18 +404,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const UploadTrackScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
               child: child,
             );
           },
