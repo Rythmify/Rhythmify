@@ -32,9 +32,13 @@ import '../../features/feed/presentation/pages/feed_screen.dart';
 
 //  Track imports
 import '../../features/track/presentation/pages/behind_the_track.dart';
+import '../../core/domain/entities/track.dart';
 
 //  Player imports
 import '../../features/player/presentation/pages/full_player_page.dart';
+
+//  Comments imports
+import '../../features/comments/presentation/pages/comments_screen.dart';
 
 //  Messaging imports
 import '../../features/messaging/domain/entities/conversation.dart';
@@ -46,14 +50,21 @@ import '../../features/messaging/presentation/pages/search_screen.dart'
 //  Track_upload imports
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 
-//  Playlist imports
-import '../../features/playlist/presentation/pages/playlist_screen.dart';
+// ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
+import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
+import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
 
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
+import '../../features/library/presentation/pages/following_page.dart';
+import '../../features/library/presentation/pages/uploads_page.dart';
+import '../../features/library/presentation/pages/stations_page.dart';
+import '../../features/library/presentation/pages/albums_page.dart'; // NEW
+import '../../features/library/presentation/pages/history_page.dart';
+import '../../features/library/presentation/pages/insights_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -64,9 +75,8 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 //  Premium imports
 import '../../features/premium/presentation/pages/upgrade_screen.dart';
 
-///----------------------------------------------------------------------------------------------///
+// ────────────────────────────────────────────────────────────────────────────
 
-// Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
 final _feedTabKey = GlobalKey<NavigatorState>(debugLabel: 'feedTab');
@@ -75,14 +85,12 @@ final _libraryTabKey = GlobalKey<NavigatorState>(debugLabel: 'libraryTab');
 final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // ── Listen to auth state changes to refresh router ────
   ref.listen(authProvider, (a, b) {});
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
 
-    // ── Redirect logic based on auth state ───────────────
     redirect: (context, state) {
       final authState = ref.read(authProvider);
 
@@ -92,16 +100,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
-      // Still loading — do not redirect
       if (authState is AuthLoading) return null;
 
-      // Not logged in — send to onboarding
       if (authState is AuthUnauthenticated || authState is AuthInitial) {
         if (!isAuthRoute) return '/onboarding';
         return null;
       }
 
-      // Logged in — redirect away from auth pages
       if (authState is AuthAuthenticated) {
         if (isAuthRoute) return '/home';
         return null;
@@ -115,7 +120,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      // ── Auth routes ──────────────────────────────────────
+
+      // ── Auth routes ──────────────────────────────────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
@@ -152,8 +158,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ───────────────────────────────────
-      // CRITICAL: /profile/edit MUST be before /profile/:userId
+      // ── Profile routes ───────────────────────────────────────────────────
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
@@ -178,6 +183,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
+          // ── Home tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -209,7 +215,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                             );
                           }
 
-                          // Fallback to searching mock data if no extra provided
                           final conv = mockConversations
                               .cast<Conversation?>()
                               .firstWhere(
@@ -219,6 +224,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
                           return ChatScreen(conv: conv);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'likes-playlists',
+                            builder: (context, state) =>
+                                const LikesPlaylistsScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'search',
@@ -243,6 +255,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Feed tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
@@ -263,6 +276,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Search tab ─────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _searchTabKey,
             routes: [
@@ -282,6 +296,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
+          // ── Library tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _libraryTabKey,
             routes: [
@@ -334,11 +349,82 @@ final routerProvider = Provider<GoRouter>((ref) {
                       return BehindTheTrackPage(trackId: trackId);
                     },
                   ),
+                  GoRoute(
+                    path: 'following',
+                    builder: (context, state) => const FollowingPage(),
+                  ),
+
+                  // ── Playlists ──────────────────────────────────────────
+                  GoRoute(
+                    path: 'playlists',
+                    builder: (context, state) => const LibraryPlaylistsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'playlists/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Albums ─────────────────────────────────────────────
+                  // AlbumsPage re-exports LibraryAlbumsScreen
+                  GoRoute(
+                    path: 'albums',
+                    builder: (context, state) => const LibraryAlbumsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'albums/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Stations ───────────────────────────────────────────
+                  // StationsPage re-exports LibraryStationsScreen
+                  GoRoute(
+                    path: 'stations',
+                    builder: (context, state) => const LibraryStationsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'stations/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'uploads',
+                    builder: (context, state) => const UploadsPage(),
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) => const HistoryPage(),
+                  ),
+                  GoRoute(
+                    path: 'insights',
+                    builder: (context, state) => const InsightsPage(),
+                  ),
                 ],
               ),
             ],
           ),
 
+          // ── Upgrade tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _upgradeTabKey,
             routes: [
@@ -364,6 +450,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
+      ),
+      GoRoute(
+        path: '/comments/:trackId',
+        name: 'comments',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final track = state.extra as Track;
+          return CommentsScreen(track: track);
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

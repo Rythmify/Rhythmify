@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/track_upload/presentation/widgets/upload_button_widget.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
 
 /// Widget: AudioPickerWidget
 ///
@@ -20,11 +22,37 @@ import 'package:rythmify/features/track_upload/presentation/widgets/upload_butto
 class AudioPickerWidget extends ConsumerWidget {
   const AudioPickerWidget({super.key});
 
-  String _formatDuration(Duration duration) {
-    final m = duration.inMinutes;
-    final s = duration.inSeconds % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
+  // ── Replace audio ─────────────────────────────────────────────────────────
+
+  Future<void> _replaceAudio(BuildContext context, WidgetRef ref) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null) return;
+
+    Duration duration = Duration.zero;
+    try {
+      final player = AudioPlayer();
+      final detected = await player.setFilePath(picked.path!);
+      duration = detected ?? Duration.zero;
+      await player.dispose();
+    } catch (_) {}
+
+    ref
+        .read(uploadFormProvider.notifier)
+        .initDraft(
+          artistId: 'dev_user_001',
+          localAudioPath: picked.path!,
+          duration: duration,
+          fileName: picked.name,
+        );
+    ref.read(uploadFormProvider.notifier).startAudioUpload();
   }
+
+  // ── Pick artwork ──────────────────────────────────────────────────────────
 
   Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
     final source = await showModalBottomSheet<ImageSource>(
@@ -48,7 +76,6 @@ class AudioPickerWidget extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ListTile(
-              key: const Key('track_upload_gallery_listtile'),
               leading: const Icon(
                 Icons.photo_library_outlined,
                 color: Colors.white70,
@@ -60,7 +87,6 @@ class AudioPickerWidget extends ConsumerWidget {
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
-              key: const Key('track_upload_camera_listtile'),
               leading: const Icon(
                 Icons.camera_alt_outlined,
                 color: Colors.white70,
@@ -91,53 +117,59 @@ class AudioPickerWidget extends ConsumerWidget {
     }
   }
 
+  // ── Build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(uploadFormProvider);
     final draft = state.draft;
 
-    // ← fileName now reads from draft, not state
-    final fileName =
-        draft?.audioFileName ??
-        draft?.localAudioPath.split('/').last ??
-        'audio file';
-
     if (draft == null) return const SizedBox.shrink();
+
+    final fileName =
+        draft.audioFileName ?? draft.localAudioPath.split('/').last;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Dashed camera frame ───────────────────────────────────────
+        // ── Dashed artwork frame ──────────────────────────────────────
         GestureDetector(
           onTap: () => _pickImage(context, ref),
           child: _DashedFrame(artworkPath: draft.localArtworkPath),
         ),
+        const SizedBox(width: 14),
 
-        // ── Audio name + progress button ──────────────────────────────
+        // ── Filename + upload button ──────────────────────────────────
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // "Filename" grey label
+              const Text(
+                'Filename',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+
+              // Actual file name
               Text(
                 fileName,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
-              const SizedBox(height: 4),
-              Text(
-                _formatDuration(draft.duration),
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+
+              // Upload progress button
               UploadButtonWidget(
-                buttonState: _getButtonState(draft.uploadProgress),
-                progress: draft.uploadProgress,
-                onReplace: () {},
+                status: draft.audioStatus, // ← was draft.status
+                progress:
+                    draft.audioUploadProgress, // ← was draft.uploadProgress
+                onReplace: () => _replaceAudio(context, ref),
               ),
             ],
           ),
@@ -145,15 +177,9 @@ class AudioPickerWidget extends ConsumerWidget {
       ],
     );
   }
-
-  UploadButtonState _getButtonState(double progress) {
-    if (progress >= 1.0) return UploadButtonState.done;
-    if (progress > 0.0) return UploadButtonState.uploading;
-    return UploadButtonState.uploading;
-  }
 }
 
-// ── Dashed frame widget ───────────────────────────────────────────────────────
+// ── Dashed frame ──────────────────────────────────────────────────────────────
 
 class _DashedFrame extends StatelessWidget {
   final String? artworkPath;
@@ -164,32 +190,32 @@ class _DashedFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasArtwork = artworkPath != null;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: CustomPaint(
-        painter: _DashedBorderPainter(),
-        child: SizedBox(
-          width: 90,
-          height: 90,
-          child: hasArtwork
-              ? Image.file(File(artworkPath!), fit: BoxFit.cover)
-              : const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.camera_alt_outlined,
-                      color: Colors.white54,
-                      size: 28,
-                    ),
-                  ],
-                ),
-        ),
+    return CustomPaint(
+      painter: _DashedBorderPainter(),
+      child: SizedBox(
+        width: 90,
+        height: 90,
+        child: hasArtwork
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.file(File(artworkPath!), fit: BoxFit.cover),
+              )
+            : const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.camera_alt_outlined,
+                    color: Colors.white38,
+                    size: 26,
+                  ),
+                ],
+              ),
       ),
     );
   }
 }
 
-// ── Custom painter for dashed border ─────────────────────────────────────────
+// ── Dashed border painter ─────────────────────────────────────────────────────
 
 class _DashedBorderPainter extends CustomPainter {
   @override
@@ -211,15 +237,15 @@ class _DashedBorderPainter extends CustomPainter {
     final path = Path()..addRRect(rect);
     final metrics = path.computeMetrics().first;
     final total = metrics.length;
-    double distance = 0;
+    double dist = 0;
 
-    while (distance < total) {
-      final end = (distance + dashWidth).clamp(0.0, total);
-      canvas.drawPath(metrics.extractPath(distance, end), paint);
-      distance += dashWidth + dashSpace;
+    while (dist < total) {
+      final end = (dist + dashWidth).clamp(0.0, total);
+      canvas.drawPath(metrics.extractPath(dist, end), paint);
+      dist += dashWidth + dashSpace;
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
