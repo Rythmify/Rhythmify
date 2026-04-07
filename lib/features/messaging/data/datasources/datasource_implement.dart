@@ -85,9 +85,12 @@ class DatasourceImplement implements DatasourceInterface {
       data: data
     );
 
-    return ConversationModel.fromJson(
-      response.data['data']['conversation'] as Map<String, dynamic>,
-    );
+    final responseData = response.data['data'];
+    if (responseData.containsKey('conversation')) {
+      return ConversationModel.fromJson(responseData['conversation']);
+    } else {
+      throw Exception('Conversation already exists, message appended');
+    }
   }
 
   @override
@@ -98,12 +101,12 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<void> blockUser({required String userId}) async {
-    await dio.delete(ApiEndPoints.blockUser(userId));
+    await dio.post(ApiEndPoints.blockUser(userId));
   }
 
   @override
   Future<void> unBlockUser({required String userId}) async {
-    await dio.post(ApiEndPoints.unBlockUser(userId));
+    await dio.delete(ApiEndPoints.unBlockUser(userId));
   }
 
   @override
@@ -119,7 +122,7 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<List<PotentialConversationModel>> getFollowings(String myId) async {
-    final response = await dio.get(ApiEndPoints.getFollowings(myId));
+    final response = await dio.get(ApiEndPoints.getFollowings());
     final body = response.data;
     final List data = body['data']['items'];
     return data
@@ -200,9 +203,9 @@ class DatasourceImplement implements DatasourceInterface {
     final response=await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
     final data = response.data['data'];
     return SharedEmbedModel(
-      embedId: data['id'],
+      embedId: data['playlist_id'],
       embedType: embedType,
-      embedName: data['title'],
+      embedName: data['name'],
       artistName: null,
       thumbnailUrl: null,
     );

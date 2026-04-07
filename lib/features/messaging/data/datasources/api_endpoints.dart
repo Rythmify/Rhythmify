@@ -27,17 +27,17 @@ class ApiEndPoints {
   static const String getUnreadCount = '/messages/unread-count';
 
   /// Returns the endpoint to block a specific user by their [userId].
-  static String blockUser(String userId) => '/messages/block/$userId';
+  static String blockUser(String userId) => '/users/$userId/block';
 
   /// Returns the endpoint to unblock a specific user by their [userId].
-  static String unBlockUser(String userId) => '/messages/block/$userId';
+  static String unBlockUser(String userId) => '/users/$userId/block';
 
   /// Returns the endpoint to mark a specific [messageId] as read in a [conversationId].
   static String markMessagesAsRead(String conversationId, String messageId) =>
       '/messages/conversations/$conversationId/messages/$messageId/read';
 
   /// Returns the endpoint to retrieve the list of users followed by [userId].
-  static String getFollowings(String userId) => '/users/$userId/following';
+  static String getFollowings() => '/users/me/following';
 
   /// Returns the endpoint to search for users based on a [query].
   static String getSearchedUsers(String query) => '/search?q=$query&type=users';
@@ -49,7 +49,7 @@ class ApiEndPoints {
   static String getTrackDetails(String trackId) => '/tracks/$trackId';
 
   /// Returns the endpoint to retrieve the details of a certain playlist using the [playlistId]
-  static String getPlaylistDetails(String playlistId) => '/tracks/$playlistId';
+  static String getPlaylistDetails(String playlistId) => '/playlists/$playlistId';
 
 
 }

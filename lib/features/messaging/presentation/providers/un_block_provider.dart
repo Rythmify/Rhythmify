@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:rythmify/features/messaging/presentation/providers/block_user_notifier.dart';
-import 'package:rythmify/features/messaging/presentation/providers/unblock_notifier.dart';
+import 'package:rythmify/features/messaging/presentation/providers/un_block_notifier.dart';
 
 /// Provider for the [BlockUserNotifier] that handles user blocking.
 ///

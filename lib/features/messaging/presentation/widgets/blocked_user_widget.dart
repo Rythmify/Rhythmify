@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
-import 'package:rythmify/features/messaging/presentation/providers/unblock_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/un_block_provider.dart';
 
 class BlockedUserWidget extends ConsumerWidget {
   final String participantId;

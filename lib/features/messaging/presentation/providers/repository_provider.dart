@@ -6,7 +6,7 @@ import 'package:rythmify/features/messaging/data/datasources/datasource_implemen
 import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
 
 /// toggle between mock data and real API
-const bool useMockData = true;
+const bool useMockData = false;
 
 /// Provider for the [MessagingRepository] implementation.
 ///
@@ -19,7 +19,8 @@ const bool useMockData = true;
 final repositoryprovider = Provider<MessagingRepository>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:8080/api/v1',
+      //baseUrl: 'http://localhost:8080/api/v1',
+      baseUrl:'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
       headers: {'Content-Type': 'application/json'},
     ),
   );
