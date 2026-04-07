@@ -34,6 +34,16 @@ const String authVerifyEmailDescription     = 'authentication_verify_email_descr
 const String authResendEmailButton          = 'authentication_resend_email_elevated_button';
 const String authDismissButton              = 'authentication_dismiss_text_button';
 
+// --- Registration / Sign Up ---
+const String authRegisterUsernameTextField  = 'authentication_create_account_profile_display_name_auth_text_field';
+const String authRegisterMonthDropdown      = 'authentication_create_account_profile_month_dropdown_button';
+const String authRegisterDayDropdown        = 'authentication_create_account_profile_day_dropdown_button';
+const String authRegisterYearDropdown       = 'authentication_create_account_profile_year_dropdown_button';
+const String authRegisterGenderDropdown     = 'authentication_create_account_profile_gender_dropdown_button';
+const String authRegisterFinalContinueButton = 'authentication_create_account_profile_continue_elevated_button';
+const String authRegisterBackButton         = 'authentication_create_account_profile_back_icon_button';
+const String authPasswordBackButton         = 'authentication_back_icon_button';
+
 // --- Home / Feed ---
 const String homeScaffold                   = 'home_scaffold';
 const String homeAppBar                     = 'home_app_bar';
