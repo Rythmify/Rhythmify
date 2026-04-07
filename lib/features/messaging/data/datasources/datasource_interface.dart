@@ -2,6 +2,7 @@ import 'package:rythmify/features/messaging/data/models/conversation_model.dart'
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
+import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 
 /// Interface defining the contract for messaging data sources.
 ///
@@ -48,4 +49,22 @@ abstract class DatasourceInterface {
 
   /// Searches for users based on a [query].
   Future<List<PotentialConversationModel>> getSearchedUsers(String query);
+
+  /// Checks if the user with [participantId] is blocked by current user.
+  Future<bool> isBlocked(String participantId);
+
+  /// Checks if the user with [participantId] has blocked the current user.
+  Future<bool> isBlockedBy(String participantId);
+
+  /// Retrieves the list of liked embeds (tracks/playlists/Albums) for a user.
+  Future<List<SharedEmbedModel>> getEmbeds(String userId, String embedType);
+
+  /// Retrieves the details of a specific track by its [trackdId].
+  Future<SharedEmbedModel> getTrackDetails(String trackId);
+
+  /// Retrieves the details of a specific track by its [playlistId].
+  Future<SharedEmbedModel> getPlaylistDetails(
+    String playlistId,
+    String embedType,
+  );
 }

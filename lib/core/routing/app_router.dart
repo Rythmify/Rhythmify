@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
+import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -217,6 +218,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
                           return ChatScreen(conv: conv);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'likes-playlists',
+                            builder: (context, state) =>
+                                const LikesPlaylistsScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'search',

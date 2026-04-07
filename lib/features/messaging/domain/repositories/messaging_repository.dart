@@ -1,6 +1,7 @@
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
 /// Abstract repository defining the contract for messaging-related operations.
 ///
@@ -24,7 +25,12 @@ abstract class MessagingRepository {
   );
 
   /// Sends a new [Message] within an existing conversation.
-  Future<Message> sendMessage(String conversationId, String body);
+  Future<Message> sendMessage(
+    String conversationId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  );
 
   /// Blocks a user by their [participantId], preventing further communication.
   Future<void> blockUser(String participantId);
@@ -43,4 +49,22 @@ abstract class MessagingRepository {
 
   /// Searches for [PotentialConversation]s based on a search [query].
   Future<List<PotentialConversation>> getSearchedUsers(String query);
+
+  ///Checks if the user with [participantId] is blocked by current user.
+  Future<bool> isBlocked(String participantId);
+
+  ///Checks if the user with [participantId] has blocked the current user.
+  Future<bool> isBlockedBy(String participantId);
+
+  ///get the liked embeds by this user through [embedType]
+  Future<List<SharedEmbed>> getLikedEmbeds(String userId, String embedType);
+
+  ///get a certain track from id alone
+  Future<SharedEmbed> getTrack(String trackId);
+
+  ///get a certain track from id alone
+  Future<SharedEmbed> getPlaylist(
+    String playlistId,
+    String embedType,
+  ); //for both playlists and albums
 }
