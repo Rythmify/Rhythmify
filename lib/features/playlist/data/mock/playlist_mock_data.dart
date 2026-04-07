@@ -1,21 +1,16 @@
-// ============================================================
-// PLAYLIST MOCK DATA
-// ============================================================
-// This file is our fake "backend" for development.
-// When useMock = true in the provider, everything reads from here.
-// No internet needed. Replace with real API calls later.
-// ============================================================
+// lib/features/playlist/data/mock/playlist_mock_data.dart
+//
+// In-memory fake database. All playlist/album/station CRUD goes here.
+// When backend is ready, replace each method body with a real API call.
 
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 
 class PlaylistMockData {
-  // ── Singleton so the same "database" is shared everywhere ──
   PlaylistMockData._();
   static final PlaylistMockData instance = PlaylistMockData._();
 
-  // ── The in-memory list of playlists ────────────────────────
-  // This mirrors what Image 6 (the Library playlists screen) shows.
+  // ── In-memory playlist list ────────────────────────────────────────────────
   final List<PlaylistEntity> _playlists = [
     PlaylistEntity(
       id: 'pl-001',
@@ -41,22 +36,37 @@ class PlaylistMockData {
       coverUrl: null,
       createdAt: DateTime(2026, 2, 20),
     ),
+    // Example album — shows "2026 · Album" in the header (Image 1 style)
     PlaylistEntity(
-      id: 'pl-003',
-      name: 'Lowkey House',
-      ownerName: 'Discovery Playlists',
-      ownerId: 'user-999',
+      id: 'al-001',
+      name: 'Lost, Found & Forgotten',
+      ownerName: 'Chris Stussy',
+      ownerId: 'user-002',
       isPublic: true,
-      type: PlaylistType.playlist,
-      trackCount: 158,
-      totalDuration: const Duration(hours: 11, minutes: 4, seconds: 23),
+      type: PlaylistType.album,
+      trackCount: 6,
+      totalDuration: const Duration(minutes: 22, seconds: 10),
       coverUrl: null,
-      createdAt: DateTime(2026, 1, 10),
+      createdAt: DateTime(2026, 1, 1),
+      releaseYear: '2026',
+    ),
+    // Example station — shows "Artist Station · ... · 50 tracks" (Image 2 style)
+    PlaylistEntity(
+      id: 'st-001',
+      name: 'HanaRadio',
+      ownerName: 'Hana',
+      ownerId: 'user-003',
+      isPublic: false,
+      type: PlaylistType.station,
+      trackCount: 50,
+      totalDuration: const Duration(hours: 2, minutes: 27, seconds: 8),
+      coverUrl: null,
+      createdAt: DateTime(2026, 3, 10),
+      seedArtistName: 'Hana',
     ),
   ];
 
-  // ── Tracks inside each playlist ──
-  // Key = playlist id, value = list of tracks in that playlist.
+  // ── Tracks per playlist ────────────────────────────────────────────────────
   final Map<String, List<PlaylistTrack>> _playlistTracks = {
     'pl-001': [
       PlaylistTrack(
@@ -72,7 +82,7 @@ class PlaylistMockData {
     'pl-002': [
       PlaylistTrack(
         id: 'tr-002',
-        title: 'Sonic Mine - Drugs (Remix T...)',
+        title: 'Sonic Mine - Drugs (Remix)',
         artistName: 'QWXNTUM',
         duration: const Duration(minutes: 2, seconds: 53),
         coverUrl: null,
@@ -99,14 +109,76 @@ class PlaylistMockData {
         isUnavailable: true,
       ),
     ],
+    // Album tracks — matching Image 1's track list
+    'al-001': [
+      PlaylistTrack(
+        id: 'al-tr-001',
+        title: 'Moonlight',
+        artistName: 'Chris Stussy, Elena Moroder',
+        duration: const Duration(minutes: 4, seconds: 10),
+        coverUrl: null,
+        playCount: 0,
+        position: 1,
+        isUnavailable: true,
+      ),
+      PlaylistTrack(
+        id: 'al-tr-002',
+        title: 'Side to Side',
+        artistName: 'Chris Stussy',
+        duration: const Duration(minutes: 3, seconds: 50),
+        coverUrl: null,
+        playCount: 0,
+        position: 2,
+        isUnavailable: true,
+      ),
+      PlaylistTrack(
+        id: 'al-tr-003',
+        title: 'Here for the summer',
+        artistName: 'Chris Stussy',
+        duration: const Duration(minutes: 3, seconds: 55),
+        coverUrl: null,
+        playCount: 0,
+        position: 3,
+        isUnavailable: true,
+      ),
+      PlaylistTrack(
+        id: 'al-tr-004',
+        title: 'Tryna find a way',
+        artistName: 'Chris Stussy, Leanne Louise',
+        duration: const Duration(minutes: 4, seconds: 5),
+        coverUrl: null,
+        playCount: 0,
+        position: 4,
+        isUnavailable: true,
+      ),
+      PlaylistTrack(
+        id: 'al-tr-005',
+        title: 'Linger (Interlude)',
+        artistName: 'Chris Stussy',
+        duration: const Duration(minutes: 2, seconds: 30),
+        coverUrl: null,
+        playCount: 0,
+        position: 5,
+        isUnavailable: true,
+      ),
+      PlaylistTrack(
+        id: 'al-tr-006',
+        title: 'Darkness',
+        artistName: 'Chris Stussy',
+        duration: const Duration(minutes: 3, seconds: 40),
+        coverUrl: null,
+        playCount: 0,
+        position: 6,
+        isUnavailable: true,
+      ),
+    ],
   };
 
-  // ── Suggestion tracks (shown on empty/new playlist) ──
-  // These are shown in Images 1 & 2 as "Suggestions for your new playlist"
+  // ── Suggestion tracks ──────────────────────────────────────────────────────
   final List<PlaylistTrack> _suggestions = [
     PlaylistTrack(
       id: 'sg-001',
-      title: 'Birds Of A Feather (Hor...',
+      title: 'Birds Of A Feather (Remix)',
       artistName: 'Horacio Payan',
       duration: const Duration(minutes: 3, seconds: 31),
       coverUrl: null,
@@ -135,7 +207,7 @@ class PlaylistMockData {
     ),
     PlaylistTrack(
       id: 'sg-004',
-      title: 'Wine Pon You - Doja Cat (sped up + r...',
+      title: 'Wine Pon You - Doja Cat (sped up)',
       artistName: 'Doja Cat',
       duration: const Duration(minutes: 3, seconds: 22),
       coverUrl: null,
@@ -145,7 +217,7 @@ class PlaylistMockData {
     ),
     PlaylistTrack(
       id: 'sg-005',
-      title: "Ariana Grande - We Can't Be Friends...",
+      title: "We Can't Be Friends",
       artistName: 'Ariana Grande',
       duration: const Duration(minutes: 3, seconds: 44),
       coverUrl: null,
@@ -154,20 +226,24 @@ class PlaylistMockData {
     ),
   ];
 
-  // ════════════════════════════════════════════════════════════
-  // READ OPERATIONS
-  // ════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // READ
+  // ════════════════════════════════════════════════════════════════════════════
 
-  /// Returns all playlists for the current user.
-  /// This is what the Library screen shows.
+  /// All playlists — used by Library playlists screen.
   List<PlaylistEntity> getMyPlaylists() => List.from(_playlists);
 
-  /// Returns the tracks inside one playlist.
+  /// Only type == album — used by Library albums section.
+  List<PlaylistEntity> getAlbums() =>
+      _playlists.where((p) => p.type == PlaylistType.album).toList();
+
+  /// Only type == station — used by Library stations section.
+  List<PlaylistEntity> getStations() =>
+      _playlists.where((p) => p.type == PlaylistType.station).toList();
+
   List<PlaylistTrack> getTracksFor(String playlistId) =>
       List.from(_playlistTracks[playlistId] ?? []);
 
-  /// Returns suggestion tracks for adding to a playlist.
-  /// In the real app these come from the backend based on listening history.
   List<PlaylistTrack> getSuggestions() => List.from(_suggestions);
 
   PlaylistEntity? getById(String id) {
@@ -178,16 +254,15 @@ class PlaylistMockData {
     }
   }
 
-  // ════════════════════════════════════════════════════════════
-  // WRITE OPERATIONS — these mutate the in-memory list
-  // ════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // WRITE — playlist CRUD
+  // ════════════════════════════════════════════════════════════════════════════
 
-  /// Creates a new playlist and adds it to the top of the list.
   PlaylistEntity create({required String name, required bool isPublic}) {
     final newPlaylist = PlaylistEntity(
       id: 'pl-${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      ownerName: 'Hana', // replace with real user name later
+      ownerName: 'Hana',
       ownerId: 'user-001',
       isPublic: isPublic,
       type: PlaylistType.playlist,
@@ -196,16 +271,13 @@ class PlaylistMockData {
       coverUrl: null,
       createdAt: DateTime.now(),
     );
-    // Insert at position 0 so it appears at the top of the list.
     _playlists.insert(0, newPlaylist);
     _playlistTracks[newPlaylist.id] = [];
-    // Print to debug console so you can verify it worked.
     // ignore: avoid_print
     print('[MockDB] Created playlist: ${newPlaylist.name} (${newPlaylist.id})');
     return newPlaylist;
   }
 
-  /// Renames a playlist and toggles its public/private state.
   void update({
     required String playlistId,
     required String name,
@@ -223,7 +295,15 @@ class PlaylistMockData {
     print('[MockDB] Updated playlist $playlistId → name=$name');
   }
 
-  /// Deletes a playlist permanently.
+  void updateCoverImage({
+    required String playlistId,
+    required String localPath,
+  }) {
+    final index = _playlists.indexWhere((p) => p.id == playlistId);
+    if (index == -1) return;
+    _playlists[index] = _playlists[index].copyWith(coverUrl: localPath);
+  }
+
   void delete(String playlistId) {
     _playlists.removeWhere((p) => p.id == playlistId);
     _playlistTracks.remove(playlistId);
@@ -231,15 +311,65 @@ class PlaylistMockData {
     print('[MockDB] Deleted playlist $playlistId');
   }
 
-  /// Adds a suggestion track into a playlist.
+  // ════════════════════════════════════════════════════════════════════════════
+  // CONVERT — this is what "Convert to Album / Station" in the edit sheet does
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /// Converts a playlist to an album.
+  /// Called when user taps "Convert to Album" in the Edit sheet.
+  /// The playlist keeps all its tracks — only the type and releaseYear change.
+  PlaylistEntity convertToAlbum(String playlistId) {
+    final index = _playlists.indexWhere((p) => p.id == playlistId);
+    if (index == -1) return _playlists.first;
+
+    final updated = _playlists[index].copyWith(
+      type: PlaylistType.album,
+      releaseYear: DateTime.now().year.toString(),
+    );
+    _playlists[index] = updated;
+    // ignore: avoid_print
+    print('[MockDB] Converted $playlistId to album');
+    return updated;
+  }
+
+  /// Converts a playlist to a station.
+  /// Called when user taps "Convert to Station" in the Edit sheet.
+  /// seedArtistName defaults to the owner's name.
+  PlaylistEntity convertToStation(String playlistId) {
+    final index = _playlists.indexWhere((p) => p.id == playlistId);
+    if (index == -1) return _playlists.first;
+
+    final updated = _playlists[index].copyWith(
+      type: PlaylistType.station,
+      seedArtistName: _playlists[index].ownerName,
+    );
+    _playlists[index] = updated;
+    // ignore: avoid_print
+    print('[MockDB] Converted $playlistId to station');
+    return updated;
+  }
+
+  /// Converts an album or station back to a regular playlist.
+  PlaylistEntity convertToPlaylist(String playlistId) {
+    final index = _playlists.indexWhere((p) => p.id == playlistId);
+    if (index == -1) return _playlists.first;
+
+    final updated = _playlists[index].copyWith(type: PlaylistType.playlist);
+    _playlists[index] = updated;
+    // ignore: avoid_print
+    print('[MockDB] Converted $playlistId to playlist');
+    return updated;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TRACK MANAGEMENT
+  // ════════════════════════════════════════════════════════════════════════════
+
   void addTrack({required String playlistId, required PlaylistTrack track}) {
     final tracks = _playlistTracks[playlistId] ?? [];
-    // Don't add duplicates.
     if (tracks.any((t) => t.id == track.id)) return;
-    final withNewPosition = track.copyWith(position: tracks.length + 1);
-    tracks.add(withNewPosition);
+    tracks.add(track.copyWith(position: tracks.length + 1));
     _playlistTracks[playlistId] = tracks;
-    // Update the track count on the playlist entity.
     final index = _playlists.indexWhere((p) => p.id == playlistId);
     if (index != -1) {
       _playlists[index] = _playlists[index].copyWith(
@@ -247,17 +377,14 @@ class PlaylistMockData {
         totalDuration: _recalcDuration(tracks),
       );
     }
-    // Remove this track from suggestions so it doesn't appear twice.
     _suggestions.removeWhere((s) => s.id == track.id);
     // ignore: avoid_print
-    print('[MockDB] Added track ${track.title} to playlist $playlistId');
+    print('[MockDB] Added track ${track.title} to $playlistId');
   }
 
-  /// Removes a track from a playlist.
   void removeTrack({required String playlistId, required String trackId}) {
     final tracks = _playlistTracks[playlistId] ?? [];
     tracks.removeWhere((t) => t.id == trackId);
-    // Re-number positions after removal.
     for (int i = 0; i < tracks.length; i++) {
       tracks[i] = tracks[i].copyWith(position: i + 1);
     }
@@ -274,9 +401,10 @@ class PlaylistMockData {
   Duration _recalcDuration(List<PlaylistTrack> tracks) =>
       tracks.fold(Duration.zero, (sum, t) => sum + t.duration);
 
-  // ── Station creation ──────────────────────────────────────────
-  // When user long-presses a track and taps "Start station", we create
-  // a special playlist with type = station seeded from that track.
+  // ════════════════════════════════════════════════════════════════════════════
+  // STATION CREATION (from track ··· menu → Start station)
+  // ════════════════════════════════════════════════════════════════════════════
+
   PlaylistEntity createStation({required PlaylistTrack seedTrack}) {
     final station = PlaylistEntity(
       id: 'st-${DateTime.now().millisecondsSinceEpoch}',
@@ -289,16 +417,16 @@ class PlaylistMockData {
       totalDuration: const Duration(hours: 2, minutes: 30),
       coverUrl: seedTrack.coverUrl,
       createdAt: DateTime.now(),
-      seedTrackTitle: seedTrack.title,
       seedArtistName: seedTrack.artistName,
     );
     _playlists.insert(0, station);
-    // For mock: fill with shuffled suggestions repeated to get 48 tracks.
     final fakeTracks = List.generate(
       48,
       (i) => _suggestions[i % _suggestions.length].copyWith(position: i + 1),
     );
     _playlistTracks[station.id] = fakeTracks;
+    // ignore: avoid_print
+    print('[MockDB] Created station: ${station.name}');
     return station;
   }
 }

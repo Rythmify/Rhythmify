@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
+import 'dart:io';
 
 // ════════════════════════════════════════════════════════════
 // PlaylistCoverImage
@@ -34,13 +35,32 @@ class PlaylistCoverImage extends StatelessWidget {
         width: size,
         height: size,
         child: playlist.coverUrl != null
-            ? Image.network(
-                playlist.coverUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _Placeholder(playlist: playlist),
-              )
+            ? _buildCoverImage(playlist.coverUrl!)
             : _Placeholder(playlist: playlist),
       ),
+    );
+  }
+
+  /// Decides whether to use Image.file or Image.network
+  /// based on whether the URL is a local file path or a remote URL.
+  Widget _buildCoverImage(String url) {
+    // Local file paths start with / on iOS/Android
+    if (url.startsWith('/') || url.startsWith('file://')) {
+      return Image.file(
+        File(url),
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _Placeholder(playlist: playlist),
+      );
+    }
+    // Remote URL
+    return Image.network(
+      url,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _Placeholder(playlist: playlist),
     );
   }
 }
@@ -58,8 +78,8 @@ class _Placeholder extends StatelessWidget {
           playlist.type == PlaylistType.station
               ? Icons.radio
               : playlist.type == PlaylistType.album
-                  ? Icons.album
-                  : Icons.queue_music,
+              ? Icons.album
+              : Icons.queue_music,
           color: Colors.grey[600],
           size: 28,
         ),
@@ -141,10 +161,7 @@ class TrackTileInPlaylist extends StatelessWidget {
                       track.artistName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     ),
                   ],
                   const SizedBox(height: 4),
@@ -266,13 +283,7 @@ class OptionSheetTile extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(width: 16),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 15,
-              ),
-            ),
+            Text(label, style: TextStyle(color: color, fontSize: 15)),
           ],
         ),
       ),

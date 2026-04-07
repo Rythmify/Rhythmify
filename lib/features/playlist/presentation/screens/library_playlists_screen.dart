@@ -29,8 +29,7 @@ class _LibraryPlaylistsScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
     final filtered = state.playlists
-        .where((p) =>
-            p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -45,8 +44,11 @@ class _LibraryPlaylistsScreenState
                 children: [
                   IconButton(
                     key: const Key('library_playlists_back_button'),
-                    icon: const Icon(Icons.chevron_left,
-                        color: Colors.white, size: 26),
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                     onPressed: () => context.pop(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -63,17 +65,25 @@ class _LibraryPlaylistsScreenState
                         key: const Key('library_playlists_search_field'),
                         onChanged: (v) => setState(() => _searchQuery = v),
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 14),
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
                         decoration: InputDecoration(
                           hintText:
                               'Search ${state.playlists.length} playlists',
                           hintStyle: TextStyle(
-                              color: Colors.grey[600], fontSize: 14),
-                          prefixIcon: const Icon(Icons.search,
-                              color: Colors.grey, size: 18),
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Colors.grey,
+                            size: 18,
+                          ),
                           border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
                         ),
                       ),
                     ),
@@ -109,19 +119,25 @@ class _LibraryPlaylistsScreenState
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Import not available yet')),
+                            content: Text('Import not available yet'),
+                          ),
                         );
                       },
-                      icon: const Icon(Icons.download_outlined,
-                          size: 18, color: Colors.white),
-                      label: const Text('Import',
-                          style: TextStyle(color: Colors.white)),
+                      icon: const Icon(
+                        Icons.download_outlined,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Import',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white30),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4)),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
@@ -130,16 +146,21 @@ class _LibraryPlaylistsScreenState
                     child: OutlinedButton.icon(
                       key: const Key('library_playlists_create_button'),
                       onPressed: () => _showCreateSheet(context),
-                      icon: const Icon(Icons.add,
-                          size: 18, color: Colors.white),
-                      label: const Text('Create',
-                          style: TextStyle(color: Colors.white)),
+                      icon: const Icon(
+                        Icons.add,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Create',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white30),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4)),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
@@ -151,33 +172,33 @@ class _LibraryPlaylistsScreenState
               child: state.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: Color(0xFFFF5500)))
+                        color: Color(0xFFFF5500),
+                      ),
+                    )
                   : filtered.isEmpty
-                      ? Center(
-                          child: Text(
-                            _searchQuery.isEmpty
-                                ? 'No playlists yet.\nTap Create to make one!'
-                                : 'No results for "$_searchQuery"',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[500]),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) =>
-                              _PlaylistListTile(
-                            key: Key(
-                                'library_playlist_tile_${filtered[index].id}'),
-                            playlist: filtered[index],
-                            // Navigate to detail using GoRouter
-                            onTap: () => context.push(
-                              '/library/playlists/${filtered[index].id}',
-                              extra: true, // isOwner = true for now
-                            ),
-                            onMoreTap: () =>
-                                _showOptions(context, filtered[index].id),
-                          ),
+                  ? Center(
+                      child: Text(
+                        _searchQuery.isEmpty
+                            ? 'No playlists yet.\nTap Create to make one!'
+                            : 'No results for "$_searchQuery"',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[500]),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) => _PlaylistListTile(
+                        key: Key('library_playlist_tile_${filtered[index].id}'),
+                        playlist: filtered[index],
+                        // Navigate to detail using GoRouter
+                        onTap: () => context.push(
+                          '/library/playlists/${filtered[index].id}',
+                          extra: true, // isOwner = true for now
                         ),
+                        onMoreTap: () =>
+                            _showOptions(context, filtered[index].id),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -192,10 +213,7 @@ class _LibraryPlaylistsScreenState
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
         // After creating, navigate to the new playlist's detail page.
-        onCreated: (id) => context.push(
-          '/library/playlists/$id',
-          extra: true,
-        ),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
@@ -205,10 +223,8 @@ class _LibraryPlaylistsScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PlaylistOptionsSheet(
-        playlistId: playlistId,
-        isOwner: true,
-      ),
+      builder: (_) =>
+          PlaylistOptionsSheet(playlistId: playlistId, isOwner: true),
     );
   }
 }
@@ -246,25 +262,27 @@ class _PlaylistListTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500),
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
-                  Text(playlist.ownerName,
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: 13)),
+                  Text(
+                    playlist.ownerName,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                  ),
                   const SizedBox(height: 2),
-                  Text(playlist.subtitleLine,
-                      style: TextStyle(
-                          color: Colors.grey[600], fontSize: 12)),
+                  Text(
+                    playlist.subtitleLine,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                 ],
               ),
             ),
             IconButton(
               key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(Icons.more_vert,
-                  color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],

@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+
 abstract class Failure {
   final String message;
   const Failure(this.message);
@@ -63,7 +64,6 @@ class UnsupportedFileFailure extends Failure {
 /// types to surface the right error message in the UI.
 // ignore: depend_on_referenced_packages
 
-
 // Re-export core failures so feature code only needs one import.
 // The actual Failure base class lives in core/error/failures.dart (M13).
 
@@ -75,38 +75,37 @@ class UnsupportedFileFailure extends Failure {
 
 /// Server returned 404 for a playlist or station.
 class PlaylistNotFoundFailure extends Failure {
-  const PlaylistNotFoundFailure()
-      : super('Playlist not found.');
+  const PlaylistNotFoundFailure() : super('Playlist not found.');
 }
 
 /// Server returned 403 — private playlist, no access token or secret token.
 class PlaylistAccessDeniedFailure extends Failure {
-  const PlaylistAccessDeniedFailure()
-      : super('This playlist is private.');
+  const PlaylistAccessDeniedFailure() : super('This playlist is private.');
 }
 
 /// Server returned 403 — authenticated user is not the playlist owner.
 class PlaylistForbiddenFailure extends Failure {
   const PlaylistForbiddenFailure()
-      : super('You are not allowed to modify this playlist.');
+    : super('You are not allowed to modify this playlist.');
 }
 
 /// Server returned 409 — track already exists in this playlist.
 class TrackAlreadyInPlaylistFailure extends Failure {
   const TrackAlreadyInPlaylistFailure()
-      : super('This track is already in the playlist.');
+    : super('This track is already in the playlist.');
 }
 
 /// Server returned 422 — invalid track position supplied for add/reorder.
 class PlaylistPositionInvalidFailure extends Failure {
-  const PlaylistPositionInvalidFailure()
-      : super('Invalid track position.');
+  const PlaylistPositionInvalidFailure() : super('Invalid track position.');
 }
 
 /// Server returned 422 — playlist count limit reached on free plan.
 class PlaylistLimitReachedFailure extends Failure {
   const PlaylistLimitReachedFailure()
-      : super('Playlist limit reached. Upgrade to Premium for unlimited playlists.');
+    : super(
+        'Playlist limit reached. Upgrade to Premium for unlimited playlists.',
+      );
 }
 
 /// Validation error before making the request — e.g. empty name.
@@ -117,19 +116,18 @@ class PlaylistValidationFailure extends Failure {
 /// Network or server error not covered by a specific code above.
 class PlaylistNetworkFailure extends Failure {
   const PlaylistNetworkFailure()
-      : super('Network error. Check your connection and try again.');
+    : super('Network error. Check your connection and try again.');
 }
 
 /// Generic server-side failure (5xx).
 class PlaylistServerFailure extends Failure {
   const PlaylistServerFailure()
-      : super('Something went wrong on our end. Please try again.');
+    : super('Something went wrong on our end. Please try again.');
 }
 
 /// Station-specific: artist not found or station computation returned empty.
 class StationNotFoundFailure extends Failure {
-  const StationNotFoundFailure()
-      : super('Station not found.');
+  const StationNotFoundFailure() : super('Station not found.');
 }
 
 // ── Re-export Either for convenience ─────────────────────────────────────

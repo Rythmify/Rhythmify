@@ -1,34 +1,14 @@
-// ============================================================
-// PlaylistOptionsSheet
-// ============================================================
-// This is the bottom sheet shown in Image 4 when user taps ···.
-// It shows:
-//   - Playlist preview (cover + title + owner)
-//   - "SEND TO" section with a friend avatar row
-//   - "SHARE" section with SMS, QR code, Copy link, WhatsApp, Snapchat, More
-//   - Action list: Like, Play next, Play last, Copy playlist,
-//     Edit playlist, Make private/public, Delete playlist
+// lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
 //
-// Album and Station use the SAME sheet — only "Edit playlist" label
-// changes to "Edit album" or "Edit station".
-//
-// HOW TO SHOW IT:
-//   showModalBottomSheet(
-//     context: context,
-//     isScrollControlled: true,
-//     backgroundColor: Colors.transparent,
-//     builder: (_) => PlaylistOptionsSheet(
-//       playlistId: 'pl-001',
-//       isOwner: true,
-//     ),
-//   );
-// ============================================================
+// The ··· options sheet (Image 4).
+// Now accepts an [onConverted] callback so that after the user converts
+// from the Edit sheet, the detail screen can navigate to the right section.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
-import '../screens/playlist_detail_screen.dart';
 import 'edit_playlist_sheet.dart';
 import 'playlist_shared_widgets.dart';
 
@@ -37,14 +17,18 @@ class PlaylistOptionsSheet extends ConsumerWidget {
     super.key,
     required this.playlistId,
     this.isOwner = false,
+    this.onConverted,
   });
 
   final String playlistId;
   final bool isOwner;
 
+  /// Called after a conversion with the new type.
+  /// Passed through to [EditPlaylistSheet] so the detail screen can navigate.
+  final void Function(PlaylistType newType)? onConverted;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // We read the detail state to get the playlist info for the preview row.
     final detailState = ref.watch(playlistDetailProvider(playlistId));
     final playlist = detailState.playlist;
     if (playlist == null) return const SizedBox.shrink();
@@ -58,7 +42,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const BottomSheetHandle(),
-          // ── Preview row ──────────────────────────────────────
+          // Preview row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: Row(
@@ -83,10 +67,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                       ),
                       Text(
                         playlist.ownerName,
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
                       ),
                     ],
                   ),
@@ -95,7 +76,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
             ),
           ),
           const Divider(color: Colors.white12, height: 1),
-          // ── SEND TO section ──────────────────────────────────
+          // Share section
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Column(
@@ -111,41 +92,43 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Friend avatars — horizontal scroll
                 SizedBox(
                   height: 72,
-                  child: ListView.builder(
+                  child: ListView(
                     scrollDirection: Axis.horizontal,
-                    itemCount: 1, // replace with real friend list
-                    itemBuilder: (_, __) => Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: Colors.grey[800],
-                            child: const Icon(Icons.person,
-                                color: Colors.grey, size: 26),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'rana ahm...',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 11,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey[800],
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.grey,
+                                size: 26,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              'rana ahm...',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          // ── SHARE section ────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -162,32 +145,32 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _ShareButton(
+                    _ShareBtn(
                       key: const Key('options_share_sms'),
                       icon: Icons.message_outlined,
                       label: 'SMS',
                       onTap: () {},
                     ),
-                    _ShareButton(
+                    _ShareBtn(
                       key: const Key('options_share_qr'),
                       icon: Icons.qr_code,
                       label: 'QR code',
                       onTap: () {},
                     ),
-                    _ShareButton(
-                      key: const Key('options_share_copy_link'),
+                    _ShareBtn(
+                      key: const Key('options_share_copy'),
                       icon: Icons.copy,
                       label: 'Copy link',
                       onTap: () {},
                     ),
-                    _ShareButton(
+                    _ShareBtn(
                       key: const Key('options_share_whatsapp'),
                       icon: Icons.chat_bubble,
                       label: 'WhatsApp',
                       color: Colors.green,
                       onTap: () {},
                     ),
-                    _ShareButton(
+                    _ShareBtn(
                       key: const Key('options_share_more'),
                       icon: Icons.more_horiz,
                       label: 'More',
@@ -199,7 +182,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
             ),
           ),
           const Divider(color: Colors.white12, height: 1),
-          // ── Action list ──────────────────────────────────────
+          // Actions
           OptionSheetTile(
             key: const Key('options_like'),
             icon: Icons.favorite_border,
@@ -219,14 +202,14 @@ class PlaylistOptionsSheet extends ConsumerWidget {
             onTap: () => Navigator.of(context).pop(),
           ),
           OptionSheetTile(
-            key: const Key('options_copy_playlist'),
+            key: const Key('options_copy'),
             icon: Icons.copy_all,
             label: 'Copy ${playlist.typeLabel.toLowerCase()}',
             onTap: () => Navigator.of(context).pop(),
           ),
           if (isOwner) ...[
             OptionSheetTile(
-              key: const Key('options_edit_playlist'),
+              key: const Key('options_edit'),
               icon: Icons.edit_outlined,
               label: 'Edit ${playlist.typeLabel.toLowerCase()}',
               onTap: () {
@@ -237,6 +220,8 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   backgroundColor: Colors.transparent,
                   builder: (_) => EditPlaylistSheet(
                     playlistId: playlistId,
+                    // Pass onConverted through so the detail screen can navigate
+                    onConverted: onConverted,
                   ),
                 );
               },
@@ -248,7 +233,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   ? 'Make ${playlist.typeLabel.toLowerCase()} private'
                   : 'Make ${playlist.typeLabel.toLowerCase()} public',
               onTap: () {
-                ref.read(playlistListProvider.notifier).updatePlaylist(
+                ref
+                    .read(playlistListProvider.notifier)
+                    .updatePlaylist(
                       playlistId: playlistId,
                       name: playlist.name,
                       isPublic: !playlist.isPublic,
@@ -257,13 +244,12 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               },
             ),
             OptionSheetTile(
-              key: const Key('options_delete_playlist'),
+              key: const Key('options_delete'),
               icon: Icons.delete_outline,
               label: 'Delete ${playlist.typeLabel.toLowerCase()}',
               color: Colors.redAccent,
               onTap: () {
                 Navigator.of(context).pop();
-                // Pop the detail screen too then delete.
                 Navigator.of(context).pop();
                 ref
                     .read(playlistListProvider.notifier)
@@ -278,15 +264,14 @@ class PlaylistOptionsSheet extends ConsumerWidget {
   }
 }
 
-class _ShareButton extends StatelessWidget {
-  const _ShareButton({
+class _ShareBtn extends StatelessWidget {
+  const _ShareBtn({
     super.key,
     required this.icon,
     required this.label,
     required this.onTap,
     this.color,
   });
-
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -308,10 +293,7 @@ class _ShareButton extends StatelessWidget {
             child: Icon(icon, color: Colors.white, size: 22),
           ),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey[400], fontSize: 11),
-          ),
+          Text(label, style: TextStyle(color: Colors.grey[400], fontSize: 11)),
         ],
       ),
     );

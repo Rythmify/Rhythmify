@@ -56,10 +56,7 @@ class PlaylistTrack {
     return '$playCount';
   }
 
-  PlaylistTrack copyWith({
-    int? position,
-    bool? isLiked,
-  }) {
+  PlaylistTrack copyWith({int? position, bool? isLiked}) {
     return PlaylistTrack(
       id: id,
       title: title,

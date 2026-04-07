@@ -83,7 +83,7 @@ class LibraryScreen extends ConsumerWidget {
             context,
             label: 'Albums',
             key: const Key('library_albums_item'),
-            onTap: () {},
+            onTap: () => context.push('/library/albums'),
           ),
           _menuItem(
             context,

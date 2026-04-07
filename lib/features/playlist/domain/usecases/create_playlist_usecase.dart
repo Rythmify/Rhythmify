@@ -37,7 +37,9 @@ class CreatePlaylistUseCase {
     }
     if (trimmed.length > 100) {
       return const Left(
-        PlaylistValidationFailure('Playlist name must be 100 characters or fewer.'),
+        PlaylistValidationFailure(
+          'Playlist name must be 100 characters or fewer.',
+        ),
       );
     }
 

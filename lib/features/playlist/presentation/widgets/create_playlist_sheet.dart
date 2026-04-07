@@ -43,8 +43,7 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: 'Untitled playlist');
+    _nameController = TextEditingController(text: 'Untitled playlist');
     // Select all text so user can type immediately.
     _nameController.selection = TextSelection(
       baseOffset: 0,
@@ -62,10 +61,9 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
     // Create via the provider (which calls the mock store).
-    final playlist = ref.read(playlistListProvider.notifier).createPlaylist(
-          name: name,
-          isPublic: _isPublic,
-        );
+    final playlist = ref
+        .read(playlistListProvider.notifier)
+        .createPlaylist(name: name, isPublic: _isPublic);
     Navigator.of(context).pop();
     widget.onCreated?.call(playlist.id);
   }

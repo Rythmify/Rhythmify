@@ -1,13 +1,4 @@
-// ============================================================
-// PLAYLIST PROVIDER — Riverpod 3.x compatible
-// ============================================================
-// Your project has riverpod_generator ^4.0.3 which means
-// flutter_riverpod 3.x. In v3:
-//   - FamilyNotifier is REMOVED
-//   - For family-style providers, the cleanest approach without
-//     the code generator is to store the ID inside the notifier
-//     constructor and create a cached provider per ID.
-// ============================================================
+// lib/features/playlist/presentation/providers/playlist_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,11 +6,10 @@ import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // STATE CLASSES
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 
-/// State for the Library playlists list screen.
 class PlaylistListState {
   const PlaylistListState({
     this.playlists = const [],
@@ -35,15 +25,13 @@ class PlaylistListState {
     List<PlaylistEntity>? playlists,
     bool? isLoading,
     String? error,
-  }) =>
-      PlaylistListState(
-        playlists: playlists ?? this.playlists,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-      );
+  }) => PlaylistListState(
+    playlists: playlists ?? this.playlists,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+  );
 }
 
-/// State for the playlist detail screen.
 class PlaylistDetailState {
   const PlaylistDetailState({
     this.playlist,
@@ -59,7 +47,9 @@ class PlaylistDetailState {
   final bool isLoading;
   final String? error;
 
-  bool get showSuggestions => suggestions.isNotEmpty;
+  // Suggestions only show for playlists, not albums or stations
+  bool get showSuggestions =>
+      suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
 
   PlaylistDetailState copyWith({
     PlaylistEntity? playlist,
@@ -67,25 +57,22 @@ class PlaylistDetailState {
     List<PlaylistTrack>? suggestions,
     bool? isLoading,
     String? error,
-  }) =>
-      PlaylistDetailState(
-        playlist: playlist ?? this.playlist,
-        tracks: tracks ?? this.tracks,
-        suggestions: suggestions ?? this.suggestions,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-      );
+  }) => PlaylistDetailState(
+    playlist: playlist ?? this.playlist,
+    tracks: tracks ?? this.tracks,
+    suggestions: suggestions ?? this.suggestions,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+  );
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // NOTIFIERS
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 
-/// Manages the list of playlists shown in Library.
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
   PlaylistListState build() {
-    // Load playlists immediately when first created.
     final playlists = PlaylistMockData.instance.getMyPlaylists();
     return PlaylistListState(playlists: playlists);
   }
@@ -120,6 +107,14 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     loadPlaylists();
   }
 
+  void updateCoverImage({
+    required String playlistId,
+    required String localPath,
+  }) {
+    _db.updateCoverImage(playlistId: playlistId, localPath: localPath);
+    loadPlaylists();
+  }
+
   void deletePlaylist(String playlistId) {
     _db.delete(playlistId);
     loadPlaylists();
@@ -130,14 +125,31 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     loadPlaylists();
     return station;
   }
+
+  // ── Convert operations ─────────────────────────────────────────────────────
+
+  /// Converts a playlist → album. After converting, navigate to albums section.
+  PlaylistEntity convertToAlbum(String playlistId) {
+    final updated = _db.convertToAlbum(playlistId);
+    loadPlaylists();
+    return updated;
+  }
+
+  /// Converts a playlist → station. After converting, navigate to stations section.
+  PlaylistEntity convertToStation(String playlistId) {
+    final updated = _db.convertToStation(playlistId);
+    loadPlaylists();
+    return updated;
+  }
+
+  /// Converts album/station → playlist.
+  PlaylistEntity convertToPlaylist(String playlistId) {
+    final updated = _db.convertToPlaylist(playlistId);
+    loadPlaylists();
+    return updated;
+  }
 }
 
-/// Manages one playlist's detail page.
-///
-/// Riverpod 3.x dropped FamilyNotifier. The workaround is to pass
-/// the playlist ID through the constructor, then use the cached
-/// provider function [playlistDetailProvider] below instead of
-/// a .family provider.
 class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   PlaylistDetailNotifier(this._playlistId);
 
@@ -161,8 +173,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
   void addSuggestion(PlaylistTrack track) {
     _db.addTrack(playlistId: _playlistId, track: track);
-    final updatedSuggestions =
-        state.suggestions.where((s) => s.id != track.id).toList();
+    final updatedSuggestions = state.suggestions
+        .where((s) => s.id != track.id)
+        .toList();
     state = state.copyWith(
       playlist: _db.getById(_playlistId),
       tracks: _db.getTracksFor(_playlistId),
@@ -187,32 +200,20 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // PROVIDERS
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 
-/// The list of playlists. Used by Library playlists screen.
-///
-/// Usage in a widget:
-///   final state = ref.watch(playlistListProvider);
-///   ref.read(playlistListProvider.notifier).createPlaylist(...);
 final playlistListProvider =
     NotifierProvider<PlaylistListNotifier, PlaylistListState>(
-  PlaylistListNotifier.new,
-);
+      PlaylistListNotifier.new,
+    );
 
-/// Cache so the same playlist ID always gets the same provider instance.
-/// Without this, watching the same ID twice would create two notifiers.
 final _detailProviderCache =
     <String, NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>>{};
 
-/// Returns the detail provider for a given playlist ID.
-///
-/// Usage in a widget:
-///   final state = ref.watch(playlistDetailProvider('pl-001'));
-///   ref.read(playlistDetailProvider('pl-001').notifier).addSuggestion(track);
 NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>
-    playlistDetailProvider(String playlistId) {
+playlistDetailProvider(String playlistId) {
   return _detailProviderCache.putIfAbsent(
     playlistId,
     () => NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(

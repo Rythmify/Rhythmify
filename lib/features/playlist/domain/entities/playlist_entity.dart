@@ -1,18 +1,6 @@
-// ============================================================
-// PlaylistEntity
-// ============================================================
-// This is the data shape for a playlist (or album or station).
-// It holds all the info you need to display a playlist card or
-// the detail page. No HTTP, no Flutter, just pure Dart.
-// ============================================================
+// lib/features/playlist/domain/entities/playlist_entity.dart
 
-/// Tells the UI what "kind" of collection this is.
-/// The UI uses this to show different labels and minor UI tweaks.
-enum PlaylistType {
-  playlist, // Regular user-created playlist
-  album,    // Artist album (same UI, different label)
-  station,  // Auto-generated radio based on a track/artist
-}
+enum PlaylistType { playlist, album, station }
 
 class PlaylistEntity {
   const PlaylistEntity({
@@ -30,9 +18,9 @@ class PlaylistEntity {
     this.likeCount = 0,
     this.repostCount = 0,
     this.isLiked = false,
-    // Station-only fields
     this.seedTrackTitle,
     this.seedArtistName,
+    this.releaseYear, // NEW — used by albums: shows "2026 · Album" in header
   });
 
   final String id;
@@ -49,14 +37,12 @@ class PlaylistEntity {
   final int likeCount;
   final int repostCount;
   final bool isLiked;
-
-  // Only set when type == PlaylistType.station
   final String? seedTrackTitle;
   final String? seedArtistName;
+  final String? releaseYear; // NEW
 
-  // ── Helper getters ──────────────────────────────────────────
+  // ── Label helpers ──────────────────────────────────────────────────────────
 
-  /// The label shown in the UI: "Playlist", "Album", or "Station"
   String get typeLabel {
     switch (type) {
       case PlaylistType.playlist:
@@ -68,8 +54,6 @@ class PlaylistEntity {
     }
   }
 
-  /// Formats the total duration like SoundCloud does:
-  /// under 1 hour → "9:25", over 1 hour → "11:04:23"
   String get formattedDuration {
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
@@ -80,15 +64,29 @@ class PlaylistEntity {
     return '$mm:$ss';
   }
 
-  /// The subtitle line you see under the name in Image 6:
-  /// "Playlist · 3 tracks · 9:25"
+  /// Used in the Library list tile: "Playlist · 3 tracks · 9:25"
   String get subtitleLine =>
       '$typeLabel · $trackCount ${trackCount == 1 ? 'track' : 'tracks'} · $formattedDuration';
 
-  // ── copyWith ─────────────────────────────────────────────────
-  // Returns a new PlaylistEntity with some fields changed.
-  // We use this instead of mutating, because Flutter state works
-  // better with immutable objects.
+  /// NEW — used in the detail screen header. Each type shows differently:
+  ///
+  /// Playlist → "Playlist · 3 tracks · 9:25"
+  /// Album    → "2026 · Album"
+  /// Station  → "Artist Station · 2:27:08 · 50 tracks"
+  String get detailSubtitle {
+    switch (type) {
+      case PlaylistType.album:
+        final year = releaseYear ?? createdAt.year.toString();
+        return '$year · Album';
+      case PlaylistType.station:
+        return 'Artist Station · $formattedDuration · $trackCount tracks';
+      case PlaylistType.playlist:
+        return subtitleLine;
+    }
+  }
+
+  // ── copyWith ───────────────────────────────────────────────────────────────
+
   PlaylistEntity copyWith({
     String? name,
     bool? isPublic,
@@ -97,6 +95,9 @@ class PlaylistEntity {
     int? trackCount,
     Duration? totalDuration,
     bool? isLiked,
+    PlaylistType? type, // NEW — needed for convert operations
+    String? seedArtistName, // NEW — needed for convert to station
+    String? releaseYear, // NEW — needed for convert to album
     bool clearCover = false,
   }) {
     return PlaylistEntity(
@@ -105,7 +106,7 @@ class PlaylistEntity {
       ownerName: ownerName,
       ownerId: ownerId,
       isPublic: isPublic ?? this.isPublic,
-      type: type,
+      type: type ?? this.type,
       trackCount: trackCount ?? this.trackCount,
       totalDuration: totalDuration ?? this.totalDuration,
       createdAt: createdAt,
@@ -115,7 +116,8 @@ class PlaylistEntity {
       repostCount: repostCount,
       isLiked: isLiked ?? this.isLiked,
       seedTrackTitle: seedTrackTitle,
-      seedArtistName: seedArtistName,
+      seedArtistName: seedArtistName ?? this.seedArtistName,
+      releaseYear: releaseYear ?? this.releaseYear,
     );
   }
 }

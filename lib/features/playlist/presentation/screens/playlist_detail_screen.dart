@@ -26,7 +26,8 @@ class PlaylistDetailScreen extends ConsumerWidget {
       return const Scaffold(
         backgroundColor: Color(0xFF111111),
         body: Center(
-            child: CircularProgressIndicator(color: Color(0xFFFF5500))),
+          child: CircularProgressIndicator(color: Color(0xFFFF5500)),
+        ),
       );
     }
 
@@ -34,8 +35,10 @@ class PlaylistDetailScreen extends ConsumerWidget {
       return const Scaffold(
         backgroundColor: Color(0xFF111111),
         body: Center(
-          child: Text('Playlist not found',
-              style: TextStyle(color: Colors.white)),
+          child: Text(
+            'Playlist not found',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       );
     }
@@ -55,12 +58,18 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   // Back button — uses GoRouter
                   IconButton(
                     key: const Key('playlist_detail_back_button'),
-                    icon: const Icon(Icons.chevron_left,
-                        color: Colors.white, size: 28),
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                     onPressed: () => context.pop(),
                   ),
                   PlaylistCoverImage(
-                      playlist: playlist, size: 56, borderRadius: 4),
+                    playlist: playlist,
+                    size: 56,
+                    borderRadius: 4,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -71,25 +80,37 @@ class PlaylistDetailScreen extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700),
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 2),
-                        Text(playlist.subtitleLine,
-                            style: TextStyle(
-                                color: Colors.grey[500], fontSize: 12)),
+                        Text(
+                          playlist.subtitleLine,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Text('By ',
-                                style: TextStyle(
-                                    color: Colors.grey[500], fontSize: 12)),
-                            Text(playlist.ownerName,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600)),
+                            Text(
+                              'By ',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              playlist.ownerName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -106,9 +127,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
-                      playlist.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
+                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
                       color: playlist.isLiked
                           ? const Color(0xFFFF5500)
                           : Colors.white,
@@ -118,8 +137,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
-                    icon: const Icon(Icons.more_horiz,
-                        color: Colors.white, size: 24),
+                    icon: const Icon(
+                      Icons.more_horiz,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
@@ -135,8 +157,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   const Spacer(),
                   IconButton(
                     key: const Key('playlist_detail_shuffle_button'),
-                    icon: const Icon(Icons.shuffle,
-                        color: Colors.white60, size: 24),
+                    icon: const Icon(
+                      Icons.shuffle,
+                      color: Colors.white60,
+                      size: 24,
+                    ),
                     onPressed: () {},
                   ),
                   GestureDetector(
@@ -149,8 +174,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         color: Color(0xFF3A3A3A),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.play_arrow,
-                          color: Colors.white, size: 28),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ],
@@ -192,12 +220,16 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         onTap: () {},
                         trailingWidget: IconButton(
                           key: Key('add_suggestion_${suggestion.id}'),
-                          icon: const Icon(Icons.add_box_outlined,
-                              color: Colors.white70, size: 26),
+                          icon: const Icon(
+                            Icons.add_box_outlined,
+                            color: Colors.white70,
+                            size: 26,
+                          ),
                           onPressed: () {
                             ref
-                                .read(playlistDetailProvider(playlistId)
-                                    .notifier)
+                                .read(
+                                  playlistDetailProvider(playlistId).notifier,
+                                )
                                 .addSuggestion(suggestion);
                           },
                         ),
@@ -211,16 +243,18 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         child: ElevatedButton(
                           key: const Key('refresh_suggestions_button'),
                           onPressed: () => ref
-                              .read(playlistDetailProvider(playlistId)
-                                  .notifier)
+                              .read(playlistDetailProvider(playlistId).notifier)
                               .refreshSuggestions(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2A2A2A),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4)),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                          child: const Text('Refresh suggestions',
-                              style: TextStyle(color: Colors.white)),
+                          child: const Text(
+                            'Refresh suggestions',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ),

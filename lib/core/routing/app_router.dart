@@ -44,8 +44,6 @@ import '../../features/messaging/presentation/pages/search_screen.dart'
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 
 // ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
-// REMOVED: playlist_screen.dart (doesn't exist — caused error 1)
-// ADDED: our two real screens
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 
@@ -55,13 +53,11 @@ import '../../features/settings/presentation/pages/settings_screen.dart';
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
 import '../../features/library/presentation/pages/following_page.dart';
-// playlists_page.dart now re-exports LibraryPlaylistsScreen — kept for
-// any other code that might reference it, but we import directly above.
 import '../../features/library/presentation/pages/uploads_page.dart';
 import '../../features/library/presentation/pages/stations_page.dart';
+import '../../features/library/presentation/pages/albums_page.dart'; // NEW
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
-// REMOVED: playlists_detail_screen.dart import — we use PlaylistDetailScreen directly
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -118,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
 
-      // ── Auth routes ────────────────────────────────────────────────────────
+      // ── Auth routes ──────────────────────────────────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
@@ -155,7 +151,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ─────────────────────────────────────────────────────
+      // ── Profile routes ───────────────────────────────────────────────────
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
@@ -180,7 +176,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
-          // ── Home tab ─────────────────────────────────────────────────────
+          // ── Home tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -245,7 +241,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Feed tab ─────────────────────────────────────────────────────
+          // ── Feed tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
@@ -266,7 +262,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Search tab ───────────────────────────────────────────────────
+          // ── Search tab ─────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _searchTabKey,
             routes: [
@@ -286,7 +282,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Library tab ──────────────────────────────────────────────────
+          // ── Library tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _libraryTabKey,
             routes: [
@@ -310,29 +306,51 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const FollowingPage(),
                   ),
 
-                  // ── Playlists list ────────────────────────────────────────
+                  // ── Playlists ──────────────────────────────────────────
                   GoRoute(
                     path: 'playlists',
-                    builder: (context, state) =>
-                        const LibraryPlaylistsScreen(),
+                    builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-
-                  // ── Playlist detail ───────────────────────────────────────
-                  // Navigated to from LibraryPlaylistsScreen when user taps
-                  // a playlist row or after creating a new playlist.
-                  //
-                  // HOW TO NAVIGATE HERE from any widget:
-                  //   context.push(
-                  //     '/library/playlists/pl-001',
-                  //     extra: true,  // true = isOwner
-                  //   );
                   GoRoute(
                     path: 'playlists/:playlistId',
                     builder: (context, state) {
-                      final playlistId =
-                          state.pathParameters['playlistId']!;
-                      // extra is a bool — true if the logged-in user owns
-                      // this playlist. Defaults to false for safety.
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Albums ─────────────────────────────────────────────
+                  // AlbumsPage re-exports LibraryAlbumsScreen
+                  GoRoute(
+                    path: 'albums',
+                    builder: (context, state) => const LibraryAlbumsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'albums/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Stations ───────────────────────────────────────────
+                  // StationsPage re-exports LibraryStationsScreen
+                  GoRoute(
+                    path: 'stations',
+                    builder: (context, state) => const LibraryStationsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'stations/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -344,10 +362,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
-                  ),
-                  GoRoute(
-                    path: 'stations',
-                    builder: (context, state) => const StationsPage(),
                   ),
                   GoRoute(
                     path: 'history',
@@ -362,7 +376,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Upgrade tab ──────────────────────────────────────────────────
+          // ── Upgrade tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _upgradeTabKey,
             routes: [
@@ -404,18 +418,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const UploadTrackScreen(),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) {
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             );
           },
