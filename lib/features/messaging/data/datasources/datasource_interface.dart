@@ -63,6 +63,8 @@ abstract class DatasourceInterface {
   Future<SharedEmbedModel> getTrackDetails(String trackId);
 
   /// Retrieves the details of a specific track by its [playlistId].
-  Future<SharedEmbedModel> getPlaylistDetails(String playlistId, String embedType);
-
+  Future<SharedEmbedModel> getPlaylistDetails(
+    String playlistId,
+    String embedType,
+  );
 }

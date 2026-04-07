@@ -49,7 +49,6 @@ class ApiEndPoints {
   static String getTrackDetails(String trackId) => '/tracks/$trackId';
 
   /// Returns the endpoint to retrieve the details of a certain playlist using the [playlistId]
-  static String getPlaylistDetails(String playlistId) => '/playlists/$playlistId';
-
-
+  static String getPlaylistDetails(String playlistId) =>
+      '/playlists/$playlistId';
 }

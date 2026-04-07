@@ -74,16 +74,13 @@ class DatasourceImplement implements DatasourceInterface {
     String? trackId,
     String? playlistId,
   }) async {
-
-    final data=<String, dynamic>{'recipient_id': participantId};
+    final data = <String, dynamic>{'recipient_id': participantId};
     if (body != null) data['body'] = body;
     if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
-    if (playlistId != null) data['resource'] = {'type': 'playlist', 'id': playlistId};
+    if (playlistId != null)
+      data['resource'] = {'type': 'playlist', 'id': playlistId};
 
-    final response = await dio.post(
-      ApiEndPoints.newConversation,
-      data: data
-    );
+    final response = await dio.post(ApiEndPoints.newConversation, data: data);
 
     final responseData = response.data['data'];
     if (responseData.containsKey('conversation')) {
@@ -148,9 +145,7 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<bool> isBlocked(String participantId) async {
-    final response = await dio.get(
-      ApiEndPoints.isBlocked(participantId),
-    );
+    final response = await dio.get(ApiEndPoints.isBlocked(participantId));
 
     if (response.data is! Map<String, dynamic>) {
       throw Exception(
@@ -186,8 +181,8 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<SharedEmbedModel> getTrackDetails(String trackId) async{
-    final response=await dio.get(ApiEndPoints.getTrackDetails(trackId));
+  Future<SharedEmbedModel> getTrackDetails(String trackId) async {
+    final response = await dio.get(ApiEndPoints.getTrackDetails(trackId));
     final data = response.data['data'];
     return SharedEmbedModel(
       embedId: data['id'],
@@ -199,8 +194,12 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<SharedEmbedModel> getPlaylistDetails(String playlistId,String embedType) async{ //can give me playlists and albums
-    final response=await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
+  Future<SharedEmbedModel> getPlaylistDetails(
+    String playlistId,
+    String embedType,
+  ) async {
+    //can give me playlists and albums
+    final response = await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
     final data = response.data['data'];
     return SharedEmbedModel(
       embedId: data['playlist_id'],

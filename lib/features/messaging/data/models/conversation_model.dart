@@ -25,14 +25,15 @@ class ConversationModel extends Conversation {
       participantId: participant['id'] ?? '',
       participantName: participant['display_name'] ?? 'Unknown',
       participantAvatar: participant['profile_picture'],
-      lastMessagePreview: lastMessage['body'] ?? 
-          (lastMessage['embed_type'] == 'track' 
-            ? 'https://rythmify.com/tracks/${lastMessage['embed_id']}' 
-            : lastMessage['embed_type'] == 'playlist'
-              ? 'https://rythmify.com/playlists/${lastMessage['embed_id']}' 
+      lastMessagePreview:
+          lastMessage['body'] ??
+          (lastMessage['embed_type'] == 'track'
+              ? 'https://rythmify.com/tracks/${lastMessage['embed_id']}'
+              : lastMessage['embed_type'] == 'playlist'
+              ? 'https://rythmify.com/playlists/${lastMessage['embed_id']}'
               : lastMessage['embed_type'] == 'album'
-                ?'https://rythmify.com/playlists/${lastMessage['embed_id']}'
-              :''),
+              ? 'https://rythmify.com/playlists/${lastMessage['embed_id']}'
+              : ''),
       lastMessageDate: lastMessage['created_at'] != null
           ? DateTime.tryParse(lastMessage['created_at']) ?? DateTime.now()
           : DateTime.now(),

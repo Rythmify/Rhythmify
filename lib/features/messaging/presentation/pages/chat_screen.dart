@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +27,6 @@ class ChatScreen extends ConsumerStatefulWidget {
   final Conversation? conv;
   final String? newParticipantName;
   final String? newParticipantId;
-  
 
   const ChatScreen({
     super.key,
@@ -43,7 +41,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
-  final List<SharedEmbed> _selectedEmbeds=[];
+  final List<SharedEmbed> _selectedEmbeds = [];
 
   @override
   void initState() {
@@ -71,12 +69,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    final isBlockedAsync = ref.watch(isBlockedProvider(widget.conv?.participantId ?? widget.newParticipantId!));
+    final isBlockedAsync = ref.watch(
+      isBlockedProvider(widget.conv?.participantId ?? widget.newParticipantId!),
+    );
     final bool isBlocked = isBlockedAsync.value ?? false;
 
-    final isBlockedByAsync = ref.watch(isBlockedByProvider(widget.conv?.participantId ?? widget.newParticipantId!));
+    final isBlockedByAsync = ref.watch(
+      isBlockedByProvider(
+        widget.conv?.participantId ?? widget.newParticipantId!,
+      ),
+    );
     final bool isBlockedBy = isBlockedByAsync.value ?? false;
-
 
     return Scaffold(
       key: const Key('chat_screen_scaffold'),
@@ -91,22 +94,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            onPressed: (){
+            onPressed: () {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
                 useSafeArea: true,
-                builder: (_) => 
-                  PopUpMenuWidget(
-                    participantId: widget.conv?.participantId ?? widget.newParticipantId!,
-                    parentContext: context
-                  ),
+                builder: (_) => PopUpMenuWidget(
+                  participantId:
+                      widget.conv?.participantId ?? widget.newParticipantId!,
+                  parentContext: context,
+                ),
                 backgroundColor: const Color(0xFF121212),
               );
             },
-            icon: const Icon( Icons.more_vert, color: Colors.white)
-          )
-        ]
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+          ),
+        ],
       ),
       body: widget.conv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
@@ -155,9 +158,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ...group.asMap().entries.map((entry) {
                                   final index = entry.key;
                                   final message = entry.value;
-                                  final radius = _getBubbleRadius(isMe, index, group.length,message.embedType);
+                                  final radius = _getBubbleRadius(
+                                    isMe,
+                                    index,
+                                    group.length,
+                                    message.embedType,
+                                  );
 
                                   return MessageBubble(
+                                    key: Key(
+                                      'chat_screen_message_bubble_${message.messageId}',
+                                    ),
                                     myId: myId,
                                     senderId: message.senderId,
                                     userAvatar: index == group.length - 1
@@ -177,7 +188,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   ),
                                   child: Text(
                                     _fixTime(group.last.createdAt),
-                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -186,69 +200,142 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         },
                       ),
                     ),
-                    isBlocked ? BlockedUserWidget(participantId: widget.conv?.participantId ?? widget.newParticipantId!)
-                      :isBlockedBy ? const BlockedByWidget()
-                        :Column(
-                         mainAxisSize: MainAxisSize.min,
-                          children:[
-                            SelectedEmbedsPreviewWidget(
-                              selectedEmbeds: _selectedEmbeds, 
-                              onRemove:(index)=> setState((){
-                                final removedPermalink='https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
-                                controller.text = controller.text.replaceAll(removedPermalink, '').trim();
-                                _selectedEmbeds.removeAt(index);
-                                })
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: 16,
-                                right: 16,
-                                top: 8,
-                                bottom: isKeyboardOpen ? 10 : 80, // 85 (NavBar) + 16
+                    isBlocked
+                        ? BlockedUserWidget(
+                            key: const Key('chat_screen_blocked_user_widget'),
+                            participantId:
+                                widget.conv?.participantId ??
+                                widget.newParticipantId!,
+                          )
+                        : isBlockedBy
+                        ? const BlockedByWidget(
+                            key: Key('chat_screen_blocked_by_widget'),
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SelectedEmbedsPreviewWidget(
+                                key: const Key(
+                                  'chat_screen_selected_embeds_preview',
+                                ),
+                                selectedEmbeds: _selectedEmbeds,
+                                onRemove: (index) => setState(() {
+                                  final removedPermalink =
+                                      'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
+                                  controller.text = controller.text
+                                      .replaceAll(removedPermalink, '')
+                                      .trim();
+                                  _selectedEmbeds.removeAt(index);
+                                }),
                               ),
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      final embeds=await context.push<List<SharedEmbed>>('/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists');
-                                      if (embeds != null && embeds.isNotEmpty) {
-                                        setState(() {
-                                          _selectedEmbeds.addAll(embeds);
-                                          final addedPermalinks=_buildPermalinks(embeds);
-                                          final existing=controller.text;
-                                          controller.text=existing.isEmpty?addedPermalinks:'$existing\n$addedPermalinks';
-                                          controller.selection=TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-                                      });
-                                      }
-                                    },
-                                    icon: const Icon(Icons.add_outlined, color: Colors.white),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: MessageInputBubble(
-                                      controller: controller,
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  top: 8,
+                                  bottom: isKeyboardOpen
+                                      ? 10
+                                      : 80, // 85 (NavBar) + 16
+                                ),
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      key: const Key(
+                                        'chat_screen_add_embed_button',
+                                      ),
+                                      onPressed: () async {
+                                        final embeds = await context
+                                            .push<List<SharedEmbed>>(
+                                              '/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists',
+                                            );
+                                        if (embeds != null &&
+                                            embeds.isNotEmpty) {
+                                          setState(() {
+                                            _selectedEmbeds.addAll(embeds);
+                                            final addedPermalinks =
+                                                _buildPermalinks(embeds);
+                                            final existing = controller.text;
+                                            controller.text = existing.isEmpty
+                                                ? addedPermalinks
+                                                : '$existing\n$addedPermalinks';
+                                            controller.selection =
+                                                TextSelection.fromPosition(
+                                                  TextPosition(
+                                                    offset:
+                                                        controller.text.length,
+                                                  ),
+                                                );
+                                          });
+                                        }
+                                      },
+                                      icon: const Icon(
+                                        Icons.add_outlined,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                  ValueListenableBuilder<TextEditingValue>(
-                                    valueListenable: controller,
-                                    builder: (context,value,child){
-                                      if(value.text.isEmpty) return const SizedBox.shrink();
-                                      return IconButton(
-                                        onPressed: () async {await _sendInExistingConv(); },
-                                        icon: const Icon(Icons.send,color: Colors.white)
-                                      );
-                                    }
-                                  )
-                                ],
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: MessageInputBubble(
+                                        key: const Key(
+                                          'chat_screen_message_input',
+                                        ),
+                                        controller: controller,
+                                      ),
+                                    ),
+                                    ValueListenableBuilder<TextEditingValue>(
+                                      valueListenable: controller,
+                                      builder: (context, value, child) {
+                                        if (value.text.isEmpty)
+                                          return const SizedBox.shrink();
+                                        return IconButton(
+                                          key: const Key(
+                                            'chat_screen_send_button',
+                                          ),
+                                          onPressed: () async {
+                                            await _sendInExistingConv();
+                                          },
+                                          icon: const Icon(
+                                            Icons.send,
+                                            color: Colors.white,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                  ])
+                            ],
+                          ),
                   ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) =>
-                  Center(child: Text(error.toString())),
+              error: (error, stackTrace) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.white54,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Failed to load messages',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextButton(
+                      onPressed: () => ref.invalidate(
+                        messageProvider(widget.conv!.conversationId),
+                      ),
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
     );
   }
@@ -259,172 +346,205 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Column(
       children: [
         Expanded(child: const SizedBox()),
-        isBlocked? BlockedUserWidget(participantId: widget.newParticipantId!)
-        : isBlockedBy? const BlockedByWidget()
-        : Column(
-          mainAxisSize: MainAxisSize.min,
-          children:[
-            SelectedEmbedsPreviewWidget(
-              selectedEmbeds: _selectedEmbeds, 
-              onRemove:(index)=> setState((){
-                final removedPermalink='https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
-                controller.text = controller.text.replaceAll(removedPermalink, '').trim();
-                _selectedEmbeds.removeAt(index);
-                })
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 8,
-                bottom: isKeyboardOpen ? 16 : 101, // 85 (NavBar) + 16
-              ),
-              child: Row(
+        isBlocked
+            ? BlockedUserWidget(
+                key: const Key('chat_screen_blocked_user_widget'),
+                participantId: widget.newParticipantId!,
+              )
+            : isBlockedBy
+            ? const BlockedByWidget(key: Key('chat_screen_blocked_by_widget'))
+            : Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    onPressed: () async {
-                      final embeds=await context.push<List<SharedEmbed>>('/home/inbox/chat/new/likes-playlists');
-                      if (embeds != null && embeds.isNotEmpty) {
-                        setState(() {
-                          _selectedEmbeds.addAll(embeds);
-                          final addedPermalinks=_buildPermalinks(embeds);
-                          final existing=controller.text;
-                          controller.text=existing.isEmpty?addedPermalinks:'$existing\n$addedPermalinks';
-                          controller.selection=TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-                      });
-                      }
-                    },
-                    icon: const Icon(Icons.add_outlined, color: Colors.white),
+                  SelectedEmbedsPreviewWidget(
+                    key: const Key('chat_screen_selected_embeds_preview'),
+                    selectedEmbeds: _selectedEmbeds,
+                    onRemove: (index) => setState(() {
+                      final removedPermalink =
+                          'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
+                      controller.text = controller.text
+                          .replaceAll(removedPermalink, '')
+                          .trim();
+                      _selectedEmbeds.removeAt(index);
+                    }),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: MessageInputBubble(
-                      controller: controller,
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 8,
+                      bottom: isKeyboardOpen ? 16 : 101, // 85 (NavBar) + 16
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          key: const Key('chat_screen_add_embed_button'),
+                          onPressed: () async {
+                            final embeds = await context
+                                .push<List<SharedEmbed>>(
+                                  '/home/inbox/chat/new/likes-playlists',
+                                );
+                            if (embeds != null && embeds.isNotEmpty) {
+                              setState(() {
+                                _selectedEmbeds.addAll(embeds);
+                                final addedPermalinks = _buildPermalinks(
+                                  embeds,
+                                );
+                                final existing = controller.text;
+                                controller.text = existing.isEmpty
+                                    ? addedPermalinks
+                                    : '$existing\n$addedPermalinks';
+                                controller
+                                    .selection = TextSelection.fromPosition(
+                                  TextPosition(offset: controller.text.length),
+                                );
+                              });
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.add_outlined,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: MessageInputBubble(
+                            key: const Key('chat_screen_message_input'),
+                            controller: controller,
+                          ),
+                        ),
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: controller,
+                          builder: (context, value, child) {
+                            if (value.text.isEmpty)
+                              return const SizedBox.shrink();
+                            return IconButton(
+                              key: const Key('chat_screen_send_button'),
+                              onPressed: () async {
+                                await _sendInNewConv();
+                              },
+                              icon: const Icon(Icons.send, color: Colors.white),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  ValueListenableBuilder<TextEditingValue>(
-                    valueListenable: controller,
-                    builder: (context,value,child){
-                      if(value.text.isEmpty) return const SizedBox.shrink();
-                      return IconButton(
-                        onPressed: () async {await _sendInNewConv(); },
-                        icon: const Icon(Icons.send,color: Colors.white)
-                      );
-                    }
-                  )
                 ],
               ),
-            ),])
       ],
     );
   }
 
-  List<List<dynamic>> _groupMessages(List<dynamic> messages){
-  final groups=<List<dynamic>>[];
-  if (messages.isEmpty) return groups;
+  List<List<dynamic>> _groupMessages(List<dynamic> messages) {
+    final groups = <List<dynamic>>[];
+    if (messages.isEmpty) return groups;
 
-  List<dynamic> currentGroup = [messages.first];
+    List<dynamic> currentGroup = [messages.first];
 
-  for (int i = 1; i < messages.length; i++) {
-    final prev = messages[i - 1];
-    final curr = messages[i];
+    for (int i = 1; i < messages.length; i++) {
+      final prev = messages[i - 1];
+      final curr = messages[i];
 
-    final sameSender = curr.senderId == prev.senderId;
-    final closeInTime = curr.createdAt
-        .difference(prev.createdAt)
-        .inSeconds
-        .abs() <= 10;
+      final sameSender = curr.senderId == prev.senderId;
+      final closeInTime =
+          curr.createdAt.difference(prev.createdAt).inSeconds.abs() <= 10;
 
-    if (sameSender && closeInTime) {
-      currentGroup.add(curr);
-    } else {
-      groups.add(currentGroup);
-      currentGroup = [curr];
+      if (sameSender && closeInTime) {
+        currentGroup.add(curr);
+      } else {
+        groups.add(currentGroup);
+        currentGroup = [curr];
+      }
     }
+
+    groups.add(currentGroup);
+    return groups;
   }
 
-  groups.add(currentGroup);
-  return groups;
-}
+  BorderRadius _getBubbleRadius(
+    bool isMe,
+    int index,
+    int total,
+    String? embedType,
+  ) {
+    const double rounded = 18;
+    const double sharp = 4;
 
-BorderRadius _getBubbleRadius(bool isMe, int index, int total, String? embedType) {
-  const double rounded = 18;
-  const double sharp = 4;
+    // playlist/album — rectangular with rounded top on first, rounded bottom on last
+    if (embedType == 'playlist' || embedType == 'album') {
+      if (total == 1) return BorderRadius.circular(rounded);
+      if (index == 0) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(rounded),
+          topRight: Radius.circular(rounded),
+          bottomLeft: Radius.circular(sharp),
+          bottomRight: Radius.circular(sharp),
+        );
+      } else if (index == total - 1) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(sharp),
+          topRight: Radius.circular(sharp),
+          bottomLeft: Radius.circular(rounded),
+          bottomRight: Radius.circular(rounded),
+        );
+      } else {
+        return BorderRadius.zero;
+      }
+    }
 
-  // playlist/album — rectangular with rounded top on first, rounded bottom on last
-  if (embedType == 'playlist' || embedType == 'album') {
     if (total == 1) return BorderRadius.circular(rounded);
-    if (index == 0) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(rounded),
-        topRight: Radius.circular(rounded),
-        bottomLeft: Radius.circular(sharp),
-        bottomRight: Radius.circular(sharp),
-      );
-    } else if (index == total - 1) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(sharp),
-        topRight: Radius.circular(sharp),
-        bottomLeft: Radius.circular(rounded),
-        bottomRight: Radius.circular(rounded),
-      );
+
+    if (isMe) {
+      if (index == 0) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(rounded),
+          topRight: Radius.circular(rounded),
+          bottomLeft: Radius.circular(rounded),
+          bottomRight: Radius.circular(sharp),
+        );
+      } else if (index == total - 1) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(rounded),
+          topRight: Radius.circular(sharp),
+          bottomLeft: Radius.circular(rounded),
+          bottomRight: Radius.circular(rounded),
+        );
+      } else {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(rounded),
+          topRight: Radius.circular(sharp),
+          bottomLeft: Radius.circular(rounded),
+          bottomRight: Radius.circular(sharp),
+        );
+      }
     } else {
-      return BorderRadius.zero;
+      if (index == 0) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(rounded),
+          topRight: Radius.circular(rounded),
+          bottomLeft: Radius.circular(sharp),
+          bottomRight: Radius.circular(rounded),
+        );
+      } else if (index == total - 1) {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(sharp),
+          topRight: Radius.circular(rounded),
+          bottomLeft: Radius.circular(rounded),
+          bottomRight: Radius.circular(rounded),
+        );
+      } else {
+        return const BorderRadius.only(
+          topLeft: Radius.circular(sharp),
+          topRight: Radius.circular(rounded),
+          bottomLeft: Radius.circular(sharp),
+          bottomRight: Radius.circular(rounded),
+        );
+      }
     }
   }
 
-  if (total == 1) return BorderRadius.circular(rounded);
-
-  if (isMe) {
-    if (index == 0) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(rounded),
-        topRight: Radius.circular(rounded),
-        bottomLeft: Radius.circular(rounded),
-        bottomRight: Radius.circular(sharp),
-      );
-    } else if (index == total - 1) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(rounded),
-        topRight: Radius.circular(sharp),
-        bottomLeft: Radius.circular(rounded),
-        bottomRight: Radius.circular(rounded),
-      );
-    } else {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(rounded),
-        topRight: Radius.circular(sharp),
-        bottomLeft: Radius.circular(rounded),
-        bottomRight: Radius.circular(sharp),
-      );
-    }
-  } else {
-    if (index == 0) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(rounded),
-        topRight: Radius.circular(rounded),
-        bottomLeft: Radius.circular(sharp),
-        bottomRight: Radius.circular(rounded),
-      );
-    } else if (index == total - 1) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(sharp),
-        topRight: Radius.circular(rounded),
-        bottomLeft: Radius.circular(rounded),
-        bottomRight: Radius.circular(rounded),
-      );
-    } else {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(sharp),
-        topRight: Radius.circular(rounded),
-        bottomLeft: Radius.circular(sharp),
-        bottomRight: Radius.circular(rounded),
-      );
-    }
-  }
-}
-
-String _fixTime(DateTime date) {
+  String _fixTime(DateTime date) {
     final duration = DateTime.now().difference(date);
 
     if (duration.inDays >= 365) {
@@ -444,131 +564,162 @@ String _fixTime(DateTime date) {
     }
   }
 
-  String _buildPermalinks(List<SharedEmbed> embeds){
-    return embeds.map((e)=>'https://rythmify.com/${e.embedType=='track'?'tracks':'playlists'}/${e.embedName}')
-                                          .join('\n');              
+  String _buildPermalinks(List<SharedEmbed> embeds) {
+    return embeds
+        .map(
+          (e) =>
+              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedName}',
+        )
+        .join('\n');
   }
 
-Future<void> _sendInExistingConv() async {
-  if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
+  Future<void> _sendInExistingConv() async {
+    try {
+      if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-  final permalinkToEmbed = <String, SharedEmbed>{};
-  for (final embed in _selectedEmbeds) {
-    final url = 'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
-    permalinkToEmbed[url] = embed;
-  }
-
-  String remaining = controller.text;
-
-  while (remaining.isNotEmpty) {
-    String? foundUrl;
-    int foundIndex = remaining.length;
-
-    for (final url in permalinkToEmbed.keys) {
-      final idx = remaining.indexOf(url);
-      if (idx != -1 && idx < foundIndex) {
-        foundIndex = idx;
-        foundUrl = url;
+      final permalinkToEmbed = <String, SharedEmbed>{};
+      for (final embed in _selectedEmbeds) {
+        final url =
+            'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
+        permalinkToEmbed[url] = embed;
       }
-    }
 
-    if (foundUrl != null) {
-      final textBefore = remaining.substring(0, foundIndex).trim();
-      if (textBefore.isNotEmpty) {
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: widget.conv!.conversationId,
-          body: textBefore,
-        );
+      String remaining = controller.text;
+
+      while (remaining.isNotEmpty) {
+        String? foundUrl;
+        int foundIndex = remaining.length;
+
+        for (final url in permalinkToEmbed.keys) {
+          final idx = remaining.indexOf(url);
+          if (idx != -1 && idx < foundIndex) {
+            foundIndex = idx;
+            foundUrl = url;
+          }
+        }
+
+        if (foundUrl != null) {
+          final textBefore = remaining.substring(0, foundIndex).trim();
+          if (textBefore.isNotEmpty) {
+            await ref
+                .read(sendMessageProvider.notifier)
+                .sendMessage(
+                  conversationId: widget.conv!.conversationId,
+                  body: textBefore,
+                );
+          }
+          final embed = permalinkToEmbed[foundUrl]!;
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(
+                conversationId: widget.conv!.conversationId,
+                trackId: embed.embedType == 'track' ? embed.embedId : null,
+                playlistId: embed.embedType != 'track' ? embed.embedId : null,
+              );
+          remaining = remaining.substring(foundIndex + foundUrl.length).trim();
+        } else {
+          if (remaining.trim().isNotEmpty) {
+            await ref
+                .read(sendMessageProvider.notifier)
+                .sendMessage(
+                  conversationId: widget.conv!.conversationId,
+                  body: remaining.trim(),
+                );
+          }
+          remaining = '';
+        }
       }
-      final embed = permalinkToEmbed[foundUrl]!;
-      await ref.read(sendMessageProvider.notifier).sendMessage(
-        conversationId: widget.conv!.conversationId,
-        trackId: embed.embedType == 'track' ? embed.embedId : null,
-        playlistId: embed.embedType != 'track' ? embed.embedId : null,
+
+      ref.invalidate(conversationProvider);
+      ref.invalidate(messageProvider(widget.conv!.conversationId));
+      controller.clear();
+      setState(() => _selectedEmbeds.clear());
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+        ),
       );
-      remaining = remaining.substring(foundIndex + foundUrl.length).trim();
-    } else {
-      if (remaining.trim().isNotEmpty) {
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: widget.conv!.conversationId,
-          body: remaining.trim(),
-        );
-      }
-      remaining = '';
     }
   }
 
-  ref.invalidate(conversationProvider);
-  ref.invalidate(messageProvider(widget.conv!.conversationId));
-  controller.clear();
-  setState(() => _selectedEmbeds.clear());
-}
+  Future<void> _sendInNewConv() async {
+    try {
+      if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-Future<void> _sendInNewConv() async {
-  if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
-
-  final permalinkToEmbed = <String, SharedEmbed>{};
-  for (final embed in _selectedEmbeds) {
-    final url = 'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
-    permalinkToEmbed[url] = embed;
-  }
-
-  Conversation? newConv = await ref.read(sendMessageProvider.notifier).sendMessage(
-    newParticipantId: widget.newParticipantId,
-    body: null,
-  );
-
-  if(newConv==null) return;
-
-  String remaining = controller.text;
-
-  while (remaining.isNotEmpty) {
-    String? foundUrl;
-    int foundIndex = remaining.length;
-
-    for (final url in permalinkToEmbed.keys) {
-      final idx = remaining.indexOf(url);
-      if (idx != -1 && idx < foundIndex) {
-        foundIndex = idx;
-        foundUrl = url;
+      final permalinkToEmbed = <String, SharedEmbed>{};
+      for (final embed in _selectedEmbeds) {
+        final url =
+            'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
+        permalinkToEmbed[url] = embed;
       }
-    }
 
-    if (foundUrl != null) {
-      final textBefore = remaining.substring(0, foundIndex).trim();
-      if (textBefore.isNotEmpty) {
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: newConv.conversationId,
-          body: textBefore,
-        );
+      Conversation? newConv = await ref
+          .read(sendMessageProvider.notifier)
+          .sendMessage(newParticipantId: widget.newParticipantId, body: null);
+
+      if (newConv == null) return;
+
+      String remaining = controller.text;
+
+      while (remaining.isNotEmpty) {
+        String? foundUrl;
+        int foundIndex = remaining.length;
+
+        for (final url in permalinkToEmbed.keys) {
+          final idx = remaining.indexOf(url);
+          if (idx != -1 && idx < foundIndex) {
+            foundIndex = idx;
+            foundUrl = url;
+          }
+        }
+
+        if (foundUrl != null) {
+          final textBefore = remaining.substring(0, foundIndex).trim();
+          if (textBefore.isNotEmpty) {
+            await ref
+                .read(sendMessageProvider.notifier)
+                .sendMessage(
+                  conversationId: newConv.conversationId,
+                  body: textBefore,
+                );
+          }
+          final embed = permalinkToEmbed[foundUrl]!;
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(
+                conversationId: newConv.conversationId,
+                trackId: embed.embedType == 'track' ? embed.embedId : null,
+                playlistId: embed.embedType != 'track' ? embed.embedId : null,
+              );
+          remaining = remaining.substring(foundIndex + foundUrl.length).trim();
+        } else {
+          if (remaining.trim().isNotEmpty) {
+            await ref
+                .read(sendMessageProvider.notifier)
+                .sendMessage(
+                  conversationId: newConv.conversationId,
+                  body: remaining.trim(),
+                );
+          }
+          remaining = '';
+        }
       }
-      final embed = permalinkToEmbed[foundUrl]!;
-      await ref.read(sendMessageProvider.notifier).sendMessage(
-        conversationId: newConv.conversationId,
-        trackId: embed.embedType == 'track' ? embed.embedId : null,
-        playlistId: embed.embedType != 'track' ? embed.embedId : null,
+
+      ref.invalidate(conversationProvider);
+      controller.clear();
+      setState(() => _selectedEmbeds.clear());
+
+      if (!mounted) return;
+      context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+        ),
       );
-      remaining = remaining.substring(foundIndex + foundUrl.length).trim();
-    } else {
-      if (remaining.trim().isNotEmpty) {
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: newConv.conversationId,
-          body: remaining.trim(),
-        );
-      }
-      remaining = '';
     }
   }
-
-  ref.invalidate(conversationProvider);
-  controller.clear();
-  setState(() => _selectedEmbeds.clear());
-
-  if(!mounted) return;
-  context.go(
-      '/home/inbox/chat/${newConv.conversationId}',
-      extra: newConv,
-    );
-}
-
 }

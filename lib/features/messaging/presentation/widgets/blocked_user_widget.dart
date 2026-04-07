@@ -3,17 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/un_block_provider.dart';
 
+/// A widget displayed when the current user has blocked the conversation participant.
+///
+/// Shows an informational message and an [Unblock] button. On pressing,
+/// calls [UnBlockNotifier] to unblock the user, invalidates [isBlockedProvider]
+/// to reflect the change, and shows a [SnackBar] confirmation.
+///
+/// Requires [participantId] to identify the blocked user.
+
 class BlockedUserWidget extends ConsumerWidget {
   final String participantId;
-  const BlockedUserWidget({
-    super.key,
-    required this.participantId
-    });
+  const BlockedUserWidget({super.key, required this.participantId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsetsGeometry.directional(bottom: 62,top: 20,start: 10,end: 10),// Adjust for keyboard
+      padding: const EdgeInsetsGeometry.directional(
+        bottom: 62,
+        top: 20,
+        start: 10,
+        end: 10,
+      ), // Adjust for keyboard
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -24,26 +34,40 @@ class BlockedUserWidget extends ConsumerWidget {
               style: TextStyle(
                 color: Color(0xFFB3B3B3),
                 fontSize: 14,
-                fontWeight: FontWeight.w500
+                fontWeight: FontWeight.w500,
               ),
-              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: ()async{
-                    await ref.read(unBlockProvider.notifier)
+                  onPressed: () async {
+                    try {
+                      await ref
+                          .read(unBlockProvider.notifier)
                           .unBlockUser(participantId: participantId);
 
-                    ref.invalidate(isBlockedProvider(participantId));
+                      ref.invalidate(isBlockedProvider(participantId));
 
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('User unblocked successfully')),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('User unblocked successfully'),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Failed to unblock user. Please try again.',
+                            ),
+                          ),
+                        );
+                      }
                     }
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -55,15 +79,15 @@ class BlockedUserWidget extends ConsumerWidget {
                     ),
                     textStyle: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600
-                    )
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  child: Text('Unblock')
+                  child: Text('Unblock'),
                 ),
               ),
-            )
+            ),
           ],
-        )
+        ),
       ),
     );
   }

@@ -216,9 +216,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'likes-playlists',
-                            builder: (context, state) => const LikesPlaylistsScreen(),
+                            builder: (context, state) =>
+                                const LikesPlaylistsScreen(),
                           ),
-                        ]
+                        ],
                       ),
                       GoRoute(
                         path: 'search',

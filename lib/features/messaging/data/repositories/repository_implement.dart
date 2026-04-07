@@ -42,8 +42,17 @@ class RepositoryImplement implements MessagingRepository {
   }
 
   @override
-  Future<Message> sendMessage(String conversationId, String? body, String? trackId, String? playlistId) {
-    final requestContent = SentMessageRequestModel(body: body, trackId: trackId, playlistId: playlistId);
+  Future<Message> sendMessage(
+    String conversationId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  ) {
+    final requestContent = SentMessageRequestModel(
+      body: body,
+      trackId: trackId,
+      playlistId: playlistId,
+    );
     return dataSource.sendMessage(
       conversationId: conversationId,
       requestContent: requestContent,
@@ -94,7 +103,7 @@ class RepositoryImplement implements MessagingRepository {
   }
 
   @override
-  Future<List<SharedEmbed>> getLikedEmbeds(String userId,String embedType) {
+  Future<List<SharedEmbed>> getLikedEmbeds(String userId, String embedType) {
     return dataSource.getEmbeds(userId, embedType);
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+///A simple message that appears to a user blocked by another user
 class BlockedByWidget extends StatelessWidget {
   const BlockedByWidget({super.key});
 
@@ -17,9 +18,9 @@ class BlockedByWidget extends StatelessWidget {
               color: Color(0xFFB3B3B3),
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              height: 1.35
+              height: 1.35,
             ),
-          )
+          ),
         ],
       ),
     );

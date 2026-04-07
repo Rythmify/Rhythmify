@@ -1,15 +1,21 @@
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
-class SharedEmbedModel extends SharedEmbed{
+/// Data model representing a [SharedEmbed].
+///
+/// Extends [SharedEmbed] and provides JSON deserialization
+/// for embed details fetched from the API (tracks, playlists, albums).
+/// Used as the return type of [getTrackDetails] and [getPlaylistDetails]
+/// in the data layer.
+class SharedEmbedModel extends SharedEmbed {
   SharedEmbedModel({
     required super.embedId,
     required super.embedType,
     required super.embedName,
     super.artistName,
-    super.thumbnailUrl
+    super.thumbnailUrl,
   });
 
-  factory SharedEmbedModel.fromJson(Map<String, dynamic> json) { 
+  factory SharedEmbedModel.fromJson(Map<String, dynamic> json) {
     return SharedEmbedModel(
       embedId: json['embedId'] as String,
       embedType: json['embedType'] as String,

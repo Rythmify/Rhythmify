@@ -25,11 +25,12 @@ abstract class MessagingRepository {
   );
 
   /// Sends a new [Message] within an existing conversation.
-  Future<Message> sendMessage(String conversationId,
-                              String? body,
-                              String? trackId,
-                              String? playlistId
-                            );
+  Future<Message> sendMessage(
+    String conversationId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  );
 
   /// Blocks a user by their [participantId], preventing further communication.
   Future<void> blockUser(String participantId);
@@ -62,5 +63,8 @@ abstract class MessagingRepository {
   Future<SharedEmbed> getTrack(String trackId);
 
   ///get a certain track from id alone
-  Future<SharedEmbed> getPlaylist(String playlistId, String embedType); //for both playlists and albums
+  Future<SharedEmbed> getPlaylist(
+    String playlistId,
+    String embedType,
+  ); //for both playlists and albums
 }

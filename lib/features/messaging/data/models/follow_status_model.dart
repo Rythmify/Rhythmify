@@ -14,7 +14,7 @@ class FollowStatusModel {
     required this.isFollowing,
     required this.isFollowedBy,
     required this.isBlocked,
-    required this.isBlockby
+    required this.isBlockby,
   });
 
   /// Factory constructor to create a [FollowStatusModel] from a JSON object.
@@ -23,9 +23,7 @@ class FollowStatusModel {
       isFollowing: json['is_following'],
       isFollowedBy: json['is_followed_by'],
       isBlocked: json['is_blocking'],
-      isBlockby: json['is_blocked_by']
+      isBlockby: json['is_blocked_by'],
     );
   }
-
-  
 }
