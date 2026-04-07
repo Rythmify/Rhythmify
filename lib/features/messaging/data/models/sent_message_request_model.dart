@@ -21,8 +21,9 @@ class SentMessageRequestModel {
     final data = <String, dynamic>{};
     if (body != null) data['body'] = body;
     if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
-    if (playlistId != null)
-      {data['resource'] = {'type': 'playlist', 'id': playlistId};}
+    if (playlistId != null) {
+      data['resource'] = {'type': 'playlist', 'id': playlistId};
+    }
     return data;
   }
 }

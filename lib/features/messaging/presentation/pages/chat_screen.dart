@@ -285,8 +285,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ValueListenableBuilder<TextEditingValue>(
                                       valueListenable: controller,
                                       builder: (context, value, child) {
-                                        if (value.text.isEmpty)
-                                          {return const SizedBox.shrink();}
+                                        if (value.text.isEmpty) {
+                                          return const SizedBox.shrink();
+                                        }
                                         return IconButton(
                                           key: const Key(
                                             'chat_screen_send_button',
@@ -416,8 +417,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ValueListenableBuilder<TextEditingValue>(
                           valueListenable: controller,
                           builder: (context, value, child) {
-                            if (value.text.isEmpty)
-                              {return const SizedBox.shrink();}
+                            if (value.text.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
                             return IconButton(
                               key: const Key('chat_screen_send_button'),
                               onPressed: () async {
