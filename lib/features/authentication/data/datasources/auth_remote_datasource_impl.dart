@@ -90,6 +90,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// [displayName] — the public display name.
   /// [gender] — lowercase gender string (e.g. `'male'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD`.
+  /// [captchaToken] — optional CAPTCHA token for verification.
   @override
   Future<UserModel> signUpWithEmail({
     required String email,
@@ -97,17 +98,25 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   }) async {
     try {
+      final requestData = {
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+        'gender': gender,
+        'date_of_birth': dateOfBirth,
+      };
+
+      // Add captcha_token if provided
+      if (captchaToken != null && captchaToken.isNotEmpty) {
+        requestData['captcha_token'] = captchaToken;
+      }
+
       final response = await client.dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'display_name': displayName,
-          'gender': gender,
-          'date_of_birth': dateOfBirth,
-        },
+        data: requestData,
       );
 
       final responseData = response.data is List

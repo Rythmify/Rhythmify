@@ -59,11 +59,12 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final token = await apiClient.getToken();
 
-      if (token == null) {
+      if (token == null || token.isEmpty) {
         state = const AuthUnauthenticated();
         return;
       }
 
+      // Attempt to fetch current user data with the stored token
       final response = await apiClient.dio.get('/users/me');
 
       final data = response.data['data'];
@@ -71,15 +72,18 @@ class AuthNotifier extends Notifier<AuthState> {
         'id': data['id'],
         'email': data['email'],
         'display_name': data['display_name'],
+        'avatar_url': data['avatar_url'],
         'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      // ── Handles BadPaddingException and any other errors ──
-
-      await apiClient.clearToken();
+      // ── Handles token expiration, network errors, and other failures ──
+      // Only clear token if it's an auth error (401), not network errors
+      if (e.toString().contains('401') || e.toString().contains('AUTH_')) {
+        await apiClient.clearToken();
+      }
       state = const AuthUnauthenticated();
     }
   }
@@ -105,6 +109,7 @@ class AuthNotifier extends Notifier<AuthState> {
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   }) async {
     state = const AuthLoading();
     final result = await _signUpWithEmail(
@@ -113,6 +118,7 @@ class AuthNotifier extends Notifier<AuthState> {
       displayName: displayName,
       gender: gender,
       dateOfBirth: dateOfBirth,
+      captchaToken: captchaToken,
     );
     result.fold((failure) => state = AuthError(failure.message), (user) {
       // ── Tell profile mock which user just registered ──

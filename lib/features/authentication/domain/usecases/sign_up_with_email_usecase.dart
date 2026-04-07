@@ -24,12 +24,14 @@ class SignUpWithEmailUseCase {
   /// [displayName] — the name shown publicly across the app.
   /// [gender] — lowercase gender string (e.g. `'male'` or `'female'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD`.
+  /// [captchaToken] — optional CAPTCHA verification token.
   Future<Either<Failure, UserEntity>> call({
     required String email,
     required String password,
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   }) {
     return repository.signUpWithEmail(
       email: email,
@@ -37,6 +39,7 @@ class SignUpWithEmailUseCase {
       displayName: displayName,
       gender: gender,
       dateOfBirth: dateOfBirth,
+      captchaToken: captchaToken,
     );
   }
 }

@@ -11,6 +11,10 @@ class ApiClient {
 
   static const String _tokenKey = 'access_token';
 
+  /// Development CAPTCHA bypass token
+  /// TODO: Replace with actual reCAPTCHA implementation for production
+  static const String devCaptchaBypassToken = 'dev_bypass_token';
+
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   late final Dio dio;
 

@@ -46,119 +46,119 @@ class _PlaylistsPageState extends ConsumerState<PlaylistsPage> {
               child: CircularProgressIndicator(color: AppTheme.primaryBrand),
             )
           : state.playlists.isEmpty
-              ? _buildEmptyState()
-              : Column(
-                  children: [
-                    // ── Search bar ──────────────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                      child: Container(
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface,
-                          borderRadius: BorderRadius.circular(21),
+          ? _buildEmptyState()
+          : Column(
+              children: [
+                // ── Search bar ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    child: TextField(
+                      key: const Key('playlists_search_text_field'),
+                      controller: _searchController,
+                      onChanged: (v) => setState(() => _query = v),
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Search ${state.playlists.length} playlists',
+                        hintStyle: AppTheme.bodyMedium,
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: AppTheme.textSecondary,
+                          size: 20,
                         ),
-                        child: TextField(
-                          key: const Key('playlists_search_text_field'),
-                          controller: _searchController,
-                          onChanged: (v) => setState(() => _query = v),
-                          style: AppTheme.bodyMedium.copyWith(
-                            color: AppTheme.textPrimary,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Search ${state.playlists.length} playlists',
-                            hintStyle: AppTheme.bodyMedium,
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: AppTheme.textSecondary,
-                              size: 20,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 11,
-                            ),
-                          ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 11,
                         ),
                       ),
                     ),
-
-                    // ── Import + Create row ────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Row(
-                        children: [
-                          OutlinedButton.icon(
-                            key: const Key('playlists_import_button'),
-                            onPressed: () {},
-                            icon: const Icon(Icons.download_outlined, size: 18),
-                            label: const Text('Import'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.textPrimary,
-                              side: const BorderSide(color: AppTheme.textSecondary),
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton.icon(
-                            key: const Key('playlists_create_button'),
-                            onPressed: () => _showCreateSheet(context),
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Create new'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.textPrimary,
-                              side: const BorderSide(color: AppTheme.textSecondary),
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // ── Playlist list ──────────────────────────────────────────
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.search_off,
-                                    color: AppTheme.textSecondary,
-                                    size: 56,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No matching playlists',
-                                    style: AppTheme.titleMedium.copyWith(
-                                      color: AppTheme.textSecondary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Try a different search.',
-                                    style: AppTheme.bodyMedium,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              key: const Key('playlists_list_view'),
-                              padding: const EdgeInsets.only(bottom: 120),
-                              itemCount: filtered.length,
-                              itemBuilder: (context, index) =>
-                                  _PlaylistTile(playlist: filtered[index]),
-                            ),
-                    ),
-                  ],
+                  ),
                 ),
+
+                // ── Import + Create row ────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      OutlinedButton.icon(
+                        key: const Key('playlists_import_button'),
+                        onPressed: () {},
+                        icon: const Icon(Icons.download_outlined, size: 18),
+                        label: const Text('Import'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.textPrimary,
+                          side: const BorderSide(color: AppTheme.textSecondary),
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        key: const Key('playlists_create_button'),
+                        onPressed: () => _showCreateSheet(context),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Create new'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.textPrimary,
+                          side: const BorderSide(color: AppTheme.textSecondary),
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Playlist list ──────────────────────────────────────────
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.search_off,
+                                color: AppTheme.textSecondary,
+                                size: 56,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No matching playlists',
+                                style: AppTheme.titleMedium.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Try a different search.',
+                                style: AppTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          key: const Key('playlists_list_view'),
+                          padding: const EdgeInsets.only(bottom: 120),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) =>
+                              _PlaylistTile(playlist: filtered[index]),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 

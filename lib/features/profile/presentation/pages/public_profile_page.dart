@@ -213,6 +213,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
                 ),
+                const SizedBox(height: 12),
+
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -270,18 +272,23 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Container(
+                    GestureDetector(
                       key: const Key('public_profile_play_button'),
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: AppTheme.textPrimary,
-                        size: 28,
+                      onTap: () {},
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isOwnProfile && state.likedTracks.isEmpty
+                              ? AppTheme.textSecondary.withValues(alpha: 0.2)
+                              : AppTheme.textSecondary.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: AppTheme.textPrimary,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ],
@@ -295,22 +302,33 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         // Empty state
         if (state.likedTracks.isEmpty && !state.isLoadingTracks)
           SliverFillRemaining(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Seems a little quiet over here',
-                  style: AppTheme.titleMedium.copyWith(
-                    color: AppTheme.textSecondary,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Seems a little quiet over here',
+                    key: const Key('public_profile_empty_headline_text'),
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tracks you like, repost or upload will appear here.',
-                  textAlign: TextAlign.center,
-                  style: AppTheme.bodyMedium,
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    'Tracks you like, repost or upload will\nappear here.',
+                    key: const Key('public_profile_empty_body_text'),
+                    textAlign: TextAlign.center,
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           )
         else
