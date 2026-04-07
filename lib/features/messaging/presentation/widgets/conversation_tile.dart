@@ -41,37 +41,47 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      key: Key('messaging_conversation_item_${participantName}_list_tile'),
-      onTap: onTap,
-      tileColor: unreadCount == 0
-          ? Colors.transparent
-          : const Color(0xFF2F2F2F),
-      leading: Avatar(img: participantAvatar, radius: 22),
-      title: Text(
-        participantName,
-        key: Key('messaging_conversation_item_${participantName}_name_text'),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        splashFactory: InkRipple.splashFactory,
+        splashColor: const Color(0xFF2F2F2F),
+        highlightColor: Colors.transparent,
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+          primary: Colors.white, // this stops the orange from bleeding in
+        ),
       ),
-      subtitle: Row(
-        children: [
-          Expanded(
-            child: Text(
-              lastMessagePreview,
-              key: Key(
-                'messaging_conversation_item_${participantName}_preview_text',
+      child: ListTile(
+        key: Key('messaging_conversation_item_${participantName}_list_tile'),
+        onTap: onTap,
+        tileColor: unreadCount == 0
+            ? Colors.transparent
+            : const Color(0xFF2F2F2F),
+        leading: Avatar(img: participantAvatar, radius: 22),
+        title: Text(
+          participantName,
+          key: Key('messaging_conversation_item_${participantName}_name_text'),
+        ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                lastMessagePreview,
+                key: Key(
+                  'messaging_conversation_item_${participantName}_preview_text',
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          Text('. '),
-          Text(
-            fixTime(lastMessageDate),
-            key: Key(
-              'messaging_conversation_item_${participantName}_time_text',
+            Text('. '),
+            Text(
+              fixTime(lastMessageDate),
+              key: Key(
+                'messaging_conversation_item_${participantName}_time_text',
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

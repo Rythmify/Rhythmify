@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// A confirmation dialog shown before blocking a user.
+///
+/// Returns `true` via [Navigator.pop] if the user confirms the block,
+/// or `false` if they cancel. The result is handled by [PopUpMenuWidget]
+/// to proceed with or abort the block action.
 class ConfirmBlock extends StatelessWidget {
   const ConfirmBlock({super.key});
 
@@ -14,11 +19,11 @@ class ConfirmBlock extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, true),
+          onPressed: () => Navigator.pop(context, false),
           child: const Text('CANCEL', style: TextStyle(color: Colors.white)),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text(
             'BLOCK',
             style: TextStyle(color: Colors.deepOrange),
