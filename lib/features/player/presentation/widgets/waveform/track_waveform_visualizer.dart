@@ -9,10 +9,12 @@ class TrackWaveformVisualizer extends ConsumerStatefulWidget {
   const TrackWaveformVisualizer({super.key});
 
   @override
-  ConsumerState<TrackWaveformVisualizer> createState() => _TrackWaveformVisualizerState();
+  ConsumerState<TrackWaveformVisualizer> createState() =>
+      _TrackWaveformVisualizerState();
 }
 
-class _TrackWaveformVisualizerState extends ConsumerState<TrackWaveformVisualizer>
+class _TrackWaveformVisualizerState
+    extends ConsumerState<TrackWaveformVisualizer>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _heightAnimation;
@@ -39,12 +41,15 @@ class _TrackWaveformVisualizerState extends ConsumerState<TrackWaveformVisualize
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerStateProvider);
     final dragPosition = ref.watch(seekDragPositionProvider);
-    
+
     // Fallback dummy data if no wave data exists yet
-    final List<double> waveData = playerState.currentTrack?.waveformData ?? 
+    final List<double> waveData =
+        playerState.currentTrack?.waveformData ??
         List.generate(200, (index) => 0.1);
 
-    final bool isPaused = playerState.status == PlayerStatus.paused || playerState.status == PlayerStatus.initial;
+    final bool isPaused =
+        playerState.status == PlayerStatus.paused ||
+        playerState.status == PlayerStatus.initial;
 
     if (isPaused) {
       _animationController.reverse();
@@ -55,7 +60,7 @@ class _TrackWaveformVisualizerState extends ConsumerState<TrackWaveformVisualize
     return WaveformGestureHandler(
       child: SizedBox(
         width: double.infinity,
-        height: 120,    // Maximum height bounds for the top/bot amplitudes
+        height: 120, // Maximum height bounds for the top/bot amplitudes
         child: AnimatedBuilder(
           animation: _animationController,
           builder: (context, child) {

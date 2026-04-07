@@ -18,7 +18,7 @@ class WaveformGestureHandler extends ConsumerWidget {
     const double barWidth = 3.0;
     const double spacing = 2.0;
     const double totalWaveWidth = 200 * (barWidth + spacing);
-    
+
     // Milliseconds per pixel of swipe
     final double msPerPixel = duration.inMilliseconds / totalWaveWidth;
 
@@ -35,11 +35,13 @@ class WaveformGestureHandler extends ConsumerWidget {
 
         // Moving finger left moves wave left (progresses time) -> reverse the delta
         final double deltaMs = -details.primaryDelta! * msPerPixel;
-        
+
         int newMs = currentDrag.inMilliseconds + deltaMs.round();
         newMs = newMs.clamp(0, duration.inMilliseconds);
-        
-        ref.read(seekDragPositionProvider.notifier).setPosition(Duration(milliseconds: newMs));
+
+        ref
+            .read(seekDragPositionProvider.notifier)
+            .setPosition(Duration(milliseconds: newMs));
       },
       onHorizontalDragEnd: (details) {
         final finalDrag = ref.read(seekDragPositionProvider);
