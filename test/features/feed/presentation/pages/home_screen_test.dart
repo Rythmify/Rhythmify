@@ -160,21 +160,16 @@ class _FakeHomeDatasource extends HomeDatasource {
     required this.moreOfWhatYouLike,
   });
 
-  @override
   Future<List<Track>> getTrendingTracks(String genre) async => trendingTracks;
 
-  @override
   Future<List<Track>> getHotTracks() async => hotTracks;
 
-  @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async =>
       mixedPlaylists;
 
-  @override
   Future<List<Map<String, dynamic>>> getStationPlaylists() async =>
       stationPlaylists;
 
-  @override
   Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async =>
       moreOfWhatYouLike;
 }
@@ -264,27 +259,22 @@ class _LoadingHomeDatasource extends HomeDatasource {
     required this.moreOfWhatYouLikeFuture,
   });
 
-  @override
   Future<List<Track>> getTrendingTracks(String genre) async {
     return trendingTracksFuture;
   }
 
-  @override
   Future<List<Track>> getHotTracks() async {
     return hotTracksFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async {
     return mixedPlaylistsFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getStationPlaylists() async {
     return stationPlaylistsFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async {
     return moreOfWhatYouLikeFuture;
   }

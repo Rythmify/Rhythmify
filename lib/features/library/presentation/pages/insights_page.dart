@@ -55,10 +55,12 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.primaryBrand,
-          indicatorWeight: 2,
-          labelColor: Colors.white,
+          indicatorWeight: 3,
+          indicatorSize: TabBarIndicatorSize.tab,
+          labelColor: AppTheme.textPrimary,
           unselectedLabelColor: AppTheme.textSecondary,
-          labelStyle: AppTheme.labelLarge,
+          labelStyle: AppTheme.labelLarge.copyWith(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: AppTheme.labelLarge,
           tabs: const [
             Tab(text: 'SoundCloud'),
             Tab(text: 'All Platforms'),
@@ -269,86 +271,92 @@ class _SoundCloudDataView extends StatelessWidget {
 class _AllPlatformsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const Key('insights_all_platforms_tab'),
-      children: [
-        // Feature graphic
-        Container(
-          width: double.infinity,
-          height: 220,
-          color: Colors.black,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                Icons.devices_rounded,
-                size: 140,
-                color: Colors.purple.withValues(alpha: 0.2),
-              ),
-              Icon(
-                Icons.multitrack_audio_rounded,
-                size: 80,
-                color: Colors.purpleAccent.withValues(alpha: 0.7),
-              ),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Unlock key performance and audience insights across multiple platforms for your music',
-                  key: Key('insights_ap_headline_text'),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    height: 1.3,
+    return SingleChildScrollView(
+      key: const Key('insights_all_platforms_tab_scroll'),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height - 160,
+        child: Column(
+          key: const Key('insights_all_platforms_tab'),
+          children: [
+            // Feature graphic
+            Container(
+              width: double.infinity,
+              height: 220,
+              color: Colors.black,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    Icons.devices_rounded,
+                    size: 140,
+                    color: Colors.purple.withValues(alpha: 0.2),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Access audience and performance insights for your distributed tracks from Spotify, Apple Music, and SoundCloud all from one dashboard.',
-                  key: Key('insights_ap_body_text'),
-                  style: AppTheme.bodyMedium.copyWith(height: 1.5),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Upgrade your account, upload and distribute your track to get started.',
-                  style: AppTheme.bodyMedium,
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    key: const Key('insights_ap_upgrade_button'),
-                    onPressed: () => context.push('/upgrade'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textPrimary,
-                      side: const BorderSide(color: AppTheme.textSecondary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Upgrade to Pro',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
+                  Icon(
+                    Icons.multitrack_audio_rounded,
+                    size: 80,
+                    color: Colors.purpleAccent.withValues(alpha: 0.7),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Unlock key performance and audience insights across multiple platforms for your music',
+                      key: Key('insights_ap_headline_text'),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Access audience and performance insights for your distributed tracks from Spotify, Apple Music, and SoundCloud all from one dashboard.',
+                      key: Key('insights_ap_body_text'),
+                      style: AppTheme.bodyMedium.copyWith(height: 1.5),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Upgrade your account, upload and distribute your track to get started.',
+                      style: AppTheme.bodyMedium,
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        key: const Key('insights_ap_upgrade_button'),
+                        onPressed: () => context.push('/upgrade'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.textPrimary,
+                          side: const BorderSide(color: AppTheme.textSecondary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Upgrade to Pro',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
