@@ -29,7 +29,7 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
           'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
       headers: {
         'Content-Type': 'application/json',
-        // if (token != null) 'Authorization': 'Bearer $token',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     ),
   );
