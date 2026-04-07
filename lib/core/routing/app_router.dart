@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
+import 'package:rythmify/features/settings/presentation/pages/advertising_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/analytics_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/basic_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/communication_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/import_my_music_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/inbox_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/legal_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -285,6 +292,36 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
+                    routes: [
+                      GoRoute( //1- import music
+                        path: 'import-my-music',
+                        builder: (context, state) => const ImportMyMusicScreen(),
+                      ),
+                      GoRoute( //4- Basic settings
+                        path: 'basic-settings',
+                        builder: (context, state) => const BasicSettingsScreen(),
+                      ),
+                      GoRoute( //6- Inbox
+                        path: 'inbox-settings',
+                        builder: (context, state) => const InboxSettingsScreen(),
+                      ),
+                      GoRoute( //9- Analytics
+                        path: 'analytics',
+                        builder: (context, state) => const AnalyticsSettingsScreen(),
+                      ),
+                      GoRoute( //10- Communications
+                        path: 'Communications',
+                        builder: (context, state) => const CommunicationSettingsScreen(),
+                      ),
+                      GoRoute( //11- Advesrtising
+                        path: 'Advesrtising',
+                        builder: (context, state) => const AdvertisingSettingsScreen(),
+                      ),
+                      GoRoute( //13- Legal
+                        path: 'Legal',
+                        builder: (context, state) => const LegalSettingsScreen(),
+                      ),
+                    ]
                   ),
                   GoRoute(
                     path: 'playlist',
