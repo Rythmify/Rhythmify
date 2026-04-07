@@ -42,6 +42,14 @@ class ApiEndPoints {
   /// Returns the endpoint to search for users based on a [query].
   static String getSearchedUsers(String query) => '/search?q=$query&type=users';
 
-  /// Returns the endpoint to check if a user with [participantId] is blocked by current user.
+  /// Returns the endpoint to check if a user with [userId] is blocked by current user.
   static String isBlocked(String userId) => '/users/$userId/follow-status';
+
+  /// Returns the endpoint to retrieve the details of a certain track using the [trackId]
+  static String getTrackDetails(String trackId) => '/tracks/$trackId';
+
+  /// Returns the endpoint to retrieve the details of a certain playlist using the [playlistId]
+  static String getPlaylistDetails(String playlistId) => '/tracks/$playlistId';
+
+
 }

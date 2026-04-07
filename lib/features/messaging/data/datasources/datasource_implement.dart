@@ -5,6 +5,7 @@ import 'package:rythmify/features/messaging/data/models/conversation_model.dart'
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
+import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 
 /// Concrete implementation of [DatasourceInterface] using the Dio HTTP client.
 ///
@@ -73,15 +74,17 @@ class DatasourceImplement implements DatasourceInterface {
     String? trackId,
     String? playlistId,
   }) async {
+
+    final data=<String, dynamic>{'recipient_id': participantId};
+    if (body != null) data['body'] = body;
+    if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
+    if (playlistId != null) data['resource'] = {'type': 'playlist', 'id': playlistId};
+
     final response = await dio.post(
       ApiEndPoints.newConversation,
-      data: {
-        'recipient_id': participantId,
-        'body': ?body,
-        'track_id': ?trackId,
-        'playlist_id': ?playlistId,
-      },
+      data: data
     );
+
     return ConversationModel.fromJson(
       response.data['data']['conversation'] as Map<String, dynamic>,
     );
@@ -172,5 +175,36 @@ class DatasourceImplement implements DatasourceInterface {
     final body = response.data as Map<String, dynamic>;
     final data = body['data'] as Map<String, dynamic>;
     return data['is_blocked_by'] as bool;
+  }
+
+  @override
+  Future<List<SharedEmbedModel>> getEmbeds(String userId, String embedType) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SharedEmbedModel> getTrackDetails(String trackId) async{
+    final response=await dio.get(ApiEndPoints.getTrackDetails(trackId));
+    final data = response.data['data'];
+    return SharedEmbedModel(
+      embedId: data['id'],
+      embedType: 'track',
+      embedName: data['title'],
+      artistName: data['artists'],
+      thumbnailUrl: null,
+    );
+  }
+
+  @override
+  Future<SharedEmbedModel> getPlaylistDetails(String playlistId,String embedType) async{ //can give me playlists and albums
+    final response=await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
+    final data = response.data['data'];
+    return SharedEmbedModel(
+      embedId: data['id'],
+      embedType: embedType,
+      embedName: data['title'],
+      artistName: null,
+      thumbnailUrl: null,
+    );
   }
 }

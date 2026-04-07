@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 
 class MessageInputBubble extends StatelessWidget {
   final TextEditingController controller;
-  final Future<void> Function(String)? onSubmitted;
 
   const MessageInputBubble({
     super.key,
     required this.controller,
-    this.onSubmitted,
   });
 
   @override
@@ -23,8 +21,9 @@ class MessageInputBubble extends StatelessWidget {
       child: TextFormField(
         key: const Key('messaging_message_input_text_field'),
         controller: controller,
-        onFieldSubmitted: onSubmitted,
-        textInputAction: TextInputAction.send,
+        maxLength: null,
+        keyboardType: TextInputType.multiline,
+        textInputAction:TextInputAction.newline,
         cursorColor: Colors.white,
         style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: const InputDecoration(

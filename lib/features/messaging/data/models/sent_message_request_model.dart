@@ -18,7 +18,10 @@ class SentMessageRequestModel {
   ///
   /// Null values are removed from the resulting map to ensure a clean request.
   Map<String, dynamic> toJson() {
-    return {'body': body, 'track_id': trackId, 'playlistId': playlistId}
-      ..removeWhere((key, value) => value == null);
+    final data= <String, dynamic>{};
+    if (body != null) data['body'] = body;
+    if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
+    if (playlistId != null) data['resource'] = {'type': 'playlist', 'id': playlistId};
+    return data;
   }
 }
