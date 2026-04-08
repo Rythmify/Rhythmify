@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
-import 'package:rythmify/features/settings/presentation/pages/advertising_settings_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/analytics_settings_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/basic_settings_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/communication_settings_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/import_my_music_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/inbox_settings_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/legal_settings_screen.dart';
+import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
+import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/Account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/Notifications_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -56,6 +54,13 @@ import '../../features/playlist/presentation/screens/playlist_detail_screen.dart
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/advertising_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/analytics_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/basic_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/communication_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/import_my_music_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/inbox_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/legal_settings_screen.dart';
 
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
@@ -312,13 +317,25 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'import-my-music',
                         builder: (context, state) => const ImportMyMusicScreen(),
                       ),
+                      GoRoute( //2- Account
+                        path: 'account',
+                        builder: (context, state) => const AccountScreen(),
+                      ),
                       GoRoute( //4- Basic settings
                         path: 'basic-settings',
                         builder: (context, state) => const BasicSettingsScreen(),
                       ),
+                      GoRoute( //5- Social settings
+                        path: 'social-settings',
+                        builder: (context, state) => const SocialSettingsScreen(),
+                      ),
                       GoRoute( //6- Inbox
                         path: 'inbox-settings',
                         builder: (context, state) => const InboxSettingsScreen(),
+                      ),
+                      GoRoute( //7- Notifications
+                        path: 'notifications',
+                        builder: (context, state) => const NotificationsSettingsScreen(),
                       ),
                       GoRoute( //9- Analytics
                         path: 'analytics',

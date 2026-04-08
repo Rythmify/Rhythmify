@@ -26,7 +26,7 @@ class ReusableTileWidget extends StatelessWidget{
       splashColor: const Color(0xFF3A3A3A),
       highlightColor: const Color(0xFF2A2A2A),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -15,6 +15,7 @@ class AnalyticsSettingsScreen extends StatelessWidget{
       child: Scaffold(
           appBar: AppBar(title: const Text('Analytics'), centerTitle: false),
           body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ReusableTileWidget(
                 key: Key('Analytics_tile'),

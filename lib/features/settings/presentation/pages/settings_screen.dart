@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -20,7 +21,7 @@ class SettingsScreen extends ConsumerWidget {
           SettingsOptionsTileWidget( //2- Account
             key: Key('option_Account'),
             title:'Account',
-            onTap: (){},
+            onTap: (){context.push('/library/settings/account');},
           ),
           SettingsOptionsTileWidget( //3- Upload
             key: Key('option_Upload'),
@@ -35,7 +36,7 @@ class SettingsScreen extends ConsumerWidget {
           SettingsOptionsTileWidget( //5- Social settings
             key: Key('option_Social_settings'),
             title:'Social settings',
-            onTap: (){},
+            onTap: (){context.push('/library/settings/social-settings');},
           ),
           SettingsOptionsTileWidget( //6- Inbox
             key: Key('option_Inbox'),
@@ -45,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
           SettingsOptionsTileWidget( //7- Notifications
             key: Key('option_Notifications'),
             title:'Notifications',
-            onTap: (){},
+            onTap: (){context.push('/library/settings/notifications');},
           ),
           SettingsOptionsTileWidget( //8- Add widgets
             key: Key('option_Add_widgets'),
@@ -83,26 +84,7 @@ class SettingsScreen extends ConsumerWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children:[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child:ElevatedButton(
-                        key: Key('settings_sign_out_button'),
-                        onPressed: (){},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2A2A2A),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Sign out',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        )
-                    )
-              ),
+              SignOutButtonWidget(),
               const SizedBox(height: 16),
               Center(
                 child: Text(

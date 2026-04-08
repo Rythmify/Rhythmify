@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 
@@ -29,7 +30,7 @@ class InboxSettingsScreen extends StatelessWidget{
               SettingsOptionsTileWidget(
                 key: Key('inbox_notification_settings_tile'),
                 title: 'Notification settings',
-                onTap: (){},
+                onTap: (){context.push('/library/settings/notifications');},
               )
             ],
           ),
