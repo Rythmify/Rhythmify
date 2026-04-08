@@ -17,8 +17,7 @@ class InboxScreen extends ConsumerStatefulWidget {
   ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends ConsumerState<InboxScreen>{
-
+class _InboxScreenState extends ConsumerState<InboxScreen> {
   @override
   void initState() {
     Future.microtask(() => ref.invalidate(conversationProvider));
@@ -27,7 +26,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen>{
 
   @override
   Widget build(BuildContext context) {
-    final convprovider = ref.watch(conversationProvider); 
+    final convprovider = ref.watch(conversationProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Inbox'), centerTitle: false),
       body: Padding(
@@ -54,6 +53,5 @@ class _InboxScreenState extends ConsumerState<InboxScreen>{
         ),
       ),
     );
-    
   }
 }

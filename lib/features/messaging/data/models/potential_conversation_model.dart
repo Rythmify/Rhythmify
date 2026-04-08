@@ -19,7 +19,7 @@ class PotentialConversationModel extends PotentialConversation {
       participantId: json['id'] ?? json['user_id'],
       participantName: json['display_name'],
       followersCount: json['follower_count'],
-      avatar: json['profile_picture'], 
+      avatar: json['profile_picture'],
       location: null, //TO BE CHANGED!!!!!!!!!!!!!!!!!
     );
   }

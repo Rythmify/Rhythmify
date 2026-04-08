@@ -135,7 +135,8 @@ class DatasourceImplement implements DatasourceInterface {
 
       return data
           .map(
-            (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+            (e) =>
+                PotentialConversationModel.fromJson(e as Map<String, dynamic>),
           )
           .toList();
     } on DioException catch (e) {
@@ -161,7 +162,8 @@ class DatasourceImplement implements DatasourceInterface {
 
       return data
           .map(
-            (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+            (e) =>
+                PotentialConversationModel.fromJson(e as Map<String, dynamic>),
           )
           .toList();
     } on DioException catch (e) {
@@ -205,39 +207,52 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<List<SharedEmbedModel>> getEmbeds(String userId, String embedType) async {
+  Future<List<SharedEmbedModel>> getEmbeds(
+    String userId,
+    String embedType,
+  ) async {
     if (embedType == 'track') {
       final response = await dio.get(ApiEndPoints.getMyLikedTracks());
       final List data = response.data['data'];
-      return data.map((e) => SharedEmbedModel(
-        embedId: e['id'],
-        embedType: 'track',
-        embedName: e['title'],
-        artistName: null,
-        thumbnailUrl: e['cover_image'],
-      )).toList();
-
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['id'],
+              embedType: 'track',
+              embedName: e['title'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
     } else if (embedType == 'playlist') {
       final response = await dio.get(ApiEndPoints.getMyLikedPlaylists());
       final List data = response.data['data']['items'];
-      return data.map((e) => SharedEmbedModel(
-        embedId: e['playlist_id'],
-        embedType: 'playlist',
-        embedName: e['name'],
-        artistName: null,
-        thumbnailUrl: e['cover_image'],
-      )).toList();
-
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['playlist_id'],
+              embedType: 'playlist',
+              embedName: e['name'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
     } else if (embedType == 'album') {
       final response = await dio.get(ApiEndPoints.getMyLikedAlbums());
       final List data = response.data['data']['items'];
-      return data.map((e) => SharedEmbedModel(
-        embedId: e['playlist_id'],
-        embedType: 'album',
-        embedName: e['name'],
-        artistName: null,
-        thumbnailUrl: e['cover_image'],
-      )).toList();
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['playlist_id'],
+              embedType: 'album',
+              embedName: e['name'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
     }
 
     return [];

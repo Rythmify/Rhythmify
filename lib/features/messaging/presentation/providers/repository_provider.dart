@@ -37,7 +37,7 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
   print('AUTH STATE: $authState');
   print('TOKEN: $token');
   print('HEADERS: ${dio.options.headers}');
-  
+
   // Automatically switch datasources based on the boolean flag
   final datasource = useMockData
       ? MockDatasourceImplement()
