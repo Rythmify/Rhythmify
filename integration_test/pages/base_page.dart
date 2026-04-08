@@ -9,6 +9,8 @@ class BasePage {
   BasePage(this.tester);
 
   Future<void> tapByKey(String key) async {
+    await tester.ensureVisible(find.byKey(Key(key)));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key(key)));
     await tester.pumpAndSettle();
   }
