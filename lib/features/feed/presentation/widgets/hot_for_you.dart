@@ -84,7 +84,13 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
           border: Border.all(color: Colors.grey, width: 0.5),
           borderRadius: BorderRadius.circular(12),
           image: DecorationImage(
-            image: AssetImage(widget.track.artworkUrl),
+            image:
+                widget.track.coverImage != null &&
+                    widget.track.coverImage!.startsWith('http')
+                ? NetworkImage(widget.track.coverImage!) as ImageProvider
+                : AssetImage(
+                    widget.track.coverImage ?? widget.track.artworkUrl,
+                  ),
             fit: BoxFit.cover,
           ),
         ),
@@ -195,7 +201,15 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
-                        image: AssetImage(widget.track.artworkUrl),
+                        image:
+                            widget.track.coverImage != null &&
+                                widget.track.coverImage!.startsWith('http')
+                            ? NetworkImage(widget.track.coverImage!)
+                                  as ImageProvider
+                            : AssetImage(
+                                widget.track.coverImage ??
+                                    widget.track.artworkUrl,
+                              ),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -215,10 +229,14 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
               borderRadius: BorderRadius.circular(8),
               color: Colors.grey[900],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(widget.track.artworkUrl, fit: BoxFit.cover),
-            ),
+            child:
+                widget.track.coverImage != null &&
+                    widget.track.coverImage!.startsWith('http')
+                ? Image.network(widget.track.coverImage!, fit: BoxFit.cover)
+                : Image.asset(
+                    widget.track.coverImage ?? widget.track.artworkUrl,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ],
       ),
