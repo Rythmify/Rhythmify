@@ -86,15 +86,13 @@ class SettingsScreen extends ConsumerWidget {
             children:[
               SignOutButtonWidget(),
               const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  key: const Key('settings_App_version'),
-                  'App version 1.0.0\nTroubleshooting id\n498cc2f9-65bf-428e-b283-46530272233e',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 13,
-                  ),
+              Text(
+                key: const Key('settings_App_version'),
+                'App version 1.0.0\nTroubleshooting id\n498cc2f9-65bf-428e-b283-46530272233e',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 13,
                 ),
               ),
             ]
