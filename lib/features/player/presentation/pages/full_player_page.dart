@@ -4,9 +4,9 @@ import '../providers/player_provider.dart';
 import '../widgets/scrolling_artwork_background.dart';
 import '../widgets/playback_overlay_controls.dart';
 import '../widgets/track_info_box.dart';
-import '../widgets/player_progress_bar.dart';
 import 'package:rythmify/features/comments/presentation/widgets/floating_comment_bar.dart';
 import '../widgets/player_action_bar.dart';
+import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
 
 /// The main immersive playback page of the application.
@@ -22,24 +22,9 @@ class FullPlayerPage extends ConsumerWidget {
 
   /// Navigates to the "Behind the Track" page for additional metadata.
 
-  // void _triggerNavigation(BuildContext context, String trackId) {
-  //   if (onCollapse != null) onCollapse!();
-  //   context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
-  // }
   void _triggerNavigation(BuildContext context, String trackId) {
-    // 1. Debug prints to catch the culprit
-    print('=== DEBUG: NAVIGATING TO BEHIND THE TRACK ===');
-    print('Track ID passed: "$trackId"');
-
     if (onCollapse != null) onCollapse!();
-
-    // 2. Encode the ID to safely handle ANY slashes or weird characters
-    // This prevents GoRouter from thinking a slash is a new route path.
-    final safeTrackId = Uri.encodeComponent(trackId);
-
-    // 3. Push using the exact path to avoid cross-branch named route deadlocks.
-    // (Using pushNamed from a root FullPlayerPage into a tabbed shell can sometimes freeze)
-    context.push('/home/behind-the-track/$safeTrackId');
+    context.pushNamed('behindTheTrack', pathParameters: {'trackId': trackId});
   }
 
   @override
@@ -142,8 +127,8 @@ class FullPlayerPage extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const PlayerProgressBar(),
-                  const SizedBox(height: 40),
+                  const TrackWaveformVisualizer(),
+                  const SizedBox(height: 5),
                   const FloatingCommentBar(),
                   const SizedBox(height: 40),
                   PlayerActionBar(trackId: trackInfo.id),
