@@ -9,41 +9,41 @@ import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 
 class HomeDto {
-  static Track _parseTrack(Map<String, dynamic> json) {
+  static Track parseTrack(Map<String, dynamic> json) {
     return TrackDto.fromJson({
       ...json,
       if (json['artist'] == null && json['artist_name'] != null)
         'artist': json['artist_name'],
+      if (json['genre'] == null && json['genre_name'] != null)
+        'genre': json['genre_name'],
     });
   }
 
   static HomeData fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>;
-
     return HomeData(
-      hotForYou: _parseHotForYou(data['hot_for_you']),
-      trendingByGenre: _parseTrendingByGenre(data['trending_by_genre']),
-      moreOfWhatYouLike: (data['more_of_what_you_like']['tracks'] as List)
-          .map((t) => _parseTrack(t))
+      hotForYou: parseHotForYou(json['hot_for_you']),
+      trendingByGenre: parseTrendingByGenre(json['trending_by_genre']),
+      moreOfWhatYouLike: (json['more_of_what_you_like']['tracks'] as List)
+          .map((t) => parseTrack(t as Map<String, dynamic>))
           .toList(),
-      mixedForYou: (data['mixed_for_you'] as List)
-          .map((m) => _parseMixedForYouItem(m))
+      mixedForYou: (json['mixed_for_you'] as List)
+          .map((m) => parseMixedForYouItem(m as Map<String, dynamic>))
           .toList(),
-      discoverWithStations: (data['discover_with_stations'] as List)
-          .map((s) => _parseDiscoverStation(s))
+      discoverWithStations: (json['discover_with_stations'] as List)
+          .map((s) => parseDiscoverStation(s as Map<String, dynamic>))
           .toList(),
     );
   }
 
-  static HotForYou _parseHotForYou(Map<String, dynamic> json) {
+  static HotForYou parseHotForYou(Map<String, dynamic> json) {
     return HotForYou(
-      track: _parseTrack(json['track']),
+      track: parseTrack(json['track']),
       reason: json['reason'] as String? ?? '',
       validUntil: DateTime.parse(json['valid_until'] as String),
     );
   }
 
-  static TrendingByGenreInitial _parseTrendingByGenre(
+  static TrendingByGenreInitial parseTrendingByGenre(
     Map<String, dynamic> json,
   ) {
     return TrendingByGenreInitial(
@@ -55,37 +55,32 @@ class HomeDto {
             ),
           )
           .toList(),
-      initialTab: _parseGenreTabTracks(json['initial_tab']),
+      initialTab: parseGenreTabTracks(json['initial_tab']),
     );
   }
 
-  static GenreTabTracks _parseGenreTabTracks(Map<String, dynamic> json) {
+  static GenreTabTracks parseGenreTabTracks(Map<String, dynamic> json) {
     return GenreTabTracks(
       genreId: json['genre_id'] as String,
       genreName: json['genre_name'] as String,
-      tracks: (json['tracks'] as List).map((t) => _parseTrack(t)).toList(),
+      tracks: (json['tracks'] as List).map((t) => parseTrack(t)).toList(),
     );
   }
 
-  static GenreTabTracks genreTabTracksFromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>;
-    return _parseGenreTabTracks(data);
-  }
-
-  static MixedForYouItem _parseMixedForYouItem(Map<String, dynamic> json) {
+  static MixedForYouItem parseMixedForYouItem(Map<String, dynamic> json) {
     return MixedForYouItem(
-      id: json['id'] as String,
-      label: json['label'] as String,
-      flavor: json['flavor'] as String,
-      genreName: json['genre_name'] as String? ?? '',
-      coverImage: json['cover_image'] as String? ?? '',
-      trackCount: json['track_count'] as int? ?? 0,
-      generatedAt: DateTime.parse(json['generated_at'] as String),
-      previewTrack: _parseTrack(json['preview_track']),
+      id: json['mix_id'] as String,
+      label: json['title'] as String,
+      flavor: '',
+      genreName: '',
+      coverImage: json['cover_url'] as String? ?? '',
+      trackCount: 0,
+      generatedAt: DateTime.now(),
+      previewTrack: parseTrack(json['preview_track'] as Map<String, dynamic>),
     );
   }
 
-  static DiscoverStation _parseDiscoverStation(Map<String, dynamic> json) {
+  static DiscoverStation parseDiscoverStation(Map<String, dynamic> json) {
     return DiscoverStation(
       id: json['id'] as String,
       name: json['name'] as String,

@@ -1,0 +1,220 @@
+{
+  "data": {
+    "hot_for_you": {
+      "track": {
+        "id": "1",
+        "title": " Vibes",
+        "cover_image": "assets/images/track_2.jpg",
+        "duration": 213,
+        "genre_name": "Electronic",
+        "play_count": 4200,
+        "like_count": 312,
+        "repost_count": 47,
+        "user_id": "u1",
+        "artist_name": "Artist 1",
+        "stream_url": "assets/audio/Track_audio_6.mp3",
+        "created_at": "2026-03-01T10:00:00Z"
+      },
+      "reason": "Based on your recent listens",
+      "valid_until": "2026-04-05T20:22:00Z"
+    },
+
+    "trending_by_genre": {
+      "genres": [
+        { "genre_id": "genre-1", "genre_name": "Electronic" },
+        { "genre_id": "genre-2", "genre_name": "Hip-Hop" },
+        { "genre_id": "genre-3", "genre_name": "R&B" },
+        { "genre_id": "genre-4", "genre_name": "Country" },
+        { "genre_id": "genre-5", "genre_name": "Indie" },
+        { "genre_id": "genre-6", "genre_name": "Classic" }
+      ],
+      "initial_tab": {
+        "genre_id": "genre-1",
+        "genre_name": "Electronic",
+        "tracks": [
+          {
+            "id": "2",
+            "title": "Summer Vibes",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track2",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track3",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+        ]
+      }
+    },
+
+    "more_of_what_you_like": {
+      "tracks": [
+        {
+          "id": "1",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_3.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        },
+        {
+          "id": "2",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_3.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        },
+        {
+          "id": "3",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_3.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        }
+      ],
+      "source": "personalized"
+    },
+
+    "mixed_for_you": [
+      {
+        "mix_id": "mix1",
+        "title": "Electronic Mix",
+        "cover_url": "assets/images/track_6.jpg",
+        "preview_track": {
+          "id": "1",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_6.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        }
+      },
+      {
+        "mix_id": "mix2",
+        "title": "Electronic Mix",
+        "cover_url": "assets/images/track_6.jpg",
+        "preview_track": {
+          "id": "1",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_6.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        }
+      },
+      {
+        "mix_id": "mix3",
+        "title": "Electronic Mix",
+        "cover_url": "assets/images/track_6.jpg",
+        "preview_track": {
+          "id": "1",
+          "title": "Summer Vibes",
+          "cover_image": "assets/images/track_6.jpg",
+          "duration": 213,
+          "genre_name": "Electronic",
+          "play_count": 4200,
+          "like_count": 312,
+          "repost_count": 47,
+          "user_id": "u1",
+          "artist_name": "DJ Karim",
+          "stream_url": "https://example.com/audio.mp3",
+          "created_at": "2026-03-01T10:00:00Z"
+        }
+      }
+    ],
+
+    "discover_with_stations": [
+      {
+        "id": "station1",
+        "name": "Based on artist1",
+        "artist_id": "a1",
+        "artist_name": "artist1",
+        "cover_image": "assets/images/track_4.jpg",
+        "track_count": 50,
+        "follower_count": 3200
+      },
+            {
+        "id": "station2",
+        "name": "Based on artist2",
+        "artist_id": "a1",
+        "artist_name": "artist2",
+        "cover_image": "assets/images/track_4.jpg",
+        "track_count": 50,
+        "follower_count": 3200
+      },
+            {
+        "id": "station3",
+        "name": "Based on artist3",
+        "artist_id": "a3",
+        "artist_name": "artist3",
+        "cover_image": "assets/images/track_4.jpg",
+        "track_count": 50,
+        "follower_count": 3200
+      }
+    ]
+  }
+}
