@@ -123,54 +123,54 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-Future<List<PotentialConversationModel>> getFollowings(String myId) async {
-  try {
-    final url = ApiEndPoints.getFollowings();
-    print('FOLLOWINGS URL: $url');
+  Future<List<PotentialConversationModel>> getFollowings(String myId) async {
+    try {
+      final url = ApiEndPoints.getFollowings();
+      print('FOLLOWINGS URL: $url');
 
-    final response = await dio.get(url);
+      final response = await dio.get(url);
 
-    final body = response.data;
-    final List data = body['data']['items'];
+      final body = response.data;
+      final List data = body['data']['items'];
 
-    return data
-        .map(
-          (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
-        )
-        .toList();
-  } on DioException catch (e) {
-    print('FOLLOWINGS ERROR STATUS: ${e.response?.statusCode}');
-    print('FOLLOWINGS REQUEST URI: ${e.requestOptions.uri}');
-    print('FOLLOWINGS ERROR DATA: ${e.response?.data}');
-    rethrow;
+      return data
+          .map(
+            (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    } on DioException catch (e) {
+      print('FOLLOWINGS ERROR STATUS: ${e.response?.statusCode}');
+      print('FOLLOWINGS REQUEST URI: ${e.requestOptions.uri}');
+      print('FOLLOWINGS ERROR DATA: ${e.response?.data}');
+      rethrow;
+    }
   }
-}
 
-@override
-Future<List<PotentialConversationModel>> getSearchedUsers(
-  String query,
-) async {
-  try {
-    final url = ApiEndPoints.getSearchedUsers(query);
-    print('SEARCH USERS URL: $url');
+  @override
+  Future<List<PotentialConversationModel>> getSearchedUsers(
+    String query,
+  ) async {
+    try {
+      final url = ApiEndPoints.getSearchedUsers(query);
+      print('SEARCH USERS URL: $url');
 
-    final response = await dio.get(url);
+      final response = await dio.get(url);
 
-    final body = response.data;
-    final List data = body['data']['items'];
+      final body = response.data;
+      final List data = body['data']['items'];
 
-    return data
-        .map(
-          (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
-        )
-        .toList();
-  } on DioException catch (e) {
-    print('SEARCH USERS ERROR STATUS: ${e.response?.statusCode}');
-    print('SEARCH USERS REQUEST URI: ${e.requestOptions.uri}');
-    print('SEARCH USERS ERROR DATA: ${e.response?.data}');
-    rethrow;
+      return data
+          .map(
+            (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    } on DioException catch (e) {
+      print('SEARCH USERS ERROR STATUS: ${e.response?.statusCode}');
+      print('SEARCH USERS REQUEST URI: ${e.requestOptions.uri}');
+      print('SEARCH USERS ERROR DATA: ${e.response?.data}');
+      rethrow;
+    }
   }
-}
 
   @override
   Future<bool> isBlocked(String participantId) async {
