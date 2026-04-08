@@ -7,10 +7,13 @@ class PrivacyPolicyWidget extends StatelessWidget{
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {},
-      child: Text(
-        'Learn more in our Privacy Policy',
-        style: TextStyle(color: Colors.blue,fontSize: 14),
-      ),
+      child: Padding(
+        padding:const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child:Text(
+          'Learn more in our Privacy Policy',
+          style: TextStyle(color: Colors.blue,fontSize: 14),
+          ),
+      )
     );
   }
 }

@@ -15,6 +15,7 @@ class CommunicationSettingsScreen extends StatelessWidget{
       child: Scaffold(
           appBar: AppBar(title: const Text('Communications'), centerTitle: false),
           body: Column(
+            crossAxisAlignment:CrossAxisAlignment.start,
             children: [
               ReusableTileWidget(
                 key: Key('Communications_tile'),
@@ -26,9 +27,12 @@ class CommunicationSettingsScreen extends StatelessWidget{
                 onTap: (){},
               ),
               const SizedBox(height: 24),
-              Text(
-                'changes require an app restart to become effective.',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+              Padding(
+                padding:const EdgeInsets.symmetric(horizontal: 16),
+                child:Text(
+                  'changes require an app restart to become effective.',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
               ),
               const SizedBox(height: 16),
               PrivacyPolicyWidget()

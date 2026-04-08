@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/Account_screen.dart';
-import 'package:rythmify/features/settings/presentation/pages/Notifications_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/notifications_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
