@@ -1,52 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/presentation/providers/block_user_provider.dart';
-import 'package:rythmify/features/messaging/presentation/widgets/confirn_block_widget.dart';
+import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
+import 'package:rythmify/features/messaging/presentation/widgets/confirm_block_widget.dart';
 
+/// A bottom sheet widget providing moderation actions for a conversation participant.
+///
+/// Currently supports:
+/// - Block: calls [BlockNotifier] to block the participant, invalidates
+///   [isBlockedProvider], and dismisses the sheet.
+/// - Report: navigates to the report screen (not yet implemented).
+///
+/// Requires [participantId] to identify the target user and [parentContext]
+/// to handle navigation after dismissal.
 class PopUpMenuWidget extends ConsumerWidget {
   final String participantId;
-  const PopUpMenuWidget({super.key, required this.participantId});
+  final BuildContext parentContext;
+
+  const PopUpMenuWidget({
+    super.key,
+    required this.participantId,
+    required this.parentContext,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
-      color: const Color(0xFF2F2F2F),
-      onSelected: (value) async {
-        if (value == 'block') {
-          final confirmBlock = await showDialog<bool>(
-            context: context,
-            builder: (_) => const ConfirmBlock(),
-          );
-          if (confirmBlock == false) {
-            await ref
-                .read(blockUserProvider.notifier)
-                .blockUser(participantId: participantId);
-          }
-        } else if (value == 'report') {}
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'block',
-          child: Row(
-            children: [
-              Icon(Icons.block, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Block Profile', style: TextStyle(color: Colors.white)),
-            ],
-          ),
+    return Padding(
+      padding: EdgeInsetsGeometry.only(bottom: 60), // Adjust for keyboard
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              //Block user
+              leading: const Icon(Icons.block, color: Colors.white),
+              title: const Text(
+                'Block user',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () async {
+                final shouldBlock = await showDialog<bool>(
+                  context: parentContext,
+                  builder: (parentContext) => const ConfirmBlock(),
+                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+
+                if (shouldBlock == true) {
+                  try {
+                    await ref
+                        .read(blockUserProvider.notifier)
+                        .blockUser(participantId: participantId);
+
+                    ref.invalidate(isBlockedProvider(participantId));
+
+                    if (parentContext.mounted) {
+                      ScaffoldMessenger.of(parentContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('User blocked successfully'),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Failed to unblock user. Please try again.',
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+            ),
+
+            ListTile(
+              //Report user
+              leading: const Icon(Icons.flag_outlined, color: Colors.white),
+              title: const Text(
+                'Report user',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
-        const PopupMenuItem(
-          value: 'report',
-          child: Row(
-            children: [
-              Icon(Icons.flag_outlined, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Report Profile', style: TextStyle(color: Colors.white)),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -10,7 +10,12 @@ class SendMessageUsecase {
 
   SendMessageUsecase({required this.repo});
 
-  Future<Message> call(String conversationId, String body) {
-    return repo.sendMessage(conversationId, body);
+  Future<Message> call(
+    String conversationId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  ) {
+    return repo.sendMessage(conversationId, body, trackId, playlistId);
   }
 }
