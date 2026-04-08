@@ -14,7 +14,7 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-const bool useProfileMockData = false;
+const bool useProfileMockData = true;
 
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
@@ -145,12 +145,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadAvatar(filePath: filePath);
-    result.fold((failure) => state = current.copyWith(isSaving: false), (
-      profile,
-    ) {
-      state = current.copyWith(profile: profile, isSaving: false);
-      loadProfile(userId: 'me');
-    });
+    result.fold(
+      (failure) {
+        state = current.copyWith(isSaving: false);
+        // TODO: Show error to user
+      },
+      (profile) {
+        // Update state with new profile containing updated avatar
+        state = current.copyWith(profile: profile, isSaving: false);
+      },
+    );
   }
 
   Future<void> deleteAvatar() async {
@@ -160,16 +164,20 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteAvatar();
-    result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
-      state = current.copyWith(
-        profile: current.profile.copyWithFollowing(
-          isFollowing: current.profile.isFollowing,
-          followersCount: current.profile.followersCount,
-        ),
-        isSaving: false,
-      );
-      loadProfile(userId: 'me');
-    });
+    result.fold(
+      (failure) {
+        state = current.copyWith(isSaving: false);
+      },
+      (_) async {
+        // Reload profile to get updated avatar URL (null)
+        final profileResult = await _getProfile(userId: 'me');
+        profileResult.fold(
+          (failure) => state = current.copyWith(isSaving: false),
+          (profile) =>
+              state = current.copyWith(profile: profile, isSaving: false),
+        );
+      },
+    );
   }
 
   Future<void> uploadCoverPhoto({required String filePath}) async {
@@ -179,12 +187,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _uploadCoverPhoto(filePath: filePath);
-    result.fold((failure) => state = current.copyWith(isSaving: false), (
-      profile,
-    ) {
-      state = current.copyWith(profile: profile, isSaving: false);
-      loadProfile(userId: 'me');
-    });
+    result.fold(
+      (failure) {
+        state = current.copyWith(isSaving: false);
+        // TODO: Show error to user
+      },
+      (profile) {
+        // Update state with new profile containing updated cover
+        state = current.copyWith(profile: profile, isSaving: false);
+      },
+    );
   }
 
   Future<void> deleteCoverPhoto() async {

@@ -3,6 +3,7 @@ import 'package:rythmify/features/messaging/data/models/sent_message_request_mod
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/domain/repositories/messaging_repository.dart';
 
 /// Concrete implementation of [MessagingRepository] that coordinates data access.
@@ -41,8 +42,17 @@ class RepositoryImplement implements MessagingRepository {
   }
 
   @override
-  Future<Message> sendMessage(String conversationId, String body) {
-    final requestContent = SentMessageRequestModel(body: body);
+  Future<Message> sendMessage(
+    String conversationId,
+    String? body,
+    String? trackId,
+    String? playlistId,
+  ) {
+    final requestContent = SentMessageRequestModel(
+      body: body,
+      trackId: trackId,
+      playlistId: playlistId,
+    );
     return dataSource.sendMessage(
       conversationId: conversationId,
       requestContent: requestContent,
@@ -80,5 +90,30 @@ class RepositoryImplement implements MessagingRepository {
   @override
   Future<List<PotentialConversation>> getSearchedUsers(String query) {
     return dataSource.getSearchedUsers(query);
+  }
+
+  @override
+  Future<bool> isBlocked(String participantId) {
+    return dataSource.isBlocked(participantId);
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) {
+    return dataSource.isBlockedBy(participantId);
+  }
+
+  @override
+  Future<List<SharedEmbed>> getLikedEmbeds(String userId, String embedType) {
+    return dataSource.getEmbeds(userId, embedType);
+  }
+
+  @override
+  Future<SharedEmbed> getTrack(String trackId) {
+    return dataSource.getTrackDetails(trackId);
+  }
+
+  @override
+  Future<SharedEmbed> getPlaylist(String playlistId, String embedType) {
+    return dataSource.getPlaylistDetails(playlistId, embedType);
   }
 }

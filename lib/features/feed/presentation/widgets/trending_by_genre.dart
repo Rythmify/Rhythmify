@@ -1,25 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../domain/entities/genre_tab.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
 
-/// List of supported music genres used in the tab bar.
-final List<String> genres = [
-  'Reggae',
-  'Country',
-  'Electronic',
-  'Indie',
-  'Pop',
-  'Techno',
-  'Jazz',
-  'Hip-Hop&Rap',
-  'Rock,Metal,Punk',
-];
-
-/// UI colors mapped to each genre for visual identity.
 final List<Color> genreColors = [
   const Color.fromARGB(255, 28, 197, 22),
   Colors.pink,
@@ -32,26 +19,36 @@ final List<Color> genreColors = [
   const Color.fromARGB(255, 19, 45, 195),
 ];
 
-/// Main widget that renders trending tracks grouped by genre.
-class TrendingByGenre extends StatefulWidget {
+class TrendingByGenre extends ConsumerStatefulWidget {
   const TrendingByGenre({super.key});
 
   @override
-  State<TrendingByGenre> createState() => _TrendingByGenreState();
+  ConsumerState<TrendingByGenre> createState() => _TrendingByGenreState();
 }
 
-class _TrendingByGenreState extends State<TrendingByGenre>
+class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
+  List<GenreTab>? _genres;
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  void _initTabController(List<GenreTab> genres) {
+    if (_genres == genres) return;
+    _tabController?.dispose();
+    _genres = genres;
     _tabController = TabController(length: genres.length, vsync: this);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final asyncHome = ref.watch(homeDataProvider);
+
     return Column(
       key: const Key('trending_by_genre_section'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,93 +58,116 @@ class _TrendingByGenreState extends State<TrendingByGenre>
           child: Text("Trending by Genre", style: AppTheme.titleLarge),
         ),
         const SizedBox(height: 10),
+        asyncHome.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Text('Error: $e'),
+          data: (homeData) {
+            final genres = homeData.trendingByGenre.genres;
+            _initTabController(genres);
 
-        AnimatedBuilder(
-          animation: _tabController,
-          builder: (context, _) {
-            final selectedIndex = _tabController.index;
-            final currentColor = genreColors[selectedIndex];
+            final tabController = _tabController;
+            if (tabController == null) return const SizedBox.shrink();
 
-            return Stack(
-              children: [
-                Positioned.fill(child: Container(color: AppTheme.background)),
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.4, -0.3),
-                        radius: 0.49,
-                        colors: [
-                          currentColor.withValues(alpha: 0.35),
-                          currentColor.withValues(alpha: 0.12),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
+            return AnimatedBuilder(
+              animation: tabController,
+              builder: (context, _) {
+                final selectedIndex = tabController.index;
+                final currentColor =
+                    genreColors[selectedIndex % genreColors.length];
+
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(color: AppTheme.background),
                     ),
-                  ),
-                ),
-
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.2, -0.1),
-                        radius: 0.5,
-                        colors: [
-                          currentColor.withValues(alpha: 0.28),
-                          currentColor.withValues(alpha: 0.18),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.4, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // CONTENT LAYER
-                ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: 22,
-                      sigmaY: 22,
-                      tileMode: TileMode.decal,
-                    ),
-                    child: Container(
-                      color: Colors.transparent,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GenreTabBar(tabController: _tabController),
-                          SizedBox(
-                            height: 250,
-                            child: GenreTabView(tabController: _tabController),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(-0.4, -0.3),
+                            radius: 0.49,
+                            colors: [
+                              currentColor.withValues(alpha: 0.35),
+                              currentColor.withValues(alpha: 0.12),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0.2, -0.1),
+                            radius: 0.5,
+                            colors: [
+                              currentColor.withValues(alpha: 0.28),
+                              currentColor.withValues(alpha: 0.18),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.4, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                    ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: 22,
+                          sigmaY: 22,
+                          tileMode: TileMode.decal,
+                        ),
+                        child: Container(
+                          color: Colors.transparent,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GenreTabBar(
+                                tabController: tabController,
+                                genres: genres,
+                              ),
+                              SizedBox(
+                                height: 250,
+                                child: GenreTabView(
+                                  tabController: tabController,
+                                  genres: genres,
+                                  initialTracks: homeData
+                                      .trendingByGenre
+                                      .initialTab
+                                      .tracks,
+                                  initialGenreId: homeData
+                                      .trendingByGenre
+                                      .initialTab
+                                      .genreId,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
         ),
       ],
     );
   }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 }
 
-/// Tab bar widget for selecting music genres.
 class GenreTabBar extends StatelessWidget {
   final TabController tabController;
+  final List<GenreTab> genres;
 
-  const GenreTabBar({super.key, required this.tabController});
+  const GenreTabBar({
+    super.key,
+    required this.tabController,
+    required this.genres,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -164,11 +184,11 @@ class GenreTabBar extends StatelessWidget {
           indicator: const BoxDecoration(),
           tabs: List.generate(genres.length, (index) {
             final isSelected = tabController.index == index;
-            final color = genreColors[index];
+            final color = genreColors[index % genreColors.length];
 
             return Tab(
               key: Key(
-                'trending_by_genre_tab_${genres[index].toLowerCase().replaceAll(' ', '_')}',
+                'trending_by_genre_tab_${genres[index].genreName.toLowerCase().replaceAll(' ', '_')}',
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -183,7 +203,7 @@ class GenreTabBar extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  genres[index],
+                  genres[index].genreName,
                   style: TextStyle(
                     color: isSelected ? color : const Color(0xFFB0BEB5),
                   ),
@@ -197,11 +217,19 @@ class GenreTabBar extends StatelessWidget {
   }
 }
 
-/// Tab view that displays trending tracks for each genre.
 class GenreTabView extends ConsumerWidget {
   final TabController tabController;
+  final List<GenreTab> genres;
+  final List<Track> initialTracks;
+  final String initialGenreId;
 
-  const GenreTabView({super.key, required this.tabController});
+  const GenreTabView({
+    super.key,
+    required this.tabController,
+    required this.genres,
+    required this.initialTracks,
+    required this.initialGenreId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -209,21 +237,27 @@ class GenreTabView extends ConsumerWidget {
       key: const Key('genre_tab_view'),
       controller: tabController,
       children: genres.map((genre) {
-        final asyncTracks = ref.watch(trendingTracksProvider(genre));
+        // Use pre-loaded tracks for the initial tab, fetch for others
+        if (genre.genreId == initialGenreId) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: _TrendingHorizontalColumns(tracks: initialTracks),
+          );
+        }
+
+        final asyncTracks = ref.watch(trendingByGenreProvider(genre.genreId));
 
         return asyncTracks.when(
-          data: (tracks) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: _TrendingHorizontalColumns(tracks: tracks),
-            );
-          },
+          data: (genreTabTracks) => Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: _TrendingHorizontalColumns(tracks: genreTabTracks.tracks),
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: Text(
               'Error: $e',
               key: Key(
-                'trending_by_genre_error_text_${genre.toLowerCase().replaceAll(' ', '_')}',
+                'trending_by_genre_error_text_${genre.genreName.toLowerCase().replaceAll(' ', '_')}',
               ),
             ),
           ),
@@ -233,7 +267,6 @@ class GenreTabView extends ConsumerWidget {
   }
 }
 
-/// Internal widget that displays trending tracks in horizontal grouped columns.
 class _TrendingHorizontalColumns extends ConsumerWidget {
   final List<Track> tracks;
 
@@ -242,7 +275,6 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<List<Track>> chunks = [];
-
     for (var i = 0; i < tracks.length; i += 3) {
       chunks.add(
         tracks.sublist(i, (i + 3 > tracks.length) ? tracks.length : i + 3),
@@ -257,68 +289,55 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, chunkIndex) {
           final chunk = chunks[chunkIndex];
-
           return Column(
             children: chunk.map((track) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 0),
-                child: SizedBox(
-                  width: 330,
-                  child: ListTile(
-                    key: Key('item_${track.id}'),
-                    contentPadding: EdgeInsets.zero,
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: track.artworkUrl.startsWith('http')
-                            ? Image.network(
-                                track.artworkUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image),
-                              )
-                            : Image.asset(
-                                track.artworkUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image),
-                              ),
-                      ),
-                    ),
-                    title: Text(
-                      track.title,
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      track.artist,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: const Icon(Icons.more_vert, color: Colors.white),
-                    onTap: () {
-                      final playerState = ref.read(playerStateProvider);
-                      final currentTrack = playerState.currentTrack;
-
-                      final isThisTrackLoaded = currentTrack?.id == track.id;
-
-                      if (isThisTrackLoaded) {
-                        ref
-                            .read(playerStateProvider.notifier)
-                            .togglePlayPause();
-                      } else {
-                        ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-                          [track],
-                        );
-                      }
-                    },
+              return SizedBox(
+                width: 330,
+                child: ListTile(
+                  key: Key('item_${track.id}'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child:
+                        track.coverImage != null &&
+                            track.coverImage!.startsWith('http')
+                        ? Image.network(
+                            track.coverImage!,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            track.artworkUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
                   ),
+                  title: Text(
+                    track.title,
+                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    track.artist,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(Icons.more_vert, color: Colors.white),
+                  onTap: () {
+                    final playerState = ref.read(playerStateProvider);
+                    final isThisTrackLoaded =
+                        playerState.currentTrack?.id == track.id;
+
+                    if (isThisTrackLoaded) {
+                      ref.read(playerStateProvider.notifier).togglePlayPause();
+                    } else {
+                      ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+                        track,
+                      ]);
+                    }
+                  },
                 ),
               );
             }).toList(),

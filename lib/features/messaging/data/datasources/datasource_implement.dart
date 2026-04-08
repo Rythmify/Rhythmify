@@ -5,6 +5,7 @@ import 'package:rythmify/features/messaging/data/models/conversation_model.dart'
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
+import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 
 /// Concrete implementation of [DatasourceInterface] using the Dio HTTP client.
 ///
@@ -73,18 +74,21 @@ class DatasourceImplement implements DatasourceInterface {
     String? trackId,
     String? playlistId,
   }) async {
-    final response = await dio.post(
-      ApiEndPoints.newConversation,
-      data: {
-        'recipient_id': participantId,
-        'body': ?body,
-        'track_id': ?trackId,
-        'playlist_id': ?playlistId,
-      },
-    );
-    return ConversationModel.fromJson(
-      response.data['data']['conversation'] as Map<String, dynamic>,
-    );
+    final data = <String, dynamic>{'recipient_id': participantId};
+    if (body != null) data['body'] = body;
+    if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
+    if (playlistId != null) {
+      data['resource'] = {'type': 'playlist', 'id': playlistId};
+    }
+
+    final response = await dio.post(ApiEndPoints.newConversation, data: data);
+
+    final responseData = response.data['data'];
+    if (responseData.containsKey('conversation')) {
+      return ConversationModel.fromJson(responseData['conversation']);
+    } else {
+      throw Exception('Conversation already exists, message appended');
+    }
   }
 
   @override
@@ -95,12 +99,12 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<void> blockUser({required String userId}) async {
-    await dio.delete(ApiEndPoints.blockUser(userId));
+    await dio.post(ApiEndPoints.blockUser(userId));
   }
 
   @override
   Future<void> unBlockUser({required String userId}) async {
-    await dio.post(ApiEndPoints.unBlockUser(userId));
+    await dio.delete(ApiEndPoints.unBlockUser(userId));
   }
 
   @override
@@ -116,7 +120,7 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<List<PotentialConversationModel>> getFollowings(String myId) async {
-    final response = await dio.get(ApiEndPoints.getFollowings(myId));
+    final response = await dio.get(ApiEndPoints.getFollowings());
     final body = response.data;
     final List data = body['data']['items'];
     return data
@@ -138,5 +142,72 @@ class DatasourceImplement implements DatasourceInterface {
           (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
         )
         .toList();
+  }
+
+  @override
+  Future<bool> isBlocked(String participantId) async {
+    final response = await dio.get(ApiEndPoints.isBlocked(participantId));
+
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+    final body = response.data as Map<String, dynamic>;
+    final data = body['data'] as Map<String, dynamic>;
+    return data['is_blocking'] as bool;
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) async {
+    final response = await dio.get(
+      ApiEndPoints.isBlocked(participantId), //same endpoint as isBlocked
+    );
+
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception(
+        'Expected JSON map but got ${response.data.runtimeType}: ${response.data}',
+      );
+    }
+
+    final body = response.data as Map<String, dynamic>;
+    final data = body['data'] as Map<String, dynamic>;
+    return data['is_blocked_by'] as bool;
+  }
+
+  @override
+  Future<List<SharedEmbedModel>> getEmbeds(String userId, String embedType) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SharedEmbedModel> getTrackDetails(String trackId) async {
+    final response = await dio.get(ApiEndPoints.getTrackDetails(trackId));
+    final data = response.data['data'];
+    return SharedEmbedModel(
+      embedId: data['id'],
+      embedType: 'track',
+      embedName: data['title'],
+      artistName: data['artists'],
+      thumbnailUrl: null,
+    );
+  }
+
+  @override
+  Future<SharedEmbedModel> getPlaylistDetails(
+    String playlistId,
+    String embedType,
+  ) async {
+    //can give me playlists and albums
+    final response = await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
+    final data = response.data['data'];
+    return SharedEmbedModel(
+      embedId: data['playlist_id'],
+      embedType: embedType,
+      embedName: data['name'],
+      artistName: null,
+      thumbnailUrl: null,
+    );
   }
 }

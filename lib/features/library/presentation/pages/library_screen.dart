@@ -1,27 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../profile/presentation/widgets/profile_avatar.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 
 /// The Library main screen — a navigation hub matching SoundCloud's layout.
 ///
 /// Structure:
-/// - "Transfer your gems" import banner card at the top
+/// - "Transfer your gems" import banner card at the top (dismissible)
 /// - Vertical [ListView] of menu items with chevrons
 /// - "Recently played" horizontal row with "See All" button
-class LibraryScreen extends ConsumerWidget {
+class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+  bool _showBanner = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerPreference();
+  }
+
+  Future<void> _loadBannerPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _showBanner = prefs.getBool('show_import_banner') ?? true;
+    });
+  }
+
+  Future<void> _dismissBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('show_import_banner', false);
+    setState(() {
+      _showBanner = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final currentUserEmail = authState is AuthAuthenticated
         ? authState.user.email
         : '';
+    final currentUserAvatar = authState is AuthAuthenticated
+        ? authState.user.avatarUrl
+        : null;
     final historyState = ref.watch(historyProvider);
 
     return Scaffold(
@@ -45,15 +78,7 @@ class LibraryScreen extends ConsumerWidget {
             child: GestureDetector(
               key: const Key('library_profile_avatar_gesture_detector'),
               onTap: () => context.push('/profile/me'),
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: AppTheme.surface,
-                child: Icon(
-                  Icons.person,
-                  color: AppTheme.textSecondary,
-                  size: 20,
-                ),
-              ),
+              child: ProfileAvatar(avatarUrl: currentUserAvatar, radius: 18),
             ),
           ),
         ],
@@ -62,9 +87,10 @@ class LibraryScreen extends ConsumerWidget {
         key: const Key('library_main_scroll_view'),
         children: [
           // ── Import banner card ────────────────────────────────────────────
-          _ImportBannerCard(onImport: () {}),
+          if (_showBanner)
+            _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
 
-          const SizedBox(height: 8),
+          if (_showBanner) const SizedBox(height: 8),
 
           // ── Menu items ────────────────────────────────────────────────────
           _menuItem(
@@ -83,7 +109,7 @@ class LibraryScreen extends ConsumerWidget {
             context,
             label: 'Albums',
             key: const Key('library_albums_item'),
-            onTap: () {},
+            onTap: () => context.push('/library/albums'),
           ),
           _menuItem(
             context,
@@ -198,8 +224,9 @@ class LibraryScreen extends ConsumerWidget {
 
 class _ImportBannerCard extends StatelessWidget {
   final VoidCallback onImport;
+  final VoidCallback onClose;
 
-  const _ImportBannerCard({required this.onImport});
+  const _ImportBannerCard({required this.onImport, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +265,7 @@ class _ImportBannerCard extends StatelessWidget {
                     alignment: Alignment.topRight,
                     child: GestureDetector(
                       key: const Key('library_import_banner_close_gesture'),
-                      onTap: () {},
+                      onTap: onClose,
                       child: const Icon(
                         Icons.close,
                         color: Colors.white54,
