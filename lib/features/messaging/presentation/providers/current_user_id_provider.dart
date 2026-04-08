@@ -7,7 +7,7 @@ import 'package:rythmify/features/authentication/presentation/providers/auth_sta
 /// In this mock implementation, it returns 'current_user' to match the ID
 /// used in [MockDatasourceImplement] for messages sent by the user.
 
-bool mock = true;
+bool mock = false;
 final currentUserIdProvider = Provider<String>((ref) {
   if (mock) {
     return 'current_user';

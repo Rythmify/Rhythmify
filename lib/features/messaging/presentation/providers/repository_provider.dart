@@ -8,7 +8,7 @@ import 'package:rythmify/features/messaging/data/datasources/datasource_implemen
 import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
 
 /// toggle between mock data and real API
-const bool useMockData = true;
+const bool useMockData = false;
 
 /// Provider for the [MessagingRepository] implementation.
 ///
@@ -26,7 +26,7 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
     BaseOptions(
       //baseUrl: 'http://localhost:8080/api/v1',
       baseUrl:
-          'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
+          'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
       headers: {
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
@@ -34,6 +34,10 @@ final repositoryprovider = Provider<MessagingRepository>((ref) {
     ),
   );
 
+  print('AUTH STATE: $authState');
+  print('TOKEN: $token');
+  print('HEADERS: ${dio.options.headers}');
+  
   // Automatically switch datasources based on the boolean flag
   final datasource = useMockData
       ? MockDatasourceImplement()
