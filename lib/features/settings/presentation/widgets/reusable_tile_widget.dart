@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/switch_widget.dart';
 
-class ReusableTileWidget extends StatelessWidget{
+class ReusableTileWidget extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool switchExists;
@@ -12,11 +12,11 @@ class ReusableTileWidget extends StatelessWidget{
   const ReusableTileWidget({
     super.key,
     required this.title,
-    this.subtitle='',
+    this.subtitle = '',
     required this.switchExists,
-    this.initSwitchValue=false,
+    this.initSwitchValue = false,
     this.onSwitchChanged,
-    this.onTap
+    this.onTap,
   });
 
   @override
@@ -42,7 +42,7 @@ class ReusableTileWidget extends StatelessWidget{
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if(subtitle.isNotEmpty)...[
+                  if (subtitle.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
@@ -51,21 +51,21 @@ class ReusableTileWidget extends StatelessWidget{
                         fontSize: 14,
                         height: 1.4,
                       ),
-                    )
-                  ]
+                    ),
+                  ],
                 ],
-              )
+              ),
             ),
-            if(switchExists)
+            if (switchExists)
               Transform.scale(
                 scale: 0.7,
                 alignment: Alignment.topRight,
                 child: SwitchWidget(
                   key: Key('switch$title'),
                   initValue: initSwitchValue,
-                  onChanged: onSwitchChanged
+                  onChanged: onSwitchChanged,
                 ),
-              )
+              ),
           ],
         ),
       ),

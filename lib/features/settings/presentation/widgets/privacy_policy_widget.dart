@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class PrivacyPolicyWidget extends StatelessWidget{
+class PrivacyPolicyWidget extends StatelessWidget {
   const PrivacyPolicyWidget({super.key});
 
   @override
@@ -8,12 +8,12 @@ class PrivacyPolicyWidget extends StatelessWidget{
     return GestureDetector(
       onTap: () {},
       child: Padding(
-        padding:const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child:Text(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Text(
           'Learn more in our Privacy Policy',
-          style: TextStyle(color: Colors.blue,fontSize: 14),
-          ),
-      )
+          style: TextStyle(color: Colors.blue, fontSize: 14),
+        ),
+      ),
     );
   }
 }

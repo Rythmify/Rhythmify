@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
 
-class AccountScreen extends ConsumerWidget{
+class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
-    final String myEmail='';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String myEmail = '';
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -18,41 +18,36 @@ class AccountScreen extends ConsumerWidget{
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Scaffold(
-        appBar: AppBar(title: const Text('Account'), centerTitle: false),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            const Text(
-              'Email address',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          appBar: AppBar(title: const Text('Account'), centerTitle: false),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              const Text(
+                'Email address',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              myEmail,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
+              const SizedBox(height: 4),
+              Text(
+                myEmail,
+                style: TextStyle(color: Colors.white, fontSize: 15),
               ),
-            ),
-            const SizedBox(height: 16),
-            SignOutButtonWidget(),
-            const SizedBox(height: 8),
-            SettingsOptionsTileWidget(
-              key: Key('delete_account_button'),
-              title: 'Delete account',
-              onTap: () {}
-            )
-          ],
-
+              const SizedBox(height: 16),
+              SignOutButtonWidget(),
+              const SizedBox(height: 8),
+              SettingsOptionsTileWidget(
+                key: Key('delete_account_button'),
+                title: 'Delete account',
+                onTap: () {},
+              ),
+            ],
+          ),
         ),
       ),
-        )
-      
     );
   }
 }

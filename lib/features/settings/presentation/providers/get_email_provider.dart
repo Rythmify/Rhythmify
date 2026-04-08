@@ -1,1 +1,1 @@
-final getEmailProvider=[];
+final getEmailProvider = [];

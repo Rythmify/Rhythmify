@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/privacy_policy_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
 
-class AnalyticsSettingsScreen extends StatelessWidget{
+class AnalyticsSettingsScreen extends StatelessWidget {
   const AnalyticsSettingsScreen({super.key});
 
   @override
@@ -13,30 +13,31 @@ class AnalyticsSettingsScreen extends StatelessWidget{
         highlightColor: const Color(0xFF2A2A2A),
       ),
       child: Scaffold(
-          appBar: AppBar(title: const Text('Analytics'), centerTitle: false),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ReusableTileWidget(
-                key: Key('Analytics_tile'),
-                title: 'Help improve Rythmify by sending us regular usage and device data',
-                switchExists: true,
-                initSwitchValue: true,
-                onTap: (){},
+        appBar: AppBar(title: const Text('Analytics'), centerTitle: false),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ReusableTileWidget(
+              key: Key('Analytics_tile'),
+              title:
+                  'Help improve Rythmify by sending us regular usage and device data',
+              switchExists: true,
+              initSwitchValue: true,
+              onTap: () {},
+            ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'changes require an app restart to become effective.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
-              const SizedBox(height: 24),
-              Padding(
-                padding:const EdgeInsets.symmetric(horizontal: 16),
-                child:Text(
-                  'changes require an app restart to become effective.',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-              ),
-              const SizedBox(height: 16),
-              PrivacyPolicyWidget()
-            ],
-          ),
-        )
+            ),
+            const SizedBox(height: 16),
+            PrivacyPolicyWidget(),
+          ],
+        ),
+      ),
     );
   }
 }
