@@ -308,7 +308,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             fit: BoxFit.cover,
                           )
                         : Image.asset(
-                            track.artworkUrl,
+                            track.coverImage!,
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
