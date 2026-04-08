@@ -313,47 +313,66 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
                     routes: [
-                      GoRoute( //1- import music
+                      GoRoute(
+                        //1- import music
                         path: 'import-my-music',
-                        builder: (context, state) => const ImportMyMusicScreen(),
+                        builder: (context, state) =>
+                            const ImportMyMusicScreen(),
                       ),
-                      GoRoute( //2- Account
+                      GoRoute(
+                        //2- Account
                         path: 'account',
                         builder: (context, state) => const AccountScreen(),
                       ),
-                      GoRoute( //4- Basic settings
+                      GoRoute(
+                        //4- Basic settings
                         path: 'basic-settings',
-                        builder: (context, state) => const BasicSettingsScreen(),
+                        builder: (context, state) =>
+                            const BasicSettingsScreen(),
                       ),
-                      GoRoute( //5- Social settings
+                      GoRoute(
+                        //5- Social settings
                         path: 'social-settings',
-                        builder: (context, state) => const SocialSettingsScreen(),
+                        builder: (context, state) =>
+                            const SocialSettingsScreen(),
                       ),
-                      GoRoute( //6- Inbox
+                      GoRoute(
+                        //6- Inbox
                         path: 'inbox-settings',
-                        builder: (context, state) => const InboxSettingsScreen(),
+                        builder: (context, state) =>
+                            const InboxSettingsScreen(),
                       ),
-                      GoRoute( //7- Notifications
+                      GoRoute(
+                        //7- Notifications
                         path: 'notifications',
-                        builder: (context, state) => const NotificationsSettingsScreen(),
+                        builder: (context, state) =>
+                            const NotificationsSettingsScreen(),
                       ),
-                      GoRoute( //9- Analytics
+                      GoRoute(
+                        //9- Analytics
                         path: 'analytics',
-                        builder: (context, state) => const AnalyticsSettingsScreen(),
+                        builder: (context, state) =>
+                            const AnalyticsSettingsScreen(),
                       ),
-                      GoRoute( //10- Communications
+                      GoRoute(
+                        //10- Communications
                         path: 'Communications',
-                        builder: (context, state) => const CommunicationSettingsScreen(),
+                        builder: (context, state) =>
+                            const CommunicationSettingsScreen(),
                       ),
-                      GoRoute( //11- Advesrtising
+                      GoRoute(
+                        //11- Advesrtising
                         path: 'Advesrtising',
-                        builder: (context, state) => const AdvertisingSettingsScreen(),
+                        builder: (context, state) =>
+                            const AdvertisingSettingsScreen(),
                       ),
-                      GoRoute( //13- Legal
+                      GoRoute(
+                        //13- Legal
                         path: 'Legal',
-                        builder: (context, state) => const LegalSettingsScreen(),
+                        builder: (context, state) =>
+                            const LegalSettingsScreen(),
                       ),
-                    ]
+                    ],
                   ),
                   GoRoute(
                     path: 'playlist',
