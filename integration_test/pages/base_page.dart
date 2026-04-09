@@ -20,6 +20,19 @@ class BasePage {
     await tester.pumpAndSettle();
   }
 
+  Future<void> scrollUntilVisible({
+      required String itemText,
+      required String scrollableKey,
+    }) async {
+    await tester.dragUntilVisible(
+      find.text(itemText),
+      find.byKey(Key(scrollableKey)),
+      const Offset(0, -100),
+      maxIteration: 50,
+    );
+    await tester.pumpAndSettle();
+  }
+
   bool isVisible(String key) {
     return find.byKey(Key(key)).evaluate().isNotEmpty;
   }

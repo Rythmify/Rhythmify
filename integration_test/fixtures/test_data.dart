@@ -52,9 +52,9 @@ final TestUser existingUser = TestUser(
   email: 'bassel@rythmify.com',
   password: 'Biso1234',
   username: 'user-002',
-  month: 'March',
-  day: '5',
-  year: '2013',
+  month: 'December',
+  day: '28',
+  year: '2005',
   gender: 'Male',
 );
 

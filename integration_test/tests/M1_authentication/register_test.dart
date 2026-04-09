@@ -9,497 +9,236 @@ import '../../selectors/selectors.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Registration', () {
+  testWidgets('M1 - Authentication: Registration - all scenarios', (tester) async {
+    app.main();
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+    final registerPage = RegisterPage(tester);
 
-    // ─── Valid Registration ─────────────────────────────────────────────────
-    testWidgets('should register successfully with new valid credentials', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    Future<void> goBackToOnboarding() async {
+      final NavigatorState navigator = tester.state(find.byType(Navigator).last);
+      navigator.popUntil((route) => route.isFirst);
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      // Complete registration
-      await registerPage.register(
-        newUser.email,
-        newUser.password,
-        newUser.username,
-        newUser.month,
-        newUser.day,
-        newUser.year,
-        newUser.gender,
-      );
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      // Verify home page is visible
-      expect(registerPage.isOnHomePage(), true);
-    });
-
-    testWidgets('should scroll and select the right values and register successfully', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      // Manual step-by-step registration with scrolling
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername(newUser.username);
-      await registerPage.selectMonth(newUser.month);
-      await registerPage.openDayDropdown();
-      await registerPage.scrollToDay(ScrollValues.days);
-      expect(find.text(ScrollValues.days), findsOneWidget);
-
-      await registerPage.selectDay(newUser.day);
-      
-      await registerPage.openYearDropdown();
-      await registerPage.scrollToYear(ScrollValues.years);
-      expect(find.text(ScrollValues.years), findsOneWidget);
-
-      await registerPage.selectYear(newUser.year);
-      await registerPage.selectGender(newUser.gender);
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      expect(registerPage.isOnHomePage(), true);
-    });
-
-
-    // ─── Existing Email ──────────────────────────────────────────────────
-    testWidgets('should show error when registering with existing email', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.register(
-        existingUser.email,
-        existingUser.password,
-        existingUser.username,
-        existingUser.month,
-        existingUser.day,
-        existingUser.year,
-        existingUser.gender,
-      );
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-
-      expect(registerPage.isAlreadyExistsErrorVisible(), true);
-    });
-
-
-    // ─── Invalid Email Format ────────────────────────────────────────────
-    testWidgets('should show error when registering with invalid email format', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail('invalid-email');
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-
-      expect(registerPage.isInvalidEmailErrorVisible(), true);
-    });
-
-
-    // ─── Invalid Password Format ─────────────────────────────────────────
-    for (final invalidPassword in invalidPasswords) {
-      testWidgets(
-        'should show error when registering with invalid password: ${invalidPassword.reason}',
-        (tester) async {
-          app.main();
-          await tester.pumpAndSettle(const Duration(seconds: 5));
-
-          final registerPage = RegisterPage(tester);
-
-          // Navigate to register
-          await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-          await tester.pumpAndSettle(const Duration(seconds: 3));
-
-          await registerPage.enterEmail(newUser.email);
-          await registerPage.tapContinue();
-          await tester.pumpAndSettle();
-
-          await registerPage.enterPassword(invalidPassword.password);
-          await registerPage.tapPasswordContinue();
-          await tester.pumpAndSettle(const Duration(seconds: 2));
-
-          expect(
-            registerPage.isSpecificPasswordErrorVisible(invalidPassword.errorKey),
-            true,
-            reason: 'Expected error for ${invalidPassword.reason}',
-          );
-        },
-      );
     }
 
+    // ─── 1. Empty email ───────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    // ─── Empty Fields Validation ────────────────────────────────────────
-    testWidgets('should show error when registering with empty email', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      final registerPage = RegisterPage(tester);
+    expect(registerPage.isEmailEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+    // ─── 2. Invalid email format ──────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-      await registerPage.enterEmail('');
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+    await registerPage.enterEmail('invalid-email');
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      expect(registerPage.isEmailEmptyErrorVisible(), true);
-    });
+    expect(registerPage.isInvalidEmailErrorVisible(), true);
+    await goBackToOnboarding();
 
-    testWidgets('should show error when registering with empty password', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+    // ─── 3. Empty password ────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-      final registerPage = RegisterPage(tester);
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
 
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
+    expect(registerPage.isPasswordEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-      await registerPage.enterPassword('');
+    // ─── 4. Invalid passwords ─────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+
+    for (final invalidPassword in invalidPasswords) {
+      await registerPage.enterPassword(invalidPassword.password);
       await registerPage.tapPasswordContinue();
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      expect(registerPage.isPasswordEmptyErrorVisible(), true);
-    });
-
-    testWidgets('should show error when registering with empty username', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername('');
-      await registerPage.selectMonth(newUser.month);
-      await registerPage.selectDay(newUser.day);
-      await registerPage.selectYear(newUser.year);
-      await registerPage.selectGender(newUser.gender);
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-
-      expect(registerPage.isUsernameEmptyErrorVisible(), true);
-    });
-
-    testWidgets('should show error when registering with empty month', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername(newUser.username);
-      // Skip month selection
-      await registerPage.selectDay(newUser.day);
-      await registerPage.selectYear(newUser.year);
-      await registerPage.selectGender(newUser.gender);
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle();
-
-      expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
-    });
-
-    testWidgets('should show error when registering with empty day', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername(newUser.username);
-      await registerPage.selectMonth(newUser.month);
-      // Skip day selection
-      await registerPage.selectYear(newUser.year);
-      await registerPage.selectGender(newUser.gender);
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle();
-
-      expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
-    });
-
-    testWidgets('should show error when registering with empty year', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername(newUser.username);
-      await registerPage.selectMonth(newUser.month);
-      await registerPage.selectDay(newUser.day);
-      // Skip year selection
-      await registerPage.selectGender(newUser.gender);
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle();
-
-      expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
-    });
-
-    testWidgets('should show error when registering with empty gender', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.enterEmail(newUser.email);
-      await registerPage.tapContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterPassword(newUser.password);
-      await registerPage.tapPasswordContinue();
-      await tester.pumpAndSettle();
-
-      await registerPage.enterUsername(newUser.username);
-      await registerPage.selectMonth(newUser.month);
-      await registerPage.selectDay(newUser.day);
-      await registerPage.selectYear(newUser.year);
-      // Skip gender selection
-      await registerPage.tapFinalContinue();
-      await tester.pumpAndSettle();
-
-      expect(registerPage.isGenderEmptyErrorVisible(), true);
-    });
-
-
-    // ─── Age Restriction ───────────────────────────────────────────────────
-    testWidgets('should show error when registering with age below 13', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final registerPage = RegisterPage(tester);
-
-      // Navigate to register
-      await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await registerPage.register(
-        ageRestrictedUser.email,
-        ageRestrictedUser.password,
-        ageRestrictedUser.username,
-        ageRestrictedUser.month,
-        ageRestrictedUser.day,
-        ageRestrictedUser.year,
-        ageRestrictedUser.gender,
+      expect(
+        registerPage.isSpecificPasswordErrorVisible(invalidPassword.errorKey),
+        true,
+        reason: 'Expected error for ${invalidPassword.reason}',
       );
-      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      expect(registerPage.isAgeRestrictionErrorVisible(), true);
-    });
+      // Clear the password field before trying the next one
+      await tester.enterText(
+        find.byKey(const Key(authPasswordTextField)),
+        '',
+      );
+      await tester.pumpAndSettle();
+    }
+    await goBackToOnboarding();
 
+    // ─── 5. Empty username ────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    // ─── Social Authentication (SKIPPED - Ready for Backend Integration) ────
-    // testWidgets(
-    //   'should register successfully with Google authentication',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+    await registerPage.enterPassword(newUser.password);
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle();
 
-    //     final registerPage = RegisterPage(tester);
+    await registerPage.selectMonth(newUser.month);
+    await registerPage.selectDay(newUser.day);
+    await registerPage.selectYear(newUser.year);
+    await registerPage.selectGender(newUser.gender);
+    await registerPage.tapFinalContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     // Navigate to sign-in page (social buttons are on sign-in page)
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
+    expect(registerPage.isUsernameEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-    //     // Tap Google Sign-In button for registration
-    //     await tester.tap(find.byKey(const Key(authSocialGoogleButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    // ─── 6. Empty month ───────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     // Verify home page is reached (successful registration)
-    //     expect(registerPage.isOnHomePage(), true);
-    //   },
-    // );
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+    await registerPage.enterPassword(newUser.password);
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle();
 
-    // testWidgets(
-    //   'should register successfully with Facebook authentication',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.enterUsername(newUser.username);
+    await registerPage.selectDay(newUser.day);
+    await registerPage.selectYear(newUser.year);
+    await registerPage.selectGender(newUser.gender);
+    await registerPage.tapFinalContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     final registerPage = RegisterPage(tester);
+    expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-    //     // Navigate to sign-in page (social buttons are on sign-in page)
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
+    // ─── 7. Empty day ─────────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     // Tap Facebook Sign-In button for registration
-    //     await tester.tap(find.byKey(const Key(authSocialFacebookButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+    await registerPage.enterPassword(newUser.password);
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle();
 
-    //     // Verify home page is reached (successful registration)
-    //     expect(registerPage.isOnHomePage(), true);
-    //   },
-    // );
+    await registerPage.enterUsername(newUser.username);
+    await registerPage.selectMonth(newUser.month);
+    await registerPage.selectYear(newUser.year);
+    await registerPage.selectGender(newUser.gender);
+    await registerPage.tapFinalContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    // testWidgets(
-    //   'should register successfully with Apple authentication',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-    //     final registerPage = RegisterPage(tester);
+    // ─── 8. Empty year ────────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     // Navigate to sign-in page (social buttons are on sign-in page)
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+    await registerPage.enterPassword(newUser.password);
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle();
 
-    //     // Tap Apple Sign-In button for registration
-    //     await tester.tap(find.byKey(const Key(authSocialAppleButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.enterUsername(newUser.username);
+    await registerPage.selectMonth(newUser.month);
+    await registerPage.selectDay(newUser.day);
+    await registerPage.selectGender(newUser.gender);
+    await registerPage.tapFinalContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     // Verify home page is reached (successful registration)
-    //     expect(registerPage.isOnHomePage(), true);
-    //   },
-    // );
+    expect(registerPage.isDateOfBirthEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-    // testWidgets(
-    //   'should handle Google authentication registration with invalid credentials',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    // ─── 9. Empty gender ──────────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     final registerPage = RegisterPage(tester);
+    await registerPage.enterEmail(newUser.email);
+    await registerPage.tapContinue();
+    await tester.pumpAndSettle();
+    await registerPage.enterPassword(newUser.password);
+    await registerPage.tapPasswordContinue();
+    await tester.pumpAndSettle();
 
-    //     // Navigate to sign-in page
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
+    await registerPage.enterUsername(newUser.username);
+    await registerPage.selectMonth(newUser.month);
+    await registerPage.selectDay(newUser.day);
+    await registerPage.selectYear(newUser.year);
+    await registerPage.tapFinalContinue();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     // Attempt Google Sign-In with invalid credentials
-    //     await tester.tap(find.byKey(const Key(authSocialGoogleButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    expect(registerPage.isGenderEmptyErrorVisible(), true);
+    await goBackToOnboarding();
 
-    //     // Should show error or return to sign-in page
-    //     expect(
-    //       registerPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-    //       true,
-    //     );
-    //   },
-    // );
+    // ─── 10. Age restriction ──────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    // testWidgets(
-    //   'should handle Facebook authentication registration with invalid credentials',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.register(
+      ageRestrictedUser.email,
+      ageRestrictedUser.password,
+      ageRestrictedUser.username,
+      ageRestrictedUser.month,
+      ageRestrictedUser.day,
+      ageRestrictedUser.year,
+      ageRestrictedUser.gender,
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     final registerPage = RegisterPage(tester);
+    expect(registerPage.isAgeRestrictionErrorVisible(), true);
+    await goBackToOnboarding();
 
-    //     // Navigate to sign-in page
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
+    // ─── 11. Existing email ───────────────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     // Attempt Facebook Sign-In with invalid credentials
-    //     await tester.tap(find.byKey(const Key(authSocialFacebookButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    await registerPage.register(
+      existingUser.email,
+      existingUser.password,
+      existingUser.username,
+      existingUser.month,
+      existingUser.day,
+      existingUser.year,
+      existingUser.gender,
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    //     // Should show error or return to sign-in page
-    //     expect(
-    //       registerPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-    //       true,
-    //     );
-    //   },
-    // );
+    expect(registerPage.isAlreadyExistsErrorVisible(), true);
+    await goBackToOnboarding();
 
-    // testWidgets(
-    //   'should handle Apple authentication registration with invalid credentials',
-    //   (tester) async {
-    //     app.main();
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
+    // ─── 12. Valid registration (last) ────────────────────────────────
+    await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    //     final registerPage = RegisterPage(tester);
+    await registerPage.register(
+      newUser.email,
+      newUser.password,
+      newUser.username,
+      newUser.month,
+      newUser.day,
+      newUser.year,
+      newUser.gender,
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 5));
 
-    //     // Navigate to sign-in page
-    //     await tester.tap(find.byKey(const Key(onboardingCreateAccountButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 3));
-
-    //     // Attempt Apple Sign-In with invalid credentials
-    //     await tester.tap(find.byKey(const Key(authSocialAppleButton)));
-    //     await tester.pumpAndSettle(const Duration(seconds: 5));
-
-    //     // Should show error or return to sign-in page
-    //     expect(
-    //       registerPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-    //       true,
-    //     );
-    //   },
-    // );
+    expect(registerPage.isOnHomePage(), true);
   });
 }
