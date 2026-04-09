@@ -56,22 +56,26 @@ class MockCommentRepositoryImpl implements CommentRepository {
     }
   }
 
-  @override
-  Future<Map<int, String>> getFloatingComments(String trackId) async {
+ @override
+  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(String trackId) async {
     try {
       // Fetch all comments for the track to simulate building the waveform map
       final allTrackComments = await _localDataSource.getAllCommentsForTrack(
         trackId,
       );
 
-      final Map<int, String> floatingMap = {};
+      // Update map to hold the Record
+      final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        if (dto.userPfp == null) continue;
-
-        final second = (dto.timestamp / 1000).floor();
+        // Mock data timestamp was in ms, convert to seconds
+        final second = (dto.timestamp / 1000).floor(); 
+        
         if (!floatingMap.containsKey(second)) {
-          floatingMap[second] = dto.userPfp!;
+          floatingMap[second] = (
+            pfp: dto.userPfp,
+            text: dto.content,
+          );
         }
       }
 

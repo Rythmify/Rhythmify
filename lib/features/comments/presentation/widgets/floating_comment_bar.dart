@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../providers/floating_comments_provider.dart';
-import '../providers/track_comments_notifier.dart'; // Added to access the postNewComment logic
-import 'floating_comment.dart';
+import '../providers/track_comments_notifier.dart';
+import '../widgets/floating_comment.dart';
 
 class FloatingCommentBar extends ConsumerStatefulWidget {
   const FloatingCommentBar({super.key});
@@ -17,10 +17,11 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  
   String? _currentCommentPfp;
+  String _currentCommentText = ""; 
   int _lastTimestamp = -1;
 
-  // Added state for the input field
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _hasText = false;
@@ -37,7 +38,6 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
       curve: Curves.easeOutBack,
     );
 
-    // Listen to text changes to toggle the send button vs emojis
     _commentController.addListener(() {
       setState(() {
         _hasText = _commentController.text.trim().isNotEmpty;
@@ -53,23 +53,19 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
     super.dispose();
   }
 
-  // Exact same post logic from your CommentsScreen
   void _postComment(String trackId) {
     if (_commentController.text.trim().isEmpty) return;
 
     final position = ref.read(playerStateProvider).position;
 
-    // Post a top-level comment
     ref
         .read(trackCommentsProvider(trackId).notifier)
         .postNewComment(_commentController.text, position.inSeconds);
 
-    // Clear input and remove keyboard
     _commentController.clear();
     _focusNode.unfocus();
   }
 
-  // Helper to append emojis gracefully into the input
   void _appendEmoji(String emoji) {
     final currentText = _commentController.text;
     _commentController.value = TextEditingValue(
@@ -94,10 +90,12 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
       floatingCommentsAsync.whenData((commentsMap) {
         if (commentsMap.containsKey(currentSecond)) {
           setState(() {
-            _currentCommentPfp = commentsMap[currentSecond];
+            _currentCommentPfp = commentsMap[currentSecond]!.pfp; 
+            _currentCommentText = commentsMap[currentSecond]!.text; 
           });
+          
           _controller.forward(from: 0).then((_) {
-            Future.delayed(const Duration(seconds: 1), () {
+            Future.delayed(const Duration(seconds: 2), () {
               if (mounted) _controller.reverse();
             });
           });
@@ -136,8 +134,6 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                     ),
                   ),
                 ),
-                
-                // Show Send Button if there is text, else show emojis
                 if (_hasText)
                   GestureDetector(
                     onTap: () => _postComment(trackId),
@@ -147,11 +143,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.send,
-                        color: Colors.black,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.send, color: Colors.black, size: 20),
                     ),
                   )
                 else
@@ -160,29 +152,17 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                     children: [
                       GestureDetector(
                         onTap: () => _appendEmoji('🔥'),
-                        child: Text(
-                          '🔥',
-                          key: const Key('comments_fire_emoji_text'),
-                          style: const TextStyle(fontSize: 20),
-                        ),
+                        child: const Text('🔥', style: TextStyle(fontSize: 20)),
                       ),
                       const SizedBox(width: 24),
                       GestureDetector(
                         onTap: () => _appendEmoji('👏'),
-                        child: Text(
-                          '👏',
-                          key: const Key('comments_clap_emoji_text'),
-                          style: const TextStyle(fontSize: 20),
-                        ),
+                        child: const Text('👏', style: TextStyle(fontSize: 20)),
                       ),
                       const SizedBox(width: 24),
                       GestureDetector(
                         onTap: () => _appendEmoji('🥺'),
-                        child: Text(
-                          '🥺',
-                          key: const Key('comments_pleading_emoji_text'),
-                          style: const TextStyle(fontSize: 20),
-                        ),
+                        child: const Text('🥺', style: TextStyle(fontSize: 20)),
                       ),
                     ],
                   ),
@@ -190,11 +170,20 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
             ),
           ),
         ),
+        
         Positioned(
-          top: 200,
-          child: ScaleTransition(
-            scale: _animation,
-            child: FloatingComment(imageUrl: _currentCommentPfp),
+          bottom: 200, 
+          left: 32, 
+          right: 32,
+          child: Align(
+            alignment: Alignment.center,
+            child: ScaleTransition(
+              scale: _animation,
+              child: FloatingComment(
+                imageUrl: _currentCommentPfp,
+                text: _currentCommentText,
+              ),
+            ),
           ),
         ),
       ],

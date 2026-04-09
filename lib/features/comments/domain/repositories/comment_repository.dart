@@ -53,7 +53,7 @@ abstract class CommentRepository {
   /// Returns a Map where the Key is the timestamp in seconds,
   /// and the Value is the URL of the user's profile picture.
   /// This is highly optimized for O(1) lookups during audio playback.
-  Future<Map<int, String>> getFloatingComments(String trackId);
+  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(String trackId);
 
   /// Posts a new comment or a reply to an existing comment.
   ///
