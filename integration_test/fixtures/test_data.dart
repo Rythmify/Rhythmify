@@ -93,6 +93,13 @@ final List<InvalidPassword> invalidPasswords = [
   ),
 ];
 
+// Profile edit test data
+const String profileEditNewName        = 'User Test';
+const String profileEditNewCity        = 'Giza';
+const String profileEditNewCountry     = 'EG';      
+const String profileEditNewCountryName = 'Egypt';   
+const String profileEditNewBio         = 'Integration test bio';
+
 // Scroll test values
 class ScrollValues {
   static const String days = '31';
