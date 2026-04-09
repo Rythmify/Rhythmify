@@ -13,8 +13,15 @@ import '../../domain/entities/hot_for_you.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
+import 'package:http/http.dart' as http;
 
-final datasourceProvider = Provider((ref) => HomeDatasource());
+final datasourceProvider = Provider(
+  (ref) => HomeDatasource(
+    client: http.Client(),
+    baseUrl:
+        'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
+  ),
+);
 
 final repositoryProvider = Provider(
   (ref) => HomeRepositoryImpl(ref.read(datasourceProvider)),
@@ -49,28 +56,28 @@ final getDiscoverStationsUseCaseProvider = Provider(
 // ====== UI State Providers ======
 
 final homeDataProvider = FutureProvider<HomeData>((ref) {
-  return ref.read(getHomeDataProvider).call();
+  return ref.watch(getHomeDataProvider).call();
 });
 
 final trendingByGenreProvider = FutureProvider.family<GenreTabTracks, String>((
   ref,
   genreId,
 ) {
-  return ref.read(getTrendingByGenreProvider).call(genreId);
+  return ref.watch(getTrendingByGenreProvider).call(genreId);
 });
 
 final hotForYouProvider = FutureProvider<HotForYou>((ref) {
-  return ref.read(getHotForYouProvider).call();
+  return ref.watch(getHotForYouProvider).call();
 });
 
 final moreOfWhatYouLikeProvider = FutureProvider<List<Track>>((ref) {
-  return ref.read(getMoreOfWhatYouLikeUseCaseProvider).call();
+  return ref.watch(getMoreOfWhatYouLikeUseCaseProvider).call();
 });
 
 final mixedForYouProvider = FutureProvider<List<MixedForYouItem>>((ref) {
-  return ref.read(getMixedForYouUseCaseProvider).call();
+  return ref.watch(getMixedForYouUseCaseProvider).call();
 });
 
 final discoverStationsProvider = FutureProvider<List<DiscoverStation>>((ref) {
-  return ref.read(getDiscoverStationsUseCaseProvider).call();
+  return ref.watch(getDiscoverStationsUseCaseProvider).call();
 });
