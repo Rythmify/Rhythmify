@@ -23,9 +23,6 @@ class CommentActionBottomSheet extends ConsumerWidget {
 
   void _copyComment(BuildContext context) {
     Clipboard.setData(ClipboardData(text: comment.content));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Comment copied to clipboard')),
-    );
     Navigator.pop(context);
   }
 
@@ -35,7 +32,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
   }
 
   void _playFrom(BuildContext context, WidgetRef ref) {
-    final position = Duration(milliseconds: comment.trackTimestamp);
+    final position = Duration(seconds: comment.trackTimestamp);
+
     ref.read(playerStateProvider.notifier).seek(position);
     // Ensure it plays if paused
     ref.read(playTrackUseCaseProvider).call();
