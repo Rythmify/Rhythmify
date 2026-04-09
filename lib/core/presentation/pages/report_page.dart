@@ -17,7 +17,9 @@ class _ReportPageState extends State<ReportPage> {
 
   final _detailsController = TextEditingController();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController(text: 'basseialaa33@gmail.com');
+  final _emailController = TextEditingController(
+    text: 'basseialaa33@gmail.com',
+  );
   final _urlController = TextEditingController();
 
   final List<String> _reasons = [
@@ -53,7 +55,9 @@ class _ReportPageState extends State<ReportPage> {
   }
 
   void _submitReport() {
-    if (_formKey.currentState!.validate() && _selectedReason != null && _isConsentChecked) {
+    if (_formKey.currentState!.validate() &&
+        _selectedReason != null &&
+        _isConsentChecked) {
       // Process submission
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report submitted successfully')),
@@ -103,13 +107,17 @@ class _ReportPageState extends State<ReportPage> {
             children: [
               Text(
                 'Report Content to Rythmify',
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 24),
 
               Text(
                 'Reason for Reporting',
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               ..._reasons.map((reason) {
@@ -130,7 +138,9 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 "Please provide more detail as to why you're reporting this content",
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -145,13 +155,17 @@ class _ReportPageState extends State<ReportPage> {
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Please provide details' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please provide details'
+                    : null,
               ),
 
               const SizedBox(height: 24),
               Text(
                 'Your Information',
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -164,7 +178,9 @@ class _ReportPageState extends State<ReportPage> {
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter your name' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter your name'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -179,8 +195,11 @@ class _ReportPageState extends State<ReportPage> {
                   fillColor: Colors.white10,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter your email';
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (value == null || value.isEmpty)
+                    return 'Please enter your email';
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(value)) {
                     return 'Please enter a valid email';
                   }
                   return null;
@@ -190,7 +209,9 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 'Please provide the link (URL) within Rythmify to the content you are reporting. Please only input one link per report.',
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -205,8 +226,10 @@ class _ReportPageState extends State<ReportPage> {
                   fillColor: Colors.white10,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter a URL';
-                  if (!value.contains('rythmify.com')) return 'Please enter a valid Rythmify link';
+                  if (value == null || value.isEmpty)
+                    return 'Please enter a URL';
+                  if (!value.contains('rythmify.com'))
+                    return 'Please enter a valid Rythmify link';
                   return null;
                 },
               ),
@@ -214,7 +237,9 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 'Select where the violation occurs (select all that apply)',
-                style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -242,7 +267,9 @@ class _ReportPageState extends State<ReportPage> {
               CheckboxListTile(
                 title: Text(
                   'I hereby state that I have a good-faith belief that the information and allegations I have submitted are accurate and complete.',
-                  style: AppTheme.bodyNormal.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTheme.bodyNormal.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 value: _isConsentChecked,
                 onChanged: (bool? value) {
@@ -320,19 +347,55 @@ class _ReportPageState extends State<ReportPage> {
           ],
         ),
         const SizedBox(height: 32),
-        const Text('About Rythmify:', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'About Rythmify:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         Wrap(
           alignment: WrapAlignment.center,
           spacing: 16,
           children: [
-            TextButton(onPressed: () {}, child: const Text('Company', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('About us', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('Blog', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('Jobs', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('Developers', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('Legal', style: TextStyle(color: Colors.grey))),
-            TextButton(onPressed: () {}, child: const Text('Copyright', style: TextStyle(color: Colors.grey))),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'Company',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'About us',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Blog', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Jobs', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'Developers',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Legal', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                'Copyright',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -349,7 +412,10 @@ class _ReportPageState extends State<ReportPage> {
         const SizedBox(height: 32),
         const Align(
           alignment: Alignment.centerRight,
-          child: Text('© 2026 Rythmify - Language: English (US)', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          child: Text(
+            '© 2026 Rythmify - Language: English (US)',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
         ),
         const SizedBox(height: 16),
       ],

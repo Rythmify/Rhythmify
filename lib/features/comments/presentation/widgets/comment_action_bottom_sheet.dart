@@ -16,10 +16,7 @@ import '../../../../core/presentation/pages/report_page.dart';
 class CommentActionBottomSheet extends ConsumerWidget {
   final Comment comment;
 
-  const CommentActionBottomSheet({
-    super.key,
-    required this.comment,
-  });
+  const CommentActionBottomSheet({super.key, required this.comment});
 
   void _copyComment(BuildContext context) {
     Clipboard.setData(ClipboardData(text: comment.content));
@@ -45,15 +42,15 @@ class CommentActionBottomSheet extends ConsumerWidget {
     try {
       await ref.read(deleteCommentProvider)(comment.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Comment deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Comment deleted')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete comment: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
       }
     }
   }
@@ -72,15 +69,15 @@ class CommentActionBottomSheet extends ConsumerWidget {
     try {
       await ref.read(blockUserProvider)(comment.userId);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User blocked')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('User blocked')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to block user: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to block user: $e')));
       }
     }
   }
@@ -88,7 +85,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isMe = authState is AuthAuthenticated && authState.user.id == comment.userId;
+    final isMe =
+        authState is AuthAuthenticated && authState.user.id == comment.userId;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -101,7 +99,10 @@ class CommentActionBottomSheet extends ConsumerWidget {
         children: [
           // Row 1: Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -118,11 +119,12 @@ class CommentActionBottomSheet extends ConsumerWidget {
             ),
           ),
           const Divider(color: Colors.white24),
-          
+
           // Row 2: Play from
           _buildActionRow(
             icon: Icons.play_circle_outline,
-            label: 'Play from ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
+            label:
+                'Play from ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
             onTap: () => _playFrom(context, ref),
           ),
 
@@ -154,14 +156,14 @@ class CommentActionBottomSheet extends ConsumerWidget {
               label: 'Report user',
               onTap: () => _reportUser(context),
             ),
-            
+
             // Row 6 (Other): Block
             _buildActionRow(
               icon: Icons.block,
               label: 'Block',
               onTap: () => _blockUser(context, ref),
             ),
-          ]
+          ],
         ],
       ),
     );

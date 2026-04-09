@@ -155,7 +155,8 @@ class CommentCard extends StatelessWidget {
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => CommentActionBottomSheet(comment: comment),
+                          builder: (context) =>
+                              CommentActionBottomSheet(comment: comment),
                         );
                       },
                       borderRadius: BorderRadius.circular(8),
