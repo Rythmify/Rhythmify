@@ -80,4 +80,10 @@ abstract class CommentRepository {
 
   /// Deletes a specific comment owned by the current user.
   Future<void> deleteComment(String commentId);
+
+  /// Blocks a user.
+  Future<void> blockUser(String userId);
+
+  /// Unblocks a user.
+  Future<void> unblockUser(String userId);
 }
