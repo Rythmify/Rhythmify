@@ -68,6 +68,7 @@ const String moreListView                   = 'more_list_view';
 const String trendingByGenreSection         = 'trending_by_genre_section';
 const String genreTabBar                    = 'genre_tab_bar';
 const String genreTabView                   = 'genre_tab_view';
+const String discoverWithStationsSection     = 'discover_stations_section';
 const String discoverWithStationsErrorText  = 'discover_with_stations_error_text';
 
 // --- Player ---

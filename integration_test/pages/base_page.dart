@@ -33,6 +33,12 @@ class BasePage {
     await tester.pumpAndSettle();
   }
 
+  /// Drags the widget identified by [sectionKey] horizontally (left by 300px).
+  Future<void> scrollHorizontallyInSection(String sectionKey) async {
+    await tester.drag(find.byKey(Key(sectionKey)), const Offset(-300, 0));
+    await tester.pumpAndSettle();
+  }
+
   bool isVisible(String key) {
     return find.byKey(Key(key)).evaluate().isNotEmpty;
   }
