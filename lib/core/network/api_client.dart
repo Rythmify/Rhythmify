@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'dart:io';
 
 class ApiClient {
   // Use your computer's IP for physical phone connection
@@ -18,8 +19,17 @@ class ApiClient {
   late final CookieJar cookieJar;
 
   ApiClient() {
-    // Initialize cookie jar (in-memory for now, will persist on first use)
-    cookieJar = CookieJar();
+    // Persist cookies across app restarts so refresh_token survives relaunch.
+    final cookieStorageDir = Directory(
+      '${Directory.systemTemp.path}${Platform.pathSeparator}rythmify_cookies',
+    );
+    if (!cookieStorageDir.existsSync()) {
+      cookieStorageDir.createSync(recursive: true);
+    }
+    cookieJar = PersistCookieJar(
+      storage: FileStorage(cookieStorageDir.path),
+      ignoreExpires: false,
+    );
 
     dio = Dio(
       BaseOptions(

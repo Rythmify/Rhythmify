@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -80,9 +81,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      // ── Handles token expiration, network errors, and other failures ──
-      // Only clear token if it's an auth error (401), not network errors
-      if (e.toString().contains('401') || e.toString().contains('AUTH_')) {
+      if (e is DioException && e.response?.statusCode == 401) {
         await apiClient.clearToken();
       }
       state = const AuthUnauthenticated();
