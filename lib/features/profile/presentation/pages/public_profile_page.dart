@@ -196,7 +196,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
+                ProfileAvatar(
+                  avatarUrl: state.profile.avatarUrl,
+                  updatedAt: state.profile.updatedAt,
+                  radius: 60,
+                ),
                 const SizedBox(height: 12),
                 Text(state.profile.displayName, style: AppTheme.headlineLarge),
                 const SizedBox(height: 4),

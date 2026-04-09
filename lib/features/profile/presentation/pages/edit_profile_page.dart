@@ -162,6 +162,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// Uses [ImagePicker] with a 512×512 max size and 85% quality.
   /// Calls [ProfileNotifier.uploadAvatar] with the selected file path.
   Future<void> _pickAvatar() async {
+    print('🔵 _pickAvatar: Opening image picker');
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -170,7 +171,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
+      print('🟢 _pickAvatar: Image selected: ${image.path}');
+      print('🔵 _pickAvatar: Calling uploadAvatar');
       ref.read(profileProvider.notifier).uploadAvatar(filePath: image.path);
+    } else {
+      print('⚠️ _pickAvatar: No image selected');
     }
   }
 
@@ -395,7 +400,19 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           color: AppTheme.surface,
                           child: profileState.profile.coverUrl != null
                               ? Image.network(
-                                  profileState.profile.coverUrl!,
+                                  // Cache-busting: Add timestamp to force reload after upload
+                                  Uri.parse(profileState.profile.coverUrl!)
+                                      .replace(
+                                        queryParameters: {
+                                          ...Uri.parse(
+                                            profileState.profile.coverUrl!,
+                                          ).queryParameters,
+                                          't': DateTime.now()
+                                              .millisecondsSinceEpoch
+                                              .toString(),
+                                        },
+                                      )
+                                      .toString(),
                                   fit: BoxFit.cover,
                                   errorBuilder: (a, b, c) => const SizedBox(),
                                 )
@@ -428,6 +445,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           bottom: -40,
                           child: ProfileAvatar(
                             avatarUrl: profileState.profile.avatarUrl,
+                            updatedAt: profileState.profile.updatedAt,
                             radius: 44,
                             showCameraIcon: true,
                             onTap: _pickAvatar,

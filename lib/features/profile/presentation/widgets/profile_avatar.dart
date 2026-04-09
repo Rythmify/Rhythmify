@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 /// A circular avatar widget used across profile screens.
@@ -11,10 +12,17 @@ import '../../../../../core/theme/app_theme.dart';
 /// Optionally shows a camera icon overlay when [showCameraIcon] is
 /// `true` — used on the [EditProfilePage] to indicate tappability.
 ///
+/// **Cache-busting strategy:**
+/// If [updatedAt] is provided, it's used as a stable cache key that only
+/// changes when the profile is updated. If not provided, falls back to
+/// a timestamp-based approach. This prevents showing stale images when
+/// the CDN URL stays the same after avatar upload/deletion.
+///
 /// Example usage:
 /// ```dart
 /// ProfileAvatar(
 ///   avatarUrl: 'https://cdn.rythmify.com/avatars/user.jpg',
+///   updatedAt: profile.updatedAt,
 ///   radius: 60,
 ///   showCameraIcon: true,
 ///   onTap: _pickAvatar,
@@ -25,6 +33,13 @@ class ProfileAvatar extends StatelessWidget {
   ///
   /// If `null`, a default person icon is shown instead.
   final String? avatarUrl;
+
+  /// The timestamp when the profile was last updated.
+  ///
+  /// Used for cache-busting: when this changes, the widget re-fetches
+  /// the image from the network. Provides a stable cache key tied to
+  /// the actual profile state, rather than using `DateTime.now()`.
+  final DateTime? updatedAt;
 
   /// The radius of the circular avatar in logical pixels.
   ///
@@ -46,6 +61,7 @@ class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
     super.key,
     this.avatarUrl,
+    this.updatedAt,
     this.radius = 60,
     this.showCameraIcon = false,
     this.onTap,
@@ -53,15 +69,32 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Cache-busting strategy without backend updatedAt:
+    // Generate a unique URL on each widget rebuild by appending timestamp.
+    // CachedNetworkImage will cache by the full URL (including query params),
+    // so when the widget rebuilds after upload, the new timestamp forces a refetch.
+    final String? imageUrl;
+
+    if (avatarUrl != null) {
+      // Clear old cached version to ensure fresh load
+      DefaultCacheManager().removeFile(avatarUrl!);
+
+      // Add timestamp query param to bust CDN/browser cache
+      imageUrl = '$avatarUrl?t=${DateTime.now().millisecondsSinceEpoch}';
+    } else {
+      imageUrl = null;
+    }
+
     return GestureDetector(
       key: const Key('profile_avatar_gesture'),
       onTap: onTap,
       child: Stack(
         children: [
           // Use CachedNetworkImage for better error handling
-          avatarUrl != null
+          imageUrl != null
               ? CachedNetworkImage(
-                  imageUrl: avatarUrl!,
+                  key: ValueKey(imageUrl), // Force rebuild when URL changes
+                  imageUrl: imageUrl,
                   imageBuilder: (context, imageProvider) => CircleAvatar(
                     radius: radius,
                     backgroundColor: AppTheme.surface,

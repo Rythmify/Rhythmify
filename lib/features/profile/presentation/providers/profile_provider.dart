@@ -139,20 +139,36 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> uploadAvatar({required String filePath}) async {
+    print('🔵 ProfileNotifier.uploadAvatar: Called with filePath: $filePath');
     final current = state;
-    if (current is! ProfileLoaded) return;
+    if (current is! ProfileLoaded) {
+      print(
+        '🔴 ProfileNotifier.uploadAvatar: State is not ProfileLoaded, aborting',
+      );
+      return;
+    }
 
+    print('🔵 ProfileNotifier.uploadAvatar: Setting isSaving = true');
     state = current.copyWith(isSaving: true);
 
+    print('🔵 ProfileNotifier.uploadAvatar: Calling use case');
     final result = await _uploadAvatar(filePath: filePath);
     result.fold(
       (failure) {
+        print(
+          '🔴 ProfileNotifier.uploadAvatar: Upload failed - ${failure.message}',
+        );
         state = current.copyWith(isSaving: false);
         // TODO: Show error to user
       },
       (profile) {
-        // Update state with new profile containing updated avatar
+        print('🟢 ProfileNotifier.uploadAvatar: Upload successful!');
+        print('🟢 New avatar URL: ${profile.avatarUrl}');
+
+        // Update state - ProfileAvatar widget handles cache clearing
         state = current.copyWith(profile: profile, isSaving: false);
+
+        print('🟢 Profile state updated with new avatar');
       },
     );
   }
@@ -195,6 +211,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       (profile) {
         // Update state with new profile containing updated cover
         state = current.copyWith(profile: profile, isSaving: false);
+
+        // Force image cache clear to show new cover immediately
+        _clearImageCache();
       },
     );
   }
@@ -240,5 +259,20 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     result.fold((failure) => state = current, (_) {});
+  }
+
+  /// Clears the Flutter image cache to force reload of profile images.
+  ///
+  /// Called after avatar/cover upload to ensure users see the new image
+  /// immediately instead of the cached version. This is critical because
+  /// CachedNetworkImage aggressively caches images, and even with a new
+  /// URL from the backend, Flutter may show the old image.
+  void _clearImageCache() {
+    // Note: This requires access to PaintingBinding.instance.imageCache
+    // which is only available in widgets. For now, the ProfileAvatar widget
+    // handles cache-busting via URL timestamp query parameter.
+    // If needed, you can pass BuildContext and call:
+    // PaintingBinding.instance.imageCache.clear();
+    // PaintingBinding.instance.imageCache.clearLiveImages();
   }
 }

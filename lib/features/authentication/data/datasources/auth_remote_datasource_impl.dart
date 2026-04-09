@@ -75,7 +75,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// Registers a new user account via `POST /auth/register`.
   ///
   /// Sends `email`, `password`, `display_name`, `gender`,
-  /// and `date_of_birth` to create a new user account.
+  /// `date_of_birth`, `captcha_token` and `platform`
+  /// to create a new user account.
   ///
   /// Parses `user_id` (not `id`) from the response per the API spec.
   /// Returns a [UserModel] with `token: null` (token is only issued
@@ -107,12 +108,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'display_name': displayName,
         'gender': gender,
         'date_of_birth': dateOfBirth,
+        'captcha_token': null,
+        'platform': 'mobile',
       };
-
-      // Add captcha_token if provided
-      if (captchaToken != null && captchaToken.isNotEmpty) {
-        requestData['captcha_token'] = captchaToken;
-      }
 
       final response = await client.dio.post(
         '/auth/register',
@@ -131,7 +129,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'display_name': data['display_name'],
         'avatar_url': data['avatar_url'] ?? '',
         'is_email_verified': false,
-        'token': null,
+        'captcha_token': null,
       });
     } on DioException catch (e) {
       _handleDioError(e);

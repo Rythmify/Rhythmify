@@ -10,6 +10,7 @@ import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
+import '../../features/authentication/presentation/pages/email_verification_screen.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -92,6 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
+          state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
@@ -104,8 +106,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Logged in — redirect away from auth pages
-      if (authState is AuthAuthenticated) {
+      // Logged in but email not verified — send to verify-email
+      if (authState is AuthAuthenticated && !authState.user.isEmailVerified) {
+        if (state.matchedLocation != '/verify-email') return '/verify-email';
+        return null;
+      }
+
+      // Logged in and verified — redirect away from auth pages
+      if (authState is AuthAuthenticated && authState.user.isEmailVerified) {
         if (isAuthRoute) return '/home';
         return null;
       }
@@ -154,6 +162,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             password: data['password'] as String,
           );
         },
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => const EmailVerificationScreen(),
       ),
 
       // ── Profile routes ───────────────────────────────────

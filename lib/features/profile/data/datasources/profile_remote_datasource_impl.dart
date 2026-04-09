@@ -26,6 +26,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
 
   @override
   Future<ProfileModel> updateProfile({
+    required String userId,
     required String displayName,
     required String city,
     required String country,
@@ -33,7 +34,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   }) async {
     try {
       final response = await client.dio.patch(
-        '/users/me',
+        '/users/$userId',
         data: {
           'display_name': displayName,
           'city': city,
@@ -50,9 +51,17 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   }
 
   @override
-  Future<ProfileModel> uploadAvatar({required String filePath}) async {
+  Future<ProfileModel> uploadAvatar({
+    required String userId,
+    required String filePath,
+  }) async {
     try {
+      print('🔵 uploadAvatar: Starting upload for file: $filePath');
+      print('🔵 uploadAvatar: User ID: $userId');
+
       final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
+      print('🔵 uploadAvatar: MIME type: $mimeType');
+
       final formData = FormData.fromMap({
         'avatar': await MultipartFile.fromFile(
           filePath,
@@ -60,22 +69,40 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         ),
       });
 
-      await client.dio.post('/users/me/avatar', data: formData);
+      print('🔵 uploadAvatar: Sending POST to /users/$userId/avatar');
+      final response = await client.dio.post(
+        '/users/$userId/avatar',
+        data: formData,
+      );
+      print(
+        '🟢 uploadAvatar: Upload successful! Status: ${response.statusCode}',
+      );
 
       // Reload full profile to get updated avatar URL
-      final profile = await getProfile(userId: 'me');
+      print('🔵 uploadAvatar: Reloading profile to get new avatar URL');
+      final profile = await getProfile(userId: userId);
+      print(
+        '🟢 uploadAvatar: Profile reloaded. Avatar URL: ${profile.avatarUrl}',
+      );
 
       return profile;
     } on DioException catch (e) {
+      print('🔴 uploadAvatar: DioException occurred');
+      print('🔴 Status code: ${e.response?.statusCode}');
+      print('🔴 Response data: ${e.response?.data}');
+      print('🔴 Error message: ${e.message}');
       _handleDioError(e);
+      rethrow;
+    } catch (e) {
+      print('🔴 uploadAvatar: Unexpected error: $e');
       rethrow;
     }
   }
 
   @override
-  Future<void> deleteAvatar() async {
+  Future<void> deleteAvatar({required String userId}) async {
     try {
-      await client.dio.delete('/users/me/avatar');
+      await client.dio.delete('/users/$userId/avatar');
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -83,7 +110,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   }
 
   @override
-  Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
+  Future<ProfileModel> uploadCoverPhoto({
+    required String userId,
+    required String filePath,
+  }) async {
     try {
       final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
@@ -93,10 +123,10 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         ),
       });
 
-      await client.dio.post('/users/me/cover', data: formData);
+      await client.dio.post('/users/$userId/cover', data: formData);
 
       // Reload full profile to get updated cover URL
-      final profile = await getProfile(userId: 'me');
+      final profile = await getProfile(userId: userId);
 
       return profile;
     } on DioException catch (e) {
@@ -106,9 +136,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   }
 
   @override
-  Future<void> deleteCoverPhoto() async {
+  Future<void> deleteCoverPhoto({required String userId}) async {
     try {
-      await client.dio.delete('/users/me/cover');
+      await client.dio.delete('/users/$userId/cover');
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

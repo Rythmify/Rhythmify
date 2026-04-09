@@ -69,10 +69,16 @@ class ProfileEntity extends Equatable {
   /// Defaults to `false` when not provided by the API.
   final bool isVerified;
 
+  /// The timestamp when this profile was last updated.
+  ///
+  /// Used for cache-busting profile pictures when the same URL is reused.
+  /// This ensures the UI re-fetches the avatar after upload/deletion.
+  final DateTime? updatedAt;
+
   /// Creates a [ProfileEntity] with all required fields.
   ///
   /// Optional fields ([username], [avatarUrl], [coverUrl], [city],
-  /// [country], [bio]) default to `null`. [isVerified] defaults to `false`.
+  /// [country], [bio], [updatedAt]) default to `null`. [isVerified] defaults to `false`.
   const ProfileEntity({
     required this.id,
     required this.displayName,
@@ -87,6 +93,7 @@ class ProfileEntity extends Equatable {
     required this.tracksCount,
     required this.isFollowing,
     this.isVerified = false,
+    this.updatedAt,
   });
 
   /// Returns a copy of this profile with updated [isFollowing] and
@@ -116,6 +123,7 @@ class ProfileEntity extends Equatable {
       tracksCount: tracksCount,
       isFollowing: isFollowing,
       isVerified: isVerified,
+      updatedAt: updatedAt,
     );
   }
 
@@ -135,5 +143,6 @@ class ProfileEntity extends Equatable {
     tracksCount,
     isFollowing,
     isVerified,
+    updatedAt,
   ];
 }

@@ -252,27 +252,31 @@ void main() {
       expect(result.id, 'user-001');
     });
 
-    test('should include captcha_token dev-bypass in request body', () async {
-      when(
-        () => mockDio.post(any(), data: any(named: 'data')),
-      ).thenAnswer((_) async => registerSuccessResponse());
+    test(
+      'should include null captcha_token and mobile platform in request body',
+      () async {
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenAnswer((_) async => registerSuccessResponse());
 
-      await datasource.signUpWithEmail(
-        email: 'karim@rythmify.com',
-        password: 'Karim123!',
-        displayName: 'KarimWI',
-        gender: 'male',
-        dateOfBirth: '2000-01-01',
-      );
+        await datasource.signUpWithEmail(
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+          displayName: 'KarimWI',
+          gender: 'male',
+          dateOfBirth: '2000-01-01',
+        );
 
-      final captured =
-          verify(
-                () => mockDio.post(any(), data: captureAny(named: 'data')),
-              ).captured.first
-              as Map<String, dynamic>;
+        final captured =
+            verify(
+                  () => mockDio.post(any(), data: captureAny(named: 'data')),
+                ).captured.first
+                as Map<String, dynamic>;
 
-      expect(captured['captcha_token'], 'dev-bypass');
-    });
+        expect(captured['captcha_token'], isNull);
+        expect(captured['platform'], 'mobile');
+      },
+    );
 
     test('should parse user_id (not id) from response', () async {
       when(

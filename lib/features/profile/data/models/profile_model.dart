@@ -15,6 +15,7 @@ class ProfileModel extends ProfileEntity {
     required super.tracksCount,
     required super.isFollowing,
     super.isVerified,
+    super.updatedAt,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +36,12 @@ class ProfileModel extends ProfileEntity {
     final isFollowing = json['is_following'] as bool? ?? false;
     final isVerified = json['is_verified'] as bool? ?? false;
 
+    // Parse updatedAt from ISO 8601 timestamp
+    final updatedAtStr = json['updated_at'] as String?;
+    final updatedAt = updatedAtStr != null
+        ? DateTime.tryParse(updatedAtStr)
+        : null;
+
     return ProfileModel(
       id: id,
       displayName: displayName,
@@ -49,6 +56,7 @@ class ProfileModel extends ProfileEntity {
       tracksCount: tracksCount,
       isFollowing: isFollowing,
       isVerified: isVerified,
+      updatedAt: updatedAt,
     );
   }
 
@@ -67,6 +75,7 @@ class ProfileModel extends ProfileEntity {
       'tracks_count': tracksCount,
       'is_following': isFollowing,
       'is_verified': isVerified,
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 }
