@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../providers/floating_comments_provider.dart';
+import '../providers/track_comments_notifier.dart'; // Added to access the postNewComment logic
 import 'floating_comment.dart';
 
 class FloatingCommentBar extends ConsumerStatefulWidget {
@@ -19,6 +20,11 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
   String? _currentCommentPfp;
   int _lastTimestamp = -1;
 
+  // Added state for the input field
+  final TextEditingController _commentController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _hasText = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,12 +36,47 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
       parent: _controller,
       curve: Curves.easeOutBack,
     );
+
+    // Listen to text changes to toggle the send button vs emojis
+    _commentController.addListener(() {
+      setState(() {
+        _hasText = _commentController.text.trim().isNotEmpty;
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _commentController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  // Exact same post logic from your CommentsScreen
+  void _postComment(String trackId) {
+    if (_commentController.text.trim().isEmpty) return;
+
+    final position = ref.read(playerStateProvider).position;
+
+    // Post a top-level comment
+    ref
+        .read(trackCommentsProvider(trackId).notifier)
+        .postNewComment(_commentController.text, position.inSeconds);
+
+    // Clear input and remove keyboard
+    _commentController.clear();
+    _focusNode.unfocus();
+  }
+
+  // Helper to append emojis gracefully into the input
+  void _appendEmoji(String emoji) {
+    final currentText = _commentController.text;
+    _commentController.value = TextEditingValue(
+      text: currentText + emoji,
+      selection: TextSelection.collapsed(offset: currentText.length + emoji.length),
+    );
+    _focusNode.requestFocus();
   }
 
   @override
@@ -82,29 +123,69 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
               children: [
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    'Drop a comment...',
-                    key: const Key('comments_comment_prompt_text'),
+                  child: TextField(
+                    controller: _commentController,
+                    focusNode: _focusNode,
                     style: AppTheme.bodyNormal,
+                    decoration: InputDecoration(
+                      hintText: 'Drop a comment...',
+                      hintStyle: AppTheme.bodyNormal,
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
                 ),
-                Text(
-                  '🔥',
-                  key: const Key('comments_fire_emoji_text'),
-                  style: const TextStyle(fontSize: 20),
-                ),
-                const SizedBox(width: 24),
-                Text(
-                  '👏',
-                  key: const Key('comments_clap_emoji_text'),
-                  style: const TextStyle(fontSize: 20),
-                ),
-                const SizedBox(width: 24),
-                Text(
-                  '🥺',
-                  key: const Key('comments_pleading_emoji_text'),
-                  style: const TextStyle(fontSize: 20),
-                ),
+                
+                // Show Send Button if there is text, else show emojis
+                if (_hasText)
+                  GestureDetector(
+                    onTap: () => _postComment(trackId),
+                    child: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                  )
+                else
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _appendEmoji('🔥'),
+                        child: Text(
+                          '🔥',
+                          key: const Key('comments_fire_emoji_text'),
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => _appendEmoji('👏'),
+                        child: Text(
+                          '👏',
+                          key: const Key('comments_clap_emoji_text'),
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => _appendEmoji('🥺'),
+                        child: Text(
+                          '🥺',
+                          key: const Key('comments_pleading_emoji_text'),
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

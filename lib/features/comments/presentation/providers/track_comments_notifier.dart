@@ -24,7 +24,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     : super(TrackCommentsState.initial()) {
     fetchComments();
   }
-  
+
   void incrementTotalCount() {
     state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
   }
@@ -174,10 +174,6 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         userDisplayName: user.displayName,
         userPfp: user.avatarUrl,
       );
-      print("------------------------------------------");
-      print(user.displayName);
-      print(user.avatarUrl);
-      print("------------------------------------------");
       state = state.copyWith(
         comments: state.comments
             .map((c) => c.id == tempComment.id ? populatedRealComment : c)
