@@ -20,14 +20,22 @@ class UserModel extends UserEntity {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final rawAvatarUrl =
+        json['avatar_url'] as String? ?? json['profile_picture'] as String?;
+    final rawCoverUrl =
+        json['cover_url'] as String? ?? json['cover_photo'] as String?;
+
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String,
       displayName: json['display_name'] as String? ?? '',
       username: json['username'] as String?,
-      avatarUrl:
-          json['avatar_url'] as String? ?? json['profile_picture'] as String?,
-      coverUrl: json['cover_url'] as String? ?? json['cover_photo'] as String?,
+      avatarUrl: rawAvatarUrl?.trim().isEmpty == true
+          ? null
+          : rawAvatarUrl?.trim(),
+      coverUrl: rawCoverUrl?.trim().isEmpty == true
+          ? null
+          : rawCoverUrl?.trim(),
       city: json['city'] as String?,
       country: json['country'] as String?,
       bio: json['bio'] as String?,
@@ -61,14 +69,22 @@ class UserModel extends UserEntity {
   }
 
   factory UserModel.fromSupabase(Map<String, dynamic> data, {String? token}) {
+    final rawAvatarUrl =
+        data['avatar_url'] as String? ?? data['profile_picture'] as String?;
+    final rawCoverUrl =
+        data['cover_url'] as String? ?? data['cover_photo'] as String?;
+
     return UserModel(
       id: data['id'] as String,
       email: data['email'] as String,
       displayName: data['display_name'] as String? ?? '',
       username: data['username'] as String?,
-      avatarUrl:
-          data['avatar_url'] as String? ?? data['profile_picture'] as String?,
-      coverUrl: data['cover_url'] as String? ?? data['cover_photo'] as String?,
+      avatarUrl: rawAvatarUrl?.trim().isEmpty == true
+          ? null
+          : rawAvatarUrl?.trim(),
+      coverUrl: rawCoverUrl?.trim().isEmpty == true
+          ? null
+          : rawCoverUrl?.trim(),
       city: data['city'] as String?,
       country: data['country'] as String?,
       bio: data['bio'] as String?,

@@ -25,6 +25,13 @@ class CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedPfp = comment.userPfp?.trim().isEmpty == true
+        ? null
+        : comment.userPfp?.trim();
+    final networkPfp = normalizedPfp != null
+        ? '$normalizedPfp?t=${comment.createdAt.millisecondsSinceEpoch}'
+        : null;
+
     return Padding(
       padding: EdgeInsets.only(
         left: isReply ? 48.0 : 16.0,
@@ -43,16 +50,16 @@ class CommentCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: ClipOval(
-              child: comment.userPfp == null
+              child: normalizedPfp == null
                   ? Icon(
                       Icons.person,
                       color: Colors.white,
                       size: isReply ? 16 : 20,
                     )
-                  : (comment.userPfp!.startsWith('http') ||
-                            comment.userPfp!.startsWith('https')
+                  : (normalizedPfp.startsWith('http') ||
+                            normalizedPfp.startsWith('https')
                         ? Image.network(
-                            comment.userPfp!,
+                            networkPfp!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Icon(
                               Icons.person,
@@ -61,7 +68,7 @@ class CommentCard extends StatelessWidget {
                             ),
                           )
                         : Image.asset(
-                            comment.userPfp!,
+                            normalizedPfp,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Icon(
                               Icons.person,

@@ -22,10 +22,16 @@ class ProfileModel extends ProfileEntity {
     final id = json['id'] as String? ?? '';
     final displayName = json['display_name'] as String? ?? '';
     final username = json['username'] as String?;
-    final avatarUrl =
+    final rawAvatarUrl =
         json['profile_picture'] as String? ?? json['avatar_url'] as String?;
-    final coverUrl =
+    final rawCoverUrl =
         json['cover_photo'] as String? ?? json['cover_url'] as String?;
+    final avatarUrl = rawAvatarUrl?.trim().isEmpty == true
+        ? null
+        : rawAvatarUrl?.trim();
+    final coverUrl = rawCoverUrl?.trim().isEmpty == true
+        ? null
+        : rawCoverUrl?.trim();
     final city = json['city'] as String?;
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;
@@ -40,7 +46,7 @@ class ProfileModel extends ProfileEntity {
     final updatedAtStr = json['updated_at'] as String?;
     final updatedAt = updatedAtStr != null
         ? DateTime.tryParse(updatedAtStr)
-        : null;
+        : DateTime.now();
 
     return ProfileModel(
       id: id,

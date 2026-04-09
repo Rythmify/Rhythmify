@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/avatar/local_avatar_store.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
@@ -315,6 +319,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
+    final authState = ref.watch(authProvider);
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+    final localAvatarPath = currentUserId == null
+        ? null
+        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
+    final localCoverPath = currentUserId == null
+        ? null
+        : ref.watch(localCoverPathProvider(currentUserId)).asData?.value;
+    final hasLocalCover =
+        localCoverPath != null &&
+        localCoverPath.trim().isNotEmpty &&
+        File(localCoverPath).existsSync();
     final isSaving = profileState is ProfileLoaded && profileState.isSaving;
 
     // Listen for successful save and show SnackBar
@@ -398,7 +416,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           width: double.infinity,
                           height: 120,
                           color: AppTheme.surface,
-                          child: profileState.profile.coverUrl != null
+                          child: hasLocalCover
+                              ? Image.file(
+                                  File(localCoverPath),
+                                  fit: BoxFit.cover,
+                                )
+                              : profileState.profile.coverUrl != null
                               ? Image.network(
                                   // Cache-busting: Add timestamp to force reload after upload
                                   Uri.parse(profileState.profile.coverUrl!)
@@ -445,6 +468,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           bottom: -40,
                           child: ProfileAvatar(
                             avatarUrl: profileState.profile.avatarUrl,
+                            localAvatarPath: localAvatarPath,
                             updatedAt: profileState.profile.updatedAt,
                             radius: 44,
                             showCameraIcon: true,

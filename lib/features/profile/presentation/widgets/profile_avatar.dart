@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'dart:io';
 import '../../../../../core/theme/app_theme.dart';
 
 /// A circular avatar widget used across profile screens.
@@ -33,6 +34,7 @@ class ProfileAvatar extends StatelessWidget {
   ///
   /// If `null`, a default person icon is shown instead.
   final String? avatarUrl;
+  final String? localAvatarPath;
 
   /// The timestamp when the profile was last updated.
   ///
@@ -61,6 +63,7 @@ class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
     super.key,
     this.avatarUrl,
+    this.localAvatarPath,
     this.updatedAt,
     this.radius = 60,
     this.showCameraIcon = false,
@@ -69,6 +72,43 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasLocalAvatar =
+        localAvatarPath != null &&
+        localAvatarPath!.trim().isNotEmpty &&
+        File(localAvatarPath!).existsSync();
+    if (hasLocalAvatar) {
+      return GestureDetector(
+        key: const Key('profile_avatar_gesture'),
+        onTap: onTap,
+        child: Stack(
+          children: [
+            CircleAvatar(
+              radius: radius,
+              backgroundColor: AppTheme.surface,
+              backgroundImage: FileImage(File(localAvatarPath!)),
+            ),
+            if (showCameraIcon)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.surface,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 16,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
     // Cache-busting strategy without backend updatedAt:
     // Generate a unique URL on each widget rebuild by appending timestamp.
     // CachedNetworkImage will cache by the full URL (including query params),

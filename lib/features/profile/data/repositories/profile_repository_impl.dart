@@ -140,6 +140,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Failure _mapError(String error) {
     if (error.contains('PROFILE_NOT_FOUND')) {
       return const ServerFailure('User profile not found.');
+    } else if (error.contains('ROUTE_NOT_FOUND')) {
+      return const ServerFailure('App and backend API routes are out of sync.');
     } else if (error.contains('UPLOAD_FILE_TOO_LARGE')) {
       return const ServerFailure('File is too large. Maximum size is 5MB.');
     } else if (error.contains('UPLOAD_INVALID_FILE_TYPE')) {

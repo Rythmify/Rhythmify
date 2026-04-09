@@ -10,12 +10,18 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
 
   ProfileRemoteDatasourceImpl({required this.client});
 
+  String _profileReadEndpoint(String userId) {
+    return userId == 'me' ? '/users/me' : '/users/$userId';
+  }
+
+  String _profileWriteEndpoint() {
+    return '/users/me';
+  }
+
   @override
   Future<ProfileModel> getProfile({required String userId}) async {
     try {
-      final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
-
-      final response = await client.dio.get(endpoint);
+      final response = await client.dio.get(_profileReadEndpoint(userId));
 
       return ProfileModel.fromJson(response.data['data']);
     } on DioException catch (e) {
@@ -34,7 +40,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   }) async {
     try {
       final response = await client.dio.patch(
-        '/users/$userId',
+        _profileWriteEndpoint(),
         data: {
           'display_name': displayName,
           'city': city,
@@ -69,11 +75,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         ),
       });
 
-      print('🔵 uploadAvatar: Sending POST to /users/$userId/avatar');
-      final response = await client.dio.post(
-        '/users/$userId/avatar',
-        data: formData,
-      );
+      final endpoint = '${_profileWriteEndpoint()}/avatar';
+      print('🔵 uploadAvatar: Sending POST to $endpoint');
+      final response = await client.dio.post(endpoint, data: formData);
       print(
         '🟢 uploadAvatar: Upload successful! Status: ${response.statusCode}',
       );
@@ -102,7 +106,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<void> deleteAvatar({required String userId}) async {
     try {
-      await client.dio.delete('/users/$userId/avatar');
+      final endpoint = '${_profileWriteEndpoint()}/avatar';
+      await client.dio.delete(endpoint);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -123,7 +128,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         ),
       });
 
-      await client.dio.post('/users/$userId/cover', data: formData);
+      final endpoint = '${_profileWriteEndpoint()}/cover';
+      await client.dio.post(endpoint, data: formData);
 
       // Reload full profile to get updated cover URL
       final profile = await getProfile(userId: userId);
@@ -138,7 +144,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<void> deleteCoverPhoto({required String userId}) async {
     try {
-      await client.dio.delete('/users/$userId/cover');
+      final endpoint = '${_profileWriteEndpoint()}/cover';
+      await client.dio.delete(endpoint);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -172,8 +179,11 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
+      final endpoint = userId == 'me'
+          ? '/users/me/tracks'
+          : '/users/$userId/tracks';
       final response = await client.dio.get(
-        '/users/$userId/tracks',
+        endpoint,
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -188,7 +198,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   void _handleDioError(DioException e) {
     final contentType = e.response?.headers.value('content-type') ?? '';
     if (contentType.contains('text/html')) {
-      throw Exception('Cannot connect to backend. Check IP and server status.');
+      final method = e.requestOptions.method;
+      final path = e.requestOptions.path;
+      throw Exception('ROUTE_NOT_FOUND: $method $path');
     }
 
     final errorCode = e.response?.data?['error']?['code'] as String?;

@@ -16,7 +16,10 @@ class UploadCoverPhotoUseCase {
   /// Uploads the image at [filePath] as the user's cover photo.
   ///
   /// Returns [Right] with updated [ProfileEntity], or [Left] with a [Failure].
-  Future<Either<Failure, ProfileEntity>> call({required String filePath}) {
-    return repository.uploadCoverPhoto(filePath: filePath);
+  Future<Either<Failure, ProfileEntity>> call({
+    required String userId,
+    required String filePath,
+  }) {
+    return repository.uploadCoverPhoto(userId: userId, filePath: filePath);
   }
 }

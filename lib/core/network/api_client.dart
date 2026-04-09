@@ -68,10 +68,17 @@ class ApiClient {
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
             final errorCode = error.response?.data?['error']?['code'];
+            final requestPath = error.requestOptions.path;
+            final isRefreshRequest = requestPath == '/auth/refresh';
+            final hasRefreshCookie = await _hasRefreshCookie();
 
             // Handle both expired and invalid tokens with refresh attempt
             if (errorCode == 'AUTH_TOKEN_EXPIRED' ||
                 errorCode == 'AUTH_TOKEN_INVALID') {
+              if (isRefreshRequest || !hasRefreshCookie) {
+                await clearToken();
+                return handler.next(error);
+              }
               print('🔴 Token error: $errorCode - attempting refresh');
               try {
                 final newToken = await _refreshToken();
@@ -120,6 +127,12 @@ class ApiClient {
     final newToken = response.data['data']['access_token'] as String;
     await saveToken(newToken);
     return newToken;
+  }
+
+  Future<bool> _hasRefreshCookie() async {
+    final refreshUri = Uri.parse('${dio.options.baseUrl}/auth/refresh');
+    final cookies = await cookieJar.loadForRequest(refreshUri);
+    return cookies.isNotEmpty;
   }
 }
 

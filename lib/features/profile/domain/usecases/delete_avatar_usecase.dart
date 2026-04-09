@@ -15,7 +15,7 @@ class DeleteAvatarUseCase {
   /// Deletes the current user's avatar image.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a [Failure].
-  Future<Either<Failure, void>> call() {
-    return repository.deleteAvatar();
+  Future<Either<Failure, void>> call({required String userId}) {
+    return repository.deleteAvatar(userId: userId);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/avatar/local_avatar_store.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
@@ -122,6 +123,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
         : null;
+    final localAvatarPath = currentUserId == null
+        ? null
+        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
@@ -171,7 +175,12 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             ],
           ),
         ),
-        ProfileLoaded() => _buildLoaded(context, profileState, isOwnProfile),
+        ProfileLoaded() => _buildLoaded(
+          context,
+          profileState,
+          isOwnProfile,
+          localAvatarPath,
+        ),
         _ => const SizedBox.shrink(),
       },
     );
@@ -186,6 +195,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     BuildContext context,
     ProfileLoaded state,
     bool isOwnProfile,
+    String? localAvatarPath,
   ) {
     return CustomScrollView(
       controller: _scrollController,
@@ -198,6 +208,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               children: [
                 ProfileAvatar(
                   avatarUrl: state.profile.avatarUrl,
+                  localAvatarPath: isOwnProfile ? localAvatarPath : null,
                   updatedAt: state.profile.updatedAt,
                   radius: 60,
                 ),
