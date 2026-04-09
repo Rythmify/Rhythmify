@@ -4,7 +4,8 @@ import '../base_page.dart';
 import '../../selectors/selectors.dart';
 
 class LoginPage extends BasePage {
-  LoginPage(WidgetTester tester) : super(tester);
+
+  LoginPage(super.tester);
 
   Future<void> enterEmail(String email) async {
     await enterTextByKey(authEmailTextField, email);

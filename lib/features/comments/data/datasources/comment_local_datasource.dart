@@ -25,6 +25,10 @@ abstract class CommentLocalDataSource {
   Future<bool> toggleLike(String commentId);
 
   Future<void> deleteComment(String commentId);
+
+  Future<void> blockUser(String userId);
+
+  Future<void> unblockUser(String userId);
 }
 
 /// Mock implementation utilizing a JSON file to simulate an API response.
@@ -183,6 +187,18 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     await _initDatabase();
     await Future.delayed(_delay);
     _db.removeWhere((c) => c.id == commentId);
+  }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    // Mock implementation doesn't need to do anything locally
+    await Future.delayed(_delay);
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    // Mock implementation doesn't need to do anything locally
+    await Future.delayed(_delay);
   }
 
   /// Internal helper to sort comments by the requested strategy.
