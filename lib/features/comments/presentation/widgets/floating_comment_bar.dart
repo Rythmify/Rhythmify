@@ -110,7 +110,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
           ),
         ),
         Positioned(
-          top: -30,
+          top: 200,
           child: ScaleTransition(
             scale: _animation,
             child: FloatingComment(imageUrl: _currentCommentPfp),

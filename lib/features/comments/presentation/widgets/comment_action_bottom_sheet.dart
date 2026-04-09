@@ -11,6 +11,8 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/player_dependency_providers.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/comment_di_providers.dart';
+import '../providers/track_comments_notifier.dart';
+import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
 
 class CommentActionBottomSheet extends ConsumerWidget {
@@ -40,17 +42,26 @@ class CommentActionBottomSheet extends ConsumerWidget {
   void _deleteComment(BuildContext context, WidgetRef ref) async {
     Navigator.pop(context);
     try {
-      await ref.read(deleteCommentProvider)(comment.id);
+      if (comment.parentId == null) {
+        await ref
+            .read(trackCommentsProvider(comment.trackId).notifier)
+            .deleteComment(comment.id);
+      } else {
+        await ref
+            .read(commentRepliesProvider(comment.parentId!).notifier)
+            .deleteReply(comment.id, comment.trackId, comment.parentId!);
+      }
+
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Comment deleted')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment deleted')),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete comment: $e')),
+        );
       }
     }
   }
@@ -85,8 +96,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isMe =
-        authState is AuthAuthenticated && authState.user.id == comment.userId;
+    final isMe = authState is AuthAuthenticated && authState.user.id == comment.userId;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -109,7 +119,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
                   child: Text(
                     '${comment.userDisplayName} at ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
                     style: AppTheme.bodyNormal.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.bold, color: AppTheme.semiWhite
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -24,6 +24,16 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     : super(TrackCommentsState.initial()) {
     fetchComments();
   }
+  
+  void incrementTotalCount() {
+    state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
+  }
+
+  void decrementTotalCount() {
+    if (state.totalCommentCount > 0) {
+      state = state.copyWith(totalCommentCount: state.totalCommentCount - 1);
+    }
+  }
 
   Future<void> fetchComments({bool refresh = false}) async {
     if (state.isFetchingNextPage && !refresh) return;
@@ -73,6 +83,46 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
   }
 
+  void decrementReplyCount(String commentId) {
+    state = state.copyWith(
+      comments: state.comments.map((c) {
+        if (c.id == commentId && c.replyCount > 0) {
+          return c.copyWith(replyCount: c.replyCount - 1);
+        }
+        return c;
+      }).toList(),
+    );
+  }
+
+  void setInitialCount(int initialCount) {
+    // Only set it if it's currently 0 (to avoid overwriting live updates)
+    if (state.totalCommentCount == 0) {
+      state = state.copyWith(totalCommentCount: initialCount);
+    }
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    final originalComments = [...state.comments];
+    final originalCount = state.totalCommentCount;
+
+    // Optimistically update list and total count
+    state = state.copyWith(
+      comments: state.comments.where((c) => c.id != commentId).toList(),
+      totalCommentCount: originalCount > 0 ? originalCount - 1 : 0,
+    );
+    try {
+      final deleteCommentUseCase = ref.read(deleteCommentProvider);
+      await deleteCommentUseCase(commentId);
+    } catch (e) {
+      // Revert both on failure
+      state = state.copyWith(
+        comments: originalComments,
+        totalCommentCount: originalCount,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> fetchNextPage() async {
     if (state.hasReachedMax || state.isFetchingNextPage) return;
     await fetchComments();
@@ -104,7 +154,13 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
       replyCount: 0,
     );
 
-    state = state.copyWith(comments: [tempComment, ...state.comments]);
+    final originalCount = state.totalCommentCount;
+
+    // Optimistically insert comment and increment total count
+    state = state.copyWith(
+      comments: [tempComment, ...state.comments],
+      totalCommentCount: originalCount + 1,
+    );
 
     try {
       final postComment = ref.read(postCommentProvider);
@@ -114,18 +170,24 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         trackTimestamp: trackTimestamp,
       );
       final populatedRealComment = realComment.copyWith(
+        userId: user.id,
         userDisplayName: user.displayName,
         userPfp: user.avatarUrl,
       );
-
+      print("------------------------------------------");
+      print(user.displayName);
+      print(user.avatarUrl);
+      print("------------------------------------------");
       state = state.copyWith(
         comments: state.comments
             .map((c) => c.id == tempComment.id ? populatedRealComment : c)
             .toList(),
       );
     } catch (e) {
+      // Revert comment list and total count
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != tempComment.id).toList(),
+        totalCommentCount: originalCount,
       );
     }
   }

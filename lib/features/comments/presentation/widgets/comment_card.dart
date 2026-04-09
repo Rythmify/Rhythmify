@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
@@ -36,21 +37,24 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: isReply ? 32 : 40,
-            height: isReply ? 32 : 40,
-            decoration: const BoxDecoration(
-              color: Colors.grey,
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: comment.userPfp == null
-                  ? Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: isReply ? 16 : 20,
-                    )
-                  : (comment.userPfp!.startsWith('http') ||
+          InkWell(
+            onTap: () => context.push('/profile/${comment.userId}'),
+            borderRadius: BorderRadius.circular(isReply ? 16 : 20),
+            child: Container(
+              width: isReply ? 32 : 40,
+              height: isReply ? 32 : 40,
+              decoration: const BoxDecoration(
+                color: Colors.grey,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: comment.userPfp == null || comment.userPfp!.isEmpty
+                    ? Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: isReply ? 16 : 20,
+                      )
+                    : (comment.userPfp!.startsWith('http') ||
                             comment.userPfp!.startsWith('https')
                         ? Image.network(
                             comment.userPfp!,
@@ -70,6 +74,7 @@ class CommentCard extends StatelessWidget {
                               size: isReply ? 16 : 20,
                             ),
                           )),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -79,11 +84,18 @@ class CommentCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      comment.userDisplayName,
-                      style: AppTheme.bodyNormal.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                    InkWell(
+                      onTap: () => context.push('/profile/${comment.userId}'),
+                      borderRadius: BorderRadius.circular(4), // Gives the ripple a nice rounded edge
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0), // Slight padding so the ripple doesn't cut off the text
+                        child: Text(
+                          comment.userDisplayName,
+                          style: AppTheme.bodyNormal.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -150,7 +162,7 @@ class CommentCard extends StatelessWidget {
                     ],
                     InkWell(
                       onTap: () {
-                        if (onMore != null) onMore!();
+                        // Just open the bottom sheet directly
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
