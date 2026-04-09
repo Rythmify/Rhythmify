@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
+import 'comment_action_bottom_sheet.dart';
 
 class CommentCard extends StatelessWidget {
   final Comment comment;
@@ -147,12 +148,29 @@ class CommentCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 25),
                     ],
-                    GestureDetector(
-                      onTap: onMore,
-                      child: const Icon(
-                        Icons.more_vert,
-                        size: 18,
-                        color: Colors.white70,
+                    InkWell(
+                      onTap: () {
+                        if (onMore != null) onMore!();
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => CommentActionBottomSheet(comment: comment),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      highlightColor: Colors.white.withValues(alpha: 0.1),
+                      splashColor: Colors.white.withValues(alpha: 0.2),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 4.0,
+                          vertical: 4.0,
+                        ),
+                        child: Icon(
+                          Icons.more_vert,
+                          size: 18,
+                          color: Colors.white70,
+                        ),
                       ),
                     ),
                   ],

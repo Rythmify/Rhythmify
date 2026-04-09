@@ -133,4 +133,22 @@ class MockCommentRepositoryImpl implements CommentRepository {
       throw Exception('Failed to delete comment: $e');
     }
   }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    try {
+      await _localDataSource.blockUser(userId);
+    } catch (e) {
+      throw Exception('Failed to block user: $e');
+    }
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    try {
+      await _localDataSource.unblockUser(userId);
+    } catch (e) {
+      throw Exception('Failed to unblock user: $e');
+    }
+  }
 }
