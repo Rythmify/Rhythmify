@@ -352,7 +352,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                 key: const Key('edit_playlist_public_switch'),
                                 value: _isPublic,
                                 onChanged: (v) => setState(() => _isPublic = v),
-                                activeColor: const Color(0xFFFF5500),
+                                activeThumbColor: const Color(0xFFFF5500),
                               ),
                             ],
                           ),
@@ -468,14 +468,14 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
       return Image.file(
         File(url),
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
+        errorBuilder: (_, _, _) =>
             const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
       );
     }
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) =>
+      errorBuilder: (_, _, _) =>
           const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
     );
   }

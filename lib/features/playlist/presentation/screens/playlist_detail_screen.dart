@@ -194,9 +194,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     (track) => TrackTileInPlaylist(
                       key: Key('playlist_track_${track.id}'),
                       track: track,
-                      onTap: () {
-                        // TODO: wire to player
-                      },
+                      onTap: () {},
                     ),
                   ),
 
