@@ -195,8 +195,9 @@ class _ReportPageState extends State<ReportPage> {
                   fillColor: Colors.white10,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Please enter your email';
+                  }
                   if (!RegExp(
                     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                   ).hasMatch(value)) {
@@ -226,10 +227,12 @@ class _ReportPageState extends State<ReportPage> {
                   fillColor: Colors.white10,
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Please enter a URL';
-                  if (!value.contains('rythmify.com'))
+                  }
+                  if (!value.contains('rythmify.com')) {
                     return 'Please enter a valid Rythmify link';
+                  }
                   return null;
                 },
               ),
