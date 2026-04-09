@@ -6,6 +6,9 @@ import '../widgets/search_profiles_tab.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
 
+/// The "All" tab in search results. Shows a mixed-content summary page with:
+/// Top Result, Tracks (first 3), Profiles (first 3), Playlists (first 3),
+/// Albums (first 3), and a "More Results" section for remaining tracks.
 class AllTab extends ConsumerWidget {
   const AllTab({super.key});
 
@@ -100,7 +103,7 @@ class AllTab extends ConsumerWidget {
                 ),
           ],
 
-          // ── More Results ─────────────────────────────────────
+          // ── More Results — tracks beyond the first 3 ─────────────────────────
           if (data.tracks.length > 3) ...[
             const SizedBox(height: 24),
             const _SectionTitle('More Results'),
@@ -125,6 +128,8 @@ class AllTab extends ConsumerWidget {
 
 // ── Playlist row ─────────────────────────────────────────────────────────────
 
+/// A single playlist row showing artwork, title, track count, and formatted duration.
+/// Accepts a raw [Map<String, String>] until a teammate-owned Playlist entity is available.
 class _PlaylistRow extends StatelessWidget {
   final Map<String, String> playlist;
   const _PlaylistRow({required this.playlist});
@@ -150,6 +155,7 @@ class _PlaylistRow extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
+      // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
       subtitle: Text(
         'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
         maxLines: 1,
@@ -163,6 +169,8 @@ class _PlaylistRow extends StatelessWidget {
 
 // ── Album row ────────────────────────────────────────────────────────────────
 
+/// A single album row showing artwork, title, artist, year, and type.
+/// Accepts a raw [Map<String, String>] until a teammate-owned Album entity is available.
 class _AlbumRow extends StatelessWidget {
   final Map<String, String> album;
   const _AlbumRow({required this.album});
@@ -198,6 +206,7 @@ class _AlbumRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(color: Colors.grey[400], fontSize: 12),
           ),
+          // Shows release year and album type (e.g. "2020 · Album").
           Text(
             '${album['year']} · ${album['type']}',
             maxLines: 1,
@@ -211,8 +220,10 @@ class _AlbumRow extends StatelessWidget {
   }
 }
 
-// ── Existing private widgets ──────────────────────────────────────────────────
+// ── Private widgets ───────────────────────────────────────────────────────────
 
+/// Displays the top search result as a prominent track card with artwork,
+/// title, artist, and formatted duration.
 class _TopResultCard extends StatelessWidget {
   const _TopResultCard({required this.track});
   final Track track;
@@ -259,6 +270,7 @@ class _TopResultCard extends StatelessWidget {
   }
 }
 
+/// Shows up to the first 3 tracks from the results as [TrackTile] rows.
 class _TracksSection extends StatelessWidget {
   const _TracksSection({required this.tracks});
   final List<Track> tracks;
@@ -278,6 +290,7 @@ class _TracksSection extends StatelessWidget {
   }
 }
 
+/// A bold section header label used throughout the All tab.
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle(this.title);
@@ -291,6 +304,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
+/// A muted placeholder shown when a content section has no results.
 class _EmptySection extends StatelessWidget {
   const _EmptySection({required this.label});
   final String label;

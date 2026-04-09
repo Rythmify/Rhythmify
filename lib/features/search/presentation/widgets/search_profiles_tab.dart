@@ -4,6 +4,8 @@ import '../providers/search_providers.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../../../core/utils/formatters.dart';
 
+/// A reusable profile card showing avatar, display name, follower count, and a Follow button.
+/// Used both in [ProfilesTab] and inline in the All tab's profiles section.
 class SearchProfileCard extends StatelessWidget {
   const SearchProfileCard({super.key, required this.profile});
   final ProfileEntity profile;
@@ -15,6 +17,7 @@ class SearchProfileCard extends StatelessWidget {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: Colors.grey[800],
+        // Falls back to a person icon if no avatar URL is available.
         backgroundImage: profile.avatarUrl != null
             ? NetworkImage(profile.avatarUrl!)
             : null,
@@ -27,6 +30,7 @@ class SearchProfileCard extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
+      // Follower count formatted via [Formatters.formatCount] (e.g. "5M").
       subtitle: Row(
         children: [
           const Icon(Icons.person, size: 12, color: Colors.grey),
@@ -54,6 +58,8 @@ class SearchProfileCard extends StatelessWidget {
   }
 }
 
+/// Search results tab displaying the profiles list from [searchResultsProvider].
+/// Renders a loading spinner, error message, empty state, or a scrollable list of [SearchProfileCard].
 class ProfilesTab extends ConsumerWidget {
   const ProfilesTab({super.key});
 

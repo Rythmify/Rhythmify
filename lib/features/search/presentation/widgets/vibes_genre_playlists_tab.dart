@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
 import '../widgets/vibes_genre_playlists.dart';
 
+/// The Playlists tab on the genre page.
+/// Watches [genrePlaylistsProvider] for [genreId] and renders a 2-column grid of [GenrePlaylistCard].
+/// Each tab instance is independently keyed by [genreId] via the autoDispose family provider.
 class GenrePlaylistsTab extends ConsumerWidget {
   const GenrePlaylistsTab({super.key, required this.genreId});
   final String genreId;

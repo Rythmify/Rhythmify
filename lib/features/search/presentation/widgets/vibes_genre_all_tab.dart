@@ -13,6 +13,12 @@ import '../widgets/vibes_genre_albums_tab.dart';
 import '../widgets/vibes_genre_trending_tab.dart';
 import '../widgets/vibes_genre_all_tracks_list.dart';
 
+/// The "All" tab on the genre page. Fetches the full [GenreContent] bundle via
+/// [genreContentProvider] and renders all sections in a single scrollable list:
+/// Trending, Introducing, Playlists, Albums, Profiles, and Discover More Tracks.
+///
+/// Each section with more items has a "See All" button that pushes a
+/// [GenreSeeAllPage] wrapping the relevant independent tab widget.
 class GenreAllTab extends ConsumerWidget {
   const GenreAllTab({super.key, required this.genreId});
   final String genreId;
@@ -73,7 +79,7 @@ class GenreAllTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── Playlists ────────────────────────────────────
+          // ── Playlists (first 4, grid) ────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -117,7 +123,7 @@ class GenreAllTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── Albums ───────────────────────────────────────
+          // ── Albums (first 4, grid) ───────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -161,7 +167,7 @@ class GenreAllTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── Profiles ─────────────────────────────────────
+          // ── Profiles (horizontal scroll) ─────────────────
           const Text(
             'Profiles',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -183,7 +189,7 @@ class GenreAllTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── Discover More ────────────────────────────────
+          // ── Discover More Tracks ─────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -220,6 +226,8 @@ class GenreAllTab extends ConsumerWidget {
   }
 }
 
+/// The "Introducing" section card showing the featured playlist's cover image,
+/// name, and description. Handles both network and local asset cover images.
 class IntroducingWidget extends StatelessWidget {
   const IntroducingWidget({super.key, required this.introducing});
   final IntroducingSection introducing;
@@ -237,6 +245,7 @@ class IntroducingWidget extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
+            // Uses [Image.network] for http URLs, [Image.asset] for local paths.
             child:
                 playlist.coverImage.isNotEmpty &&
                     playlist.coverImage.startsWith('http')

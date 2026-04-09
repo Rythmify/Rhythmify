@@ -1,3 +1,4 @@
+/// Represents a playlist entry displayed on a genre/vibes page.
 class GenrePlaylist {
   final String id;
   final String name;
@@ -6,7 +7,10 @@ class GenrePlaylist {
   final String ownerName;
   final int trackCount;
   final int likeCount;
+
+  /// Indicates how this playlist was associated with the genre (e.g. `'tagged'`, `'curated'`).
   final String source;
+
   final DateTime createdAt;
 
   const GenrePlaylist({

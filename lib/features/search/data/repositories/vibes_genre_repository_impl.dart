@@ -6,8 +6,11 @@ import '../../domain/entities/vibes_genre_artists.dart';
 import '../../domain/repositories/vibes_genre_repository.dart';
 import '../datasources/vibes_genre_remote_datasource.dart';
 
+/// Concrete implementation of [GenreRepository].
+/// Delegates all calls directly to [GenreRemoteSource] — no local caching or transformation needed.
 class GenreRepositoryImpl implements GenreRepository {
   final GenreRemoteSource remoteSource;
+
   GenreRepositoryImpl({required this.remoteSource});
 
   @override

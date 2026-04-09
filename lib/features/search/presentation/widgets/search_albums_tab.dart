@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 
+/// Search results tab displaying the albums list from [searchResultsProvider].
+/// Renders a loading spinner, error message, empty state, or a scrollable list of [_AlbumTile].
 class AlbumsTab extends ConsumerWidget {
   const AlbumsTab({super.key});
 
@@ -39,6 +41,8 @@ class AlbumsTab extends ConsumerWidget {
   }
 }
 
+/// A single album row showing artwork, title, artist, year, and type.
+/// Accepts a raw [Map<String, String>] until a teammate-owned Album entity is available.
 class _AlbumTile extends StatelessWidget {
   final Map<String, String> album;
   const _AlbumTile({super.key, required this.album});
@@ -75,6 +79,7 @@ class _AlbumTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
+            // Shows release year and album type (e.g. "2020 · Album").
             Text(
               '${album['year']} · ${album['type']}',
               maxLines: 1,
