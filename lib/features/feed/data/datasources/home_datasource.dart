@@ -1,130 +1,147 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/home_data.dart';
 import '../../domain/entities/genre_tab_tracks.dart';
 import '../../domain/entities/hot_for_you.dart';
-import '../../domain/entities/trending_by_genre_initial.dart';
-import '../../domain/entities/genre_tab.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
+import '../models/home_dto.dart';
+import 'package:flutter/services.dart';
 
-class HomeDatasource {
-  // Shared mock track to avoid repetition
-  Track get _mockTrack => Track(
-    id: 'e5f6a7b8-c9d0-1234-efab-567890abcdef',
-    userId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    title: 'Summer Vibes',
-    artist: 'DJ Karim',
-    audioUrl: 'assets/audio/Track_audio_1.mp3',
-    streamUrl: 'https://cdn.rythmify.com/tracks/e5f6a7b8/stream.mp3',
-    coverImage: 'assets/images/track_6.jpg',
-    duration: const Duration(seconds: 213),
-    playCount: 4200,
-    likeCount: 312,
-    repostCount: 47,
-    createdAt: DateTime(2026, 3, 1),
-    genre: 'Electronic',
+Map<String, dynamic>? _cachedMock;
+
+Future<Map<String, dynamic>> _loadMockData() async {
+  if (_cachedMock != null) return _cachedMock!;
+
+  final jsonString = await rootBundle.loadString('assets/mocks/mock_home.json');
+
+  _cachedMock = jsonDecode(jsonString);
+  return _cachedMock!;
+}
+
+Future<Map<String, dynamic>> _loadGenreMock() async {
+  final jsonString = await rootBundle.loadString(
+    'assets/mocks/mock_trending_genres.json',
   );
 
-  Future<HomeData> getHomeData() async {
-    return HomeData(
-      hotForYou: HotForYou(
-        track: _mockTrack,
-        reason: 'Based on your recent listens',
-        validUntil: DateTime(2026, 4, 5, 20, 22),
-      ),
-      trendingByGenre: TrendingByGenreInitial(
-        genres: const [
-          GenreTab(genreId: 'genre-1', genreName: 'Electronic'),
-          GenreTab(genreId: 'genre-2', genreName: 'Hip-Hop'),
-          GenreTab(genreId: 'genre-3', genreName: 'Pop'),
-          GenreTab(genreId: 'genre-3', genreName: 'Indie'),
-          GenreTab(genreId: 'genre-3', genreName: 'Country'),
-          GenreTab(genreId: 'genre-3', genreName: 'Classic'),
-        ],
-        initialTab: GenreTabTracks(
-          genreId: 'genre-1',
-          genreName: 'Electronic',
-          tracks: List.generate(6, (_) => _mockTrack),
-        ),
-      ),
-      moreOfWhatYouLike: List.generate(6, (_) => _mockTrack),
-      mixedForYou: List.generate(
-        6,
-        (i) => MixedForYouItem(
-          id: 'mix-$i',
-          label: 'MIX ${i + 1}',
-          flavor: 'listening_history',
-          genreName: 'Electronic',
-          coverImage: 'assets/images/track_6.jpg',
-          trackCount: 20,
-          generatedAt: DateTime(2026, 4, 5),
-          previewTrack: _mockTrack,
-        ),
-      ),
+  return jsonDecode(jsonString);
+}
 
-      discoverWithStations: List.generate(
-        6,
-        (i) => DiscoverStation(
-          id: 'station-$i',
-          name: 'Based on Artist ${i + 1}',
-          artistId: 'artist-$i',
-          artistName: 'Artist ${i + 1}',
-          coverImage: 'assets/images/track_6.jpg',
-          trackCount: 50,
-          followerCount: 3200 + i * 200,
-        ),
-      ),
-    );
+class HomeDatasource {
+  final http.Client _client;
+  final String _baseUrl;
+
+  HomeDatasource({required http.Client client, required String baseUrl})
+    : _client = client,
+      _baseUrl = baseUrl;
+
+  // ====== Methods ======
+  Future<HomeData> getHomeData() async {
+    try {
+      final response = await _client.get(Uri.parse('$_baseUrl/home'));
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return HomeDto.fromJson(json['data'] as Map<String, dynamic>);
+    } catch (_) {
+      final json = await _loadMockData();
+      return HomeDto.fromJson(json['data']);
+    }
   }
 
   Future<GenreTabTracks> getTrendingByGenre(String genreId) async {
-    return GenreTabTracks(
-      genreId: genreId,
-      genreName: 'Electronic',
-      tracks: List.generate(6, (_) => _mockTrack),
-    );
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/home/trending-by-genre/$genreId'),
+      );
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return HomeDto.parseGenreTabTracks(json['data'] as Map<String, dynamic>);
+    } catch (_) {
+      final json = await _loadGenreMock();
+      final data = json['data'] as Map<String, dynamic>?;
+      if (data == null) throw Exception('Invalid genre mock structure');
+      final genreData = data[genreId] as Map<String, dynamic>?;
+      if (genreData == null) {
+        return GenreTabTracks(genreId: genreId, genreName: '', tracks: []);
+      }
+      return HomeDto.parseGenreTabTracks(genreData);
+    }
   }
 
   Future<HotForYou> getHotForYou() async {
-    return HotForYou(
-      track: _mockTrack,
-      reason: 'Based on your recent listens',
-      validUntil: DateTime(2026, 4, 5, 20, 22),
-    );
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/home/hot-for-you'),
+      );
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return HomeDto.parseHotForYou(json['data'] as Map<String, dynamic>);
+    } catch (_) {
+      final json = await _loadMockData();
+      return HomeDto.parseHotForYou(json['data']['hot_for_you']);
+    }
   }
 
   Future<List<Track>> getMoreOfWhatYouLike() async {
-    return List.generate(6, (_) => _mockTrack);
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/home/more-of-what-you-like'),
+      );
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return (json['data'] as List)
+          .map((t) => HomeDto.parseTrack(t as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      final json = await _loadMockData();
+      final tracks = json['data']['more_of_what_you_like']['tracks'] as List;
+      return tracks.map((t) => HomeDto.parseTrack(t)).toList();
+    }
   }
 
   Future<List<MixedForYouItem>> getMixedForYou() async {
-    return List.generate(
-      6,
-      (i) => MixedForYouItem(
-        id: 'mix-$i',
-        label: 'MIX ${i + 1}',
-        flavor: 'listening_history',
-        genreName: 'Electronic',
-        coverImage: 'assets/images/track_6.jpg',
-        trackCount: 20,
-        generatedAt: DateTime(2026, 4, 5),
-        previewTrack: _mockTrack,
-      ),
-    );
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/home/mixed-for-you'),
+      );
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return (json['data'] as List)
+          .map((m) => HomeDto.parseMixedForYouItem(m as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      final json = await _loadMockData();
+
+      final list = json['data']['mixed_for_you'] as List;
+
+      return list.map((m) => HomeDto.parseMixedForYouItem(m)).toList();
+    }
   }
 
   Future<List<DiscoverStation>> getDiscoverStations() async {
-    return List.generate(
-      6,
-      (i) => DiscoverStation(
-        id: 'station-$i',
-        name: 'Based on Artist ${i + 1}',
-        artistId: 'artist-$i',
-        artistName: 'Artist ${i + 1}',
-        coverImage: 'assets/images/track_6.jpg',
-        trackCount: 50,
-        followerCount: 3200 + i * 200,
-      ),
-    );
+    try {
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/home/discover-stations'),
+      );
+      _checkStatus(response);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return (json['data'] as List)
+          .map((s) => HomeDto.parseDiscoverStation(s as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      final json = await _loadMockData();
+
+      final list = json['data']['discover_with_stations'] as List;
+
+      return list.map((s) => HomeDto.parseDiscoverStation(s)).toList();
+    }
+  }
+
+  void _checkStatus(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    }
   }
 }
