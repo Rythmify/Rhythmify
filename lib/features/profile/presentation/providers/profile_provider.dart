@@ -148,7 +148,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         // Update state with new profile containing updated avatar
@@ -190,7 +189,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         // Update state with new profile containing updated cover
