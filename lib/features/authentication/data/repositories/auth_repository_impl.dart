@@ -1,3 +1,4 @@
+/// Authentication repository that maps datasource errors to domain failures.
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';

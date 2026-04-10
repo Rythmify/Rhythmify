@@ -1,3 +1,4 @@
+/// Profile repository that converts datasource exceptions into domain failures.
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';

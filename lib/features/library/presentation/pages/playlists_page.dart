@@ -1,3 +1,4 @@
+/// Compatibility export module for the Library playlists route.
 // lib/features/library/presentation/pages/playlists_page.dart
 //
 // REPLACED: This used to be your partner's dummy placeholder.

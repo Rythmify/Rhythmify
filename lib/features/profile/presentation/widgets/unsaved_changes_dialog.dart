@@ -1,3 +1,4 @@
+/// Confirmation dialog shown when leaving with unsaved profile edits.
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 
