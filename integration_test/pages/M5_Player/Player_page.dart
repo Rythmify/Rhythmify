@@ -10,8 +10,10 @@ class PlayerPage extends BasePage {
 
   /// Taps the play button on the first Hot For You track card.
   Future<void> playFromHotForYou() async {
-    await tapByKey(hotForYouPlayButton);
-    await tester.pump(const Duration(seconds: 3));
+    await tester.ensureVisible(find.byKey(const Key(hotForYouPlayButton)));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(const Key(hotForYouPlayButton)));
+    await tester.pump(const Duration(seconds: 2)); // allow mini player to render
   }
 
   /// Taps the mini player bar to open the full player.

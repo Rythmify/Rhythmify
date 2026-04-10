@@ -15,11 +15,17 @@ import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
 import 'package:http/http.dart' as http;
 
+// ====================
+//  --- The Switch ---
+// ====================
+const bool _useMock = true;
+
 final datasourceProvider = Provider(
   (ref) => HomeDatasource(
     client: http.Client(),
     baseUrl:
         'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
+    mockOnly: _useMock,
   ),
 );
 

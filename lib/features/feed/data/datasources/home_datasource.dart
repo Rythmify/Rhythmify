@@ -32,13 +32,21 @@ Future<Map<String, dynamic>> _loadGenreMock() async {
 class HomeDatasource {
   final http.Client _client;
   final String _baseUrl;
+  final bool mockOnly;
 
-  HomeDatasource({required http.Client client, required String baseUrl})
-    : _client = client,
-      _baseUrl = baseUrl;
+  HomeDatasource({
+    required http.Client client,
+    required String baseUrl,
+    this.mockOnly = false,
+  }) : _client = client,
+       _baseUrl = baseUrl;
 
   // ====== Methods ======
   Future<HomeData> getHomeData() async {
+    if (mockOnly) {
+      final json = await _loadMockData();
+      return HomeDto.fromJson(json['data']);
+    }
     try {
       final response = await _client.get(Uri.parse('$_baseUrl/home'));
       _checkStatus(response);
@@ -51,6 +59,16 @@ class HomeDatasource {
   }
 
   Future<GenreTabTracks> getTrendingByGenre(String genreId) async {
+    if (mockOnly) {
+      final json = await _loadGenreMock();
+      final data = json['data'] as Map<String, dynamic>?;
+      if (data == null) throw Exception('Invalid genre mock structure');
+      final genreData = data[genreId] as Map<String, dynamic>?;
+      if (genreData == null) {
+        return GenreTabTracks(genreId: genreId, genreName: '', tracks: []);
+      }
+      return HomeDto.parseGenreTabTracks(genreData);
+    }
     try {
       final response = await _client.get(
         Uri.parse('$_baseUrl/home/trending-by-genre/$genreId'),
@@ -71,6 +89,10 @@ class HomeDatasource {
   }
 
   Future<HotForYou> getHotForYou() async {
+    if (mockOnly) {
+      final json = await _loadMockData();
+      return HomeDto.parseHotForYou(json['data']['hot_for_you']);
+    }
     try {
       final response = await _client.get(
         Uri.parse('$_baseUrl/home/hot-for-you'),
@@ -85,6 +107,11 @@ class HomeDatasource {
   }
 
   Future<List<Track>> getMoreOfWhatYouLike() async {
+    if (mockOnly) {
+      final json = await _loadMockData();
+      final tracks = json['data']['more_of_what_you_like']['tracks'] as List;
+      return tracks.map((t) => HomeDto.parseTrack(t)).toList();
+    }
     try {
       final response = await _client.get(
         Uri.parse('$_baseUrl/home/more-of-what-you-like'),
@@ -102,6 +129,11 @@ class HomeDatasource {
   }
 
   Future<List<MixedForYouItem>> getMixedForYou() async {
+    if (mockOnly) {
+      final json = await _loadMockData();
+      final list = json['data']['mixed_for_you'] as List;
+      return list.map((m) => HomeDto.parseMixedForYouItem(m)).toList();
+    }
     try {
       final response = await _client.get(
         Uri.parse('$_baseUrl/home/mixed-for-you'),
@@ -121,6 +153,11 @@ class HomeDatasource {
   }
 
   Future<List<DiscoverStation>> getDiscoverStations() async {
+    if (mockOnly) {
+      final json = await _loadMockData();
+      final list = json['data']['discover_with_stations'] as List;
+      return list.map((s) => HomeDto.parseDiscoverStation(s)).toList();
+    }
     try {
       final response = await _client.get(
         Uri.parse('$_baseUrl/home/discover-stations'),
