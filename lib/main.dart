@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
@@ -33,11 +34,20 @@ Future<void> _initGoogleCast() async {
   await GoogleCastContext.instance.setSharedInstanceWithOptions(options);
 }
 
+Future<void> _initFirebaseIfSupported() async {
+  if (kIsWeb) return;
+
+  if (defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ── Initialize Firebase ───────────────────────────────
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await _initFirebaseIfSupported();
   await _initGoogleCast();
 
   globalAudioHandler = await AudioService.init(
