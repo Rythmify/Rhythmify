@@ -6,26 +6,19 @@ abstract class ProfileRemoteDatasource {
   Future<ProfileModel> getProfile({required String userId});
 
   Future<ProfileModel> updateProfile({
-    required String userId,
     required String displayName,
     required String city,
     required String country,
     required String bio,
   });
 
-  Future<ProfileModel> uploadAvatar({
-    required String userId,
-    required String filePath,
-  });
+  Future<ProfileModel> uploadAvatar({required String filePath});
 
-  Future<void> deleteAvatar({required String userId});
+  Future<void> deleteAvatar();
 
-  Future<ProfileModel> uploadCoverPhoto({
-    required String userId,
-    required String filePath,
-  });
+  Future<ProfileModel> uploadCoverPhoto({required String filePath});
 
-  Future<void> deleteCoverPhoto({required String userId});
+  Future<void> deleteCoverPhoto();
 
   Future<void> followUser({required String userId});
 

@@ -61,7 +61,6 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     required String displayName,
     required String gender,
     required String dateOfBirth,
-    String? captchaToken,
   }) async {
     await Future.delayed(const Duration(seconds: 1));
 

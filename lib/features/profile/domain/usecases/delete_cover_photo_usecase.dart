@@ -15,7 +15,7 @@ class DeleteCoverPhotoUseCase {
   /// Deletes the current user's cover photo.
   ///
   /// Returns [Right] with `void` on success, or [Left] with a [Failure].
-  Future<Either<Failure, void>> call({required String userId}) {
-    return repository.deleteCoverPhoto(userId: userId);
+  Future<Either<Failure, void>> call() {
+    return repository.deleteCoverPhoto();
   }
 }

@@ -13,7 +13,6 @@ abstract class AuthRemoteDatasource {
     required String displayName,
     required String gender,
     required String dateOfBirth,
-    String? captchaToken,
   });
 
   Future<UserModel> signInWithGoogle();

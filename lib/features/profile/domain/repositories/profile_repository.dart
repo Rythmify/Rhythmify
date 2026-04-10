@@ -26,13 +26,11 @@ abstract class ProfileRepository {
   /// Returns [Right] with the updated [ProfileEntity] on success.
   /// Returns [Left] with [ValidationFailure] if any field is invalid.
   ///
-  /// [userId] — the ID of the user whose profile to update.
   /// [displayName] — the new display name (max 50 characters).
   /// [city] — the city portion of the user's location.
   /// [country] — the ISO alpha-2 country code (e.g. `'EG'`).
   /// [bio] — the user's biography text.
   Future<Either<Failure, ProfileEntity>> updateProfile({
-    required String userId,
     required String displayName,
     required String city,
     required String country,
@@ -41,15 +39,13 @@ abstract class ProfileRepository {
 
   /// Uploads a new avatar image for the authenticated user.
   ///
-  /// Sends the file at [filePath] as a multipart POST to `/users/{userId}/avatar`.
+  /// Sends the file at [filePath] as a multipart POST to `/users/me/avatar`.
   /// Returns [Right] with the updated [ProfileEntity] (including new avatar URL).
   /// Returns [Left] with [ServerFailure] if the file is too large or
   /// an invalid type.
   ///
-  /// [userId] — the ID of the user whose avatar to upload.
   /// [filePath] — the absolute path to the image file on device.
   Future<Either<Failure, ProfileEntity>> uploadAvatar({
-    required String userId,
     required String filePath,
   });
 
@@ -57,19 +53,15 @@ abstract class ProfileRepository {
   ///
   /// Returns [Right] with `void` on success.
   /// Returns [Left] with a [Failure] if the deletion fails.
-  ///
-  /// [userId] — the ID of the user whose avatar to delete.
-  Future<Either<Failure, void>> deleteAvatar({required String userId});
+  Future<Either<Failure, void>> deleteAvatar();
 
   /// Uploads a new cover/banner photo for the authenticated user.
   ///
-  /// Sends the file at [filePath] as a multipart POST to `/users/{userId}/cover`.
+  /// Sends the file at [filePath] as a multipart POST to `/users/me/cover`.
   /// Returns [Right] with the updated [ProfileEntity].
   ///
-  /// [userId] — the ID of the user whose cover photo to upload.
   /// [filePath] — the absolute path to the image file on device.
   Future<Either<Failure, ProfileEntity>> uploadCoverPhoto({
-    required String userId,
     required String filePath,
   });
 
@@ -77,9 +69,7 @@ abstract class ProfileRepository {
   ///
   /// Returns [Right] with `void` on success.
   /// Returns [Left] with a [Failure] if the deletion fails.
-  ///
-  /// [userId] — the ID of the user whose cover photo to delete.
-  Future<Either<Failure, void>> deleteCoverPhoto({required String userId});
+  Future<Either<Failure, void>> deleteCoverPhoto();
 
   /// Follows the user with the given [userId].
   ///

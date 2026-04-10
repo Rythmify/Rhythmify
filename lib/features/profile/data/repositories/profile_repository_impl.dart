@@ -25,7 +25,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile({
-    required String userId,
     required String displayName,
     required String city,
     required String country,
@@ -33,7 +32,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }) async {
     try {
       final profile = await remoteDatasource.updateProfile(
-        userId: userId,
         displayName: displayName,
         city: city,
         country: country,
@@ -47,14 +45,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, ProfileEntity>> uploadAvatar({
-    required String userId,
     required String filePath,
   }) async {
     try {
-      final profile = await remoteDatasource.uploadAvatar(
-        userId: userId,
-        filePath: filePath,
-      );
+      final profile = await remoteDatasource.uploadAvatar(filePath: filePath);
       return Right(profile);
     } catch (e) {
       return Left(_mapError(e.toString()));
@@ -62,9 +56,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteAvatar({required String userId}) async {
+  Future<Either<Failure, void>> deleteAvatar() async {
     try {
-      await remoteDatasource.deleteAvatar(userId: userId);
+      await remoteDatasource.deleteAvatar();
       return const Right(null);
     } catch (e) {
       return Left(_mapError(e.toString()));
@@ -73,12 +67,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, ProfileEntity>> uploadCoverPhoto({
-    required String userId,
     required String filePath,
   }) async {
     try {
       final profile = await remoteDatasource.uploadCoverPhoto(
-        userId: userId,
         filePath: filePath,
       );
       return Right(profile);
@@ -88,11 +80,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteCoverPhoto({
-    required String userId,
-  }) async {
+  Future<Either<Failure, void>> deleteCoverPhoto() async {
     try {
-      await remoteDatasource.deleteCoverPhoto(userId: userId);
+      await remoteDatasource.deleteCoverPhoto();
       return const Right(null);
     } catch (e) {
       return Left(_mapError(e.toString()));
@@ -141,8 +131,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Failure _mapError(String error) {
     if (error.contains('PROFILE_NOT_FOUND')) {
       return const ServerFailure('User profile not found.');
-    } else if (error.contains('ROUTE_NOT_FOUND')) {
-      return const ServerFailure('App and backend API routes are out of sync.');
     } else if (error.contains('UPLOAD_FILE_TOO_LARGE')) {
       return const ServerFailure('File is too large. Maximum size is 5MB.');
     } else if (error.contains('UPLOAD_INVALID_FILE_TYPE')) {

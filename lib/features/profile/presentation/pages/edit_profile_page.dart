@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../../../core/theme/app_theme.dart';
-import '../../../../../core/avatar/local_avatar_store.dart';
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
@@ -166,7 +162,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// Uses [ImagePicker] with a 512×512 max size and 85% quality.
   /// Calls [ProfileNotifier.uploadAvatar] with the selected file path.
   Future<void> _pickAvatar() async {
-    print('🔵 _pickAvatar: Opening image picker');
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -175,11 +170,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      print('🟢 _pickAvatar: Image selected: ${image.path}');
-      print('🔵 _pickAvatar: Calling uploadAvatar');
       ref.read(profileProvider.notifier).uploadAvatar(filePath: image.path);
-    } else {
-      print('⚠️ _pickAvatar: No image selected');
     }
   }
 
@@ -319,20 +310,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
-    final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
-    final localAvatarPath = currentUserId == null
-        ? null
-        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
-    final localCoverPath = currentUserId == null
-        ? null
-        : ref.watch(localCoverPathProvider(currentUserId)).asData?.value;
-    final hasLocalCover =
-        localCoverPath != null &&
-        localCoverPath.trim().isNotEmpty &&
-        File(localCoverPath).existsSync();
     final isSaving = profileState is ProfileLoaded && profileState.isSaving;
 
     // Listen for successful save and show SnackBar
@@ -416,26 +393,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           width: double.infinity,
                           height: 120,
                           color: AppTheme.surface,
-                          child: hasLocalCover
-                              ? Image.file(
-                                  File(localCoverPath),
-                                  fit: BoxFit.cover,
-                                )
-                              : profileState.profile.coverUrl != null
+                          child: profileState.profile.coverUrl != null
                               ? Image.network(
-                                  // Cache-busting: Add timestamp to force reload after upload
-                                  Uri.parse(profileState.profile.coverUrl!)
-                                      .replace(
-                                        queryParameters: {
-                                          ...Uri.parse(
-                                            profileState.profile.coverUrl!,
-                                          ).queryParameters,
-                                          't': DateTime.now()
-                                              .millisecondsSinceEpoch
-                                              .toString(),
-                                        },
-                                      )
-                                      .toString(),
+                                  profileState.profile.coverUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (a, b, c) => const SizedBox(),
                                 )
@@ -468,8 +428,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           bottom: -40,
                           child: ProfileAvatar(
                             avatarUrl: profileState.profile.avatarUrl,
-                            localAvatarPath: localAvatarPath,
-                            updatedAt: profileState.profile.updatedAt,
                             radius: 44,
                             showCameraIcon: true,
                             onTap: _pickAvatar,

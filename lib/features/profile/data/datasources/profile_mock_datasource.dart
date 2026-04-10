@@ -291,7 +291,6 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
   @override
   Future<ProfileModel> updateProfile({
-    required String userId,
     required String displayName,
     required String city,
     required String country,
@@ -303,9 +302,8 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       throw Exception('VALIDATION_FAILED: display name cannot be empty');
     }
 
-    final targetProfile = _getProfileById(userId);
-    final updatedProfile = {
-      ...targetProfile,
+    _currentUserProfile = {
+      ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
       'display_name': displayName,
       'city': city,
       'country': country,
@@ -314,104 +312,65 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
     // ── Update in list too ────────────────────────────
     final idx = _mockProfiles.indexWhere(
-      (p) => p['id'] == updatedProfile['id'],
+      (p) => p['id'] == _currentUserProfile!['id'],
     );
-    if (idx != -1) _mockProfiles[idx] = Map.from(updatedProfile);
+    if (idx != -1) _mockProfiles[idx] = Map.from(_currentUserProfile!);
 
-    if (userId == 'me' ||
-        userId == (_currentUserProfile?['id'] ?? 'user-001')) {
-      _currentUserProfile = Map.from(updatedProfile);
-    }
-
-    return ProfileModel.fromJson(updatedProfile);
+    return ProfileModel.fromJson(_currentUserProfile!);
   }
 
   @override
-  Future<ProfileModel> uploadAvatar({
-    required String userId,
-    required String filePath,
-  }) async {
+  Future<ProfileModel> uploadAvatar({required String filePath}) async {
     await Future.delayed(const Duration(seconds: 2));
 
-    final targetProfile = _getProfileById(userId);
-    final updatedProfile = {
-      ...targetProfile,
+    _currentUserProfile = {
+      ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
       'avatar_url':
-          'https://i.pravatar.cc/400?u=${targetProfile['id']}-${DateTime.now().millisecondsSinceEpoch}',
+          'https://i.pravatar.cc/400?u=${_currentUserProfile?['id']}-${DateTime.now().millisecondsSinceEpoch}',
     };
 
     final idx = _mockProfiles.indexWhere(
-      (p) => p['id'] == updatedProfile['id'],
+      (p) => p['id'] == _currentUserProfile!['id'],
     );
-    if (idx != -1) _mockProfiles[idx] = Map.from(updatedProfile);
+    if (idx != -1) _mockProfiles[idx] = Map.from(_currentUserProfile!);
 
-    if (userId == 'me' ||
-        userId == (_currentUserProfile?['id'] ?? 'user-001')) {
-      _currentUserProfile = Map.from(updatedProfile);
-    }
-
-    return ProfileModel.fromJson(updatedProfile);
+    return ProfileModel.fromJson(_currentUserProfile!);
   }
 
   @override
-  Future<void> deleteAvatar({required String userId}) async {
+  Future<void> deleteAvatar() async {
     await Future.delayed(const Duration(milliseconds: 800));
-    final targetProfile = _getProfileById(userId);
-    final updatedProfile = {...targetProfile, 'avatar_url': null};
-
-    final idx = _mockProfiles.indexWhere(
-      (p) => p['id'] == updatedProfile['id'],
-    );
-    if (idx != -1) _mockProfiles[idx] = Map.from(updatedProfile);
-
-    if (userId == 'me' ||
-        userId == (_currentUserProfile?['id'] ?? 'user-001')) {
-      _currentUserProfile = Map.from(updatedProfile);
-    }
+    _currentUserProfile = {
+      ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
+      'avatar_url': null,
+    };
   }
 
   @override
-  Future<ProfileModel> uploadCoverPhoto({
-    required String userId,
-    required String filePath,
-  }) async {
+  Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
     await Future.delayed(const Duration(seconds: 2));
 
-    final targetProfile = _getProfileById(userId);
-    final updatedProfile = {
-      ...targetProfile,
+    _currentUserProfile = {
+      ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
       'cover_url':
-          'https://picsum.photos/seed/${targetProfile['id']}-${DateTime.now().millisecondsSinceEpoch}/1500/500',
+          'https://picsum.photos/seed/${_currentUserProfile?['id']}-${DateTime.now().millisecondsSinceEpoch}/1500/500',
     };
 
     final idx = _mockProfiles.indexWhere(
-      (p) => p['id'] == updatedProfile['id'],
+      (p) => p['id'] == _currentUserProfile!['id'],
     );
-    if (idx != -1) _mockProfiles[idx] = Map.from(updatedProfile);
+    if (idx != -1) _mockProfiles[idx] = Map.from(_currentUserProfile!);
 
-    if (userId == 'me' ||
-        userId == (_currentUserProfile?['id'] ?? 'user-001')) {
-      _currentUserProfile = Map.from(updatedProfile);
-    }
-
-    return ProfileModel.fromJson(updatedProfile);
+    return ProfileModel.fromJson(_currentUserProfile!);
   }
 
   @override
-  Future<void> deleteCoverPhoto({required String userId}) async {
+  Future<void> deleteCoverPhoto() async {
     await Future.delayed(const Duration(milliseconds: 800));
-    final targetProfile = _getProfileById(userId);
-    final updatedProfile = {...targetProfile, 'cover_url': null};
-
-    final idx = _mockProfiles.indexWhere(
-      (p) => p['id'] == updatedProfile['id'],
-    );
-    if (idx != -1) _mockProfiles[idx] = Map.from(updatedProfile);
-
-    if (userId == 'me' ||
-        userId == (_currentUserProfile?['id'] ?? 'user-001')) {
-      _currentUserProfile = Map.from(updatedProfile);
-    }
+    _currentUserProfile = {
+      ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
+      'cover_url': null,
+    };
   }
 
   @override

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/avatar/local_avatar_store.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../profile/presentation/widgets/profile_avatar.dart';
@@ -53,12 +52,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final currentUserAvatar = authState is AuthAuthenticated
         ? authState.user.avatarUrl
         : null;
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
-    final localAvatarPath = currentUserId == null
-        ? null
-        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
     final historyState = ref.watch(historyProvider);
 
     return Scaffold(
@@ -96,11 +89,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             child: GestureDetector(
               key: const Key('library_profile_avatar_gesture_detector'),
               onTap: () => context.push('/profile/me'),
-              child: ProfileAvatar(
-                avatarUrl: currentUserAvatar,
-                localAvatarPath: localAvatarPath,
-                radius: 18,
-              ),
+              child: ProfileAvatar(avatarUrl: currentUserAvatar, radius: 18),
             ),
           ),
         ],

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
-import '../../../../../core/avatar/local_avatar_store.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
@@ -124,9 +123,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
         : null;
-    final localAvatarPath = currentUserId == null
-        ? null
-        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
@@ -176,12 +172,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             ],
           ),
         ),
-        ProfileLoaded() => _buildLoaded(
-          context,
-          profileState,
-          isOwnProfile,
-          localAvatarPath,
-        ),
+        ProfileLoaded() => _buildLoaded(context, profileState, isOwnProfile),
         _ => const SizedBox.shrink(),
       },
     );
@@ -196,7 +187,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     BuildContext context,
     ProfileLoaded state,
     bool isOwnProfile,
-    String? localAvatarPath,
   ) {
     return CustomScrollView(
       controller: _scrollController,
@@ -207,12 +197,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ProfileAvatar(
-                  avatarUrl: state.profile.avatarUrl,
-                  localAvatarPath: isOwnProfile ? localAvatarPath : null,
-                  updatedAt: state.profile.updatedAt,
-                  radius: 60,
-                ),
+                ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
                 const SizedBox(height: 12),
                 Text(state.profile.displayName, style: AppTheme.headlineLarge),
                 const SizedBox(height: 4),
@@ -229,8 +214,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
                 ),
-                const SizedBox(height: 12),
-
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -288,23 +271,18 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    GestureDetector(
+                    Container(
                       key: const Key('public_profile_play_button'),
-                      onTap: () {},
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: isOwnProfile && state.likedTracks.isEmpty
-                              ? AppTheme.textSecondary.withValues(alpha: 0.2)
-                              : AppTheme.textSecondary.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppTheme.textPrimary,
-                          size: 28,
-                        ),
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: AppTheme.textPrimary,
+                        size: 28,
                       ),
                     ),
                   ],
@@ -318,33 +296,22 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         // Empty state
         if (state.likedTracks.isEmpty && !state.isLoadingTracks)
           SliverFillRemaining(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Seems a little quiet over here',
-                    key: const Key('public_profile_empty_headline_text'),
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Seems a little quiet over here',
+                  style: AppTheme.titleMedium.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Tracks you like, repost or upload will\nappear here.',
-                    key: const Key('public_profile_empty_body_text'),
-                    textAlign: TextAlign.center,
-                    style: AppTheme.bodyMedium.copyWith(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tracks you like, repost or upload will appear here.',
+                  textAlign: TextAlign.center,
+                  style: AppTheme.bodyMedium,
+                ),
+              ],
             ),
           )
         else

@@ -252,10 +252,12 @@ void main() {
       expect(result.id, 'user-001');
     });
 
-    test('should include captcha_token dev-bypass in request body', () async {
-      when(
-        () => mockDio.post(any(), data: any(named: 'data')),
-      ).thenAnswer((_) async => registerSuccessResponse());
+    test(
+      'should send sign-up payload without captcha_token when not implemented',
+      () async {
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenAnswer((_) async => registerSuccessResponse());
 
         await datasource.signUpWithEmail(
           email: 'karim@rythmify.com',
@@ -271,8 +273,9 @@ void main() {
                 ).captured.first
                 as Map<String, dynamic>;
 
-      expect(captured['captcha_token'], 'dev-bypass');
-    });
+        expect(captured.containsKey('captcha_token'), false);
+      },
+    );
 
     test('should parse user_id (not id) from response', () async {
       when(

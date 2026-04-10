@@ -15,7 +15,6 @@ import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
-import '../../features/authentication/presentation/pages/email_verification_screen.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -103,7 +102,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
-          state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
@@ -163,10 +161,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             password: data['password'] as String,
           );
         },
-      ),
-      GoRoute(
-        path: '/verify-email',
-        builder: (context, state) => const EmailVerificationScreen(),
       ),
 
       // ── Profile routes ───────────────────────────────────────────────────

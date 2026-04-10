@@ -33,7 +33,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String displayName,
     required String gender,
     required String dateOfBirth,
-    String? captchaToken,
   }) async {
     try {
       final user = await remoteDatasource.signUpWithEmail(
@@ -42,7 +41,6 @@ class AuthRepositoryImpl implements AuthRepository {
         displayName: displayName,
         gender: gender,
         dateOfBirth: dateOfBirth,
-        captchaToken: captchaToken,
       );
       return Right(user);
     } catch (e) {

@@ -31,15 +31,13 @@ class CommentDto {
 
   factory CommentDto.fromJson(Map<String, dynamic> json) {
     final author = json['author'] as Map<String, dynamic>? ?? {};
-    final rawUserPfp =
-        author['avatar_url'] as String? ?? author['profile_picture'] as String?;
 
     return CommentDto(
       id: json['comment_id'] as String,
       trackId: json['track_id'] as String,
       userId: json['user_id'] as String,
       userDisplayName: author['display_name'] as String? ?? 'Unknown User',
-      userPfp: rawUserPfp?.trim().isEmpty == true ? null : rawUserPfp?.trim(),
+      userPfp: author['avatar_url'] as String?,
       content: json['content'] as String,
       timestamp: json['track_timestamp'] as int? ?? 0,
       createdAt: json['created_at'] as String,

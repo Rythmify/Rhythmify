@@ -2,7 +2,6 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../domain/repositories/comment_repository.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../../../core/avatar/local_avatar_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/comment_replies_notifier.dart';
@@ -11,7 +10,6 @@ import '../../../../core/utils/time_utils.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../widgets/comment_reply_card.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
 import '../widgets/comment_card.dart';
 
 class CommentsScreen extends ConsumerStatefulWidget {
@@ -188,13 +186,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(trackCommentsProvider(widget.track.id));
-    final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
-    final localAvatarPath = currentUserId == null
-        ? null
-        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
     final playerPosition = ref.watch(
       playerStateProvider.select((s) => s.position),
     );
@@ -244,19 +235,13 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                           : const SizedBox.shrink();
                     }
                     final comment = state.comments[index];
-                    final renderedComment =
-                        currentUserId != null &&
-                            localAvatarPath != null &&
-                            comment.userId == currentUserId
-                        ? comment.copyWith(userPfp: localAvatarPath)
-                        : comment;
                     final isExpanded = _expandedCommentIds.contains(comment.id);
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommentCard(
-                          comment: renderedComment,
+                          comment: comment,
                           isExpanded: isExpanded,
                           onLike: () => ref
                               .read(
@@ -447,31 +432,11 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
 
   Widget _buildBottomInput(Duration playerPosition) {
     final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
-    final localAvatarPath = currentUserId == null
-        ? null
-        : ref.watch(localAvatarPathProvider(currentUserId)).asData?.value;
 
     String? pfpUrl;
     if (authState is AuthAuthenticated) {
-      pfpUrl = authState.user.avatarUrl?.trim();
-      if (pfpUrl?.isEmpty == true) {
-        pfpUrl = null;
-      }
+      pfpUrl = authState.user.avatarUrl;
     }
-    final hasLocalAvatar =
-        localAvatarPath != null &&
-        localAvatarPath.trim().isNotEmpty &&
-        File(localAvatarPath).existsSync();
-    final avatarImage = hasLocalAvatar
-        ? FileImage(File(localAvatarPath)) as ImageProvider
-        : pfpUrl != null &&
-              (pfpUrl.startsWith('http') || pfpUrl.startsWith('https'))
-        ? NetworkImage('$pfpUrl?t=${DateTime.now().millisecondsSinceEpoch}')
-              as ImageProvider
-        : (pfpUrl != null ? AssetImage(pfpUrl) : null);
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -523,8 +488,12 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey[800],
-                backgroundImage: avatarImage,
-                child: pfpUrl == null
+                backgroundImage: pfpUrl != null && pfpUrl.isNotEmpty
+                    ? (pfpUrl.startsWith('http') || pfpUrl.startsWith('https')
+                          ? NetworkImage(pfpUrl) as ImageProvider
+                          : AssetImage(pfpUrl))
+                    : null,
+                child: pfpUrl == null || pfpUrl.isEmpty
                     ? const Icon(Icons.person, color: Colors.white, size: 18)
                     : null,
               ),
