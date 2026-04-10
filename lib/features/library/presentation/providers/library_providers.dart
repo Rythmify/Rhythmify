@@ -10,7 +10,7 @@ import '../../domain/usecases/library_usecases.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 // Feature flag — flip to false to use real API
 // ─────────────────────────────────────────────────────────────────────────────
-const bool useLibraryMockData = false;
+const bool useLibraryMockData = true;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Infrastructure providers

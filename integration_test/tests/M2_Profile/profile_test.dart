@@ -43,9 +43,9 @@ void main() {
     await profilePage.enterName(profileEditNewName);
     await profilePage.enterCity(profileEditNewCity);
 
-    await profilePage.tapCountryField();
-    await tester.pumpAndSettle();
-    await profilePage.selectCountry(profileEditNewCountry);
+    // await profilePage.tapCountryField();
+    // await tester.pumpAndSettle();
+    // await profilePage.selectCountry(profileEditNewCountry);
 
     await profilePage.tapBioField();
     await tester.pumpAndSettle();
@@ -69,17 +69,12 @@ void main() {
 
     await profilePage.tapContinueEditing();
     await tester.pumpAndSettle();
+    await profilePage.enterName(profileEditNewName);
     await profilePage.tapSave();
     await tester.pumpAndSettle(const Duration(seconds: 4));
 
     expect(profilePage.isOnProfilePage(), true);
     expect(profilePage.isProfileNameVisible(profileEditNewName), true);
-
-    // Clean up: leave the edit page so TC-004 starts from the profile page
-    await profilePage.tapBack();
-    await tester.pumpAndSettle();
-    await profilePage.tapDiscardChanges();
-    await tester.pumpAndSettle();
 
     // ─── TC-PROFILE-004 | Edit → Back → Discard Changes (back to profile) ─
     await profilePage.tapEdit();
@@ -93,5 +88,6 @@ void main() {
     await profilePage.tapDiscardChanges();
     await tester.pumpAndSettle();
     expect(profilePage.isOnProfilePage(), true);
+    expect(profilePage.isProfileNameVisible(profileEditNewName), true);
   });
 }

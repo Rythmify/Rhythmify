@@ -119,6 +119,7 @@ const String editProfileBioTextField        = 'edit_profile_bio_textfield';
 const String editProfileBioDoneButton       = 'edit_profile_bio_done_button';
 const String editProfilePickCoverGesture    = 'edit_profile_pick_cover_gesture';
 const String editProfileCountryGesture     = 'edit_profile_country_gesture';
+const String editProfileCountryListView    = 'edit_profile_country_list_view';
 const String editProfileBioGesture         = 'edit_profile_bio_gesture';
 
 // --- Public Profile ---

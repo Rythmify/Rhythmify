@@ -57,16 +57,20 @@ class ProfilePage extends BasePage {
 
   /// Opens the country picker bottom sheet.
   Future<void> tapCountryField() async {
-    await tapByKey(editProfileCountryGesture);
+    await tester.ensureVisible(find.byKey(Key(editProfileCountryGesture)));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getCenter(find.byKey(Key(editProfileCountryGesture))));
+    await tester.pump(const Duration(seconds: 1));
   }
 
-  /// Scrolls the open country picker until the item with [isoCode] is visible,
-  /// then taps it. Country items are keyed as `item_<ISO>` (e.g. `item_EG`).
-  Future<void> selectCountry(String isoCode) async {
-    final itemFinder = find.byKey(Key('item_$isoCode'));
-    await tester.ensureVisible(itemFinder);
-    await tester.pumpAndSettle();
-    await tester.tap(itemFinder);
+  /// Scrolls the country picker bottom sheet until [countryName] is visible,
+  /// then taps it — same pattern as selectMonth/Day/Year in register.
+  Future<void> selectCountry(String countryName) async {
+    await scrollUntilVisible(
+      itemText: countryName,
+      scrollableKey: editProfileCountryListView,
+    );
+    await tester.tap(find.text(countryName).last);
     await tester.pumpAndSettle();
   }
 

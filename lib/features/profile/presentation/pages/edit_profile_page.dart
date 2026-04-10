@@ -223,6 +223,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => ListView(
+        key: const Key('edit_profile_country_list_view'),
         children: _countries.entries
             .map(
               (entry) => ListTile(
