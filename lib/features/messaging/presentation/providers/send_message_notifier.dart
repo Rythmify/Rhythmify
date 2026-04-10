@@ -28,16 +28,16 @@ class SendMessageNotifier extends StateNotifier<bool> {
   /// - Invalidates [conversationProvider] and [messageProvider] upon success to trigger UI updates.
   /// - Syncs with the [RemoteDataSource] via the repository.
   Future<Conversation?> sendMessage({
-    required String body,
+    String? body,
     String? conversationId,
     String? newParticipantId,
-    String? embedId,
-    String? embedType,
+    String? trackId,
+    String? playlistId,
   }) async {
     state = true;
     if (conversationId != null) {
       final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
-      await (uCase(conversationId, body));
+      await (uCase(conversationId, body, trackId, playlistId));
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(conversationId));
       state = false;
@@ -49,8 +49,8 @@ class SendMessageNotifier extends StateNotifier<bool> {
       final newConv = await (uCase(
         newParticipantId!,
         body: body,
-        trackId: embedType == 'track' ? embedId : null,
-        playlistId: embedType == 'playlist' ? embedId : null,
+        trackId: trackId,
+        playlistId: playlistId,
       ));
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(newConv.conversationId));

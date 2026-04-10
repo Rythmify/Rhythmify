@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
+import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
+import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -43,18 +48,26 @@ import '../../features/messaging/presentation/pages/search_screen.dart'
 //  Track_upload imports
 import 'package:rythmify/features/track_upload/presentation/screens/upload_track_screen.dart';
 
-//  Playlist imports
-import '../../features/playlist/presentation/pages/playlist_screen.dart';
+// ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
+import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
+import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/advertising_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/analytics_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/basic_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/communication_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/import_my_music_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/inbox_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/legal_settings_screen.dart';
 
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
 import '../../features/library/presentation/pages/following_page.dart';
-import '../../features/library/presentation/pages/playlists_page.dart';
 import '../../features/library/presentation/pages/uploads_page.dart';
 import '../../features/library/presentation/pages/stations_page.dart';
+import '../../features/library/presentation/pages/albums_page.dart'; // NEW
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
 
@@ -67,9 +80,8 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 //  Premium imports
 import '../../features/premium/presentation/pages/upgrade_screen.dart';
 
-///----------------------------------------------------------------------------------------------///
+// ────────────────────────────────────────────────────────────────────────────
 
-// Keys to track the state of each tab
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _homeTabKey = GlobalKey<NavigatorState>(debugLabel: 'homeTab');
 final _feedTabKey = GlobalKey<NavigatorState>(debugLabel: 'feedTab');
@@ -78,14 +90,12 @@ final _libraryTabKey = GlobalKey<NavigatorState>(debugLabel: 'libraryTab');
 final _upgradeTabKey = GlobalKey<NavigatorState>(debugLabel: 'upgradeTab');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // ── Listen to auth state changes to refresh router ────
   ref.listen(authProvider, (a, b) {});
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
 
-    // ── Redirect logic based on auth state ───────────────
     redirect: (context, state) {
       final authState = ref.read(authProvider);
 
@@ -95,16 +105,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
-      // Still loading — do not redirect
       if (authState is AuthLoading) return null;
 
-      // Not logged in — send to onboarding
       if (authState is AuthUnauthenticated || authState is AuthInitial) {
         if (!isAuthRoute) return '/onboarding';
         return null;
       }
 
-      // Logged in — redirect away from auth pages
       if (authState is AuthAuthenticated) {
         if (isAuthRoute) return '/home';
         return null;
@@ -119,7 +126,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
 
-      // ── Auth routes ──────────────────────────────────────
+      // ── Auth routes ──────────────────────────────────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingPage(),
@@ -156,8 +163,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ───────────────────────────────────
-      // CRITICAL: /profile/edit MUST be before /profile/:userId
+      // ── Profile routes ───────────────────────────────────────────────────
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
@@ -182,7 +188,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MainAppScaffold(navigationShell: navigationShell);
         },
         branches: [
-          // ── Home tab ───────────────────────────────────────
+          // ── Home tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _homeTabKey,
             routes: [
@@ -214,7 +220,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                             );
                           }
 
-                          // Fallback to searching mock data if no extra provided
                           final conv = mockConversations
                               .cast<Conversation?>()
                               .firstWhere(
@@ -224,6 +229,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
                           return ChatScreen(conv: conv);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'likes-playlists',
+                            builder: (context, state) =>
+                                const LikesPlaylistsScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'search',
@@ -236,60 +248,34 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'notifications',
                     builder: (context, state) => const NotificationsScreen(),
                   ),
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
                 ],
               ),
             ],
           ),
 
-          // ── Feed tab ───────────────────────────────────────
+          // ── Feed tab ───────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _feedTabKey,
             routes: [
               GoRoute(
                 path: '/feed',
                 builder: (context, state) => const FeedScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    name: 'behindTheTrack',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
 
-          // ── Search tab ─────────────────────────────────────
+          // ── Search tab ─────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _searchTabKey,
             routes: [
               GoRoute(
                 path: '/search',
                 builder: (context, state) => const SearchScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
 
-          // ── Library tab ────────────────────────────────────
+          // ── Library tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _libraryTabKey,
             routes: [
@@ -297,39 +283,136 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/library',
                 builder: (context, state) => const LibraryScreen(),
                 routes: [
-                  // Existing routes (unchanged)
                   GoRoute(
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
+                    routes: [
+                      GoRoute(
+                        //1- import music
+                        path: 'import-my-music',
+                        builder: (context, state) =>
+                            const ImportMyMusicScreen(),
+                      ),
+                      GoRoute(
+                        //2- Account
+                        path: 'account',
+                        builder: (context, state) => const AccountScreen(),
+                      ),
+                      GoRoute(
+                        //4- Basic settings
+                        path: 'basic-settings',
+                        builder: (context, state) =>
+                            const BasicSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //5- Social settings
+                        path: 'social-settings',
+                        builder: (context, state) =>
+                            const SocialSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //6- Inbox
+                        path: 'inbox-settings',
+                        builder: (context, state) =>
+                            const InboxSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //7- Notifications
+                        path: 'notifications',
+                        builder: (context, state) =>
+                            const NotificationsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //9- Analytics
+                        path: 'analytics',
+                        builder: (context, state) =>
+                            const AnalyticsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //10- Communications
+                        path: 'Communications',
+                        builder: (context, state) =>
+                            const CommunicationSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //11- Advesrtising
+                        path: 'Advesrtising',
+                        builder: (context, state) =>
+                            const AdvertisingSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //13- Legal
+                        path: 'Legal',
+                        builder: (context, state) =>
+                            const LegalSettingsScreen(),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'playlist',
                     builder: (context, state) => const PlaylistScreen(),
                   ),
                   GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-
-                  // ── Library sub-pages (CP-4) ───────────────
-                  GoRoute(
                     path: 'following',
                     builder: (context, state) => const FollowingPage(),
                   ),
+
+                  // ── Playlists ──────────────────────────────────────────
                   GoRoute(
                     path: 'playlists',
-                    builder: (context, state) => const PlaylistsPage(),
+                    builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
+                  GoRoute(
+                    path: 'playlists/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Albums ─────────────────────────────────────────────
+                  // AlbumsPage re-exports LibraryAlbumsScreen
+                  GoRoute(
+                    path: 'albums',
+                    builder: (context, state) => const LibraryAlbumsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'albums/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  // ── Stations ───────────────────────────────────────────
+                  // StationsPage re-exports LibraryStationsScreen
+                  GoRoute(
+                    path: 'stations',
+                    builder: (context, state) => const LibraryStationsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'stations/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
-                  ),
-                  GoRoute(
-                    path: 'stations',
-                    builder: (context, state) => const StationsPage(),
                   ),
                   GoRoute(
                     path: 'history',
@@ -344,28 +427,29 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // ── Upgrade tab ─────────────────────────────────────
+          // ── Upgrade tab ────────────────────────────────────────────────
           StatefulShellBranch(
             navigatorKey: _upgradeTabKey,
             routes: [
               GoRoute(
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
         ],
       ),
 
+      // ── Root Level Pages (Renders ON TOP of Navigation Bar) ─────────
+      GoRoute(
+        path: '/behind-the-track/:trackId',
+        name: 'behindTheTrack',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final trackId = state.pathParameters['trackId']!;
+          return BehindTheTrackPage(trackId: trackId);
+        },
+      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,

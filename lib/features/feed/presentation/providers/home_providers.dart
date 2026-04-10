@@ -1,141 +1,83 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/usecases/get_more__you_like.dart';
 import '../../data/datasources/home_datasource.dart';
 import '../../data/repositories/home_repository_impl.dart';
+import '../../domain/usecases/get_home_data.dart';
 import '../../domain/usecases/get_trending_tracks.dart';
 import '../../domain/usecases/get_hot_tracks.dart';
+import '../../domain/usecases/get_more__you_like.dart';
 import '../../domain/usecases/get_mixed_playlists.dart';
 import '../../domain/usecases/get_discover_stations.dart';
+import '../../domain/entities/home_data.dart';
+import '../../domain/entities/genre_tab_tracks.dart';
+import '../../domain/entities/hot_for_you.dart';
+import '../../domain/entities/mixed_for_you_item.dart';
+import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
+import 'package:http/http.dart' as http;
 
-/// Provides an instance of [HomeDatasource].
-///
-/// This is the **lowest layer in the Home feature data flow** and is responsible
-/// for fetching raw data (e.g., API calls, local assets, or mock data).
-///
-/// Output:
-/// - Returns a [HomeDatasource] instance
-final datasourceProvider = Provider((ref) => HomeDatasource());
+final datasourceProvider = Provider(
+  (ref) => HomeDatasource(
+    client: http.Client(),
+    baseUrl:
+        'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
+  ),
+);
 
-/// Provides an implementation of [HomeRepositoryImpl].
-///
-/// This repository acts as an abstraction layer between:
-/// - Data sources (raw data)
-/// - Domain use cases (business logic)
-///
-/// Input:
-/// - Depends on [datasourceProvider]
-///
-/// Output:
-/// - Returns a [HomeRepositoryImpl] instance
 final repositoryProvider = Provider(
   (ref) => HomeRepositoryImpl(ref.read(datasourceProvider)),
 );
 
-/// ====== Use Case Providers ======
+// ====== Use Case Providers ======
 
-/// Use case provider for fetching trending tracks.
-///
-/// This encapsulates business logic for retrieving trending music
-/// based on a specific genre.
-///
-/// Input:
-/// - [genre]: String representing the music genre filter
-///
-/// Output:
-/// - Returns a [GetTrendingTracks] use case instance
-final getTrendingTracksProvider = Provider(
-  (ref) => GetTrendingTracks(ref.read(repositoryProvider)),
+final getHomeDataProvider = Provider(
+  (ref) => GetHomeData(ref.read(repositoryProvider)),
 );
 
-/// Use case provider for fetching "Hot For You" tracks.
-///
-/// This represents personalized or algorithm-driven track recommendations.
-///
-/// Output:
-/// - Returns a [GetHotTracks] use case instance
-final getHotTracksProvider = Provider(
-  (ref) => GetHotTracks(ref.read(repositoryProvider)),
+final getTrendingByGenreProvider = Provider(
+  (ref) => GetTrendingByGenre(ref.read(repositoryProvider)),
 );
 
-/// Use case provider for fetching mixed playlist recommendations.
-///
-/// This provides curated playlists combining different music styles.
-///
-/// Output:
-/// - Returns a [GetMixedPlaylists] use case instance
-final getMixedPlaylistsProvider = Provider(
-  (ref) => GetMixedPlaylists(ref.read(repositoryProvider)),
+final getHotForYouProvider = Provider(
+  (ref) => GetHotForYou(ref.read(repositoryProvider)),
 );
 
-/// Use case provider for fetching discovery stations.
-///
-/// This provides radio-like or station-based music discovery content.
-///
-/// Output:
-/// - Returns a [GetStationPlaylists] use case instance
-final getStationsProvider = Provider(
-  (ref) => GetStationPlaylists(ref.read(repositoryProvider)),
-);
-
-/// Use case provider for fetching "More of What You Like" recommendations.
-///
-/// This provides additional personalized recommendations based on user behavior.
-///
-/// Output:
-/// - Returns a [GetMoreOfWhatYouLike] use case instance
-final getMoreOfWhatYouLikeProvider = Provider(
+final getMoreOfWhatYouLikeUseCaseProvider = Provider(
   (ref) => GetMoreOfWhatYouLike(ref.read(repositoryProvider)),
 );
 
-/// ====== UI State Providers ======
+final getMixedForYouUseCaseProvider = Provider(
+  (ref) => GetMixedForYou(ref.read(repositoryProvider)),
+);
 
-/// Provides a list of trending tracks filtered by genre.
-///
-/// This is consumed by the UI layer to display trending music sections.
-///
-/// Input:
-/// - [genre]: The selected music genre
-///
-/// Output:
-/// - A [Future] containing a list of [Track] entities
-final trendingTracksProvider = FutureProvider.family<List<Track>, String>((
+final getDiscoverStationsUseCaseProvider = Provider(
+  (ref) => GetDiscoverStations(ref.read(repositoryProvider)),
+);
+
+// ====== UI State Providers ======
+
+final homeDataProvider = FutureProvider<HomeData>((ref) {
+  return ref.watch(getHomeDataProvider).call();
+});
+
+final trendingByGenreProvider = FutureProvider.family<GenreTabTracks, String>((
   ref,
-  genre,
+  genreId,
 ) {
-  return ref.read(getTrendingTracksProvider).call(genre);
+  return ref.watch(getTrendingByGenreProvider).call(genreId);
 });
 
-/// Provides "Hot For You" personalized tracks.
-///
-/// Used by the UI to render personalized recommendations.
-///
-/// Output:
-/// - A [Future] containing a list of [Track] entities
-final hotTracksProvider = FutureProvider<List<Track>>((ref) {
-  return ref.read(getHotTracksProvider).call();
+final hotForYouProvider = FutureProvider<HotForYou>((ref) {
+  return ref.watch(getHotForYouProvider).call();
 });
 
-/// Provides mixed playlist recommendations for the home feed.
-///
-/// Output:
-/// - A [Future] containing playlist/track data
-final mixedPlaylistsProvider = FutureProvider((ref) {
-  return ref.read(getMixedPlaylistsProvider).call();
+final moreOfWhatYouLikeProvider = FutureProvider<List<Track>>((ref) {
+  return ref.watch(getMoreOfWhatYouLikeUseCaseProvider).call();
 });
 
-/// Provides discovery stations for the home feed.
-///
-/// Output:
-/// - A [Future] containing station-based recommendations
-final discoverStationsProvider = FutureProvider((ref) {
-  return ref.read(getStationsProvider).call();
+final mixedForYouProvider = FutureProvider<List<MixedForYouItem>>((ref) {
+  return ref.watch(getMixedForYouUseCaseProvider).call();
 });
 
-/// Provides personalized "More of What You Like" recommendations.
-///
-/// Output:
-/// - A [Future] containing a list of recommended tracks
-final moreOfWhatYouLikeProvider = FutureProvider((ref) {
-  return ref.read(getMoreOfWhatYouLikeProvider).call();
+final discoverStationsProvider = FutureProvider<List<DiscoverStation>>((ref) {
+  return ref.watch(getDiscoverStationsUseCaseProvider).call();
 });

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:rythmify/features/feed/presentation/pages/home_screen.dart';
@@ -158,23 +159,20 @@ class _FakeHomeDatasource extends HomeDatasource {
     required this.mixedPlaylists,
     required this.stationPlaylists,
     required this.moreOfWhatYouLike,
-  });
+    http.Client? client,
+    String? baseUrl,
+  }) : super(client: client ?? http.Client(), baseUrl: baseUrl ?? 'dummy');
 
-  @override
   Future<List<Track>> getTrendingTracks(String genre) async => trendingTracks;
 
-  @override
   Future<List<Track>> getHotTracks() async => hotTracks;
 
-  @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async =>
       mixedPlaylists;
 
-  @override
   Future<List<Map<String, dynamic>>> getStationPlaylists() async =>
       stationPlaylists;
 
-  @override
   Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async =>
       moreOfWhatYouLike;
 }
@@ -262,29 +260,26 @@ class _LoadingHomeDatasource extends HomeDatasource {
     required this.mixedPlaylistsFuture,
     required this.stationPlaylistsFuture,
     required this.moreOfWhatYouLikeFuture,
-  });
+    http.Client? client,
+    String? baseUrl,
+  }) : super(client: client ?? http.Client(), baseUrl: baseUrl ?? 'dummy');
 
-  @override
   Future<List<Track>> getTrendingTracks(String genre) async {
     return trendingTracksFuture;
   }
 
-  @override
   Future<List<Track>> getHotTracks() async {
     return hotTracksFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getMixedPlaylists() async {
     return mixedPlaylistsFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getStationPlaylists() async {
     return stationPlaylistsFuture;
   }
 
-  @override
   Future<List<Map<String, dynamic>>> getMoreOfWhatYouLikePlaylists() async {
     return moreOfWhatYouLikeFuture;
   }
