@@ -16,7 +16,10 @@ class UploadAvatarUseCase {
   /// Uploads the image at [filePath] as the user's avatar.
   ///
   /// Returns [Right] with updated [ProfileEntity], or [Left] with a [Failure].
-  Future<Either<Failure, ProfileEntity>> call({required String filePath}) {
-    return repository.uploadAvatar(filePath: filePath);
+  Future<Either<Failure, ProfileEntity>> call({
+    required String userId,
+    required String filePath,
+  }) {
+    return repository.uploadAvatar(userId: userId, filePath: filePath);
   }
 }

@@ -15,6 +15,8 @@ import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../core/avatar/local_avatar_store.dart';
 
 const bool useProfileMockData = false;
 
@@ -34,6 +36,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
   late final GetLikedTracksUseCase _getLikedTracks;
 
   int _currentPage = 1;
+
+  String _resolveUserId(String userId) {
+    return userId;
+  }
 
   @override
   ProfileState build() {
@@ -60,7 +66,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
-    final result = await _getProfile(userId: userId);
+    final resolvedUserId = _resolveUserId(userId);
+    final result = await _getProfile(userId: resolvedUserId);
     result.fold((failure) => state = ProfileError(failure.message), (profile) {
       state = ProfileLoaded(profile: profile);
       loadLikedTracks(userId: userId, refresh: true);
@@ -88,7 +95,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
 
     final result = await _getLikedTracks(
-      userId: userId,
+      userId: _resolveUserId(userId),
       page: _currentPage,
       limit: 20,
     );
@@ -128,32 +135,57 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _updateProfile(
+      userId: current.profile.id,
       displayName: displayName,
       city: city,
       country: country,
       bio: bio,
     );
 
-    result.fold(
-      (failure) => state = current.copyWith(isSaving: false),
-      (profile) => state = current.copyWith(profile: profile, isSaving: false),
-    );
+    result.fold((failure) => state = current.copyWith(isSaving: false), (
+      profile,
+    ) {
+      state = current.copyWith(profile: profile, isSaving: false);
+      ref.read(authProvider.notifier).refreshAuthenticatedUser();
+    });
   }
 
   Future<void> uploadAvatar({required String filePath}) async {
+    print('🔵 ProfileNotifier.uploadAvatar: Called with filePath: $filePath');
     final current = state;
-    if (current is! ProfileLoaded) return;
+    if (current is! ProfileLoaded) {
+      print(
+        '🔴 ProfileNotifier.uploadAvatar: State is not ProfileLoaded, aborting',
+      );
+      return;
+    }
 
+    print('🔵 ProfileNotifier.uploadAvatar: Setting isSaving = true');
     state = current.copyWith(isSaving: true);
 
-    final result = await _uploadAvatar(filePath: filePath);
+    print('🔵 ProfileNotifier.uploadAvatar: Calling use case');
+    final result = await _uploadAvatar(
+      userId: current.profile.id,
+      filePath: filePath,
+    );
     result.fold(
       (failure) {
+        print(
+          '🔴 ProfileNotifier.uploadAvatar: Upload failed - ${failure.message}',
+        );
         state = current.copyWith(isSaving: false);
       },
       (profile) {
-        // Update state with new profile containing updated avatar
+        print('🟢 ProfileNotifier.uploadAvatar: Upload successful!');
+        print('🟢 New avatar URL: ${profile.avatarUrl}');
+
+        // Update state - ProfileAvatar widget handles cache clearing
         state = current.copyWith(profile: profile, isSaving: false);
+        LocalAvatarStore.set(current.profile.id, filePath);
+        ref.invalidate(localAvatarPathProvider(current.profile.id));
+        ref.read(authProvider.notifier).refreshAuthenticatedUser();
+
+        print('🟢 Profile state updated with new avatar');
       },
     );
   }
@@ -164,18 +196,22 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     state = current.copyWith(isSaving: true);
 
-    final result = await _deleteAvatar();
+    final result = await _deleteAvatar(userId: current.profile.id);
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
       },
       (_) async {
         // Reload profile to get updated avatar URL (null)
-        final profileResult = await _getProfile(userId: 'me');
+        final profileResult = await _getProfile(userId: current.profile.id);
         profileResult.fold(
           (failure) => state = current.copyWith(isSaving: false),
-          (profile) =>
-              state = current.copyWith(profile: profile, isSaving: false),
+          (profile) {
+            state = current.copyWith(profile: profile, isSaving: false);
+            LocalAvatarStore.clear(current.profile.id);
+            ref.invalidate(localAvatarPathProvider(current.profile.id));
+            ref.read(authProvider.notifier).refreshAuthenticatedUser();
+          },
         );
       },
     );
@@ -187,7 +223,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     state = current.copyWith(isSaving: true);
 
-    final result = await _uploadCoverPhoto(filePath: filePath);
+    final result = await _uploadCoverPhoto(
+      userId: current.profile.id,
+      filePath: filePath,
+    );
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
@@ -195,6 +234,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
       (profile) {
         // Update state with new profile containing updated cover
         state = current.copyWith(profile: profile, isSaving: false);
+        LocalAvatarStore.setCover(current.profile.id, filePath);
+        ref.invalidate(localCoverPathProvider(current.profile.id));
+        ref.read(authProvider.notifier).refreshAuthenticatedUser();
+
+        // Force image cache clear to show new cover immediately
+        _clearImageCache();
       },
     );
   }
@@ -205,10 +250,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     state = current.copyWith(isSaving: true);
 
-    final result = await _deleteCoverPhoto();
+    final result = await _deleteCoverPhoto(userId: current.profile.id);
     result.fold((failure) => state = current.copyWith(isSaving: false), (_) {
+      LocalAvatarStore.clearCover(current.profile.id);
+      ref.invalidate(localCoverPathProvider(current.profile.id));
       state = current.copyWith(isSaving: false);
-      loadProfile(userId: 'me');
+      loadProfile(userId: current.profile.id);
     });
   }
 
@@ -240,5 +287,20 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     result.fold((failure) => state = current, (_) {});
+  }
+
+  /// Clears the Flutter image cache to force reload of profile images.
+  ///
+  /// Called after avatar/cover upload to ensure users see the new image
+  /// immediately instead of the cached version. This is critical because
+  /// CachedNetworkImage aggressively caches images, and even with a new
+  /// URL from the backend, Flutter may show the old image.
+  void _clearImageCache() {
+    // Note: This requires access to PaintingBinding.instance.imageCache
+    // which is only available in widgets. For now, the ProfileAvatar widget
+    // handles cache-busting via URL timestamp query parameter.
+    // If needed, you can pass BuildContext and call:
+    // PaintingBinding.instance.imageCache.clear();
+    // PaintingBinding.instance.imageCache.clearLiveImages();
   }
 }

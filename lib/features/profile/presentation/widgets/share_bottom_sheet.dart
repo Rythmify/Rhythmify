@@ -43,7 +43,11 @@ class ShareBottomSheet extends StatelessWidget {
           /// ── Profile preview ────────────────────────────────────
           Row(
             children: [
-              ProfileAvatar(avatarUrl: profile.avatarUrl, radius: 24),
+              ProfileAvatar(
+                avatarUrl: profile.avatarUrl,
+                updatedAt: profile.updatedAt,
+                radius: 24,
+              ),
               const SizedBox(width: 12),
 
               Column(

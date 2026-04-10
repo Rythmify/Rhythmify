@@ -1,6 +1,7 @@
 // coverage:ignore-file
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -15,6 +16,7 @@ import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../features/profile/data/datasources/profile_mock_datasource.dart';
+import '../../../../core/avatar/local_avatar_store.dart';
 import 'auth_state.dart';
 
 const bool useMockData = false;
@@ -94,62 +96,29 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final token = await apiClient.getToken();
 
-      if (token == null) {
+      if (token == null || token.isEmpty) {
         state = const AuthUnauthenticated();
         return;
       }
 
+      // Attempt to fetch current user data with the stored token
       final response = await apiClient.dio.get('/users/me');
       final data = response.data['data'];
 
       final user = UserModel.fromJson({
-        ...data,
-        'id': data['id']?.toString() ?? data['user_id']?.toString(),
-        'is_email_verified':
-            data['is_verified'] ?? data['is_email_verified'] ?? true,
-        // THE FIX APPLIED HERE TOO
-        'avatar_url': data['profile_picture'] ?? data['avatar_url'],
+        'id': data['id'],
+        'email': data['email'],
+        'display_name': data['display_name'],
+        'avatar_url': data['avatar_url'] ?? data['profile_picture'],
+        'is_email_verified': data['is_verified'] ?? true,
         'token': token,
       });
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      if (_isInvalidSessionError(e)) {
-        await apiClient.clearToken();
-        state = const AuthUnauthenticated();
-        return;
-      }
-
-      // Keep the session for transient startup failures (network/backend hiccups).
-      final token = await apiClient.getToken();
-      if (token != null) {
-        state = AuthAuthenticated(
-          UserModel(
-            id: 'cached-session',
-            email: '',
-            displayName: 'Rythmify User',
-            isEmailVerified: true,
-            token: token,
-          ),
-        );
-      } else {
-        state = const AuthUnauthenticated();
-      }
+      await apiClient.clearToken();
+      state = const AuthUnauthenticated();
     }
-  }
-
-  bool _isInvalidSessionError(Object error) {
-    if (error is DioException) {
-      final status = error.response?.statusCode;
-      final code = error.response?.data?['error']?['code']?.toString();
-      if (status == 401) return true;
-      if (code == 'AUTH_INVALID_CREDENTIALS' ||
-          code == 'AUTH_REFRESH_TOKEN_INVALID' ||
-          code == 'AUTH_TOKEN_EXPIRED') {
-        return true;
-      }
-    }
-    return false;
   }
 
   Future<void> signInWithEmailAndPassword({
@@ -173,6 +142,7 @@ class AuthNotifier extends Notifier<AuthState> {
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   }) async {
     state = const AuthLoading();
     final result = await _signUpWithEmail(
@@ -181,6 +151,7 @@ class AuthNotifier extends Notifier<AuthState> {
       displayName: displayName,
       gender: gender,
       dateOfBirth: dateOfBirth,
+      captchaToken: captchaToken,
     );
 
     result.fold((failure) => state = AuthError(failure.message), (
@@ -213,9 +184,16 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> signOutUser() async {
+    final current = state;
     state = const AuthLoading();
     final result = await _signOut();
     result.fold((failure) => state = AuthError(failure.message), (_) async {
+      if (current is AuthAuthenticated) {
+        await LocalAvatarStore.clear(current.user.id);
+        await LocalAvatarStore.clearCover(current.user.id);
+        ref.invalidate(localAvatarPathProvider(current.user.id));
+        ref.invalidate(localCoverPathProvider(current.user.id));
+      }
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     });
@@ -233,5 +211,31 @@ class AuthNotifier extends Notifier<AuthState> {
       (failure) => state = AuthError(failure.message),
       (_) => state = const AuthUnauthenticated(),
     );
+  }
+
+  Future<void> refreshAuthenticatedUser() async {
+    final current = state;
+    if (current is! AuthAuthenticated) return;
+
+    try {
+      final token = await apiClient.getToken();
+      if (token == null || token.isEmpty) return;
+
+      final response = await apiClient.dio.get('/users/me');
+      final data = response.data['data'];
+
+      final refreshed = UserModel.fromJson({
+        'id': data['id'],
+        'email': data['email'],
+        'display_name': data['display_name'],
+        'avatar_url': data['avatar_url'] ?? data['profile_picture'],
+        'is_email_verified': data['is_verified'] ?? true,
+        'token': token,
+      });
+
+      state = AuthAuthenticated(refreshed);
+    } catch (_) {
+      // Keep existing authenticated state when profile refresh fails.
+    }
   }
 }

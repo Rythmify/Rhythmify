@@ -34,6 +34,7 @@ abstract class AuthRepository {
   /// [displayName] — the name shown publicly across the app.
   /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
+  /// [captchaToken] — optional CAPTCHA verification token.
 
   Future<Either<Failure, UserEntity>> signUpWithEmail({
     required String email,
@@ -41,6 +42,7 @@ abstract class AuthRepository {
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   });
 
   /// Signs in using a Google account via Firebase OAuth.

@@ -18,12 +18,14 @@ class UpdateProfileUseCase {
   /// [displayName], [city], [country] (ISO alpha-2), and [bio].
   /// Returns [Right] with updated [ProfileEntity], or [Left] with a [Failure].
   Future<Either<Failure, ProfileEntity>> call({
+    required String userId,
     required String displayName,
     required String city,
     required String country,
     required String bio,
   }) {
     return repository.updateProfile(
+      userId: userId,
       displayName: displayName,
       city: city,
       country: country,

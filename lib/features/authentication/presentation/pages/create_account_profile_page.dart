@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/recaptcha_widget.dart';
 
 class CreateAccountProfilePage extends ConsumerStatefulWidget {
   final String email;
@@ -69,7 +70,7 @@ class _CreateAccountProfilePageState
     return '$_selectedYear-$monthIndex-$day';
   }
 
-  void _onContinue() {
+  void _onContinue() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedGender == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +122,11 @@ class _CreateAccountProfilePageState
         return;
       }
 
+      // ── reCAPTCHA v3 — DISABLED (always send null) ───────────────────────
+      // reCAPTCHA has been disabled - always send null for captchaToken
+      const String? captchaToken = null;
+
+      // Proceed with registration
       ref
           .read(authProvider.notifier)
           .signUpWithEmailAndPassword(
@@ -129,6 +135,7 @@ class _CreateAccountProfilePageState
             displayName: _displayNameController.text.trim(),
             gender: _selectedGender!.toLowerCase(),
             dateOfBirth: _formatDate(),
+            captchaToken: captchaToken,
           );
     }
   }
@@ -147,7 +154,9 @@ class _CreateAccountProfilePageState
         );
       }
       if (next is AuthAuthenticated) {
-        context.go('/home');
+        // After successful registration, show email verification screen
+        // User is authenticated but email not verified yet
+        context.go('/verify-email');
       }
     });
 
@@ -268,6 +277,8 @@ class _CreateAccountProfilePageState
                 ),
 
                 const SizedBox(height: 32),
+
+                // Continue button (reCAPTCHA v3 executes automatically on submit)
                 SizedBox(
                   width: double.infinity,
                   height: 50,

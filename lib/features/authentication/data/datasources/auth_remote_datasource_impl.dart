@@ -60,11 +60,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final user = data['user'];
       return UserModel.fromJson({
-        ...user,
-        'id': user['id']?.toString() ?? user['user_id']?.toString(),
-        'is_email_verified':
-            user['is_verified'] ?? user['is_email_verified'] ?? true,
-        'avatar_url': user['profile_picture'] ?? user['avatar_url'],
+        'id': user['user_id'].toString(),
+        'email': user['email'],
+        'display_name': user['display_name'],
+        'avatar_url': user['avatar_url'] ?? user['profile_picture'],
+        'is_email_verified': user['is_verified'],
         'token': token,
       });
     } on DioException catch (e) {
@@ -76,7 +76,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// Registers a new user account via `POST /auth/register`.
   ///
   /// Sends `email`, `password`, `display_name`, `gender`,
-  /// and `date_of_birth` to create a new user account.
+  /// `date_of_birth`, `captcha_token` and `platform`
+  /// to create a new user account.
   ///
   /// Parses `user_id` (not `id`) from the response per the API spec.
   /// Returns a [UserModel] with `token: null` (token is only issued
@@ -91,6 +92,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// [displayName] — the public display name.
   /// [gender] — lowercase gender string (e.g. `'male'`).
   /// [dateOfBirth] — formatted as `YYYY-MM-DD`.
+  /// [captchaToken] — optional CAPTCHA token for verification.
   @override
   Future<UserModel> signUpWithEmail({
     required String email,
@@ -98,17 +100,22 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String displayName,
     required String gender,
     required String dateOfBirth,
+    String? captchaToken,
   }) async {
     try {
+      final requestData = {
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+        'gender': gender,
+        'date_of_birth': dateOfBirth,
+        'captcha_token': null,
+        'platform': 'mobile',
+      };
+
       final response = await client.dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'display_name': displayName,
-          'gender': gender,
-          'date_of_birth': dateOfBirth,
-        },
+        data: requestData,
       );
 
       final responseData = response.data is List
@@ -121,9 +128,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'id': data['user_id'].toString(),
         'email': data['email'],
         'display_name': data['display_name'],
-        'avatar_url': data['avatar_url'] ?? '',
+        'avatar_url': data['avatar_url'] ?? data['profile_picture'] ?? '',
         'is_email_verified': false,
-        'token': null,
+        'captcha_token': null,
       });
     } on DioException catch (e) {
       _handleDioError(e);
@@ -190,10 +197,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final user = data['user'];
       return UserModel.fromJson({
-        ...user,
-        'id': user['id']?.toString() ?? user['user_id']?.toString(),
-        'is_email_verified':
-            user['is_verified'] ?? user['is_email_verified'] ?? true,
+        'id': user['user_id'],
+        'email': user['email'],
+        'display_name': user['display_name'],
+        'avatar_url': user['avatar_url'] ?? user['profile_picture'],
+        'is_email_verified': user['is_verified'] ?? true,
         'token': token,
       });
     } on DioException catch (e) {
@@ -251,8 +259,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final user = data['user'];
       return UserModel.fromJson({
-        ...user,
-        'id': user['id']?.toString() ?? user['user_id']?.toString(),
+        'id': user['user_id'].toString(),
+        'email': user['email'],
+        'display_name': user['display_name'],
+        'avatar_url': user['avatar_url'] ?? user['profile_picture'],
         'is_email_verified': true,
         'token': token,
       });

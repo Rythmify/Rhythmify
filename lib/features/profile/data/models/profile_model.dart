@@ -16,16 +16,23 @@ class ProfileModel extends ProfileEntity {
     required super.tracksCount,
     required super.isFollowing,
     super.isVerified,
+    super.updatedAt,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'] as String? ?? '';
     final displayName = json['display_name'] as String? ?? '';
     final username = json['username'] as String?;
-    final avatarUrl =
+    final rawAvatarUrl =
         json['profile_picture'] as String? ?? json['avatar_url'] as String?;
-    final coverUrl =
+    final rawCoverUrl =
         json['cover_photo'] as String? ?? json['cover_url'] as String?;
+    final avatarUrl = rawAvatarUrl?.trim().isEmpty == true
+        ? null
+        : rawAvatarUrl?.trim();
+    final coverUrl = rawCoverUrl?.trim().isEmpty == true
+        ? null
+        : rawCoverUrl?.trim();
     final city = json['city'] as String?;
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;
@@ -35,6 +42,12 @@ class ProfileModel extends ProfileEntity {
     final tracksCount = json['tracks_count'] as int? ?? 0;
     final isFollowing = json['is_following'] as bool? ?? false;
     final isVerified = json['is_verified'] as bool? ?? false;
+
+    // Parse updatedAt from ISO 8601 timestamp
+    final updatedAtStr = json['updated_at'] as String?;
+    final updatedAt = updatedAtStr != null
+        ? DateTime.tryParse(updatedAtStr)
+        : DateTime.now();
 
     return ProfileModel(
       id: id,
@@ -50,6 +63,7 @@ class ProfileModel extends ProfileEntity {
       tracksCount: tracksCount,
       isFollowing: isFollowing,
       isVerified: isVerified,
+      updatedAt: updatedAt,
     );
   }
 
@@ -68,6 +82,7 @@ class ProfileModel extends ProfileEntity {
       'tracks_count': tracksCount,
       'is_following': isFollowing,
       'is_verified': isVerified,
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 }

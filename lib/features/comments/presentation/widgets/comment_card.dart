@@ -27,6 +27,13 @@ class CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedPfp = comment.userPfp?.trim().isEmpty == true
+        ? null
+        : comment.userPfp?.trim();
+    final networkPfp = normalizedPfp != null
+        ? '$normalizedPfp?t=${comment.createdAt.millisecondsSinceEpoch}'
+        : null;
+
     return Padding(
       padding: EdgeInsets.only(
         left: isReply ? 48.0 : 16.0,
@@ -37,46 +44,40 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () => context.push('/profile/${comment.userId}'),
-            borderRadius: BorderRadius.circular(isReply ? 16 : 20),
-            child: Container(
-              width: isReply ? 32 : 40,
-              height: isReply ? 32 : 40,
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-                shape: BoxShape.circle,
-              ),
-              child: ClipOval(
-                child: comment.userPfp == null || comment.userPfp!.isEmpty
-                    ? Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: isReply ? 16 : 20,
-                      )
-                    : (comment.userPfp!.startsWith('http') ||
-                              comment.userPfp!.startsWith('https')
-                          ? Image.network(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )
-                          : Image.asset(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )),
-              ),
+          Container(
+            width: isReply ? 32 : 40,
+            height: isReply ? 32 : 40,
+            decoration: const BoxDecoration(
+              color: Colors.grey,
+              shape: BoxShape.circle,
+            ),
+            child: ClipOval(
+              child: normalizedPfp == null
+                  ? Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: isReply ? 16 : 20,
+                    )
+                  : (normalizedPfp.startsWith('http') ||
+                            normalizedPfp.startsWith('https')
+                        ? Image.network(
+                            networkPfp!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: isReply ? 16 : 20,
+                            ),
+                          )
+                        : Image.asset(
+                            normalizedPfp,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: isReply ? 16 : 20,
+                            ),
+                          )),
             ),
           ),
           const SizedBox(width: 12),
