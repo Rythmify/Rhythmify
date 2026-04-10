@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 
 class SignOutButtonWidget extends ConsumerWidget {
   const SignOutButtonWidget({super.key});
@@ -57,7 +59,11 @@ class SignOutButtonWidget extends ConsumerWidget {
             ),
           );
           if (confirmSignOut == true) {
+            await ref.read(playerStateProvider.notifier).stopPlayback();
             await ref.read(authProvider.notifier).signOutUser();
+            if (context.mounted) {
+              context.go('/onboarding');
+            }
           }
         },
         style: ElevatedButton.styleFrom(
