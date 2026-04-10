@@ -1,4 +1,10 @@
 // lib/features/playlist/data/mock/playlist_mock_data.dart
+/// In-memory store for all playlist data during the mock phase.
+/// Tracks are seeded automatically from [allTracksProvider] via [playlistMockSeederProvider]
+/// so any uploaded track appears in playlists without manual wiring.
+/// Each method maps 1-to-1 to a backend endpoint — replace with a repository impl to go live.
+/// [getSourceTracksFor] returns full [Track] entities for the player; [getTracksFor] returns UI rows.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,10 +46,7 @@ class PlaylistMockData {
   ];
 
   // playlistId → List<Track> (source Track entities for the player)
-  final Map<String, List<Track>> _sourceTracks = {
-    'pl-001': [],
-    'pl-002': [],
-  };
+  final Map<String, List<Track>> _sourceTracks = {'pl-001': [], 'pl-002': []};
 
   // Static suggestions — replace with personalised API later
   final List<PlaylistTrack> _suggestions = [];
@@ -58,9 +61,7 @@ class PlaylistMockData {
     _suggestions
       ..clear()
       ..addAll(
-        tracks
-            .take(5)
-            .map((t) => PlaylistTrack.fromTrack(t, position: 0)),
+        tracks.take(5).map((t) => PlaylistTrack.fromTrack(t, position: 0)),
       );
     debugPrint('[PlaylistMockData] seeded ${tracks.length} tracks');
   }

@@ -1,4 +1,8 @@
-// lib/features/playlist/presentation/screens/library_stations_screen.dart
+/// Library tab showing all collections with type == station.
+/// Filters [playlistListProvider] by [PlaylistType.station] and supports live search.
+/// Stations are created via track ··· → Start station or Edit playlist → Convert to Station.
+/// Each tile shows "Based on [seedArtistName]" as the subtitle when available.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

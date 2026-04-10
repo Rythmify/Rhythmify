@@ -1,4 +1,10 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
+/// State management for the playlist module using Riverpod 3.x Notifiers.
+/// [PlaylistListNotifier] owns the flat list of all collections and handles all CRUD.
+/// [PlaylistDetailNotifier] owns one playlist's header, tracks, and suggestions.
+/// Detail providers are cached manually in [_detailProviderCache] as a workaround
+/// for FamilyNotifier being removed in Riverpod 3.x.
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

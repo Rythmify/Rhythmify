@@ -1,4 +1,10 @@
 // lib/features/playlist/domain/entities/playlist_entity.dart
+/// Core domain entity shared by playlists, albums, and stations.
+/// [PlaylistType] drives how each screen labels, formats, and routes a collection.
+/// All three types share one entity so [PlaylistDetailScreen] and all list
+/// tiles work without type-specific widget trees.
+/// [detailSubtitle] and [subtitleLine] adapt their output per type automatically.
+library;
 
 enum PlaylistType { playlist, album, station }
 

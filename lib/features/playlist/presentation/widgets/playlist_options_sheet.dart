@@ -1,8 +1,9 @@
-// lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
-//
-// The ··· options sheet (Image 4).
-// Now accepts an [onConverted] callback so that after the user converts
-// from the Edit sheet, the detail screen can navigate to the right section.
+/// The ··· options sheet shown from any playlist, album, or station.
+/// Owner-only actions (Edit, Delete, privacy toggle) are gated behind [isOwner].
+/// [onConverted] is forwarded to [EditPlaylistSheet] so the detail screen
+/// can navigate to the correct Library tab after a type conversion.
+/// Share actions are stubbed and ready for the share module integration.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

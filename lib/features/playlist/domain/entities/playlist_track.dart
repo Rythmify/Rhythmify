@@ -1,6 +1,12 @@
 // ============================================================
 // PlaylistTrack
 // ============================================================
+/// Lightweight track model used inside playlist UI.
+/// Carries only what the playlist screens need to render a row.
+/// [fromTrack] converts a full [Track] entity into this model.
+/// [trackId] holds a reference back to the original [Track] so the
+/// player can receive full entities when the user taps a row.
+library;
 
 import '../../../../core/domain/entities/track.dart';
 
@@ -12,14 +18,14 @@ class PlaylistTrack {
     required this.duration,
     required this.playCount,
     required this.position,
-    this.trackId,          // ← original Track.id for player lookup
+    this.trackId, // ← original Track.id for player lookup
     this.coverUrl,
     this.isLiked = false,
     this.isUnavailable = false,
   });
 
   final String id;
-  final String? trackId;       // ← keep a reference back to the real Track
+  final String? trackId; // ← keep a reference back to the real Track
   final String title;
   final String artistName;
   final Duration duration;
@@ -59,15 +65,15 @@ class PlaylistTrack {
 
   PlaylistTrack copyWith({int? position, bool? isLiked}) {
     return PlaylistTrack(
-      id:           id,
-      trackId:      trackId,       // ← preserved
-      title:        title,
-      artistName:   artistName,
-      duration:     duration,
-      playCount:    playCount,
-      position:     position ?? this.position,
-      coverUrl:     coverUrl,
-      isLiked:      isLiked ?? this.isLiked,
+      id: id,
+      trackId: trackId, // ← preserved
+      title: title,
+      artistName: artistName,
+      duration: duration,
+      playCount: playCount,
+      position: position ?? this.position,
+      coverUrl: coverUrl,
+      isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
     );
   }
@@ -78,15 +84,15 @@ class PlaylistTrack {
   /// [position] is 1-based; pass 0 for suggestion tracks.
   factory PlaylistTrack.fromTrack(Track track, {int position = 0}) {
     return PlaylistTrack(
-      id:          track.id,
-      trackId:     track.id,    // ← same for now; diverges when duplicates exist
-      title:       track.title,
-      artistName:  track.artist,
-      duration:    track.duration,
-      playCount:   track.playCount,
-      position:    position,
-      coverUrl:    track.artworkUrl,   // getter: coverImage ?? ''
-      isLiked:     track.isLiked,
+      id: track.id,
+      trackId: track.id, // ← same for now; diverges when duplicates exist
+      title: track.title,
+      artistName: track.artist,
+      duration: track.duration,
+      playCount: track.playCount,
+      position: position,
+      coverUrl: track.artworkUrl, // getter: coverImage ?? ''
+      isLiked: track.isLiked,
       isUnavailable: false,
     );
   }

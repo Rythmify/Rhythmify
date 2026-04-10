@@ -1,4 +1,10 @@
 // lib/features/playlist/presentation/screens/playlist_detail_screen.dart
+/// Detail screen for a playlist, album, or station — all three share this screen.
+/// [PlaylistEntity.type] controls what the header shows and which actions are available.
+/// Player wiring uses [PlaylistMockData.getSourceTracksFor] to get full [Track] entities
+/// since [PlaylistDetailState] only holds lightweight [PlaylistTrack] rows.
+/// Reached via GoRouter from any module using the /library/playlists/:id route pattern.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,31 +33,37 @@ class PlaylistDetailScreen extends ConsumerWidget {
       PlaylistMockData.instance.getSourceTracksFor(playlistId);
 
   void _playAll(WidgetRef ref) {
-  final tracks = _sourceTracks();
-  if (tracks.isEmpty) return;
-  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        tracks,
-        initialIndex: 0,  // ← was startIndex
-      );
-}
+    final tracks = _sourceTracks();
+    if (tracks.isEmpty) return;
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(
+          tracks,
+          initialIndex: 0, // ← was startIndex
+        );
+  }
 
-void _shuffle(WidgetRef ref) {
-  final tracks = List<Track>.from(_sourceTracks())..shuffle();
-  if (tracks.isEmpty) return;
-  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        tracks,
-        initialIndex: 0,  // ← was startIndex
-      );
-}
+  void _shuffle(WidgetRef ref) {
+    final tracks = List<Track>.from(_sourceTracks())..shuffle();
+    if (tracks.isEmpty) return;
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(
+          tracks,
+          initialIndex: 0, // ← was startIndex
+        );
+  }
 
-void _playFrom(WidgetRef ref, int index) {
-  final tracks = _sourceTracks();
-  if (tracks.isEmpty || index >= tracks.length) return;
-  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        tracks,
-        initialIndex: index,  // ← was startIndex
-      );
-}
+  void _playFrom(WidgetRef ref, int index) {
+    final tracks = _sourceTracks();
+    if (tracks.isEmpty || index >= tracks.length) return;
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(
+          tracks,
+          initialIndex: index, // ← was startIndex
+        );
+  }
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -202,12 +214,12 @@ void _playFrom(WidgetRef ref, int index) {
                       color: Colors.white60,
                       size: 24,
                     ),
-                    onPressed: () => _shuffle(ref),  // ← wired
+                    onPressed: () => _shuffle(ref), // ← wired
                   ),
                   // Play all
                   GestureDetector(
                     key: const Key('playlist_detail_play_button'),
-                    onTap: () => _playAll(ref),       // ← wired
+                    onTap: () => _playAll(ref), // ← wired
                     child: Container(
                       width: 52,
                       height: 52,
@@ -260,7 +272,7 @@ void _playFrom(WidgetRef ref, int index) {
                       (suggestion) => TrackTileInPlaylist(
                         key: Key('suggestion_${suggestion.id}'),
                         track: suggestion,
-                        onTap: () {},   // suggestions aren't in the queue yet
+                        onTap: () {}, // suggestions aren't in the queue yet
                         trailingWidget: IconButton(
                           key: Key('add_suggestion_${suggestion.id}'),
                           icon: const Icon(

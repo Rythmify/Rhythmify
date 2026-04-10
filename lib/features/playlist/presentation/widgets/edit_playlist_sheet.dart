@@ -1,4 +1,9 @@
-// lib/features/playlist/presentation/widgets/edit_playlist_sheet.dart
+/// Bottom sheet for editing an existing playlist, album, or station.
+/// Handles name, description, visibility, cover image, track removal, and type conversion.
+/// Cover image picker uses [ElevatedButton] instead of [GestureDetector] because
+/// taps are swallowed by [DraggableScrollableSheet] in scroll context.
+/// [onConverted] is passed through to the caller so navigation can move to the right Library tab.
+library;
 
 import 'dart:io';
 
