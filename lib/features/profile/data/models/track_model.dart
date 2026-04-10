@@ -1,3 +1,4 @@
+/// Track model used by profile liked-tracks and profile track lists.
 import '../../../../core/domain/entities/track.dart';
 
 class TrackModel extends Track {

@@ -49,9 +49,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final currentUserEmail = authState is AuthAuthenticated
-        ? authState.user.email
-        : '';
     final currentUserAvatar = authState is AuthAuthenticated
         ? authState.user.avatarUrl
         : null;
@@ -63,6 +60,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         title: const Text('Library'),
         centerTitle: false,
         actions: [
+          TextButton(
+            key: const Key('library_upgrade_pro_button'),
+            onPressed: () => context.push('/upgrade'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primaryBrand,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Upgrade to Pro',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
@@ -109,7 +120,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             context,
             label: 'Albums',
             key: const Key('library_albums_item'),
-            onTap: () => context.push('/library/albums'),
+            onTap: () => context.pushNamed('library-albums'),
           ),
           _menuItem(
             context,
@@ -143,38 +154,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             entries: historyState.entries.take(10).toList(),
             onSeeAll: () => context.push('/library/history'),
           ),
-
-          // ── Dev logout ────────────────────────────────────────────────────
-          if (currentUserEmail.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  Text(
-                    'Logged in as $currentUserEmail',
-                    style: AppTheme.labelSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          ref.read(authProvider.notifier).signOutUser(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('DEV LOGOUT'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
 
           const SizedBox(height: 120),
         ],

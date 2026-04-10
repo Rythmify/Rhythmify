@@ -359,6 +359,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
                   // ── Playlists ──────────────────────────────────────────
                   GoRoute(
+                    name: 'library-playlists',
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
@@ -377,6 +378,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
                   GoRoute(
+                    name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
                   ),
@@ -395,6 +397,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // ── Stations ───────────────────────────────────────────
                   // StationsPage re-exports LibraryStationsScreen
                   GoRoute(
+                    name: 'library-stations',
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),

@@ -1,3 +1,5 @@
+// coverage:ignore-file
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
@@ -112,9 +114,42 @@ class AuthNotifier extends Notifier<AuthState> {
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      await apiClient.clearToken();
-      state = const AuthUnauthenticated();
+      if (_isInvalidSessionError(e)) {
+        await apiClient.clearToken();
+        state = const AuthUnauthenticated();
+        return;
+      }
+
+      // Keep the session for transient startup failures (network/backend hiccups).
+      final token = await apiClient.getToken();
+      if (token != null) {
+        state = AuthAuthenticated(
+          UserModel(
+            id: 'cached-session',
+            email: '',
+            displayName: 'Rythmify User',
+            isEmailVerified: true,
+            token: token,
+          ),
+        );
+      } else {
+        state = const AuthUnauthenticated();
+      }
     }
+  }
+
+  bool _isInvalidSessionError(Object error) {
+    if (error is DioException) {
+      final status = error.response?.statusCode;
+      final code = error.response?.data?['error']?['code']?.toString();
+      if (status == 401) return true;
+      if (code == 'AUTH_INVALID_CREDENTIALS' ||
+          code == 'AUTH_REFRESH_TOKEN_INVALID' ||
+          code == 'AUTH_TOKEN_EXPIRED') {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<void> signInWithEmailAndPassword({

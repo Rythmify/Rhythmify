@@ -125,4 +125,10 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   void setDragging(bool isDragging) {
     _isDragging = isDragging;
   }
+
+  /// Stops active playback for session-level events like sign-out.
+  Future<void> stopPlayback() async {
+    await ref.read(pauseTrackUseCaseProvider).call();
+    await ref.read(seekPositionUseCaseProvider).call(Duration.zero);
+  }
 }

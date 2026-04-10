@@ -1,3 +1,4 @@
+/// Data model for serializing/deserializing profile payloads.
 import '../../domain/entities/profile_entity.dart';
 
 class ProfileModel extends ProfileEntity {

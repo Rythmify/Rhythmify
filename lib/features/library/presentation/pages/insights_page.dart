@@ -41,6 +41,25 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
         title: const Text('Your insights'),
         centerTitle: false,
         actions: [
+          TextButton(
+            key: const Key('insights_upgrade_pro_button'),
+            onPressed: () => context.push('/upgrade'),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFFFF7A00),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            child: const Text(
+              'Upgrade to Pro',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 4),
           IconButton(
             key: const Key('insights_share_icon_button'),
             icon: const Icon(Icons.share_outlined),
@@ -111,10 +130,10 @@ class _SoundCloudTab extends ConsumerWidget {
 class _SoundCloudEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ListView(
       key: const Key('insights_sc_empty_state'),
+      padding: EdgeInsets.zero,
       children: [
-        // Feature graphic
         Container(
           width: double.infinity,
           height: 220,
@@ -122,7 +141,6 @@ class _SoundCloudEmptyState extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Waveform / analytics illustration placeholder
               Icon(
                 Icons.equalizer_rounded,
                 size: 140,
@@ -136,59 +154,53 @@ class _SoundCloudEmptyState extends StatelessWidget {
             ],
           ),
         ),
-
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Get unmatched insights into your listeners that you won\'t find anywhere else.',
-                  key: Key('insights_sc_headline_text'),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    height: 1.3,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Get unmatched insights into your listeners that you won\'t find anywhere else.',
+                key: Key('insights_sc_headline_text'),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'SoundCloud is the only platform that lets you easily identify and connect with your top fans based on their listening and engagement habits.',
+                key: Key('insights_sc_body_text'),
+                style: AppTheme.bodyMedium.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'To get started, all it takes is an upload.',
+                style: AppTheme.bodyMedium,
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  key: const Key('insights_sc_upload_button'),
+                  onPressed: () => context.push('/upload-track'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.textPrimary,
+                    side: const BorderSide(color: AppTheme.textSecondary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text(
+                    'Upload',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  'SoundCloud is the only platform that lets you easily identify and connect with your top fans based on their listening and engagement habits.',
-                  key: Key('insights_sc_body_text'),
-                  style: AppTheme.bodyMedium.copyWith(height: 1.5),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'To get started, all it takes is an upload.',
-                  style: AppTheme.bodyMedium,
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    key: const Key('insights_sc_upload_button'),
-                    onPressed: () => context.push('/upload-track'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textPrimary,
-                      side: const BorderSide(color: AppTheme.textSecondary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Upload',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
@@ -271,92 +283,81 @@ class _SoundCloudDataView extends StatelessWidget {
 class _AllPlatformsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return ListView(
       key: const Key('insights_all_platforms_tab_scroll'),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height - 160,
-        child: Column(
-          key: const Key('insights_all_platforms_tab'),
-          children: [
-            // Feature graphic
-            Container(
-              width: double.infinity,
-              height: 220,
-              color: Colors.black,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    Icons.devices_rounded,
-                    size: 140,
-                    color: Colors.purple.withValues(alpha: 0.2),
-                  ),
-                  Icon(
-                    Icons.multitrack_audio_rounded,
-                    size: 80,
-                    color: Colors.purpleAccent.withValues(alpha: 0.7),
-                  ),
-                ],
+      padding: EdgeInsets.zero,
+      children: [
+        Container(
+          width: double.infinity,
+          height: 220,
+          color: Colors.black,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.devices_rounded,
+                size: 140,
+                color: Colors.purple.withValues(alpha: 0.2),
               ),
-            ),
-
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Unlock key performance and audience insights across multiple platforms for your music',
-                      key: Key('insights_ap_headline_text'),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'Access audience and performance insights for your distributed tracks from Spotify, Apple Music, and SoundCloud all from one dashboard.',
-                      key: Key('insights_ap_body_text'),
-                      style: AppTheme.bodyMedium.copyWith(height: 1.5),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Upgrade your account, upload and distribute your track to get started.',
-                      style: AppTheme.bodyMedium,
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        key: const Key('insights_ap_upgrade_button'),
-                        onPressed: () => context.push('/upgrade'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.textPrimary,
-                          side: const BorderSide(color: AppTheme.textSecondary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text(
-                          'Upgrade to Pro',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              Icon(
+                Icons.multitrack_audio_rounded,
+                size: 80,
+                color: Colors.purpleAccent.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+          child: Column(
+            key: const Key('insights_all_platforms_tab'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Unlock key performance and audience insights across multiple platforms for your music',
+                key: Key('insights_ap_headline_text'),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  height: 1.3,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              Text(
+                'Access audience and performance insights for your distributed tracks from Spotify, Apple Music, and SoundCloud all from one dashboard.',
+                key: Key('insights_ap_body_text'),
+                style: AppTheme.bodyMedium.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Upgrade your account, upload and distribute your track to get started.',
+                style: AppTheme.bodyMedium,
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  key: const Key('insights_ap_upgrade_button'),
+                  onPressed: () => context.push('/upgrade'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.textPrimary,
+                    side: const BorderSide(color: AppTheme.textSecondary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text(
+                    'Upgrade to Pro',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

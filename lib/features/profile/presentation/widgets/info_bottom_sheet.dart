@@ -1,3 +1,4 @@
+/// Bottom sheet presenting secondary profile details and metadata.
 import 'package:flutter/material.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../../core/theme/app_theme.dart';
