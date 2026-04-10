@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import 'track_tile.dart';
 
+/// Search results tab displaying the tracks list from [searchResultsProvider].
+/// Renders a loading spinner, error message, empty state, or a scrollable list of [TrackTile].
 class TracksTab extends ConsumerWidget {
   const TracksTab({super.key});
 

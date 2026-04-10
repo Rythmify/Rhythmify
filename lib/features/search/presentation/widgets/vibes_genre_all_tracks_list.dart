@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
 import '../widgets/track_tile.dart';
 
+/// The full track list for a genre, used as the child of [GenreSeeAllPage]
+/// when the user taps "See all" on the Discover More Tracks section.
+/// Watches [genreAllTracksProvider] and renders a scrollable list of [TrackTile].
 class GenreAllTracksList extends ConsumerWidget {
   const GenreAllTracksList({super.key, required this.genreId});
   final String genreId;

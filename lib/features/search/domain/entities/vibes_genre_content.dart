@@ -5,6 +5,8 @@ import 'vibes_genre_album.dart';
 import 'vibes_genre_artists.dart';
 import 'vibes_genre_introducing_section.dart';
 
+/// The full data bundle for a genre/vibes page.
+/// Aggregates all content sections returned by the genre endpoint into a single entity.
 class GenreContent {
   final GenreInfo genreInfo;
   final IntroducingSection introducing;

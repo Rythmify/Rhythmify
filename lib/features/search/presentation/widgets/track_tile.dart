@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
 
+/// A reusable track row showing artwork, title, artist, and formatted duration.
+/// Used across the search results tabs (Tracks, All) and any other feature that lists tracks.
+/// [onTap] is a placeholder — will trigger the player once routing is set up.
 class TrackTile extends StatelessWidget {
   const TrackTile({super.key, required this.track});
   final Track track;
@@ -34,6 +37,7 @@ class TrackTile extends StatelessWidget {
             style: TextStyle(color: Colors.grey[400]),
           ),
           const SizedBox(height: 4),
+          // Duration formatted via [Formatters.formatDuration] (e.g. "3:20").
           Text(
             Formatters.formatDuration(track.duration),
             style: TextStyle(color: Colors.grey[500], fontSize: 12),
@@ -41,9 +45,7 @@ class TrackTile extends StatelessWidget {
         ],
       ),
       trailing: const Icon(Icons.more_vert),
-      onTap: () {
-        // later → trigger player
-      },
+      onTap: () {},
     );
   }
 }

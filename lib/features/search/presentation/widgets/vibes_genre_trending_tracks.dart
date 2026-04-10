@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 
+/// A horizontally scrollable list of trending tracks shown in the All tab.
+/// Tracks are grouped into chunks of 3, each chunk rendered as a vertical column
+/// in a 350px-wide page — creating a paginated horizontal scroll effect.
 class TrendingTracks extends ConsumerWidget {
   const TrendingTracks({super.key, required this.tracks});
   final List<Track> tracks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Split tracks into pages of 3 for the horizontal paged layout.
     List<List<Track>> chunks = [];
     for (var i = 0; i < tracks.length; i += 3) {
       chunks.add(

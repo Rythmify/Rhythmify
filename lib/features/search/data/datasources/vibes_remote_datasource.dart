@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/vibes_category.dart';
 
+/// Contract for the vibes/categories remote data source.
 abstract class VibesRemoteSource {
+  /// Returns the list of all vibe categories shown in the vibes grid.
   Future<List<VibeCategory>> getVibes();
 }
 
-//this is for the vibes grid itself
+/// Mock implementation of [VibesRemoteSource] for the vibes grid.
+/// Each [VibeCategory] includes a height and color used to drive the staggered grid layout.
+/// Only this file changes at backend integration time.
 class VibesRemoteSourceMock implements VibesRemoteSource {
+  /// Returns a hardcoded list of vibe categories with a simulated 300ms delay.
+  /// Heights are intentionally varied to produce the staggered column effect in the UI.
   @override
   Future<List<VibeCategory>> getVibes() async {
     await Future.delayed(const Duration(milliseconds: 300));

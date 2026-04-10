@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 
+/// Displays debounced autocomplete suggestions while the user is typing.
+/// Shown between the search bar and the vibes grid, before the query is submitted.
+///
+/// Tapping a suggestion fills the search bar with that text and immediately
+/// submits it, transitioning the screen to the results view.
+/// Uses [skipLoadingOnReload] to avoid a flicker on each keystroke.
 class SearchSuggestionsList extends ConsumerWidget {
   const SearchSuggestionsList({super.key});
 
@@ -31,6 +37,7 @@ class SearchSuggestionsList extends ConsumerWidget {
             return ListTile(
               key: Key('suggestion_tile_$i'),
               title: Text(suggestions[i].text),
+              // Arrow icon hints the suggestion will populate the search bar.
               trailing: const Icon(Icons.north_west, size: 16),
               onTap: () {
                 ref

@@ -5,6 +5,9 @@ import '../widgets/search_playlists_tab.dart';
 import '../widgets/search_tracks_tab.dart';
 import '../widgets/search_profiles_tab.dart';
 
+/// The tabbed results view shown after the user submits a search query.
+/// Contains 5 tabs: All, Tracks, Profiles, Playlists, Albums.
+/// Each tab is an independent widget that reads from [searchResultsProvider].
 class SearchResultsTabs extends StatelessWidget {
   const SearchResultsTabs({super.key});
 

@@ -13,14 +13,20 @@ import '../../domain/entities/vibes_genre_album.dart';
 import '../../domain/entities/vibes_genre_artists.dart';
 import '../../../../core/domain/entities/track.dart';
 
+// ── Dependency graph ──────────────────────────────────────────────────────────
+
+/// Provides the mock data source. Swap to a real HTTP source at integration time.
 final genreRemoteSourceProvider = Provider<GenreRemoteSource>(
   (_) => GenreRemoteSourceMock(),
 );
 
+/// Provides the repository, injecting the remote source.
 final genreRepositoryProvider = Provider(
   (ref) =>
       GenreRepositoryImpl(remoteSource: ref.watch(genreRemoteSourceProvider)),
 );
+
+// ── Use case providers ────────────────────────────────────────────────────────
 
 final getGenreContentProvider = Provider(
   (ref) => GetGenreContent(ref.watch(genreRepositoryProvider)),
@@ -46,31 +52,41 @@ final getGenreAllTracksProvider = Provider(
   (ref) => GetGenreAllTracks(ref.watch(genreRepositoryProvider)),
 );
 
+// ── Data providers ────────────────────────────────────────────────────────────
+// Each provider is autoDispose.family keyed by genreId, so each tab manages
+// its own independent async state and disposes when the tab is left.
+
+/// Fetches the full [GenreContent] bundle for the genre page.
 final genreContentProvider = FutureProvider.autoDispose
     .family<GenreContent, String>((ref, genreId) {
       return ref.read(getGenreContentProvider).call(genreId);
     });
 
+/// Fetches trending tracks for the Trending tab.
 final genreTracksProvider = FutureProvider.autoDispose
     .family<List<Track>, String>((ref, genreId) {
       return ref.read(getGenreTracksProvider).call(genreId);
     });
 
+/// Fetches playlists for the Playlists tab.
 final genrePlaylistsProvider = FutureProvider.autoDispose
     .family<List<GenrePlaylist>, String>((ref, genreId) {
       return ref.read(getGenrePlaylistsProvider).call(genreId);
     });
 
+/// Fetches albums for the Albums tab.
 final genreAlbumsProvider = FutureProvider.autoDispose
     .family<List<GenreAlbum>, String>((ref, genreId) {
       return ref.read(getGenreAlbumsProvider).call(genreId);
     });
 
+/// Fetches artists associated with the genre.
 final genreArtistsProvider = FutureProvider.autoDispose
     .family<List<GenreArtist>, String>((ref, genreId) {
       return ref.read(getGenreArtistsProvider).call(genreId);
     });
 
+/// Fetches all tracks for the See All tracks page.
 final genreAllTracksProvider = FutureProvider.autoDispose
     .family<List<Track>, String>((ref, genreId) {
       return ref.read(getGenreAllTracksProvider).call(genreId);

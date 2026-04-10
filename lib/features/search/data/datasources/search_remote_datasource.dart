@@ -3,11 +3,18 @@ import '../../domain/entities/search_results.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 
+/// Contract for the search remote data source.
+/// Swap the mock with a real HTTP implementation at backend integration time.
 abstract class SearchRemoteSource {
+  /// Returns autocomplete suggestions matching [query].
   Future<List<SearchSuggestion>> getSuggestions(String query);
+
+  /// Returns full search results across all content types for [query].
   Future<SearchResults> getSearchResults(String query);
 }
 
+/// Mock implementation of [SearchRemoteSource].
+/// All data is static/hardcoded here — only this file changes at backend integration time.
 class SearchRemoteSourceMock implements SearchRemoteSource {
   static const _suggestions = [
     SearchSuggestion(id: '1', text: 'Blinding Lights', type: 'track'),
@@ -121,6 +128,7 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
     ),
   ];
 
+  /// Playlists are raw maps (List dynamic) until a teammate-owned Playlist entity is available.
   static const List<Map<String, String>> _mockPlaylists = [
     <String, String>{
       'id': 'pl1',
@@ -156,6 +164,7 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
     },
   ];
 
+  /// Albums are raw maps (List dynamic) until a teammate-owned Album entity is available.
   static const List<Map<String, String>> _mockAlbums = [
     <String, String>{
       'id': 'al1',
@@ -195,6 +204,8 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
     },
   ];
 
+  /// Filters [_suggestions] to those whose text starts with [query] (case-insensitive).
+  /// Simulates network latency with a 300ms delay.
   @override
   Future<List<SearchSuggestion>> getSuggestions(String query) async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -204,6 +215,9 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
         .toList();
   }
 
+  /// Filters all mock data by [query] using case-insensitive contains matching.
+  /// Simulates network latency with a 500ms delay.
+  /// Returns a [SearchResults] with matched tracks, profiles, playlists, and albums.
   @override
   Future<SearchResults> getSearchResults(String query) async {
     await Future.delayed(const Duration(milliseconds: 500));
