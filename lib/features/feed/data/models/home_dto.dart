@@ -21,15 +21,22 @@ class HomeDto {
 
   static HomeData fromJson(Map<String, dynamic> json) {
     return HomeData(
-      hotForYou: parseHotForYou(json['hot_for_you']),
-      trendingByGenre: parseTrendingByGenre(json['trending_by_genre']),
-      moreOfWhatYouLike: (json['more_of_what_you_like']['tracks'] as List)
-          .map((t) => parseTrack(t as Map<String, dynamic>))
-          .toList(),
-      mixedForYou: (json['mixed_for_you'] as List)
+      hotForYou: parseHotForYou(json['hot_for_you'] ?? {}),
+
+      trendingByGenre: parseTrendingByGenre(
+        json['trending_by_genre'] as Map<String, dynamic>?,
+      ),
+
+      moreOfWhatYouLike:
+          ((json['more_of_what_you_like']?['tracks']) as List? ?? [])
+              .map((t) => parseTrack(t as Map<String, dynamic>))
+              .toList(),
+
+      mixedForYou: (json['mixed_for_you'] as List? ?? [])
           .map((m) => parseMixedForYouItem(m as Map<String, dynamic>))
           .toList(),
-      discoverWithStations: (json['discover_with_stations'] as List)
+
+      discoverWithStations: (json['discover_with_stations'] as List? ?? [])
           .map((s) => parseDiscoverStation(s as Map<String, dynamic>))
           .toList(),
     );
@@ -44,26 +51,41 @@ class HomeDto {
   }
 
   static TrendingByGenreInitial parseTrendingByGenre(
-    Map<String, dynamic> json,
+    Map<String, dynamic>? json,
   ) {
+    if (json == null) {
+      return TrendingByGenreInitial(
+        genres: [],
+        initialTab: GenreTabTracks(genreId: '', genreName: '', tracks: []),
+      );
+    }
+
+    final genresJson = json['genres'] as List? ?? [];
+    final initialTabJson = json['initial_tab'] as Map<String, dynamic>? ?? {};
+
     return TrendingByGenreInitial(
-      genres: (json['genres'] as List)
-          .map(
-            (g) => GenreTab(
-              genreId: g['genre_id'] as String,
-              genreName: g['genre_name'] as String,
-            ),
-          )
-          .toList(),
-      initialTab: parseGenreTabTracks(json['initial_tab']),
+      genres: genresJson.map((g) {
+        return GenreTab(
+          genreId: g['genre_id'] ?? '',
+          genreName: g['genre_name'] ?? '',
+        );
+      }).toList(),
+
+      initialTab: parseGenreTabTracks(initialTabJson),
     );
   }
 
-  static GenreTabTracks parseGenreTabTracks(Map<String, dynamic> json) {
+  static GenreTabTracks parseGenreTabTracks(Map<String, dynamic>? json) {
+    if (json == null) {
+      return GenreTabTracks(genreId: '', genreName: '', tracks: []);
+    }
+
     return GenreTabTracks(
-      genreId: json['genre_id'] as String,
-      genreName: json['genre_name'] as String,
-      tracks: (json['tracks'] as List).map((t) => parseTrack(t)).toList(),
+      genreId: json['genre_id'] ?? '',
+      genreName: json['genre_name'] ?? '',
+      tracks: (json['tracks'] as List? ?? [])
+          .map((t) => parseTrack(t as Map<String, dynamic>))
+          .toList(),
     );
   }
 

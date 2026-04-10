@@ -341,8 +341,6 @@ void main() {
         testAllTracksProvider.overrideWithValue(const AsyncValue.data([])),
 
         // Provide deterministic home feed data.
-        datasourceProvider.overrideWithValue(fakeDatasource),
-
         audioRepositoryProvider.overrideWithValue(fakeAudioRepository),
       ],
       child: MaterialApp.router(routerConfig: router),
