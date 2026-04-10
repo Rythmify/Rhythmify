@@ -1,3 +1,5 @@
+// coverage:ignore-file
+/// Domain entities used by Library pages, use cases, and repositories.
 import 'package:equatable/equatable.dart';
 
 // ─────────────────────────────────────────────

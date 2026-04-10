@@ -40,7 +40,8 @@ class ApiEndPoints {
   static String getFollowings() => '/users/me/following';
 
   /// Returns the endpoint to search for users based on a [query].
-  static String getSearchedUsers(String query) => '/search?q=$query&type=users';
+  static String getSearchedUsers(String query) =>
+      '/users/me/following?q=$query';
 
   /// Returns the endpoint to check if a user with [userId] is blocked by current user.
   static String isBlocked(String userId) => '/users/$userId/follow-status';
@@ -51,4 +52,13 @@ class ApiEndPoints {
   /// Returns the endpoint to retrieve the details of a certain playlist using the [playlistId]
   static String getPlaylistDetails(String playlistId) =>
       '/playlists/$playlistId';
+
+  /// Returns the endpoint to retrieve the tracks that the current user liked
+  static String getMyLikedTracks() => '/me/liked-tracks';
+
+  /// Returns the endpoint to retrieve the playlists that the current user liked
+  static String getMyLikedPlaylists() => '/me/liked-playlists';
+
+  /// Returns the endpoint to retrieve the albums that the current user liked
+  static String getMyLikedAlbums() => '/me/liked-albums';
 }

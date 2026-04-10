@@ -87,7 +87,11 @@ class DatasourceImplement implements DatasourceInterface {
     if (responseData.containsKey('conversation')) {
       return ConversationModel.fromJson(responseData['conversation']);
     } else {
-      throw Exception('Conversation already exists, message appended');
+      final conversations = await getConversations();
+      return conversations.firstWhere(
+        (c) => c.participantId == participantId,
+        orElse: () => throw Exception('Conversation not found'),
+      );
     }
   }
 
@@ -120,28 +124,46 @@ class DatasourceImplement implements DatasourceInterface {
 
   @override
   Future<List<PotentialConversationModel>> getFollowings(String myId) async {
-    final response = await dio.get(ApiEndPoints.getFollowings());
-    final body = response.data;
-    final List data = body['data']['items'];
-    return data
-        .map(
-          (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
-        )
-        .toList();
+    try {
+      final url = ApiEndPoints.getFollowings();
+
+      final response = await dio.get(url);
+
+      final body = response.data;
+      final List data = body['data']['items'];
+
+      return data
+          .map(
+            (e) =>
+                PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    } on DioException {
+      rethrow;
+    }
   }
 
   @override
   Future<List<PotentialConversationModel>> getSearchedUsers(
     String query,
   ) async {
-    final response = await dio.get(ApiEndPoints.getSearchedUsers(query));
-    final body = response.data;
-    final List data = body['data']['users'];
-    return data
-        .map(
-          (e) => PotentialConversationModel.fromJson(e as Map<String, dynamic>),
-        )
-        .toList();
+    try {
+      final url = ApiEndPoints.getSearchedUsers(query);
+
+      final response = await dio.get(url);
+
+      final body = response.data;
+      final List data = body['data']['items'];
+
+      return data
+          .map(
+            (e) =>
+                PotentialConversationModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    } on DioException {
+      rethrow;
+    }
   }
 
   @override
@@ -177,8 +199,55 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<List<SharedEmbedModel>> getEmbeds(String userId, String embedType) {
-    throw UnimplementedError();
+  Future<List<SharedEmbedModel>> getEmbeds(
+    String userId,
+    String embedType,
+  ) async {
+    if (embedType == 'track') {
+      final response = await dio.get(ApiEndPoints.getMyLikedTracks());
+      final List data = response.data['data'];
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['id'],
+              embedType: 'track',
+              embedName: e['title'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
+    } else if (embedType == 'playlist') {
+      final response = await dio.get(ApiEndPoints.getMyLikedPlaylists());
+      final List data = response.data['data']['items'];
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['playlist_id'],
+              embedType: 'playlist',
+              embedName: e['name'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
+    } else if (embedType == 'album') {
+      final response = await dio.get(ApiEndPoints.getMyLikedAlbums());
+      final List data = response.data['data']['items'];
+      return data
+          .map(
+            (e) => SharedEmbedModel(
+              embedId: e['playlist_id'],
+              embedType: 'album',
+              embedName: e['name'],
+              artistName: null,
+              thumbnailUrl: e['cover_image'],
+            ),
+          )
+          .toList();
+    }
+
+    return [];
   }
 
   @override

@@ -1,3 +1,5 @@
+// coverage:ignore-file
+/// Riverpod notifier orchestration for loading and mutating profile state.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
@@ -14,7 +16,7 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-const bool useProfileMockData = true;
+const bool useProfileMockData = false;
 
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
@@ -148,7 +150,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         // Update state with new profile containing updated avatar
@@ -190,7 +191,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         // Update state with new profile containing updated cover

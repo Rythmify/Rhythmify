@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_liked_embed_provider.dart';
@@ -57,7 +58,7 @@ class _LikesPlaylistsScreenState extends ConsumerState<LikesPlaylistsScreen>
         actions: [
           IconButton(
             key: const Key('likes_playlists_app_bar_close_button'),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
             icon: Icon(Icons.cast, color: AppTheme.appBarItems),
           ),
           Padding(

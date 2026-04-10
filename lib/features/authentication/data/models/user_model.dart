@@ -1,3 +1,4 @@
+/// Data model for authenticated users and profile-auth payload mapping.
 import '../../domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {

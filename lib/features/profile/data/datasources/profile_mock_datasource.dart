@@ -1,3 +1,4 @@
+/// In-memory profile datasource for local development and repeatable tests.
 import 'dart:math';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';

@@ -4,6 +4,7 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import 'bottom_sheets/track_options_modal.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -32,18 +33,35 @@ class TrackActionBar extends ConsumerWidget {
             Icons.favorite_border,
             Formatters.formatCount(track.likeCount),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           _buildActionButton(
             Icons.repeat,
             Formatters.formatCount(track.repostCount),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           _buildActionButton(
             Icons.chat_outlined,
             Formatters.formatCount(track.commentCount),
           ),
-          const SizedBox(width: 12),
-          const Icon(Icons.more_vert, color: AppTheme.fadedWhite),
+          const SizedBox(width: 20),
+          InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => TrackOptionsModal(track: track),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            highlightColor: Colors.white.withValues(alpha: 0.1),
+            splashColor: Colors.white.withValues(alpha: 0.2),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+              child: Icon(Icons.more_vert, color: AppTheme.fadedWhite),
+            ),
+          ),
           const Spacer(),
           GestureDetector(
             key: const Key('behind_the_track_play_pause_gesture_detector'),
@@ -79,7 +97,7 @@ class TrackActionBar extends ConsumerWidget {
     return Row(
       children: [
         Icon(icon, color: AppTheme.fadedWhite, size: 24),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         Text(
           value,
           style: AppTheme.labelLarge.copyWith(
