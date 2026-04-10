@@ -29,6 +29,7 @@ class BehindTheTrackPage extends ConsumerWidget {
       body: trackAsync.when(
         data: (track) => SafeArea(
           child: SingleChildScrollView(
+            key: const Key('behind_the_track_scroll_view'),
             padding: const EdgeInsets.symmetric(vertical: 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

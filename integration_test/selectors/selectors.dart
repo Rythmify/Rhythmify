@@ -173,8 +173,14 @@ const String libraryUploadsItem             = 'library_uploads_item';
 
 // --- Track / Behind the Track ---
 const String behindTheTrackBackButton       = 'behind_the_track_back_icon_button';
+const String behindTheTrackBehindTrackButton = 'player_track_info_box_behind_track_gesturedetector';
 const String behindTheTrackPlayPause        = 'behind_the_track_play_pause_gesture_detector';
+const String behindTheTrackShowMore         = 'behind_the_track_show_more_description_gesture_detector';
+const String behindTheTrackTagsListView     = 'behind_the_track_tags_list_view';
+const String behindTheTrackScrollView       = 'behind_the_track_scroll_view';
 const String behindTheTrackFollowButton     = 'behind_the_track_follow_outlined_button';
+const String fansLeaderboardTopButton       = 'fans_leaderboard_top_segment_gesture_detector';
+const String fansLeaderboardFirstButton     = 'fans_leaderboard_first_segment_gesture_detector';
 
 // --- Comments ---
 const String commentsCommentPromptText      = 'comments_comment_prompt_text';
