@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/home_datasource.dart';
+import 'package:http/http.dart' as http;
+
+import '../../data/datasources/home_mock_datasource.dart';
+import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../domain/usecases/get_home_data.dart';
 import '../../domain/usecases/get_trending_tracks.dart';
@@ -13,19 +16,25 @@ import '../../domain/entities/hot_for_you.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
-import 'package:http/http.dart' as http;
 
-final datasourceProvider = Provider(
-  (ref) => HomeDatasource(
+const bool useMock = true;
+
+final remoteDatasourceProvider = Provider(
+  (ref) => HomeRemoteDatasource(
     client: http.Client(),
     baseUrl:
         'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
   ),
 );
 
-final repositoryProvider = Provider(
-  (ref) => HomeRepositoryImpl(ref.read(datasourceProvider)),
-);
+final mockDatasourceProvider = Provider((ref) => HomeMockDatasource());
+
+final repositoryProvider = Provider((ref) {
+  if (useMock) {
+    return HomeRepositoryImpl.mock(ref.read(mockDatasourceProvider));
+  }
+  return HomeRepositoryImpl.remote(ref.read(remoteDatasourceProvider));
+});
 
 // ====== Use Case Providers ======
 

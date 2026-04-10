@@ -7,7 +7,7 @@
       "title": "Neon Nights",
       "artist": "Synthwave Boy",
       "description": "The ultimate retro-future synthwave experience with nostalgic analog textures.",
-      "cover_image": "assets/images/track_1.jpg",
+      "cover_image": "assets/images/track_7.jpg",
       "audio_url": "assets/audio/Track_audio_1.mp3",
       "duration": 214,
       "play_count": 1542000,
@@ -63,7 +63,7 @@
         "genre_name": "Electronic",
         "tracks": [
           {
-            "id": "2",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
             "title": "Summer Vibes",
             "cover_image": "assets/images/track_2.jpg",
             "duration": 213,
@@ -77,8 +77,8 @@
             "created_at": "2026-03-01T10:00:00Z"
           },
           {
-            "id": "3",
-            "title": "Track2",
+            "id": "123e4567-e89b-12d3-a456-426614174000",
+            "title": "Babydoll",
             "cover_image": "assets/images/track_5.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -86,14 +86,14 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Dominic",
             "stream_url": "assets/audio/Track_audio_2.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
           ,
           {
-            "id": "4",
-            "title": "Track3",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Good Days",
             "cover_image": "assets/images/track_4.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -103,6 +103,34 @@
             "user_id": "u1",
             "artist_name": "DJ Karim",
             "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+                    {
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Aurora Drive",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "SZA",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+                    {
+            "id": "2",
+            "title": "Digital Dreams",
+            "cover_image": "assets/images/track_8.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "SZA",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
         ]
