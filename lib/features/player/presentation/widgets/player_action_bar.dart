@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../track/presentation/providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 /// A horizontal bar providing secondary track actions.
 ///
@@ -150,7 +151,17 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 3. Share Action ------
             InkWell(
               onTap: () {
-                // Add share logic here
+                trackAsync.whenData((track) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => TrackOptionsModal(
+                      track: track,
+                      mode: TrackModalMode.share, // Tell it to render the share view!
+                    ),
+                  );
+                });
               },
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -193,7 +204,14 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 5. More Action ------
             InkWell(
               onTap: () {
-                // Add more options logic here
+                trackAsync.whenData((track) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => TrackOptionsModal(track: track),
+                  );
+                });
               },
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),

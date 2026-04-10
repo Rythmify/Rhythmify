@@ -4,6 +4,7 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
+import 'bottom_sheets/track_options_modal.dart';
 
 /// [TrackCard] is a UI component that displays a summary of a track.
 ///
@@ -96,12 +97,23 @@ class TrackCard extends ConsumerWidget {
             ),
 
             // 4. Trailing More Icon
-            IconButton(
-              key: Key('track_card_${track.id}_more_icon_button'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey),
-              onPressed: () {
-                // Open bottom sheet in the future
+            InkWell(
+              key: Key('track_card_${track.id}_more_inkwell'),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => TrackOptionsModal(track: track),
+                );
               },
+              borderRadius: BorderRadius.circular(8),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Icon(Icons.more_vert, color: Colors.grey),
+              ),
             ),
           ],
         ),
