@@ -11,13 +11,13 @@ class PlayerPage extends BasePage {
   /// Taps the play button on the first Hot For You track card.
   Future<void> playFromHotForYou() async {
     await tapByKey(hotForYouPlayButton);
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Taps the mini player bar to open the full player.
   Future<void> openFullPlayer() async {
-    await tapByKey(playerMiniPlayerGesture);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.tap(find.byKey(const Key(playerMiniPlayerGesture)));
+    await tester.pump(const Duration(seconds: 2));
   }
 
   /// Taps the collapse (arrow-down) button to close the full player.
