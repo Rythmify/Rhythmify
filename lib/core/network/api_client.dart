@@ -8,6 +8,7 @@ class ApiClient {
 
   static const String _baseUrl =
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
+  static const String baseUrl = _baseUrl;
 
   static const String _tokenKey = 'access_token';
 

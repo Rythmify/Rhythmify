@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -8,15 +10,35 @@ import 'package:audio_service/audio_service.dart';
 import 'features/player/data/datasources/audio_handler.dart';
 import 'features/player/presentation/providers/player_dependency_providers.dart';
 
-import 'core/network/api_client.dart';
-
 late AudioHandler globalAudioHandler;
+
+Future<void> _initGoogleCast() async {
+  if (!Platform.isAndroid && !Platform.isIOS) return;
+
+  const appId = GoogleCastDiscoveryCriteria.kDefaultApplicationId;
+  GoogleCastOptions? options;
+
+  if (Platform.isIOS) {
+    options = IOSGoogleCastOptions(
+      GoogleCastDiscoveryCriteriaInitialize.initWithApplicationID(appId),
+      stopCastingOnAppTerminated: false,
+    );
+  } else {
+    options = GoogleCastOptionsAndroid(
+      appId: appId,
+      stopCastingOnAppTerminated: false,
+    );
+  }
+
+  await GoogleCastContext.instance.setSharedInstanceWithOptions(options);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ── Initialize Firebase ───────────────────────────────
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await _initGoogleCast();
 
   globalAudioHandler = await AudioService.init(
     builder: () => RythmifyAudioHandler(),
@@ -27,13 +49,6 @@ void main() async {
       androidStopForegroundOnPause: true,
     ),
   );
-  // added by hana/rana to test upload/messaging module
-  // TEMPORARY — hardcoded test token from Postman
-  // Remove when M1 authentication is properly integrated
-  await apiClient.saveToken(
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzU2NzUwNTMsImV4cCI6MTc3NTY3NTk1M30.Ru7fXmdRyyyx1Tv93A691V_EgwNl2SEZPfusHhrYk3s',
-  );
-
   runApp(
     ProviderScope(
       overrides: [
