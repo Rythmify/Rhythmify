@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
@@ -138,7 +139,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           IconButton(
             key: const Key('public_profile_cast_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
           IconButton(
             key: const Key('public_profile_more_button'),

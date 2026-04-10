@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -77,7 +78,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
           IconButton(
             key: const Key('library_settings_icon_button'),

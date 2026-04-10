@@ -76,6 +76,13 @@
 		<string>We need camera access to take a cover photo.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Microphone access is needed for audio.</string>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Rythmify uses your local network to discover Cast-enabled devices on your WiFi network.</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_CC1AD845._googlecast._tcp</string>
+			<string>_googlecast._tcp</string>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>
