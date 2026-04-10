@@ -522,6 +522,7 @@ void main() {
     test(
       'should not start a second load when isLoadingTracks is true',
       () async {
+        clearInteractions(mockRepo);
         // Manually set loading state
         notifier.state = const ProfileLoaded(
           profile: tProfile,

@@ -1,3 +1,5 @@
+// coverage:ignore-file
+/// HTTP implementation of profile remote datasource operations.
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';

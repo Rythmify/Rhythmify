@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';

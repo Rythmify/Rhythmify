@@ -422,10 +422,12 @@ void main() {
 
         final result = await useCase(userId: 'user-001');
 
-        expect((result as Left).value, isA<ServerFailure>());
-        expect(
-          ((result).value as ServerFailure).message,
-          contains('FOLLOW_SELF'),
+        result.fold(
+          (failure) {
+            expect(failure, isA<ServerFailure>());
+            expect((failure as ServerFailure).message, contains('FOLLOW_SELF'));
+          },
+          (_) => fail('Expected Left(ServerFailure), got Right'),
         );
       },
     );
@@ -618,5 +620,4 @@ void main() {
 }
 
 extension on Either<Failure, void> {
-  dynamic get value => null;
 }

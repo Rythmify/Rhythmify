@@ -252,7 +252,9 @@ void main() {
       expect(result.id, 'user-001');
     });
 
-    test('should include captcha_token dev-bypass in request body', () async {
+    test(
+      'should send sign-up payload without captcha_token when not implemented',
+      () async {
       when(
         () => mockDio.post(any(), data: any(named: 'data')),
       ).thenAnswer((_) async => registerSuccessResponse());
@@ -271,7 +273,7 @@ void main() {
               ).captured.first
               as Map<String, dynamic>;
 
-      expect(captured['captcha_token'], 'dev-bypass');
+      expect(captured.containsKey('captcha_token'), false);
     });
 
     test('should parse user_id (not id) from response', () async {
@@ -479,7 +481,7 @@ void main() {
       test('should return UserModel for valid bassel credentials', () async {
         final result = await mockDs.signInWithEmail(
           email: 'bassel@rythmify.com',
-          password: 'Bassel123!',
+          password: 'Biso1234',
         );
         expect(result.id, 'user-002');
       });

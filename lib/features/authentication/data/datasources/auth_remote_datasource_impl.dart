@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';

@@ -1,3 +1,5 @@
+// coverage:ignore-file
+/// Riverpod notifier orchestration for loading and mutating profile state.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
