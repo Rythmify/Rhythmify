@@ -62,6 +62,37 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  Future<void> deleteReply(
+    String commentId,
+    String trackId,
+    String parentId,
+  ) async {
+    final originalComments = [...state.comments];
+    state = state.copyWith(
+      comments: state.comments.where((c) => c.id != commentId).toList(),
+    );
+
+    // Decrement parent reply count optimistically
+    ref
+        .read(trackCommentsProvider(trackId).notifier)
+        .decrementReplyCount(parentId);
+    // Decrement overall track count optimistically
+    ref.read(trackCommentsProvider(trackId).notifier).decrementTotalCount();
+
+    try {
+      final deleteCommentUseCase = ref.read(deleteCommentProvider);
+      await deleteCommentUseCase(commentId);
+    } catch (e) {
+      state = state.copyWith(comments: originalComments);
+      // Revert decrements
+      ref
+          .read(trackCommentsProvider(trackId).notifier)
+          .incrementReplyCount(parentId);
+      ref.read(trackCommentsProvider(trackId).notifier).incrementTotalCount();
+      rethrow;
+    }
+  }
+
   Future<void> fetchNextPage() async {
     if (state.hasReachedMax || state.isFetchingNextPage) return;
     await fetchReplies();
@@ -100,6 +131,8 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     ref
         .read(trackCommentsProvider(trackId).notifier)
         .incrementReplyCount(parentId);
+    // Instantly increment overall track count
+    ref.read(trackCommentsProvider(trackId).notifier).incrementTotalCount();
 
     // Send to Server
     try {
@@ -112,6 +145,7 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
       );
 
       final populatedRealReply = realReply.copyWith(
+        userId: user.id,
         userDisplayName: user.displayName,
         userPfp: user.avatarUrl,
       );
@@ -122,9 +156,14 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
             .toList(),
       );
     } catch (e) {
+      // Revert UI changes
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != tempReply.id).toList(),
       );
+      ref
+          .read(trackCommentsProvider(trackId).notifier)
+          .decrementReplyCount(parentId);
+      ref.read(trackCommentsProvider(trackId).notifier).decrementTotalCount();
     }
   }
 

@@ -6,6 +6,7 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
+import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 final List<Color> genreColors = [
   const Color.fromARGB(255, 28, 197, 22),
@@ -308,7 +309,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             fit: BoxFit.cover,
                           )
                         : Image.asset(
-                            track.artworkUrl,
+                            track.coverImage!,
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
@@ -324,7 +325,24 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: const Icon(Icons.more_vert, color: Colors.white),
+                  trailing: InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        useRootNavigator: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => TrackOptionsModal(track: track),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    highlightColor: Colors.white.withValues(alpha: 0.1),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Icon(Icons.more_vert, color: Colors.white),
+                    ),
+                  ),
                   onTap: () {
                     final playerState = ref.read(playerStateProvider);
                     final isThisTrackLoaded =

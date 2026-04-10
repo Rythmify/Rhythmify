@@ -21,7 +21,7 @@ class WaveformPainter extends CustomPainter {
     if (amplitudes.isEmpty || duration.inMilliseconds == 0) return;
 
     const double barWidth = 2.5;
-    const double spacing = 1.5;
+    const double spacing = 0.85;
     const double totalBarWidth = barWidth + spacing;
     final double totalWaveWidth = amplitudes.length * totalBarWidth;
 
@@ -55,37 +55,37 @@ class WaveformPainter extends CustomPainter {
       // Rule: Base coloring (No dragging) or exact matches
       if ((playheadX - nodeX).abs() < 1.0) {
         if (barX <= nodeX) {
-          topColor = Colors.orange;
-          bottomColor = Colors.orange.withValues(alpha: 0.5);
+          topColor = const Color.fromARGB(255, 255, 106, 48);
+          bottomColor = const Color(0xFFFFB380);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withValues(alpha: 0.5);
+          bottomColor = Colors.white;
         }
       }
       // Rule: Sliding Left (View is behind actual play -> playhead is to the right)
       else if (playheadX > nodeX) {
         if (barX <= nodeX) {
-          topColor = Colors.orange;
-          bottomColor = Colors.orange.withValues(alpha: 0.5);
+          topColor = const Color(0xFFE66635);
+          bottomColor = const Color(0xFFFFB380);
         } else if (barX > nodeX && barX <= playheadX) {
-          topColor = Colors.grey;
-          bottomColor = Colors.grey.withValues(alpha: 0.5);
+          topColor = const Color(0xFF636363);
+          bottomColor = const Color(0xFF636363);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withValues(alpha: 0.5);
+          bottomColor = Colors.white;
         }
       }
       // Rule: Sliding Right (View is ahead of actual play -> playhead is to the left)
       else {
         if (barX <= playheadX) {
-          topColor = Colors.orange;
-          bottomColor = Colors.orange.withValues(alpha: 0.5);
+          topColor = const Color(0xFFE66635);
+          bottomColor = const Color(0xFFFFAA72);
         } else if (barX > playheadX && barX <= nodeX) {
-          topColor = Colors.grey.shade700;
-          bottomColor = Colors.grey.shade700.withValues(alpha: 0.5);
+          topColor = const Color.fromARGB(255, 161, 70, 34);
+          bottomColor = const Color.fromARGB(255, 156, 109, 79);
         } else {
           topColor = Colors.white;
-          bottomColor = Colors.white.withValues(alpha: 0.5);
+          bottomColor = Colors.white;
         }
       }
 
@@ -114,7 +114,7 @@ class WaveformPainter extends CustomPainter {
         RRect.fromRectAndRadius(
           Rect.fromLTWH(
             barX - (barWidth / 2),
-            size.height / 2 - gap / 2 - topHeight,
+            size.height / 1.99 - gap / 2 - topHeight,
             barWidth,
             topHeight,
           ),
@@ -128,7 +128,7 @@ class WaveformPainter extends CustomPainter {
         RRect.fromRectAndRadius(
           Rect.fromLTWH(
             barX - (barWidth / 2),
-            size.height / 2 + gap / 2,
+            size.height / 2.01 + gap / 2,
             barWidth,
             bottomHeight,
           ),

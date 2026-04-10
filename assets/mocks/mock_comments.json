@@ -8,7 +8,7 @@
       "avatar_url": "https://i.pravatar.cc/150?u=u1"
     },
     "content": "This intro is crazy!",
-    "track_timestamp": 12000,
+    "track_timestamp": 120,
     "created_at": "2023-10-01T10:00:00Z",
     "like_count": 15,
     "is_liked_by_me": false,
@@ -24,7 +24,7 @@
       "avatar_url": "https://i.pravatar.cc/150?u=u2"
     },
     "content": "Love the bassline.",
-    "track_timestamp": 45000,
+    "track_timestamp": 45,
     "created_at": "2023-10-01T10:05:00Z",
     "like_count": 8,
     "is_liked_by_me": true,
@@ -72,7 +72,7 @@
       "avatar_url": "https://i.pravatar.cc/150?u=u5"
     },
     "content": "What synth is this?",
-    "track_timestamp": 120000,
+    "track_timestamp": 69,
     "created_at": "2023-10-01T10:20:00Z",
     "like_count": 4,
     "is_liked_by_me": false,
@@ -88,7 +88,7 @@
       "avatar_url": null
     },
     "content": "Been on repeat all day.",
-    "track_timestamp": 0,
+    "track_timestamp": 3,
     "created_at": "2023-10-01T10:25:00Z",
     "like_count": 50,
     "is_liked_by_me": true,
@@ -136,7 +136,7 @@
       "avatar_url": "https://i.pravatar.cc/150?u=u9"
     },
     "content": "Wait for it...",
-    "track_timestamp": 175000,
+    "track_timestamp": 123,
     "created_at": "2023-10-01T10:40:00Z",
     "like_count": 88,
     "is_liked_by_me": false,

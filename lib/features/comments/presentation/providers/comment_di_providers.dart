@@ -19,12 +19,12 @@ import '../../domain/usecases/get_floating_comments_usecase.dart';
 import '../../domain/usecases/get_track_comments_usecase.dart';
 import '../../domain/usecases/post_comment_usecase.dart';
 import '../../domain/usecases/toggle_comment_like_usecase.dart';
+import '../../domain/usecases/unblock_user_usecase.dart';
+import '../../domain/usecases/block_user_usecase.dart';
 
-/// ==========================================
-/// THE ENVIRONMENT SWITCH
-/// Set to true to use local JSON mock data.
-/// Set to false to hit the real Rythmify API.
-/// ==========================================
+// ================================
+//  --- THE ENVIRONMENT SWITCH ---
+// ================================
 const bool useMockCommentsData = true;
 
 /// ---------------------
@@ -98,4 +98,12 @@ final toggleCommentLikeProvider = Provider<ToggleCommentLikeUseCase>((ref) {
 
 final deleteCommentProvider = Provider<DeleteCommentUseCase>((ref) {
   return DeleteCommentUseCase(ref.watch(commentRepositoryProvider));
+});
+
+final blockUserProvider = Provider<BlockUserUseCase>((ref) {
+  return BlockUserUseCase(ref.watch(commentRepositoryProvider));
+});
+
+final unblockUserProvider = Provider<UnblockUserUseCase>((ref) {
+  return UnblockUserUseCase(ref.watch(commentRepositoryProvider));
 });

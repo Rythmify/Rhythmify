@@ -10,13 +10,23 @@ import 'package:rythmify/features/messaging/presentation/providers/conversations
 ///
 /// It shows existing conversations or an empty state if none exist.
 /// It also provides a button to compose a new message by searching for users.
-class InboxScreen extends ConsumerWidget {
+class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final convprovider = ref.watch(conversationProvider);
+  ConsumerState<InboxScreen> createState() => _InboxScreenState();
+}
 
+class _InboxScreenState extends ConsumerState<InboxScreen> {
+  @override
+  void initState() {
+    Future.microtask(() => ref.invalidate(conversationProvider));
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final convprovider = ref.watch(conversationProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Inbox'), centerTitle: false),
       body: Padding(

@@ -118,7 +118,7 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
                 key: const Key('create_playlist_public_switch'),
                 value: _isPublic,
                 onChanged: (v) => setState(() => _isPublic = v),
-                activeColor: const Color(0xFFFF5500),
+                activeThumbColor: const Color(0xFFFF5500),
               ),
             ],
           ),
