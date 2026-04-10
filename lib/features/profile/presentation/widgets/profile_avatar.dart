@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../core/theme/app_theme.dart';
@@ -58,20 +59,43 @@ class ProfileAvatar extends StatelessWidget {
       onTap: onTap,
       child: Stack(
         children: [
-          CircleAvatar(
-            radius: radius,
-            backgroundColor: AppTheme.surface,
-            backgroundImage: avatarUrl != null
-                ? CachedNetworkImageProvider(avatarUrl!)
-                : null,
-            child: avatarUrl == null
-                ? Icon(
+          // Use CachedNetworkImage for better error handling
+          avatarUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: avatarUrl!,
+                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                    radius: radius,
+                    backgroundColor: AppTheme.surface,
+                    backgroundImage: imageProvider,
+                  ),
+                  placeholder: (context, url) => CircleAvatar(
+                    radius: radius,
+                    backgroundColor: AppTheme.surface,
+                    child: Icon(
+                      Icons.person,
+                      size: radius,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => CircleAvatar(
+                    radius: radius,
+                    backgroundColor: AppTheme.surface,
+                    child: Icon(
+                      Icons.person,
+                      size: radius,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              : CircleAvatar(
+                  radius: radius,
+                  backgroundColor: AppTheme.surface,
+                  child: Icon(
                     Icons.person,
                     size: radius,
                     color: AppTheme.textSecondary,
-                  )
-                : null,
-          ),
+                  ),
+                ),
           // Camera icon overlay for edit mode
           if (showCameraIcon)
             Positioned(

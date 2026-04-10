@@ -1,3 +1,4 @@
+/// Remote datasource contract for authentication network operations.
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDatasource {

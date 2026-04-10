@@ -9,6 +9,7 @@ class TrackCommentsState extends Equatable {
   final bool hasReachedMax;
   final bool isFetchingNextPage;
   final CommentSortType sortType;
+  final int totalCommentCount;
 
   const TrackCommentsState({
     required this.comments,
@@ -16,6 +17,7 @@ class TrackCommentsState extends Equatable {
     required this.hasReachedMax,
     required this.isFetchingNextPage,
     required this.sortType,
+    required this.totalCommentCount,
   });
 
   /// Initial factory for a clean slate.
@@ -26,6 +28,7 @@ class TrackCommentsState extends Equatable {
       hasReachedMax: false,
       isFetchingNextPage: false,
       sortType: CommentSortType.newest,
+      totalCommentCount: 0,
     );
   }
 
@@ -35,6 +38,7 @@ class TrackCommentsState extends Equatable {
     bool? hasReachedMax,
     bool? isFetchingNextPage,
     CommentSortType? sortType,
+    int? totalCommentCount,
   }) {
     return TrackCommentsState(
       comments: comments ?? this.comments,
@@ -42,6 +46,7 @@ class TrackCommentsState extends Equatable {
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       isFetchingNextPage: isFetchingNextPage ?? this.isFetchingNextPage,
       sortType: sortType ?? this.sortType,
+      totalCommentCount: totalCommentCount ?? this.totalCommentCount,
     );
   }
 
@@ -52,5 +57,6 @@ class TrackCommentsState extends Equatable {
     hasReachedMax,
     isFetchingNextPage,
     sortType,
+    totalCommentCount,
   ];
 }

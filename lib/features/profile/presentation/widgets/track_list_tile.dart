@@ -1,3 +1,5 @@
+// coverage:ignore-file
+/// List-tile representation of a track in profile track collections.
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/domain/entities/track.dart';

@@ -1,3 +1,4 @@
+/// Account creation step for collecting display name and initial profile data.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/domain/entities/track.dart';

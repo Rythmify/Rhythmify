@@ -4,7 +4,8 @@ import '../base_page.dart';
 import '../../selectors/selectors.dart';
 
 class RegisterPage extends BasePage {
-  RegisterPage(WidgetTester tester) : super(tester);
+  
+  RegisterPage(super.tester);
 
   // ─── Email Field ───
   Future<void> enterEmail(String email) async {

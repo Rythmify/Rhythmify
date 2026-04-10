@@ -51,7 +51,7 @@ class PlaylistCoverImage extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _Placeholder(playlist: playlist),
+        errorBuilder: (_, _, _) => _Placeholder(playlist: playlist),
       );
     }
     // Remote URL
@@ -60,7 +60,7 @@ class PlaylistCoverImage extends StatelessWidget {
       width: size,
       height: size,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _Placeholder(playlist: playlist),
+      errorBuilder: (_, _, _) => _Placeholder(playlist: playlist),
     );
   }
 }
