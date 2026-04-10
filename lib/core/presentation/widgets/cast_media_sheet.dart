@@ -104,8 +104,7 @@ Future<void> showCastMediaSheet(BuildContext context, WidgetRef ref) async {
                                                 ),
                                           );
 
-                                      await GoogleCastRemoteMediaClient
-                                          .instance
+                                      await GoogleCastRemoteMediaClient.instance
                                           .loadMedia(mediaInfo);
 
                                       if (context.mounted) {
