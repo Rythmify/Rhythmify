@@ -33,6 +33,10 @@ const String authVerifyEmailTitle           = 'authentication_verify_email_title
 const String authVerifyEmailDescription     = 'authentication_verify_email_description_text';
 const String authResendEmailButton          = 'authentication_resend_email_elevated_button';
 const String authDismissButton              = 'authentication_dismiss_text_button';
+const String authTermsAndPrivacyText        = 'auth_terms_and_privacy_text';
+const String authEmailDividerText           = 'auth_email_divider_text';
+const String authHelpGestureDetector        = 'authentication_help_gesture_detector';
+const String authLoginPasswordBackIconButton = 'authentication_login_password_back_icon_button';
 
 // --- Registration / Sign Up ---
 const String authRegisterUsernameTextField  = 'authentication_create_account_profile_display_name_auth_text_field';
@@ -68,8 +72,10 @@ const String moreListView                   = 'more_list_view';
 const String trendingByGenreSection         = 'trending_by_genre_section';
 const String genreTabBar                    = 'genre_tab_bar';
 const String genreTabView                   = 'genre_tab_view';
-const String discoverWithStationsSection     = 'discover_stations_section';
+const String discoverWithStationsSection    = 'discover_stations_section';
 const String discoverWithStationsErrorText  = 'discover_with_stations_error_text';
+const String hotForYouLoading               = 'hot_for_you_loading';
+const String frostedGlassRepaintBoundary    = 'frosted_glass_repaint_boundary';
 
 // --- Player ---
 const String playerFullPageTogglePlay       = 'player_full_page_toggle_play_pause_gesturedetector';
@@ -92,6 +98,9 @@ const String playerActionBarPlaylistIcon    = 'player_action_bar_playlist_icon';
 const String playerActionBarMoreIcon        = 'player_action_bar_more_icon';
 const String playerTrackInfoBoxDetails      = 'player_track_info_box_details_gesturedetector';
 const String playerMiniProgressButtonIcon   = 'player_mini_progress_button_icon';
+const String playerMiniProgressButtonIndicator = 'player_mini_progress_button_indicator';
+const String playerActionBarLikeCountErrorText = 'player_action_bar_like_count_error_text';
+const String playerActionBarCommentCountErrorText = 'player_action_bar_comment_count_error_text';
 
 // --- Profile ---
 const String profileAvatarGesture           = 'profile_avatar_gesture';
@@ -118,9 +127,9 @@ const String editProfileCityTextField       = 'edit_profile_city_textfield';
 const String editProfileBioTextField        = 'edit_profile_bio_textfield';
 const String editProfileBioDoneButton       = 'edit_profile_bio_done_button';
 const String editProfilePickCoverGesture    = 'edit_profile_pick_cover_gesture';
-const String editProfileCountryGesture     = 'edit_profile_country_gesture';
-const String editProfileCountryListView    = 'edit_profile_country_list_view';
-const String editProfileBioGesture         = 'edit_profile_bio_gesture';
+const String editProfileCountryGesture      = 'edit_profile_country_gesture';
+const String editProfileCountryListView     = 'edit_profile_country_list_view';
+const String editProfileBioGesture          = 'edit_profile_bio_gesture';
 
 // --- Public Profile ---
 const String publicProfileBackButton        = 'public_profile_back_button';
@@ -134,6 +143,19 @@ const String publicProfileRetryButton       = 'public_profile_retry_button';
 const String libraryGetProButton            = 'library_get_pro_text_button';
 const String librarySettingsButton          = 'library_settings_icon_button';
 const String libraryProfileAvatarGesture    = 'library_profile_avatar_gesture_detector';
+const String libraryCastIconButton          = 'library_cast_icon_button';
+const String libraryMainScrollView          = 'library_main_scroll_view';
+const String libraryLikesItem               = 'library_likes_item';
+const String libraryPlaylistsItem           = 'library_playlists_item';
+const String libraryAlbumsItem              = 'library_albums_item';
+const String libraryFollowingItem           = 'library_following_item';
+const String libraryStationsItem            = 'library_stations_item';
+const String libraryInsightsItem            = 'library_insights_item';
+const String libraryImportBannerCard        = 'library_import_banner_card';
+const String libraryImportBannerCloseGesture = 'library_import_banner_close_gesture';
+const String libraryImportNowButton         = 'library_import_now_button';
+const String libraryRecentlyPlayedSeeAllButton = 'library_recently_played_see_all_button';
+const String libraryRecentlyPlayedListView  = 'library_recently_played_list_view';
 
 // --- Messaging ---
 const String inboxErrorText                 = 'inbox_error_text';
@@ -147,6 +169,16 @@ const String messagingSearchClearButton     = 'messaging_search_clear_icon_butto
 const String messagingSearchMessageButton   = 'messaging_search_message_elevated_button';
 const String chatScreenScaffold             = 'chat_screen_scaffold';
 const String chatParticipantNameText        = 'chat_participant_name_text';
+const String chatScreenAppBar               = 'chat_screen_app_bar';
+const String chatScreenBlockedUserWidget    = 'chat_screen_blocked_user_widget';
+const String chatScreenBlockedByWidget      = 'chat_screen_blocked_by_widget';
+const String chatScreenSelectedEmbedsPreview = 'chat_screen_selected_embeds_preview';
+const String chatScreenAddEmbedButton       = 'chat_screen_add_embed_button';
+const String chatScreenMessageInput         = 'chat_screen_message_input';
+const String chatScreenSendButton           = 'chat_screen_send_button';
+const String messagingUserAvatarCircleAvatar = 'messaging_user_avatar_circle_avatar';
+const String messagingSearchMessageText     = 'messaging_search_message_text';
+const String messagingEmptySearchUsersText  = 'messaging_empty_Search_users_text';
 
 // --- Track Upload ---
 const String trackUploadGenrePicker         = 'track_upload_genre_picker_gesture_detector';
@@ -188,3 +220,73 @@ const String commentsCommentPromptText      = 'comments_comment_prompt_text';
 
 // --- Likes ---
 const String likesBackButton                = 'likes_back_button';
+
+// --- Library Following Page ---
+const String followingRetryButton           = 'following_retry_button';
+const String followingListView              = 'following_list_view';
+
+// --- History Page ---
+const String historyClearIconButton         = 'history_clear_icon_button';
+const String historyShuffleIconButton       = 'history_shuffle_icon_button';
+const String historyPlayAllFab              = 'history_play_all_fab';
+const String historyListView                = 'history_list_view';
+
+// --- Insights Page ---
+const String insightsShareIconButton        = 'insights_share_icon_button';
+const String insightsCastIconButton         = 'insights_cast_icon_button';
+const String insightsScRetryButton          = 'insights_sc_retry_button';
+const String insightsScEmptyState           = 'insights_sc_empty_state';
+const String insightsScHeadlineText         = 'insights_sc_headline_text';
+const String insightsScBodyText             = 'insights_sc_body_text';
+const String insightsScUploadButton         = 'insights_sc_upload_button';
+const String insightsScDataListView         = 'insights_sc_data_list_view';
+const String insightsSummaryCard            = 'insights_summary_card';
+const String insightsTotalPlaysStat         = 'insights_total_plays_stat';
+const String insightsTotalListenersStat     = 'insights_total_listeners_stat';
+const String insightsTotalLikesStat         = 'insights_total_likes_stat';
+const String insightsAllPlatformsTabScroll  = 'insights_all_platforms_tab_scroll';
+const String insightsAllPlatformsTab        = 'insights_all_platforms_tab';
+const String insightsApUpgradeButton        = 'insights_ap_upgrade_button';
+
+// --- Playlist/Album Pages ---
+const String libraryAlbumsBackButton        = 'library_albums_back_button';
+const String libraryAlbumsSearchField       = 'library_albums_search_field';
+const String libraryPlaylistsBackButton     = 'library_playlists_back_button';
+const String libraryPlaylistsSearchField    = 'library_playlists_search_field';
+const String libraryPlaylistsImportButton   = 'library_playlists_import_button';
+const String libraryPlaylistsCreateButton   = 'library_playlists_create_button';
+const String libraryStationsBackButton      = 'library_stations_back_button';
+const String libraryStationsSearchField     = 'library_stations_search_field';
+const String playlistDetailBackButton       = 'playlist_detail_back_button';
+const String playlistDetailLikeButton       = 'playlist_detail_like_button';
+const String playlistDetailMoreButton       = 'playlist_detail_more_button';
+const String playlistDetailShuffleButton    = 'playlist_detail_shuffle_button';
+const String playlistDetailPlayButton       = 'playlist_detail_play_button';
+const String refreshSuggestionsButton       = 'refresh_suggestions_button';
+
+// --- Sheets/Dialogs ---
+const String createPlaylistNameField        = 'create_playlist_name_field';
+const String createPlaylistPublicSwitch     = 'create_playlist_public_switch';
+const String createPlaylistCreateButton     = 'create_playlist_create_button';
+const String createPlaylistCancelButton     = 'create_playlist_cancel_button';
+const String editPlaylistCancelButton       = 'edit_playlist_cancel_button';
+const String editPlaylistSaveButton         = 'edit_playlist_save_button';
+const String editPlaylistCoverPicker        = 'edit_playlist_cover_picker';
+const String editPlaylistNameField          = 'edit_playlist_name_field';
+const String editPlaylistDescriptionField   = 'edit_playlist_description_field';
+const String editPlaylistPublicSwitch       = 'edit_playlist_public_switch';
+const String editConvertToAlbum             = 'edit_convert_to_album';
+const String editConvertToStation           = 'edit_convert_to_station';
+const String editConvertToPlaylist          = 'edit_convert_to_playlist';
+const String optionsShareSms                = 'options_share_sms';
+const String optionsShareQr                 = 'options_share_qr';
+const String optionsShareCopy               = 'options_share_copy';
+const String optionsShareWhatsapp           = 'options_share_whatsapp';
+const String optionsShareMore               = 'options_share_more';
+const String optionsLike                    = 'options_like';
+const String optionsPlayNext                = 'options_play_next';
+const String optionsPlayLast                = 'options_play_last';
+const String optionsCopy                    = 'options_copy';
+const String optionsEdit                    = 'options_edit';
+const String optionsTogglePrivacy           = 'options_toggle_privacy';
+const String optionsDelete                  = 'options_delete';
