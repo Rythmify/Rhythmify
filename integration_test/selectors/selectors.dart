@@ -148,6 +148,8 @@ const String chatScreenScaffold             = 'chat_screen_scaffold';
 const String chatParticipantNameText        = 'chat_participant_name_text';
 
 // --- Track Upload ---
+const String trackUploadGenrePicker         = 'track_upload_genre_picker_gesture_detector';
+const String trackUploadGenreListView       = 'track_upload_genre_list_view';
 const String trackUploadGalleryListTile     = 'track_upload_gallery_listtile';
 const String trackUploadCameraListTile      = 'track_upload_camera_listtile';
 const String trackUploadCoverImagePicker    = 'track_upload_cover_image_picker_gesture_detector';
@@ -156,6 +158,18 @@ const String trackUploadStatusText          = 'track_upload_status_text';
 const String trackUploadProgressUploading   = 'track_upload_progress_uploading_text';
 const String trackUploadProgressSuccess     = 'track_upload_progress_success_text';
 const String trackUploadProgressError       = 'track_upload_progress_error_text';
+const String trackUploadProgressOverlay     = 'track_upload_progress_overlay_gesture_detector';
+
+// --- Your Uploads Page ---
+const String uploadsEmptyHeadlineText       = 'uploads_empty_headline_text';
+const String uploadsEmptyBodyText           = 'uploads_empty_body_text';
+const String uploadsEmptyUploadButton       = 'uploads_empty_upload_button';
+const String uploadsNewUploadIconButton     = 'uploads_new_upload_icon_button';
+const String uploadsSearchTextField         = 'uploads_search_text_field';
+const String uploadsListView                = 'uploads_list_view';
+
+// --- Library Menu Items ---
+const String libraryUploadsItem             = 'library_uploads_item';
 
 // --- Track / Behind the Track ---
 const String behindTheTrackBackButton       = 'behind_the_track_back_icon_button';

@@ -718,6 +718,7 @@ class _GenrePicker extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => ListView.builder(
+        key: const Key('track_upload_genre_list_view'),
         itemCount: genres.length,
         itemBuilder: (_, i) {
           final genre = genres[i];
@@ -746,6 +747,7 @@ class _GenrePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: const Key('track_upload_genre_picker_gesture_detector'),
       onTap: () => _show(context),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
