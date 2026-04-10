@@ -1,0 +1,286 @@
+{
+  "data": {
+    "genre-1": {
+      "genre_id": "genre-1",
+      "genre_name": "Electronic",
+      "tracks": [ {
+            "id": "2",
+            "title": "Summer Vibes",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track2",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track3",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }]
+    },
+    "genre-2": {
+      "genre_id": "genre-2",
+      "genre_name": "Hip-Hop",
+      "tracks": [{
+            "id": "2",
+            "title": "track4",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track5",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track6",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          } ]
+    },
+    "genre-3": {
+      "genre_id": "genre-3",
+      "genre_name": "R&B",
+      "tracks": [{
+            "id": "2",
+            "title": "track7",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track8",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track9",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          } ]
+    },
+    "genre-4": {
+      "genre_id": "genre-4",
+      "genre_name": "Country",
+      "tracks": [ {
+            "id": "2",
+            "title": "track10",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track11",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track12",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          } ]
+    },
+    "genre-5": {
+      "genre_id": "genre-5",
+      "genre_name": "Indie",
+      "tracks": [ {
+            "id": "2",
+            "title": "track13",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track14",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track15",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          } ]
+    },
+    "genre-6": {
+      "genre_id": "genre-6",
+      "genre_name": "Classic",
+      "tracks": [ {
+            "id": "2",
+            "title": "track16",
+            "cover_image": "assets/images/track_2.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "3",
+            "title": "Track17",
+            "cover_image": "assets/images/track_5.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "4",
+            "title": "Track18",
+            "cover_image": "assets/images/track_4.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "DJ Karim",
+            "stream_url": "assets/audio/Track_audio_3.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          } ]
+    }
+  }
+}

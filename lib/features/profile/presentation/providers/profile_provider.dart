@@ -172,7 +172,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
           '🔴 ProfileNotifier.uploadAvatar: Upload failed - ${failure.message}',
         );
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         print('🟢 ProfileNotifier.uploadAvatar: Upload successful!');
@@ -229,7 +228,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     result.fold(
       (failure) {
         state = current.copyWith(isSaving: false);
-        // TODO: Show error to user
       },
       (profile) {
         // Update state with new profile containing updated cover

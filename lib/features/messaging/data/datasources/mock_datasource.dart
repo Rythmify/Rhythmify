@@ -3,12 +3,16 @@ import 'package:rythmify/features/messaging/data/models/conversation_model.dart'
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
+import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 
 /// Mock implementation of [DatasourceInterface] for testing and development.
 ///
 /// This class provides simulated messaging data and delayed responses to mimic
 /// network latency without making actual API calls.
 class MockDatasourceImplement implements DatasourceInterface {
+  final Set<String> _blockedUsers = {};
+  final Set<String> _usersWhoBlockedMe = {'u2'};
+
   /// Internal storage for simulated users.
   final Map<String, PotentialConversationModel> _allUsers = {
     'u2': PotentialConversationModel(
@@ -286,11 +290,13 @@ class MockDatasourceImplement implements DatasourceInterface {
   @override
   Future<void> blockUser({required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 100));
+    _blockedUsers.add(userId);
   }
 
   @override
   Future<void> unBlockUser({required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 100));
+    _blockedUsers.remove(userId);
   }
 
   @override
@@ -352,5 +358,87 @@ class MockDatasourceImplement implements DatasourceInterface {
           (u) => u.participantName.toLowerCase().contains(query.toLowerCase()),
         )
         .toList();
+  }
+
+  @override
+  Future<bool> isBlocked(String participantId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return _blockedUsers.contains(participantId);
+  }
+
+  @override
+  Future<bool> isBlockedBy(String participantId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return _usersWhoBlockedMe.contains(participantId);
+  }
+
+  @override
+  Future<List<SharedEmbedModel>> getEmbeds(
+    String userId,
+    String embedType,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    final all = [
+      SharedEmbedModel(
+        embedId: 't1',
+        embedType: 'track',
+        embedName: 'Bahaa Sultan - Ana Ghaltan',
+        artistName: 'Bahaa Sultan',
+      ),
+      SharedEmbedModel(
+        embedId: 't2',
+        embedType: 'track',
+        embedName: 'You Look Good',
+        artistName: 'Milan Drew',
+      ),
+      SharedEmbedModel(
+        embedId: 't3',
+        embedType: 'track',
+        embedName: 'Tamer Hosny - Nour Einy',
+        artistName: 'Tamer Hosny',
+      ),
+      SharedEmbedModel(
+        embedId: 'p1',
+        embedType: 'playlist',
+        embedName: 'My Gym Set',
+        artistName: 'rana ahmed',
+      ),
+      SharedEmbedModel(
+        embedId: 'p2',
+        embedType: 'playlist',
+        embedName: 'Chill Vibes',
+        artistName: 'rana ahmed',
+      ),
+      SharedEmbedModel(
+        embedId: 'a1',
+        embedType: 'album',
+        embedName: 'Snow Ballet',
+        artistName: 'egobreak',
+      ),
+      SharedEmbedModel(
+        embedId: 'a2',
+        embedType: 'album',
+        embedName: 'Big Country',
+        artistName: 'sosocamo',
+      ),
+    ];
+    return all.where((e) => e.embedType == embedType).toList();
+  }
+
+  @override
+  Future<SharedEmbedModel> getTrackDetails(String trackId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    final all = await getEmbeds('current_user', 'track');
+    return all.firstWhere((e) => e.embedId == trackId);
+  }
+
+  @override
+  Future<SharedEmbedModel> getPlaylistDetails(
+    String playlistId,
+    String embedType,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    final all = await getEmbeds('current_user', embedType);
+    return all.firstWhere((e) => e.embedId == playlistId);
   }
 }

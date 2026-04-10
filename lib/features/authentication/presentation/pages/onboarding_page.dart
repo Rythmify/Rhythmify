@@ -111,6 +111,7 @@ class OnboardingPage extends StatelessWidget {
                           width: 320,
                           height: 48,
                           child: ElevatedButton(
+                            key: const Key('onboarding_create_account_button'),
                             onPressed: () =>
                                 context.push('/sign-in', extra: 'register'),
                             style: ElevatedButton.styleFrom(
@@ -138,6 +139,7 @@ class OnboardingPage extends StatelessWidget {
                           width: 320,
                           height: 48,
                           child: ElevatedButton(
+                            key: const Key('onboarding_login_button'),
                             onPressed: () =>
                                 context.push('/sign-in', extra: 'login'),
                             style: ElevatedButton.styleFrom(

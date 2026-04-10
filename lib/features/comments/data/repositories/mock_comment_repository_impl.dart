@@ -57,21 +57,24 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }
 
   @override
-  Future<Map<int, String>> getFloatingComments(String trackId) async {
+  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
+    String trackId,
+  ) async {
     try {
       // Fetch all comments for the track to simulate building the waveform map
       final allTrackComments = await _localDataSource.getAllCommentsForTrack(
         trackId,
       );
 
-      final Map<int, String> floatingMap = {};
+      // Update map to hold the Record
+      final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        if (dto.userPfp == null) continue;
-
+        // Mock data timestamp was in ms, convert to seconds
         final second = (dto.timestamp / 1000).floor();
+
         if (!floatingMap.containsKey(second)) {
-          floatingMap[second] = dto.userPfp!;
+          floatingMap[second] = (pfp: dto.userPfp, text: dto.content);
         }
       }
 
@@ -131,6 +134,24 @@ class MockCommentRepositoryImpl implements CommentRepository {
       await _localDataSource.deleteComment(commentId);
     } catch (e) {
       throw Exception('Failed to delete comment: $e');
+    }
+  }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    try {
+      await _localDataSource.blockUser(userId);
+    } catch (e) {
+      throw Exception('Failed to block user: $e');
+    }
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    try {
+      await _localDataSource.unblockUser(userId);
+    } catch (e) {
+      throw Exception('Failed to unblock user: $e');
     }
   }
 }

@@ -215,7 +215,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         );
 
     // Navigate back after successful save
-    if (context.mounted) {
+    if (mounted) {
       context.pop();
     }
   }
