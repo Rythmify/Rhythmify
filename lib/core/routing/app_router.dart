@@ -248,13 +248,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'notifications',
                     builder: (context, state) => const NotificationsScreen(),
                   ),
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
                 ],
               ),
             ],
@@ -267,16 +260,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/feed',
                 builder: (context, state) => const FeedScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    name: 'behindTheTrack',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
@@ -288,15 +271,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/search',
                 builder: (context, state) => const SearchScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
@@ -377,13 +351,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'playlist',
                     builder: (context, state) => const PlaylistScreen(),
-                  ),
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
                   ),
                   GoRoute(
                     path: 'following',
@@ -467,21 +434,22 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
         ],
       ),
 
+      // ── Root Level Pages (Renders ON TOP of Navigation Bar) ─────────
+      GoRoute(
+        path: '/behind-the-track/:trackId',
+        name: 'behindTheTrack',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final trackId = state.pathParameters['trackId']!;
+          return BehindTheTrackPage(trackId: trackId);
+        },
+      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,

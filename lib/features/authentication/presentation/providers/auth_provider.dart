@@ -3,6 +3,7 @@ import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/models/user_model.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
@@ -50,6 +51,38 @@ class AuthNotifier extends Notifier<AuthState> {
     return const AuthLoading();
   }
 
+  /// Fetches the full profile from `/users/me` and merges it with
+  /// the token and ID from the basic auth login.
+  Future<void> _fetchAndEmitFullProfile(UserEntity basicUser) async {
+    if (useMockData) {
+      ProfileMockDatasource.setCurrentUser(basicUser.id);
+      state = AuthAuthenticated(basicUser);
+      return;
+    }
+
+    try {
+      final response = await apiClient.dio.get('/users/me');
+      final data = response.data['data'];
+
+      final fullUser = UserModel.fromJson({
+        ...data,
+        'id': basicUser.id,
+        'is_email_verified':
+            data['is_verified'] ??
+            data['is_email_verified'] ??
+            basicUser.isEmailVerified,
+        // THE FIX: Grabbing profile_picture from the backend
+        'avatar_url': data['profile_picture'] ?? data['avatar_url'],
+        'token': basicUser.token, // Keep the JWT token from the login response
+      });
+
+      state = AuthAuthenticated(fullUser);
+    } catch (e) {
+      // If fetching the profile fails, fallback to the basic user so they aren't blocked from using the app
+      state = AuthAuthenticated(basicUser);
+    }
+  }
+
   Future<void> checkAuthStatus() async {
     if (useMockData) {
       state = const AuthUnauthenticated();
@@ -65,20 +98,20 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       final response = await apiClient.dio.get('/users/me');
-
       final data = response.data['data'];
+
       final user = UserModel.fromJson({
-        'id': data['id'],
-        'email': data['email'],
-        'display_name': data['display_name'],
-        'is_email_verified': data['is_verified'] ?? true,
+        ...data,
+        'id': data['id']?.toString() ?? data['user_id']?.toString(),
+        'is_email_verified':
+            data['is_verified'] ?? data['is_email_verified'] ?? true,
+        // THE FIX APPLIED HERE TOO
+        'avatar_url': data['profile_picture'] ?? data['avatar_url'],
         'token': token,
       });
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      // ── Handles BadPaddingException and any other errors ──
-
       await apiClient.clearToken();
       state = const AuthUnauthenticated();
     }
@@ -90,12 +123,12 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthLoading();
     final result = await _signInWithEmail(email: email, password: password);
-    result.fold((failure) => state = AuthError(failure.message), (user) {
-      // ── Tell profile mock which user just logged in ──
-      if (useMockData) {
-        ProfileMockDatasource.setCurrentUser(user.id);
-      }
-      state = AuthAuthenticated(user);
+
+    // Notice the 'async' added to this callback so we can await the profile
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
     });
   }
 
@@ -114,34 +147,33 @@ class AuthNotifier extends Notifier<AuthState> {
       gender: gender,
       dateOfBirth: dateOfBirth,
     );
-    result.fold((failure) => state = AuthError(failure.message), (user) {
-      // ── Tell profile mock which user just registered ──
-      if (useMockData) {
-        ProfileMockDatasource.setCurrentUser(user.id);
-      }
-      state = AuthAuthenticated(user);
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
     });
   }
 
   Future<void> signInWithGoogleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
-    result.fold((failure) => state = AuthError(failure.message), (user) {
-      if (useMockData) {
-        ProfileMockDatasource.setCurrentUser(user.id);
-      }
-      state = AuthAuthenticated(user);
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
     });
   }
 
   Future<void> signInWithAppleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithApple();
-    result.fold((failure) => state = AuthError(failure.message), (user) {
-      if (useMockData) {
-        ProfileMockDatasource.setCurrentUser(user.id);
-      }
-      state = AuthAuthenticated(user);
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
     });
   }
 

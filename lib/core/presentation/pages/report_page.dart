@@ -75,15 +75,14 @@ class _ReportPageState extends State<ReportPage> {
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         elevation: 0,
-        leadingWidth: 150,
+        leadingWidth: 300,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
+          padding: const EdgeInsets.only(left: 14.0),
           child: Row(
             children: [
-              const Icon(Icons.music_note, color: AppTheme.primaryBrand),
-              const SizedBox(width: 8),
+              const SizedBox(width: 9),
               Text(
-                'RYTHMIFY',
+                'Rythmify Report Center',
                 style: AppTheme.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -106,41 +105,35 @@ class _ReportPageState extends State<ReportPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Report Content to Rythmify',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
                 'Reason for Reporting',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 8),
-              ..._reasons.map((reason) {
-                return RadioListTile<String>(
-                  title: Text(reason, style: AppTheme.bodyNormal),
-                  value: reason,
-                  groupValue: _selectedReason,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedReason = value;
-                    });
-                  },
-                  contentPadding: EdgeInsets.zero,
-                  activeColor: AppTheme.primaryBrand,
-                );
-              }),
-
+              RadioGroup<String>(
+                groupValue: _selectedReason,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReason = value;
+                  });
+                },
+                child: Column(
+                  spacing: -6,
+                  children: [
+                    ..._reasons.map((reason) {
+                      return RadioListTile<String>(
+                        title: Text(reason, style: AppTheme.bodyNormal),
+                        value: reason,
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: AppTheme.primaryBrand,
+                      );
+                    }),
+                  ],
+                ),
+              ),
               const SizedBox(height: 24),
               Text(
                 "Please provide more detail as to why you're reporting this content",
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -163,9 +156,7 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 'Your Information',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -210,9 +201,7 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 'Please provide the link (URL) within Rythmify to the content you are reporting. Please only input one link per report.',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -240,14 +229,12 @@ class _ReportPageState extends State<ReportPage> {
               const SizedBox(height: 24),
               Text(
                 'Select where the violation occurs (select all that apply)',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               Wrap(
-                spacing: 16,
-                runSpacing: 8,
+                spacing: 15,
+                runSpacing: 1,
                 children: _violations.keys.map((key) {
                   return IntrinsicWidth(
                     child: CheckboxListTile(
@@ -320,36 +307,6 @@ class _ReportPageState extends State<ReportPage> {
   Widget _buildBrandFooter() {
     return Column(
       children: [
-        Center(
-          child: Text(
-            'Enjoy the full Rythmify experience',
-            style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text('Download on the App Store'),
-            ),
-            const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text('GET IT ON Google Play'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
         const Text(
           'About Rythmify:',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -357,7 +314,7 @@ class _ReportPageState extends State<ReportPage> {
         const SizedBox(height: 8),
         Wrap(
           alignment: WrapAlignment.center,
-          spacing: 16,
+          spacing: 12,
           children: [
             TextButton(
               onPressed: () {},
@@ -414,7 +371,7 @@ class _ReportPageState extends State<ReportPage> {
         ),
         const SizedBox(height: 32),
         const Align(
-          alignment: Alignment.centerRight,
+          alignment: Alignment.center,
           child: Text(
             '© 2026 Rythmify - Language: English (US)',
             style: TextStyle(color: Colors.grey, fontSize: 12),

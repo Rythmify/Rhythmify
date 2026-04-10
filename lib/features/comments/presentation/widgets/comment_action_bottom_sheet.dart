@@ -11,6 +11,8 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/player_dependency_providers.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/comment_di_providers.dart';
+import '../providers/track_comments_notifier.dart';
+import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
 
 class CommentActionBottomSheet extends ConsumerWidget {
@@ -40,7 +42,16 @@ class CommentActionBottomSheet extends ConsumerWidget {
   void _deleteComment(BuildContext context, WidgetRef ref) async {
     Navigator.pop(context);
     try {
-      await ref.read(deleteCommentProvider)(comment.id);
+      if (comment.parentId == null) {
+        await ref
+            .read(trackCommentsProvider(comment.trackId).notifier)
+            .deleteComment(comment.id);
+      } else {
+        await ref
+            .read(commentRepliesProvider(comment.parentId!).notifier)
+            .deleteReply(comment.id, comment.trackId, comment.parentId!);
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -110,6 +121,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
                     '${comment.userDisplayName} at ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
                     style: AppTheme.bodyNormal.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.semiWhite,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

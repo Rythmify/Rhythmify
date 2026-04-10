@@ -48,23 +48,24 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
-  Future<Map<int, String>> getFloatingComments(String trackId) async {
+  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
+    String trackId,
+  ) async {
     try {
       final allTrackComments = await _remoteDataSource.getAllCommentsForTrack(
         trackId,
       );
-      final Map<int, String> floatingMap = {};
+
+      // Update map to hold the Record
+      final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        // Skip if there's no profile picture to display
-        if (dto.userPfp == null || dto.userPfp!.isEmpty) continue;
-
         // Group comments by the exact second to build the O(1) lookup map
         final second = dto.timestamp;
 
-        // We only take the first comment's PFP for a given second to avoid overlap
+        // We only take the first comment's data for a given second to avoid overlap
         if (!floatingMap.containsKey(second)) {
-          floatingMap[second] = dto.userPfp!;
+          floatingMap[second] = (pfp: dto.userPfp, text: dto.content);
         }
       }
 
