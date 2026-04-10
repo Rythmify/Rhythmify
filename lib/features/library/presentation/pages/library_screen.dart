@@ -109,7 +109,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             context,
             label: 'Albums',
             key: const Key('library_albums_item'),
-            onTap: () => context.push('/library/albums'),
+            onTap: () => context.pushNamed('library-albums'),
           ),
           _menuItem(
             context,

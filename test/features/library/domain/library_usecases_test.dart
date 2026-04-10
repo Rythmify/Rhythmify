@@ -16,8 +16,9 @@ void main() {
   });
 
   test('GetFollowingUseCase forwards default pagination', () async {
-    when(() => repository.getFollowing(page: 1, limit: 20))
-        .thenAnswer((_) async => const Right(<FollowedUser>[]));
+    when(
+      () => repository.getFollowing(page: 1, limit: 20),
+    ).thenAnswer((_) async => const Right(<FollowedUser>[]));
 
     await GetFollowingUseCase(repository).call();
 
@@ -25,23 +26,31 @@ void main() {
   });
 
   test('Following/playlist/upload usecases forward parameters', () async {
-    when(() => repository.unfollowUser(userId: 'u1'))
-        .thenAnswer((_) async => const Right(null));
-    when(() => repository.getMyPlaylists())
-        .thenAnswer((_) async => const Right(<LibraryPlaylist>[]));
-    when(() => repository.createPlaylist(
-          name: 'N',
-          description: 'D',
-          isPublic: true,
-        )).thenAnswer((_) async => Right(_playlist()));
-    when(() => repository.deletePlaylist(playlistId: 'p1'))
-        .thenAnswer((_) async => const Right(null));
-    when(() => repository.getMyUploads(page: 2, limit: 5))
-        .thenAnswer((_) async => const Right(<UploadedTrack>[]));
-    when(() => repository.toggleTrackVisibility(trackId: 't1', isPublic: false))
-        .thenAnswer((_) async => const Right(null));
-    when(() => repository.deleteTrack(trackId: 't1'))
-        .thenAnswer((_) async => const Right(null));
+    when(
+      () => repository.unfollowUser(userId: 'u1'),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => repository.getMyPlaylists(),
+    ).thenAnswer((_) async => const Right(<LibraryPlaylist>[]));
+    when(
+      () => repository.createPlaylist(
+        name: 'N',
+        description: 'D',
+        isPublic: true,
+      ),
+    ).thenAnswer((_) async => Right(_playlist()));
+    when(
+      () => repository.deletePlaylist(playlistId: 'p1'),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => repository.getMyUploads(page: 2, limit: 5),
+    ).thenAnswer((_) async => const Right(<UploadedTrack>[]));
+    when(
+      () => repository.toggleTrackVisibility(trackId: 't1', isPublic: false),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => repository.deleteTrack(trackId: 't1'),
+    ).thenAnswer((_) async => const Right(null));
 
     await UnfollowUserLibraryUseCase(repository).call(userId: 'u1');
     await GetMyPlaylistsUseCase(repository).call();
@@ -57,26 +66,40 @@ void main() {
 
     verify(() => repository.unfollowUser(userId: 'u1')).called(1);
     verify(() => repository.getMyPlaylists()).called(1);
-    verify(() => repository.createPlaylist(name: 'N', description: 'D', isPublic: true)).called(1);
+    verify(
+      () => repository.createPlaylist(
+        name: 'N',
+        description: 'D',
+        isPublic: true,
+      ),
+    ).called(1);
     verify(() => repository.deletePlaylist(playlistId: 'p1')).called(1);
     verify(() => repository.getMyUploads(page: 2, limit: 5)).called(1);
-    verify(() => repository.toggleTrackVisibility(trackId: 't1', isPublic: false)).called(1);
+    verify(
+      () => repository.toggleTrackVisibility(trackId: 't1', isPublic: false),
+    ).called(1);
     verify(() => repository.deleteTrack(trackId: 't1')).called(1);
   });
 
   test('Insights/history/stations/liked usecases forward calls', () async {
-    when(() => repository.getMyInsights())
-        .thenAnswer((_) async => const Right(<TrackInsight>[]));
-    when(() => repository.getRecentlyPlayed())
-        .thenAnswer((_) async => const Right(<RecentlyPlayedEntry>[]));
-    when(() => repository.getListeningHistory(page: 1, limit: 20))
-        .thenAnswer((_) async => const Right(<RecentlyPlayedEntry>[]));
-    when(() => repository.clearListeningHistory())
-        .thenAnswer((_) async => const Right(null));
-    when(() => repository.getStations())
-        .thenAnswer((_) async => const Right(<LibraryStation>[]));
-    when(() => repository.getLikedTracks(page: 1, limit: 20))
-        .thenAnswer((_) async => const Right(<Track>[]));
+    when(
+      () => repository.getMyInsights(),
+    ).thenAnswer((_) async => const Right(<TrackInsight>[]));
+    when(
+      () => repository.getRecentlyPlayed(),
+    ).thenAnswer((_) async => const Right(<RecentlyPlayedEntry>[]));
+    when(
+      () => repository.getListeningHistory(page: 1, limit: 20),
+    ).thenAnswer((_) async => const Right(<RecentlyPlayedEntry>[]));
+    when(
+      () => repository.clearListeningHistory(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => repository.getStations(),
+    ).thenAnswer((_) async => const Right(<LibraryStation>[]));
+    when(
+      () => repository.getLikedTracks(page: 1, limit: 20),
+    ).thenAnswer((_) async => const Right(<Track>[]));
 
     await GetMyInsightsUseCase(repository).call();
     await GetRecentlyPlayedUseCase(repository).call();
@@ -95,11 +118,11 @@ void main() {
 }
 
 LibraryPlaylist _playlist() => LibraryPlaylist(
-      id: 'p1',
-      name: 'P',
-      trackCount: 0,
-      likeCount: 0,
-      isPublic: true,
-      isOwned: true,
-      createdAt: DateTime(2026, 1, 1),
-    );
+  id: 'p1',
+  name: 'P',
+  trackCount: 0,
+  likeCount: 0,
+  isPublic: true,
+  isOwned: true,
+  createdAt: DateTime(2026, 1, 1),
+);

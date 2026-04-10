@@ -422,13 +422,10 @@ void main() {
 
         final result = await useCase(userId: 'user-001');
 
-        result.fold(
-          (failure) {
-            expect(failure, isA<ServerFailure>());
-            expect((failure as ServerFailure).message, contains('FOLLOW_SELF'));
-          },
-          (_) => fail('Expected Left(ServerFailure), got Right'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<ServerFailure>());
+          expect((failure as ServerFailure).message, contains('FOLLOW_SELF'));
+        }, (_) => fail('Expected Left(ServerFailure), got Right'));
       },
     );
 
@@ -619,5 +616,4 @@ void main() {
   });
 }
 
-extension on Either<Failure, void> {
-}
+extension on Either<Failure, void> {}

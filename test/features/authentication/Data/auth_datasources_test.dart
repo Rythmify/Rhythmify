@@ -255,26 +255,27 @@ void main() {
     test(
       'should send sign-up payload without captcha_token when not implemented',
       () async {
-      when(
-        () => mockDio.post(any(), data: any(named: 'data')),
-      ).thenAnswer((_) async => registerSuccessResponse());
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenAnswer((_) async => registerSuccessResponse());
 
-      await datasource.signUpWithEmail(
-        email: 'karim@rythmify.com',
-        password: 'Karim123!',
-        displayName: 'KarimWI',
-        gender: 'male',
-        dateOfBirth: '2000-01-01',
-      );
+        await datasource.signUpWithEmail(
+          email: 'karim@rythmify.com',
+          password: 'Karim123!',
+          displayName: 'KarimWI',
+          gender: 'male',
+          dateOfBirth: '2000-01-01',
+        );
 
-      final captured =
-          verify(
-                () => mockDio.post(any(), data: captureAny(named: 'data')),
-              ).captured.first
-              as Map<String, dynamic>;
+        final captured =
+            verify(
+                  () => mockDio.post(any(), data: captureAny(named: 'data')),
+                ).captured.first
+                as Map<String, dynamic>;
 
-      expect(captured.containsKey('captcha_token'), false);
-    });
+        expect(captured.containsKey('captcha_token'), false);
+      },
+    );
 
     test('should parse user_id (not id) from response', () async {
       when(

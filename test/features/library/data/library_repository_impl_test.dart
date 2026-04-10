@@ -65,37 +65,47 @@ void main() {
   );
 
   test('getFollowing returns right on success', () async {
-    when(() => datasource.getFollowing(page: 1, limit: 20))
-        .thenAnswer((_) async => [followed]);
+    when(
+      () => datasource.getFollowing(page: 1, limit: 20),
+    ).thenAnswer((_) async => [followed]);
 
     final result = await repository.getFollowing(page: 1, limit: 20);
 
     expect(result.isRight(), true);
   });
 
-  test('getFollowing maps RATE_LIMIT_EXCEEDED to TooManyRequestsFailure', () async {
-    when(() => datasource.getFollowing(page: 1, limit: 20))
-        .thenThrow(Exception('RATE_LIMIT_EXCEEDED'));
+  test(
+    'getFollowing maps RATE_LIMIT_EXCEEDED to TooManyRequestsFailure',
+    () async {
+      when(
+        () => datasource.getFollowing(page: 1, limit: 20),
+      ).thenThrow(Exception('RATE_LIMIT_EXCEEDED'));
 
-    final result = await repository.getFollowing(page: 1, limit: 20);
+      final result = await repository.getFollowing(page: 1, limit: 20);
 
-    expect(result.isLeft(), true);
-    expect((result as Left).value, isA<TooManyRequestsFailure>());
-  });
+      expect(result.isLeft(), true);
+      expect((result as Left).value, isA<TooManyRequestsFailure>());
+    },
+  );
 
   test('playlist and uploads operations return right on success', () async {
     when(() => datasource.getMyPlaylists()).thenAnswer((_) async => [playlist]);
-    when(() => datasource.createPlaylist(
-          name: 'New',
-          description: null,
-          isPublic: true,
-        )).thenAnswer((_) async => playlist);
-    when(() => datasource.deletePlaylist(playlistId: 'p1'))
-        .thenAnswer((_) async {});
-    when(() => datasource.getMyUploads(page: 1, limit: 20))
-        .thenAnswer((_) async => [upload]);
-    when(() => datasource.toggleTrackVisibility(trackId: 't1', isPublic: false))
-        .thenAnswer((_) async {});
+    when(
+      () => datasource.createPlaylist(
+        name: 'New',
+        description: null,
+        isPublic: true,
+      ),
+    ).thenAnswer((_) async => playlist);
+    when(
+      () => datasource.deletePlaylist(playlistId: 'p1'),
+    ).thenAnswer((_) async {});
+    when(
+      () => datasource.getMyUploads(page: 1, limit: 20),
+    ).thenAnswer((_) async => [upload]);
+    when(
+      () => datasource.toggleTrackVisibility(trackId: 't1', isPublic: false),
+    ).thenAnswer((_) async {});
     when(() => datasource.deleteTrack(trackId: 't1')).thenAnswer((_) async {});
 
     expect((await repository.getMyPlaylists()).isRight(), true);
@@ -104,15 +114,16 @@ void main() {
         name: 'New',
         description: null,
         isPublic: true,
-      ))
-          .isRight(),
+      )).isRight(),
       true,
     );
     expect((await repository.deletePlaylist(playlistId: 'p1')).isRight(), true);
     expect((await repository.getMyUploads(page: 1, limit: 20)).isRight(), true);
     expect(
-      (await repository.toggleTrackVisibility(trackId: 't1', isPublic: false))
-          .isRight(),
+      (await repository.toggleTrackVisibility(
+        trackId: 't1',
+        isPublic: false,
+      )).isRight(),
       true,
     );
     expect((await repository.deleteTrack(trackId: 't1')).isRight(), true);
@@ -120,20 +131,30 @@ void main() {
 
   test('insights, history, stations return right on success', () async {
     when(() => datasource.getMyInsights()).thenAnswer((_) async => [insight]);
-    when(() => datasource.getRecentlyPlayed()).thenAnswer((_) async => [history]);
-    when(() => datasource.getListeningHistory(page: 1, limit: 20))
-        .thenAnswer((_) async => [history]);
+    when(
+      () => datasource.getRecentlyPlayed(),
+    ).thenAnswer((_) async => [history]);
+    when(
+      () => datasource.getListeningHistory(page: 1, limit: 20),
+    ).thenAnswer((_) async => [history]);
     when(() => datasource.clearListeningHistory()).thenAnswer((_) async {});
     when(() => datasource.getStations()).thenAnswer((_) async => [station]);
-    when(() => datasource.getLikedTracks(page: 1, limit: 20))
-        .thenAnswer((_) async => [upload]);
+    when(
+      () => datasource.getLikedTracks(page: 1, limit: 20),
+    ).thenAnswer((_) async => [upload]);
 
     expect((await repository.getMyInsights()).isRight(), true);
     expect((await repository.getRecentlyPlayed()).isRight(), true);
-    expect((await repository.getListeningHistory(page: 1, limit: 20)).isRight(), true);
+    expect(
+      (await repository.getListeningHistory(page: 1, limit: 20)).isRight(),
+      true,
+    );
     expect((await repository.clearListeningHistory()).isRight(), true);
     expect((await repository.getStations()).isRight(), true);
-    expect((await repository.getLikedTracks(page: 1, limit: 20)).isRight(), true);
+    expect(
+      (await repository.getLikedTracks(page: 1, limit: 20)).isRight(),
+      true,
+    );
   });
 
   test('map network errors to NetworkFailure', () async {

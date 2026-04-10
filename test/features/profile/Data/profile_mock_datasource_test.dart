@@ -9,12 +9,18 @@ void main() {
     ProfileMockDatasource.setCurrentUser('user-001');
   });
 
-  test('getProfile returns current user for me and throws for unknown user', () async {
-    final me = await datasource.getProfile(userId: 'me');
-    expect(me.id, 'user-001');
+  test(
+    'getProfile returns current user for me and throws for unknown user',
+    () async {
+      final me = await datasource.getProfile(userId: 'me');
+      expect(me.id, 'user-001');
 
-    expect(() => datasource.getProfile(userId: 'unknown-id'), throwsException);
-  });
+      expect(
+        () => datasource.getProfile(userId: 'unknown-id'),
+        throwsException,
+      );
+    },
+  );
 
   test('updateProfile updates persisted current user', () async {
     final updated = await datasource.updateProfile(
@@ -71,9 +77,21 @@ void main() {
   });
 
   test('getLikedTracks paginates and resolves me alias', () async {
-    final page1 = await datasource.getLikedTracks(userId: 'me', page: 1, limit: 2);
-    final page2 = await datasource.getLikedTracks(userId: 'me', page: 2, limit: 2);
-    final page99 = await datasource.getLikedTracks(userId: 'me', page: 99, limit: 2);
+    final page1 = await datasource.getLikedTracks(
+      userId: 'me',
+      page: 1,
+      limit: 2,
+    );
+    final page2 = await datasource.getLikedTracks(
+      userId: 'me',
+      page: 2,
+      limit: 2,
+    );
+    final page99 = await datasource.getLikedTracks(
+      userId: 'me',
+      page: 99,
+      limit: 2,
+    );
 
     expect(page1.length, 2);
     expect(page2.length, 2);
@@ -90,7 +108,11 @@ void main() {
     );
 
     final profile = await datasource.getProfile(userId: 'user-new');
-    final likes = await datasource.getLikedTracks(userId: 'user-new', page: 1, limit: 20);
+    final likes = await datasource.getLikedTracks(
+      userId: 'user-new',
+      page: 1,
+      limit: 20,
+    );
 
     expect(profile.id, 'user-new');
     expect(profile.displayName, 'New User');
