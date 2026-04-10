@@ -46,7 +46,7 @@ class TrackCommentsState extends Equatable {
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       isFetchingNextPage: isFetchingNextPage ?? this.isFetchingNextPage,
       sortType: sortType ?? this.sortType,
-      totalCommentCount: totalCommentCount?? this.totalCommentCount,
+      totalCommentCount: totalCommentCount ?? this.totalCommentCount,
     );
   }
 

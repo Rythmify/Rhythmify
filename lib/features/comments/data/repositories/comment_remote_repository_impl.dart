@@ -48,12 +48,14 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
-  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(String trackId) async {
+  Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
+    String trackId,
+  ) async {
     try {
       final allTrackComments = await _remoteDataSource.getAllCommentsForTrack(
         trackId,
       );
-      
+
       // Update map to hold the Record
       final Map<int, ({String? pfp, String text})> floatingMap = {};
 
@@ -63,10 +65,7 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
 
         // We only take the first comment's data for a given second to avoid overlap
         if (!floatingMap.containsKey(second)) {
-          floatingMap[second] = (
-            pfp: dto.userPfp,
-            text: dto.content,
-          );
+          floatingMap[second] = (pfp: dto.userPfp, text: dto.content);
         }
       }
 

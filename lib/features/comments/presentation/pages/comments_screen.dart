@@ -44,8 +44,9 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     // ─── ADD THIS ───
     // Wait for the first frame to build, then seed the initial count
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(trackCommentsProvider(widget.track.id).notifier)
-         .setInitialCount(widget.track.commentCount);
+      ref
+          .read(trackCommentsProvider(widget.track.id).notifier)
+          .setInitialCount(widget.track.commentCount);
     });
   }
 
@@ -206,7 +207,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
         ),
         titleSpacing: 8,
         title: Text(
-          '${state.totalCommentCount} Comments', 
+          '${state.totalCommentCount} Comments',
           style: AppTheme.titleMedium.copyWith(fontSize: 18),
         ),
         actions: [

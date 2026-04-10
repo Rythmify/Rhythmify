@@ -61,8 +61,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       return UserModel.fromJson({
         ...user,
         'id': user['id']?.toString() ?? user['user_id']?.toString(),
-        'is_email_verified': user['is_verified'] ?? user['is_email_verified'] ?? true,
-        'avatar_url': user['profile_picture'] ?? user['avatar_url'], 
+        'is_email_verified':
+            user['is_verified'] ?? user['is_email_verified'] ?? true,
+        'avatar_url': user['profile_picture'] ?? user['avatar_url'],
         'token': token,
       });
     } on DioException catch (e) {
@@ -190,7 +191,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       return UserModel.fromJson({
         ...user,
         'id': user['id']?.toString() ?? user['user_id']?.toString(),
-        'is_email_verified': user['is_verified'] ?? user['is_email_verified'] ?? true,
+        'is_email_verified':
+            user['is_verified'] ?? user['is_email_verified'] ?? true,
         'token': token,
       });
     } on DioException catch (e) {

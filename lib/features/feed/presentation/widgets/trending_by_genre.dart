@@ -330,6 +330,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
+                        useRootNavigator: true,
                         backgroundColor: Colors.transparent,
                         builder: (context) => TrackOptionsModal(track: track),
                       );

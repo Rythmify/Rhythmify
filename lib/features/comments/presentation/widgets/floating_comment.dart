@@ -4,11 +4,7 @@ class FloatingComment extends StatelessWidget {
   final String? imageUrl;
   final String text;
 
-  const FloatingComment({
-    super.key, 
-    this.imageUrl, 
-    required this.text,
-  });
+  const FloatingComment({super.key, this.imageUrl, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +26,7 @@ class FloatingComment extends StatelessWidget {
               border: Border.all(color: Colors.white, width: 1),
               image: imageUrl != null && imageUrl!.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(imageUrl!), 
+                      image: NetworkImage(imageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
@@ -46,7 +42,7 @@ class FloatingComment extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: Colors.white, 
+                color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

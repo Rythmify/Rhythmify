@@ -55,25 +55,27 @@ class CommentCard extends StatelessWidget {
                         size: isReply ? 16 : 20,
                       )
                     : (comment.userPfp!.startsWith('http') ||
-                            comment.userPfp!.startsWith('https')
-                        ? Image.network(
-                            comment.userPfp!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: isReply ? 16 : 20,
-                            ),
-                          )
-                        : Image.asset(
-                            comment.userPfp!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: isReply ? 16 : 20,
-                            ),
-                          )),
+                              comment.userPfp!.startsWith('https')
+                          ? Image.network(
+                              comment.userPfp!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: isReply ? 16 : 20,
+                                  ),
+                            )
+                          : Image.asset(
+                              comment.userPfp!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: isReply ? 16 : 20,
+                                  ),
+                            )),
               ),
             ),
           ),
@@ -86,9 +88,14 @@ class CommentCard extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: () => context.push('/profile/${comment.userId}'),
-                      borderRadius: BorderRadius.circular(4), // Gives the ripple a nice rounded edge
+                      borderRadius: BorderRadius.circular(
+                        4,
+                      ), // Gives the ripple a nice rounded edge
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0), // Slight padding so the ripple doesn't cut off the text
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 2.0,
+                          vertical: 2.0,
+                        ), // Slight padding so the ripple doesn't cut off the text
                         child: Text(
                           comment.userDisplayName,
                           style: AppTheme.bodyNormal.copyWith(

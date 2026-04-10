@@ -155,10 +155,12 @@ class PlayerActionBar extends ConsumerWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
+                    useRootNavigator: true,
                     backgroundColor: Colors.transparent,
                     builder: (context) => TrackOptionsModal(
                       track: track,
-                      mode: TrackModalMode.share, // Tell it to render the share view!
+                      mode: TrackModalMode
+                          .share, // Tell it to render the share view!
                     ),
                   );
                 });
@@ -209,6 +211,7 @@ class PlayerActionBar extends ConsumerWidget {
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
+                    useRootNavigator: true,
                     builder: (context) => TrackOptionsModal(track: track),
                   );
                 });

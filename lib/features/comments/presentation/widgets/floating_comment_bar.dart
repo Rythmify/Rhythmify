@@ -17,9 +17,9 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  
+
   String? _currentCommentPfp;
-  String _currentCommentText = ""; 
+  String _currentCommentText = "";
   int _lastTimestamp = -1;
 
   final TextEditingController _commentController = TextEditingController();
@@ -70,7 +70,9 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
     final currentText = _commentController.text;
     _commentController.value = TextEditingValue(
       text: currentText + emoji,
-      selection: TextSelection.collapsed(offset: currentText.length + emoji.length),
+      selection: TextSelection.collapsed(
+        offset: currentText.length + emoji.length,
+      ),
     );
     _focusNode.requestFocus();
   }
@@ -90,10 +92,10 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
       floatingCommentsAsync.whenData((commentsMap) {
         if (commentsMap.containsKey(currentSecond)) {
           setState(() {
-            _currentCommentPfp = commentsMap[currentSecond]!.pfp; 
-            _currentCommentText = commentsMap[currentSecond]!.text; 
+            _currentCommentPfp = commentsMap[currentSecond]!.pfp;
+            _currentCommentText = commentsMap[currentSecond]!.text;
           });
-          
+
           _controller.forward(from: 0).then((_) {
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) _controller.reverse();
@@ -143,7 +145,11 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.send, color: Colors.black, size: 20),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.black,
+                        size: 20,
+                      ),
                     ),
                   )
                 else
@@ -170,10 +176,10 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
             ),
           ),
         ),
-        
+
         Positioned(
-          bottom: 200, 
-          left: 32, 
+          bottom: 200,
+          left: 32,
           right: 32,
           child: Align(
             alignment: Alignment.center,

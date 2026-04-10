@@ -62,14 +62,20 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
-  Future<void> deleteReply(String commentId, String trackId, String parentId) async {
+  Future<void> deleteReply(
+    String commentId,
+    String trackId,
+    String parentId,
+  ) async {
     final originalComments = [...state.comments];
     state = state.copyWith(
       comments: state.comments.where((c) => c.id != commentId).toList(),
     );
-    
+
     // Decrement parent reply count optimistically
-    ref.read(trackCommentsProvider(trackId).notifier).decrementReplyCount(parentId);
+    ref
+        .read(trackCommentsProvider(trackId).notifier)
+        .decrementReplyCount(parentId);
     // Decrement overall track count optimistically
     ref.read(trackCommentsProvider(trackId).notifier).decrementTotalCount();
 
@@ -79,7 +85,9 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     } catch (e) {
       state = state.copyWith(comments: originalComments);
       // Revert decrements
-      ref.read(trackCommentsProvider(trackId).notifier).incrementReplyCount(parentId);
+      ref
+          .read(trackCommentsProvider(trackId).notifier)
+          .incrementReplyCount(parentId);
       ref.read(trackCommentsProvider(trackId).notifier).incrementTotalCount();
       rethrow;
     }
@@ -124,9 +132,7 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
         .read(trackCommentsProvider(trackId).notifier)
         .incrementReplyCount(parentId);
     // Instantly increment overall track count
-    ref
-        .read(trackCommentsProvider(trackId).notifier)
-        .incrementTotalCount();
+    ref.read(trackCommentsProvider(trackId).notifier).incrementTotalCount();
 
     // Send to Server
     try {
@@ -154,7 +160,9 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != tempReply.id).toList(),
       );
-      ref.read(trackCommentsProvider(trackId).notifier).decrementReplyCount(parentId);
+      ref
+          .read(trackCommentsProvider(trackId).notifier)
+          .decrementReplyCount(parentId);
       ref.read(trackCommentsProvider(trackId).notifier).decrementTotalCount();
     }
   }

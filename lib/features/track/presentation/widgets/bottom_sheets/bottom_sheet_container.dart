@@ -17,9 +17,7 @@ class BottomSheetContainer extends StatelessWidget {
         color: AppTheme.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: SafeArea(
-        child: child,
-      ),
+      child: SafeArea(child: child),
     );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/domain/entities/track.dart';
 import '../../../../../core/theme/app_theme.dart';
 
-
 class TrackSheetHeader extends StatelessWidget {
   final Track track;
 
@@ -14,15 +13,17 @@ class TrackSheetHeader extends StatelessWidget {
 
     final imageProvider = artworkUrl.startsWith('http')
         ? NetworkImage(artworkUrl) as ImageProvider
-        : AssetImage(artworkUrl.isNotEmpty ? artworkUrl : 'assets/images/track_1.jpg');
+        : AssetImage(
+            artworkUrl.isNotEmpty ? artworkUrl : 'assets/images/track_1.jpg',
+          );
 
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color.fromARGB(255, 0, 54, 141), 
-            Color.fromARGB(255, 58, 83, 193), 
-            Color(0xFF6FB1FC), 
+            Color.fromARGB(255, 0, 54, 141),
+            Color.fromARGB(255, 58, 83, 193),
+            Color(0xFF6FB1FC),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -45,7 +46,7 @@ class TrackSheetHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          
+
           // The existing Row containing the Artwork and Text
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,7 +68,7 @@ class TrackSheetHeader extends StatelessWidget {
                     ),
                     // The small circular artwork on the CD
                     Positioned(
-                      left: 95, 
+                      left: 95,
                       top: 35,
                       child: Container(
                         width: 30,
@@ -127,7 +128,9 @@ class TrackSheetHeader extends StatelessWidget {
                     ),
                     Text(
                       track.artist,
-                      style: AppTheme.bodyNormal.copyWith(color: AppTheme.fadedWhite),
+                      style: AppTheme.bodyNormal.copyWith(
+                        color: AppTheme.fadedWhite,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

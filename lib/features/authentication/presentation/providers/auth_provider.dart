@@ -51,7 +51,7 @@ class AuthNotifier extends Notifier<AuthState> {
     return const AuthLoading();
   }
 
-  /// Fetches the full profile from `/users/me` and merges it with 
+  /// Fetches the full profile from `/users/me` and merges it with
   /// the token and ID from the basic auth login.
   Future<void> _fetchAndEmitFullProfile(UserEntity basicUser) async {
     if (useMockData) {
@@ -66,10 +66,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final fullUser = UserModel.fromJson({
         ...data,
-        'id': basicUser.id, 
-        'is_email_verified': data['is_verified'] ?? data['is_email_verified'] ?? basicUser.isEmailVerified,
+        'id': basicUser.id,
+        'is_email_verified':
+            data['is_verified'] ??
+            data['is_email_verified'] ??
+            basicUser.isEmailVerified,
         // THE FIX: Grabbing profile_picture from the backend
-        'avatar_url': data['profile_picture'] ?? data['avatar_url'], 
+        'avatar_url': data['profile_picture'] ?? data['avatar_url'],
         'token': basicUser.token, // Keep the JWT token from the login response
       });
 
@@ -96,11 +99,12 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final response = await apiClient.dio.get('/users/me');
       final data = response.data['data'];
-      
+
       final user = UserModel.fromJson({
         ...data,
         'id': data['id']?.toString() ?? data['user_id']?.toString(),
-        'is_email_verified': data['is_verified'] ?? data['is_email_verified'] ?? true,
+        'is_email_verified':
+            data['is_verified'] ?? data['is_email_verified'] ?? true,
         // THE FIX APPLIED HERE TOO
         'avatar_url': data['profile_picture'] ?? data['avatar_url'],
         'token': token,
@@ -119,14 +123,13 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthLoading();
     final result = await _signInWithEmail(email: email, password: password);
-    
+
     // Notice the 'async' added to this callback so we can await the profile
-    result.fold(
-      (failure) => state = AuthError(failure.message), 
-      (basicUser) async {
-        await _fetchAndEmitFullProfile(basicUser);
-      }
-    );
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
+    });
   }
 
   Future<void> signUpWithEmailAndPassword({
@@ -144,37 +147,34 @@ class AuthNotifier extends Notifier<AuthState> {
       gender: gender,
       dateOfBirth: dateOfBirth,
     );
-    
-    result.fold(
-      (failure) => state = AuthError(failure.message), 
-      (basicUser) async {
-        await _fetchAndEmitFullProfile(basicUser);
-      }
-    );
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
+    });
   }
 
   Future<void> signInWithGoogleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
-    
-    result.fold(
-      (failure) => state = AuthError(failure.message), 
-      (basicUser) async {
-        await _fetchAndEmitFullProfile(basicUser);
-      }
-    );
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
+    });
   }
 
   Future<void> signInWithAppleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithApple();
-    
-    result.fold(
-      (failure) => state = AuthError(failure.message), 
-      (basicUser) async {
-        await _fetchAndEmitFullProfile(basicUser);
-      }
-    );
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
+    });
   }
 
   Future<void> signOutUser() async {

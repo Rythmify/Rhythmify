@@ -53,15 +53,15 @@ class CommentActionBottomSheet extends ConsumerWidget {
       }
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Comment deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Comment deleted')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete comment: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
       }
     }
   }
@@ -96,7 +96,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isMe = authState is AuthAuthenticated && authState.user.id == comment.userId;
+    final isMe =
+        authState is AuthAuthenticated && authState.user.id == comment.userId;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -119,7 +120,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
                   child: Text(
                     '${comment.userDisplayName} at ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
                     style: AppTheme.bodyNormal.copyWith(
-                      fontWeight: FontWeight.bold, color: AppTheme.semiWhite
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.semiWhite,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

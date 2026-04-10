@@ -22,8 +22,8 @@ class TrackOptionsModal extends ConsumerWidget {
   final TrackModalMode mode;
 
   const TrackOptionsModal({
-    super.key, 
-    required this.track, 
+    super.key,
+    required this.track,
     this.mode = TrackModalMode.info, // Default to info if not specified
   });
 
@@ -36,25 +36,28 @@ class TrackOptionsModal extends ConsumerWidget {
   }
 
   void _shareToWhatsApp(BuildContext context) {
-    final text = 'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+    final text =
+        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
     final urlString = 'whatsapp://send?text=${Uri.encodeComponent(text)}';
     _launchUrl(urlString);
     Navigator.pop(context);
   }
 
   void _shareToSMS(BuildContext context) {
-    final text = 'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+    final text =
+        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
     final urlString = 'sms:?body=${Uri.encodeComponent(text)}';
     _launchUrl(urlString);
     Navigator.pop(context);
   }
 
   void _copyLink(BuildContext context) {
-    final text = 'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+    final text =
+        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied to clipboard')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
     Navigator.pop(context);
   }
 
@@ -64,21 +67,21 @@ class TrackOptionsModal extends ConsumerWidget {
 
     // WRAPPED IN DRAGGABLE SCROLLABLE SHEET
     return DraggableScrollableSheet(
-      initialChildSize: 0.9,  // Opens to 90% of screen height
-      minChildSize: 0.5,      // Closes if dragged below 50%
-      maxChildSize: 0.95,     // Stops just short of the very top of the screen
-      expand: false,          // MUST be false to work inside a bottom sheet
+      initialChildSize: mode == TrackModalMode.share ? 0.6 : 0.9,
+      minChildSize: 0.5, // Closes if dragged below 50%
+      maxChildSize: 0.95, // Stops just short of the very top of the screen
+      expand: false, // MUST be false to work inside a bottom sheet
       builder: (context, scrollController) {
         return BottomSheetContainer(
           child: SingleChildScrollView(
-            controller: scrollController, // LINKED THE CONTROLLER HERE
+            controller: scrollController,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Header always shows at the top
                 TrackSheetHeader(track: track),
-                
+
                 // 2. Share stuff ALWAYS shows
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -103,7 +106,9 @@ class TrackOptionsModal extends ConsumerWidget {
                         return GestureDetector(
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/home/inbox/chat/${conv.conversationId}');
+                            context.push(
+                              '/home/inbox/chat/${conv.conversationId}',
+                            );
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(right: 16),
@@ -115,17 +120,24 @@ class TrackOptionsModal extends ConsumerWidget {
                                   CircleAvatar(
                                     radius: 28,
                                     backgroundColor: Colors.grey[800],
-                                    backgroundImage: conv.participantAvatar != null
+                                    backgroundImage:
+                                        conv.participantAvatar != null
                                         ? NetworkImage(conv.participantAvatar!)
                                         : null,
                                     child: conv.participantAvatar == null
-                                        ? const Icon(Icons.person, color: Colors.white)
+                                        ? const Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                          )
                                         : null,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     conv.participantName,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     textAlign: TextAlign.center,
@@ -137,8 +149,14 @@ class TrackOptionsModal extends ConsumerWidget {
                         );
                       },
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => const Center(child: Text('Error loading contacts', style: TextStyle(color: Colors.white))),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => const Center(
+                      child: Text(
+                        'Error loading contacts',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -190,17 +208,25 @@ class TrackOptionsModal extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // 3. Info actions ONLY show if mode is 'info'
                 if (mode == TrackModalMode.info) ...[
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
-                    icon: track.isLiked ? Icons.favorite : Icons.favorite_border,
-                    iconColor: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                    icon: track.isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    iconColor: track.isLiked
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
                     label: track.isLiked ? 'Liked' : 'Like track',
-                    labelColor: track.isLiked ? AppTheme.primaryBrand : Colors.white,
+                    labelColor: track.isLiked
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
                     onTap: () {
-                      ref.read(trackInteractionProvider).handleToggleLike(track.id, track.isLiked);
+                      ref
+                          .read(trackInteractionProvider)
+                          .handleToggleLike(track.id, track.isLiked);
                       Navigator.pop(context);
                     },
                   ),
@@ -238,16 +264,26 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'View comments',
                     onTap: () {
                       Navigator.pop(context);
-                      context.pushNamed('comments', pathParameters: {'trackId': track.id}, extra: track);
+                      context.pushNamed(
+                        'comments',
+                        pathParameters: {'trackId': track.id},
+                        extra: track,
+                      );
                     },
                   ),
                   _buildActionRow(
                     icon: Icons.repeat,
-                    iconColor: track.isReposted ? AppTheme.primaryBrand : Colors.white,
+                    iconColor: track.isReposted
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
                     label: track.isReposted ? 'Reposted' : 'Repost on Rythmify',
-                    labelColor: track.isReposted ? AppTheme.primaryBrand : Colors.white,
+                    labelColor: track.isReposted
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
                     onTap: () {
-                      ref.read(trackInteractionProvider).handleToggleRepost(track.id, track.isReposted);
+                      ref
+                          .read(trackInteractionProvider)
+                          .handleToggleRepost(track.id, track.isReposted);
                       Navigator.pop(context);
                     },
                   ),
@@ -256,7 +292,10 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Behind This Track',
                     onTap: () {
                       Navigator.pop(context);
-                      context.pushNamed('behindTheTrack', pathParameters: {'trackId': track.id});
+                      context.pushNamed(
+                        'behindTheTrack',
+                        pathParameters: {'trackId': track.id},
+                      );
                     },
                   ),
                   _buildActionRow(
@@ -266,7 +305,8 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.pop(context);
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (context) => ReportPage(reportedContentId: track.id),
+                          builder: (context) =>
+                              ReportPage(reportedContentId: track.id),
                         ),
                       );
                     },
@@ -347,17 +387,17 @@ class _ShareIcon extends StatelessWidget {
               Container(
                 width: 56,
                 height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color,
-                ),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: color),
                 alignment: Alignment.center,
                 child: svgAsset != null
                     ? SvgPicture.asset(
                         svgAsset!,
                         width: 28,
                         height: 28,
-                        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
                       )
                     : Icon(iconData, color: Colors.white, size: 28),
               ),
