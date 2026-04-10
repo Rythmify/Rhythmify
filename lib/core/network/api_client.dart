@@ -41,8 +41,9 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final skipAuth = options.extra['skipAuth'] == true;
           final token = await getToken();
-          if (token != null) {
+          if (!skipAuth && token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
@@ -58,7 +59,7 @@ class ApiClient {
                 final response = await dio.fetch(error.requestOptions);
                 return handler.resolve(response);
               } catch (e) {
-                await clearToken();
+                // Keep token intact here; auth provider decides session validity.
                 return handler.next(error);
               }
             }
