@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/player_provider.dart';
+import '../../data/mock/playlist_mock_data.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
@@ -18,8 +21,44 @@ class PlaylistDetailScreen extends ConsumerWidget {
   final String playlistId;
   final bool isOwner;
 
+  // ── Player helpers ─────────────────────────────────────────────────────────
+
+  List<Track> _sourceTracks() =>
+      PlaylistMockData.instance.getSourceTracksFor(playlistId);
+
+  void _playAll(WidgetRef ref) {
+  final tracks = _sourceTracks();
+  if (tracks.isEmpty) return;
+  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        tracks,
+        initialIndex: 0,  // ← was startIndex
+      );
+}
+
+void _shuffle(WidgetRef ref) {
+  final tracks = List<Track>.from(_sourceTracks())..shuffle();
+  if (tracks.isEmpty) return;
+  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        tracks,
+        initialIndex: 0,  // ← was startIndex
+      );
+}
+
+void _playFrom(WidgetRef ref, int index) {
+  final tracks = _sourceTracks();
+  if (tracks.isEmpty || index >= tracks.length) return;
+  ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        tracks,
+        initialIndex: index,  // ← was startIndex
+      );
+}
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep mock store seeded whenever allTracksProvider updates
+    ref.watch(playlistMockSeederProvider);
+
     final state = ref.watch(playlistDetailProvider(playlistId));
 
     if (state.isLoading) {
@@ -50,12 +89,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ──────────────────────────────────────────────────────
+            // ── Header ───────────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
               child: Row(
                 children: [
-                  // Back button — uses GoRouter
                   IconButton(
                     key: const Key('playlist_detail_back_button'),
                     icon: const Icon(
@@ -119,6 +157,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
+
             // ── Action bar ───────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -155,6 +194,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     },
                   ),
                   const Spacer(),
+                  // Shuffle
                   IconButton(
                     key: const Key('playlist_detail_shuffle_button'),
                     icon: const Icon(
@@ -162,11 +202,12 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       color: Colors.white60,
                       size: 24,
                     ),
-                    onPressed: () {},
+                    onPressed: () => _shuffle(ref),  // ← wired
                   ),
+                  // Play all
                   GestureDetector(
                     key: const Key('playlist_detail_play_button'),
-                    onTap: () {},
+                    onTap: () => _playAll(ref),       // ← wired
                     child: Container(
                       width: 52,
                       height: 52,
@@ -184,19 +225,23 @@ class PlaylistDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
+
             const Divider(color: Colors.white12, height: 1),
-            // ── Track list + suggestions ─────────────────────────────────────
+
+            // ── Track list + suggestions ──────────────────────────────────────
             Expanded(
               child: ListView(
                 children: [
                   // Existing tracks
-                  ...state.tracks.map(
-                    (track) => TrackTileInPlaylist(
+                  ...state.tracks.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final track = entry.value;
+                    return TrackTileInPlaylist(
                       key: Key('playlist_track_${track.id}'),
                       track: track,
-                      onTap: () {},
-                    ),
-                  ),
+                      onTap: () => _playFrom(ref, index), // ← wired
+                    );
+                  }),
 
                   // Suggestions section
                   if (state.showSuggestions) ...[
@@ -215,7 +260,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       (suggestion) => TrackTileInPlaylist(
                         key: Key('suggestion_${suggestion.id}'),
                         track: suggestion,
-                        onTap: () {},
+                        onTap: () {},   // suggestions aren't in the queue yet
                         trailingWidget: IconButton(
                           key: Key('add_suggestion_${suggestion.id}'),
                           icon: const Icon(

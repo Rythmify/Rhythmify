@@ -47,7 +47,6 @@ class PlaylistDetailState {
   final bool isLoading;
   final String? error;
 
-  // Suggestions only show for playlists, not albums or stations
   bool get showSuggestions =>
       suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
 
@@ -73,6 +72,8 @@ class PlaylistDetailState {
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
   PlaylistListState build() {
+    // Keep mock store seeded whenever allTracksProvider updates
+    ref.watch(playlistMockSeederProvider);
     final playlists = PlaylistMockData.instance.getMyPlaylists();
     return PlaylistListState(playlists: playlists);
   }
@@ -126,23 +127,18 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     return station;
   }
 
-  // ── Convert operations ─────────────────────────────────────────────────────
-
-  /// Converts a playlist → album. After converting, navigate to albums section.
   PlaylistEntity convertToAlbum(String playlistId) {
     final updated = _db.convertToAlbum(playlistId);
     loadPlaylists();
     return updated;
   }
 
-  /// Converts a playlist → station. After converting, navigate to stations section.
   PlaylistEntity convertToStation(String playlistId) {
     final updated = _db.convertToStation(playlistId);
     loadPlaylists();
     return updated;
   }
 
-  /// Converts album/station → playlist.
   PlaylistEntity convertToPlaylist(String playlistId) {
     final updated = _db.convertToPlaylist(playlistId);
     loadPlaylists();
@@ -171,10 +167,35 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     );
   }
 
-  void addSuggestion(PlaylistTrack track) {
+  void addSuggestion(PlaylistTrack playlistTrack) {
+    // Look up the real Track from the source list so addTrack gets the right type
+    final sourceTrack = _db
+        .getSourceTracksFor(_playlistId)
+        .cast<dynamic>()
+        .followedBy(
+          // Also check the full seeded pool via all playlists
+          PlaylistMockData.instance
+              .getSourceTracksFor('pl-001')
+              .cast<dynamic>(),
+        )
+        .whereType<dynamic>()
+        .toList();
+
+    // Simpler: find by id across any playlist's source tracks
+    final allSource = [
+      ..._db.getSourceTracksFor('pl-001'),
+      ..._db.getSourceTracksFor('pl-002'),
+    ];
+    final track = allSource.firstWhere(
+      (t) => t.id == playlistTrack.id,
+      orElse: () => throw StateError(
+        'Source Track not found for id: ${playlistTrack.id}',
+      ),
+    );
+
     _db.addTrack(playlistId: _playlistId, track: track);
     final updatedSuggestions = state.suggestions
-        .where((s) => s.id != track.id)
+        .where((s) => s.id != playlistTrack.id)
         .toList();
     state = state.copyWith(
       playlist: _db.getById(_playlistId),
