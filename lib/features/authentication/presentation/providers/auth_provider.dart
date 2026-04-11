@@ -177,11 +177,10 @@ class AuthNotifier extends Notifier<AuthState> {
       dateOfBirth: dateOfBirth,
     );
 
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) => state = AuthEmailVerificationRequired(basicUser.email),
+    );
   }
 
   Future<void> signInWithGoogleAccount() async {
@@ -227,5 +226,9 @@ class AuthNotifier extends Notifier<AuthState> {
       (failure) => state = AuthError(failure.message),
       (_) => state = const AuthUnauthenticated(),
     );
+  }
+
+  void setUnauthenticated() {
+    state = const AuthUnauthenticated();
   }
 }

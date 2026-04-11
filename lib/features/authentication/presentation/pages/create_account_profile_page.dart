@@ -149,6 +149,9 @@ class _CreateAccountProfilePageState
       if (next is AuthAuthenticated) {
         context.go('/home');
       }
+      if (next is AuthEmailVerificationRequired) {
+        context.go('/verify-email', extra: next.email);
+      }
     });
 
     return Scaffold(
