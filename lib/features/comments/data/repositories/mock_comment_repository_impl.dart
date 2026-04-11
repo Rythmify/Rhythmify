@@ -71,7 +71,7 @@ class MockCommentRepositoryImpl implements CommentRepository {
 
       for (var dto in allTrackComments) {
         // Mock data timestamp was in ms, convert to seconds
-        final second = (dto.timestamp / 1000).floor();
+        final second = (dto.timestamp).floor();
 
         if (!floatingMap.containsKey(second)) {
           floatingMap[second] = (pfp: dto.userPfp, text: dto.content);

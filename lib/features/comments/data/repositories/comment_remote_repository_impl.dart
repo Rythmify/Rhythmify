@@ -60,7 +60,6 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
       final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        // Group comments by the exact second to build the O(1) lookup map
         final second = dto.timestamp;
 
         // We only take the first comment's data for a given second to avoid overlap
