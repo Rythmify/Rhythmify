@@ -15,6 +15,16 @@ class BasePage {
     await tester.pumpAndSettle();
   }
 
+  /// Same as [tapByKey] but uses fixed [pump] calls instead of [pumpAndSettle].
+  /// Use this whenever audio is playing — the continuous frame updates from the
+  /// player prevent [pumpAndSettle] from ever settling.
+  Future<void> tapByKeyNow(String key) async {
+    await tester.ensureVisible(find.byKey(Key(key)));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(Key(key)));
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
   Future<void> enterTextByKey(String key, String text) async {
     await tester.enterText(find.byKey(Key(key)), text);
     await tester.pumpAndSettle();

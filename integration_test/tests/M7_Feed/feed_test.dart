@@ -47,10 +47,10 @@ void main() {
 
     // ─── TC-HOME-006 | Hot For You section visible — play and stop track ──
     expect(homePage.isActivityCardVisible(), true);
-    await homePage.tapByKey(hotForYouPlayButton);
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await homePage.tapByKey(hotForYouPlayButton);
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await homePage.tapByKeyNow(hotForYouPlayButton);
+    await tester.pump(const Duration(seconds: 1));
+    await homePage.tapByKeyNow(hotForYouPlayButton);
+    await tester.pump(const Duration(seconds: 1));
     expect(homePage.isActionButtonVisible(), true);
 
     // ─── TC-HOME-007 | Mixed For You visible — scroll horizontally ────────

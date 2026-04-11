@@ -24,44 +24,51 @@ class PlayerPage extends BasePage {
 
   /// Taps the collapse (arrow-down) button to close the full player.
   Future<void> collapsePlayer() async {
-    await tapByKey(playerFullPageCollapse);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tapByKeyNow(playerFullPageCollapse);
+    await tester.pump(const Duration(seconds: 2));
   }
 
   /// Taps the follow/unfollow icon button inside the full player.
   Future<void> tapFollowButton() async {
-    await tapByKey(playerFullPageAddPerson);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tapByKeyNow(playerFullPageAddPerson);
+    await tester.pump(const Duration(seconds: 2));
   }
 
   /// Taps the full-screen GestureDetector to toggle play / pause.
   Future<void> tapPlayPause() async {
-    await tapByKey(playerFullPageTogglePlay);
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tapByKeyNow(playerFullPageTogglePlay);
+    await tester.pump(const Duration(seconds: 1));
   }
 
   /// Taps the comment icon in the action bar.
   Future<void> tapCommentIcon() async {
-    await tapByKey(playerActionBarCommentIcon);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tapByKeyNow(playerActionBarCommentIcon);
+    await tester.pump(const Duration(seconds: 2));
   }
 
-  /// Drags the waveform to the left (seeks forward in time) by [pixels].
-  Future<void> dragWaveformForward({double pixels = 150}) async {
-    await tester.drag(
-      find.byType(CustomPaint).first,
-      Offset(-pixels, 0),
-    );
-    await tester.pumpAndSettle(const Duration(milliseconds: 500));
-  }
+  Future<void> dragWaveformSmoothly({required double pixels}) async {
+    final waveformFinder = find.byType(CustomPaint).first;
+    
+    // Ensure the waveform is actually there before touching it
+    await tester.ensureVisible(waveformFinder);
+    
+    final Offset center = tester.getCenter(waveformFinder);
 
-  /// Drags the waveform to the right (seeks backward in time) by [pixels].
-  Future<void> dragWaveformBackward({double pixels = 150}) async {
-    await tester.drag(
-      find.byType(CustomPaint).first,
-      Offset(pixels, 0),
-    );
-    await tester.pumpAndSettle(const Duration(milliseconds: 500));
+    // We touch slightly above the center to ensure we hit the bars 
+    // if the 'base' of the custom paint isn't interactive.
+    final Offset touchPoint = center + const Offset(0, -10); 
+
+    final TestGesture gesture = await tester.startGesture(touchPoint);
+    
+    // Small increments allow the internal 'onHorizontalDragUpdate' to fire
+    final int steps = 10;
+    for (int i = 0; i < steps; i++) {
+      await gesture.moveBy(Offset(-pixels / steps, 0));
+      await tester.pump(const Duration(milliseconds: 30));
+    }
+    
+    await gesture.up();
+    await tester.pumpAndSettle();
   }
 
   // ── State Checks ─────────────────────────────────────────────────────────────

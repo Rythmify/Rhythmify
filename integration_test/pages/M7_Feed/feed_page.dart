@@ -73,7 +73,7 @@ class HomePage extends BasePage {
 
   Future<void> tapGenreTab(String genreName) async {
     await tester.tap(find.text(genreName));
-    await tester.pumpAndSettle(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
   }
 
   // ── Scroll Helpers ──
@@ -87,7 +87,7 @@ class HomePage extends BasePage {
       const Offset(0, -100),
       maxIteration: 50,
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
   }
   // scrollHorizontallyInSection is inherited from BasePage
 }

@@ -42,9 +42,9 @@ void main() {
 
     // ── TC-TRACK-003 | Stop and play the track from the player button ─────
     await trackPage.tapPlayPause(); // pause
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
     await trackPage.tapPlayPause(); // play
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
 
     // ── TC-TRACK-004 | "Show more" opens description sheet ───────────────
     if (trackPage.isShowMoreVisible()) {

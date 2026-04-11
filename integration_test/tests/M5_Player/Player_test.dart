@@ -45,14 +45,28 @@ void main() {
 
     // ── TC-PLAYER-005 | Play / pause toggles without crashing ────────────────
     await playerPage.tapPlayPause(); // pause
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
     await playerPage.tapPlayPause(); // resume
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
 
-    // ── TC-PLAYER-006 | Waveform drag forward and backward without crashing ───
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    await playerPage.dragWaveformForward(pixels: 150);
-    await playerPage.dragWaveformBackward(pixels: 100);
-    expect(playerPage.isFullPlayerOpen(), true);
+
+    // ── TC-PLAYER-006 | Drag WaveForm Smothly ───
+    // 1. Wait for animations to finish
+    await tester.pumpAndSettle();
+
+    // 2. Find the timestamp finder
+    final timestampFinder = find.byKey(const Key(playerProgressBarDuration));
+
+    // 3. Robust check for existence
+    expect(timestampFinder, findsOneWidget, reason: "Timestamp widget missing from player");
+
+    final String initialTime = tester.widget<Text>(timestampFinder).data ?? "";
+
+    // 4. Perform the drag on the waveform
+    await playerPage.dragWaveformSmoothly(pixels: 120);
+
+    // 5. Verify the time changed
+    final String newTime = tester.widget<Text>(timestampFinder).data ?? "";
+    expect(initialTime, isNot(equals(newTime)), reason: "Track position did not update after drag");
   });
 }
