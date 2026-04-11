@@ -1,7 +1,7 @@
-/// Confirmation dialog shown when leaving with unsaved profile edits.
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 
+/// Confirmation dialog shown when leaving with unsaved profile edits.
 class UnsavedChangesDialog extends StatelessWidget {
   const UnsavedChangesDialog({super.key});
 

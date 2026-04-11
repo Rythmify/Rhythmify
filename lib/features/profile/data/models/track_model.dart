@@ -1,6 +1,6 @@
-/// Track model used by profile liked-tracks and profile track lists.
 import '../../../../core/domain/entities/track.dart';
 
+/// Track model used by profile liked-tracks and profile track lists.
 class TrackModel extends Track {
   const TrackModel({
     required super.id,
