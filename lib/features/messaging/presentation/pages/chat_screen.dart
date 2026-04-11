@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/features/messaging/data/datasources/data_sources_sockets.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
@@ -43,24 +44,26 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
   final List<SharedEmbed> _selectedEmbeds = [];
+  late DataSourcesSockets _socket;
 
   @override
   void initState() {
     super.initState();
     controller = TextEditingController();
+    _socket = ref.read(socketProvider);
     if (widget.conv != null) {
       Future.microtask(() {
+        if (!mounted) return;
         ref.invalidate(messageProvider(widget.conv!.conversationId));
         ref.invalidate(conversationProvider);
-        final socket = ref.read(socketProvider);
-        socket.joinConversation(widget.conv!.conversationId);
-        socket.onMessageReceived((data) {
+        _socket.joinConversation(widget.conv!.conversationId);
+        _socket.onMessageReceived((data) {
           if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
             ref.invalidate(conversationProvider);
           }
         });
-        socket.onMessageReadUpdated((data) {
+        _socket.onMessageReadUpdated((data) {
           if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
           }
@@ -71,11 +74,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    controller.dispose();
-
     if (widget.conv != null) {
-      ref.read(socketProvider).leaveConversation(widget.conv!.conversationId);
+      _socket.leaveConversation(widget.conv!.conversationId);
     }
+    controller.dispose();
     super.dispose();
   }
 
@@ -140,21 +142,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           : msgProvider!.when(
               data: (msg) {
                 unreadMsgProvider!.whenData((unreads) {
-                  Future.microtask(() async {
-                    final unreads = await ref.read(
-                      unreadProvider(widget.conv!.conversationId).future,
-                    );
-                    for (final unread in unreads) {
-                      await ref
-                          .read(markAsRead.notifier)
-                          .markRead(
-                            msgId: unread.messageId,
-                            convId: unread.conversationId,
-                          );
-                      await Future.delayed(const Duration(microseconds: 500));
-                      ref.invalidate(conversationProvider);
-                    }
-                  });
+                  if (unreads.isNotEmpty) {
+                    Future.microtask(() async {
+                      if (!mounted) return;
+                      final latestUnreads = await ref.read(
+                        unreadProvider(widget.conv!.conversationId).future,
+                      );
+                      for (final unread in latestUnreads) {
+                        if (!mounted) return;
+                        await ref
+                            .read(markAsRead.notifier)
+                            .markRead(
+                              msgId: unread.messageId,
+                              convId: unread.conversationId,
+                            );
+                        await Future.delayed(const Duration(microseconds: 500));
+                        if (!mounted) return;
+                        ref.invalidate(conversationProvider);
+                      }
+                    });
+                  }
                 });
                 final groups = _groupMessages(msg);
                 return Column(
@@ -351,9 +358,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       style: TextStyle(color: Colors.white),
                     ),
                     TextButton(
-                      onPressed: () => ref.invalidate(
-                        messageProvider(widget.conv!.conversationId),
-                      ),
+                      onPressed: () {
+                        if (mounted) {
+                          ref.invalidate(
+                            messageProvider(widget.conv!.conversationId),
+                          );
+                        }
+                      },
                       child: const Text(
                         'Retry',
                         style: TextStyle(color: Colors.orange),
@@ -657,10 +668,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      ref.invalidate(conversationProvider);
-      ref.invalidate(messageProvider(widget.conv!.conversationId));
-      controller.clear();
-      setState(() => _selectedEmbeds.clear());
+      if (mounted) {
+        ref.invalidate(conversationProvider);
+        ref.invalidate(messageProvider(widget.conv!.conversationId));
+        controller.clear();
+        setState(() => _selectedEmbeds.clear());
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -688,11 +701,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       if (newConv == null) return;
 
-      final socket = ref.read(socketProvider);
-      socket.joinConversation(widget.conv!.conversationId);
-      socket.onMessageReceived((data) {
-        ref.invalidate(messageProvider(newConv.conversationId));
-        ref.invalidate(conversationProvider);
+      _socket.joinConversation(newConv.conversationId);
+      _socket.onMessageReceived((data) {
+        if (mounted) {
+          ref.invalidate(messageProvider(newConv.conversationId));
+          ref.invalidate(conversationProvider);
+        }
       });
 
       String remaining = controller.text;
@@ -741,12 +755,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      ref.invalidate(conversationProvider);
-      controller.clear();
-      setState(() => _selectedEmbeds.clear());
+      if (mounted) {
+        ref.invalidate(conversationProvider);
+        controller.clear();
+        setState(() => _selectedEmbeds.clear());
 
-      if (!mounted) return;
-      context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
+        context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
