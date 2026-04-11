@@ -16,7 +16,10 @@ class VerifyEmailPage extends ConsumerWidget {
     ref.listen(authProvider, (previous, next) {
       if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
       if (next is AuthAuthenticated) {

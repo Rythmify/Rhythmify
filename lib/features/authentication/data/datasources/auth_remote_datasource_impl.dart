@@ -114,7 +114,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         'platform': 'mobile',
       };
 
-      final response = await client.dio.post('/auth/register', data: requestData);
+      final response = await client.dio.post(
+        '/auth/register',
+        data: requestData,
+      );
 
       final responseData = response.data is List
           ? response.data[0]
