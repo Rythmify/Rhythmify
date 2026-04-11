@@ -43,9 +43,11 @@ void main() {
     await profilePage.enterName(profileEditNewName);
     await profilePage.enterCity(profileEditNewCity);
 
-    // await profilePage.tapCountryField();
-    // await tester.pumpAndSettle();
-    // await profilePage.selectCountry(profileEditNewCountry);
+    await profilePage.tapCountryField();
+    await tester.pump(const Duration(milliseconds: 500));
+    await profilePage.selectCountry(profileEditNewCountryName);
+    await tester.tap(find.byType(Scaffold)); 
+    await tester.pumpAndSettle();
 
     await profilePage.tapBioField();
     await tester.pumpAndSettle();

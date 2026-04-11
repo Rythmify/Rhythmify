@@ -58,25 +58,36 @@ class ProfilePage extends BasePage {
   /// Opens the country picker bottom sheet.
   Future<void> tapCountryField() async {
     await tester.ensureVisible(find.byKey(Key(editProfileCountryGesture)));
-    await tester.pumpAndSettle();
-    await tester.tapAt(tester.getCenter(find.byKey(Key(editProfileCountryGesture))));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    await tester.tap(find.byKey(Key(editProfileCountryGesture)));
+    // Use explicit pumps instead of pumpAndSettle — continuous animations can
+    // prevent pumpAndSettle from settling, causing it to return before the
+    // modal bottom sheet is in the widget tree.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 300));
   }
 
-  /// Scrolls the country picker bottom sheet until [countryName] is visible,
-  /// then taps it — same pattern as selectMonth/Day/Year in register.
+  /// Taps the country list item matching [countryName] (display name, e.g. 'Egypt').
+  /// Uses text matching since ListView lazily builds items — keys outside the
+  /// viewport may not exist in the widget tree.
   Future<void> selectCountry(String countryName) async {
-    await scrollUntilVisible(
-      itemText: countryName,
-      scrollableKey: editProfileCountryListView,
-    );
-    await tester.tap(find.text(countryName).last);
+    await tester.tap(find.text(countryName));
     await tester.pumpAndSettle();
   }
 
   /// Opens the bio editor bottom sheet.
+  /// Scrolls the form until the bio field is visible above the keyboard,
+  /// then taps it.
   Future<void> tapBioField() async {
-    await tapByKey(editProfileBioGesture);
+    await tester.dragUntilVisible(
+      find.byKey(Key(editProfileBioGesture)),
+      find.byType(SingleChildScrollView),
+      const Offset(0, -100),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(Key(editProfileBioGesture)));
+    await tester.pumpAndSettle();
   }
 
   /// Replaces the bio text field content (inside the bottom sheet) with [bio].
