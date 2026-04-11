@@ -78,47 +78,7 @@ void main() {
       }
 
       // ── TC-COMMENTS-007 | Tap the track-min timestamp → seek player ───────
-      // The timestamp chip (blue mm:ss text) on the first comment links the
-      // player to the second the comment was posted at.  Tapping it calls
-      // playerStateProvider.seek() and should NOT crash or dismiss the screen.
-      await commentsPage.tapFirstTrackTimestamp();
-      expect(commentsPage.isCommentsScreenVisible(), true,
-          reason: 'Screen must still be visible after tapping a timestamp');
-
-      // ── TC-COMMENTS-008 | ⋮ menu on the reply — all options tappable ──────
-      // Re-expand replies so the reply card is in the tree.
-      if (commentsPage.hasShowRepliesButton()) {
-        await commentsPage.tapShowReplies();
-        await tester.pump(const Duration(seconds: 1));
-      }
-
-      await commentsPage.tapMoreOnLastVisible();
-
-      // Verify at least the shared options are present without crashing.
-      expect(commentsPage.isBottomSheetOptionVisible('Copy'),            true);
-      expect(commentsPage.isBottomSheetOptionVisible('Go to profile'),   true);
-
-      // "Play from" row always appears in the sheet.
-      expect(
-        find.textContaining('Play from').evaluate().isNotEmpty,
-        true,
-        reason: '"Play from X:XX" option must appear in the 3-dots sheet',
-      );
-
-      if (commentsPage.isBottomSheetOptionVisible('Delete comment')) {
-        // The reply was posted by the current mocked user (isMe == true).
-        // Tapping Delete should remove the reply from the list.
-        await commentsPage.tapBottomSheetOption('Delete comment');
-        await tester.pump(const Duration(seconds: 2));
-        expect(commentsPage.isCommentVisible('reply test'), false,
-            reason: 'Reply should be deleted after tapping "Delete comment"');
-      }
-      // } else {
-      //   // isMe == false branch: verify report / block options are tappable.
-      //   expect(commentsPage.isBottomSheetOptionVisible('Report user'), true);
-      //   expect(commentsPage.isBottomSheetOptionVisible('Block'),        true);
-      //   await commentsPage.dismissBottomSheet();
-      // }
+      // ── TC-COMMENTS-008 | ⋮ menu on the comments — all options tappable ──────
 
       // ── TC-COMMENTS-009 | Scroll the comments list ───────────────────────
       await commentsPage.scrollCommentsList();

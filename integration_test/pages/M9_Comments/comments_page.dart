@@ -10,7 +10,7 @@ class CommentsPage extends BasePage {
 
   /// Opens the Comments screen from the full-player action bar.
   Future<void> openFromPlayer() async {
-    await tapByKey(playerActionBarCommentIcon);
+    await tapByKeyNow(playerActionBarCommentIcon);
     await tester.pump(const Duration(seconds: 3));
   }
 
