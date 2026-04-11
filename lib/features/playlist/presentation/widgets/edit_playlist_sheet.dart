@@ -1,4 +1,9 @@
-// lib/features/playlist/presentation/widgets/edit_playlist_sheet.dart
+/// Bottom sheet for editing an existing playlist, album, or station.
+/// Handles name, description, visibility, cover image, track removal, and type conversion.
+/// Cover image picker uses [ElevatedButton] instead of [GestureDetector] because
+/// taps are swallowed by [DraggableScrollableSheet] in scroll context.
+/// [onConverted] is passed through to the caller so navigation can move to the right Library tab.
+library;
 
 import 'dart:io';
 
@@ -51,6 +56,10 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     _nameController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+
+  void _removeLocal(String trackId) {
+    setState(() => _tracks.removeWhere((t) => t.id == trackId));
   }
 
   // ── Image picker ─────────────────────────────────────────────────────────────
@@ -108,7 +117,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
 
   // ── Convert ───────────────────────────────────────────────────────────────────
 
-  void _convert(PlaylistType targetType) {
+  // Separate method that takes the pre-captured navigator
+  void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
     switch (targetType) {
       case PlaylistType.album:
         ref
@@ -124,12 +134,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
             .convertToPlaylist(widget.playlistId);
     }
     ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
-    Navigator.of(context).pop();
+    sheetNav.pop(); // edit sheet
+    sheetNav.pop(); // options sheet
     widget.onConverted?.call(targetType);
-  }
-
-  void _removeLocal(String trackId) {
-    setState(() => _tracks.removeWhere((t) => t.id == trackId));
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────────
@@ -452,7 +459,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                         );
                       },
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 140),
                   ],
                 ),
               ),
@@ -485,9 +492,12 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     required PlaylistType targetType,
     required String label,
   }) {
+    // Capture the sheet navigator before opening the dialog
+    final sheetNav = Navigator.of(context);
+
     showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         title: Text(
           'Convert to $label?',
@@ -500,7 +510,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
         actions: [
           TextButton(
             key: Key('convert_cancel_$label'),
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text(
               'Cancel',
               style: TextStyle(color: Colors.white54),
@@ -509,8 +519,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           TextButton(
             key: Key('convert_confirm_$label'),
             onPressed: () {
-              Navigator.of(context).pop(true);
-              _convert(targetType);
+              Navigator.of(dialogContext).pop(); // close dialog
+              _convertWithNav(targetType, sheetNav); // close sheets + convert
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFFF5500),
