@@ -7,16 +7,32 @@ import '../../domain/entities/vibes_genre_artists.dart';
 import '../../domain/entities/vibes_genre_introducing_section.dart';
 import '../../domain/entities/vibes_genre_introducing_playlist.dart';
 
+/// Contract for the genre/vibes remote data source.
+/// Each method maps to a separate backend endpoint — swap the mock per method at integration time.
 abstract class GenreRemoteSource {
+  /// Returns the full content bundle for a genre page (info, introducing section, playlists, albums, artists, tracks).
   Future<GenreContent> getGenreContent(String genreId);
+
+  /// Returns trending tracks for the given [genreId].
   Future<List<Track>> getGenreTrendingTracks(String genreId);
+
+  /// Returns playlists tagged under the given [genreId].
   Future<List<GenrePlaylist>> getGenrePlaylists(String genreId);
+
+  /// Returns albums released under the given [genreId].
   Future<List<GenreAlbum>> getGenreAlbums(String genreId);
+
+  /// Returns artists associated with the given [genreId].
   Future<List<GenreArtist>> getGenreArtists(String genreId);
+
+  /// Returns all tracks for the given [genreId] (used by the See All page).
   Future<List<Track>> getGenreAllTracks(String genreId);
 }
 
+/// Mock implementation of [GenreRemoteSource].
+/// All data is generated inline — only this file changes at backend integration time.
 class GenreRemoteSourceMock implements GenreRemoteSource {
+  /// A single reusable mock track, used as a placeholder across all mock data builders.
   Track get _mockTrack => Track(
     id: 'e5f6a7b8',
     userId: 'a1b2c3d4',
@@ -32,6 +48,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     genre: 'Electronic',
   );
 
+  /// Builds a [GenreInfo] using [genreId] as both the id and display name.
   GenreInfo _mockGenreInfo(String genreId) => GenreInfo(
     id: genreId,
     name: genreId,
@@ -42,6 +59,8 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     albumCount: 15,
   );
 
+  /// Builds the "Introducing" section shown at the top of the genre page,
+  /// with a curated playlist and 3 preview tracks.
   IntroducingSection get _mockIntroducing => IntroducingSection(
     playlist: IntroducingPlaylist(
       playlistId: 'pl-intro-1',
@@ -58,6 +77,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     tracksPreview: List.generate(3, (_) => _mockTrack),
   );
 
+  /// Generates 4 mock playlists scoped to [genreId].
   List<GenrePlaylist> _mockPlaylists(String genreId) => List.generate(
     4,
     (i) => GenrePlaylist(
@@ -73,6 +93,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     ),
   );
 
+  /// Generates 4 mock albums scoped to [genreId].
   List<GenreAlbum> _mockAlbums(String genreId) => List.generate(
     4,
     (i) => GenreAlbum(
@@ -87,6 +108,8 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     ),
   );
 
+  /// Generates 4 mock artists scoped to [genreId].
+  /// The first artist (index 0) is marked as verified.
   List<GenreArtist> _mockArtists(String genreId) => List.generate(
     4,
     (i) => GenreArtist(
@@ -100,6 +123,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     ),
   );
 
+  /// Returns a fully assembled [GenreContent] bundle for the genre page.
   @override
   Future<GenreContent> getGenreContent(String genreId) async {
     return GenreContent(
@@ -112,6 +136,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     );
   }
 
+  /// Returns 10 trending tracks (all using the shared mock track).
   @override
   Future<List<Track>> getGenreTrendingTracks(String genreId) async {
     return List.generate(10, (_) => _mockTrack);
@@ -132,6 +157,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     return _mockArtists(genreId);
   }
 
+  /// Returns 20 tracks for the See All / full track list page.
   @override
   Future<List<Track>> getGenreAllTracks(String genreId) async {
     return List.generate(20, (_) => _mockTrack);

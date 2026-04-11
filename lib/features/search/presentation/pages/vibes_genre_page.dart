@@ -4,6 +4,7 @@ import '../widgets/vibes_genre_trending_tab.dart';
 import '../widgets/vibes_genre_playlists_tab.dart';
 import '../widgets/vibes_genre_albums_tab.dart';
 
+/// Maps genre IDs to their local asset image paths.
 const _genreImages = {
   'hiphop': 'assets/images/vibes_hiphop.jpeg',
   'electronic': 'assets/images/vibes_electronic.jpeg',
@@ -15,6 +16,7 @@ const _genreImages = {
   'workout': 'assets/images/vibes_workout.jpeg',
 };
 
+/// Maps genre IDs to their human-readable display titles.
 const _genreTitles = {
   'hiphop': 'Hip Hop & Rap',
   'electronic': 'Electronic',
@@ -26,6 +28,14 @@ const _genreTitles = {
   'workout': 'Workout',
 };
 
+/// The genre/vibes detail page.
+///
+/// Displays a fixed header image with the genre title overlaid, followed by
+/// a full-width [TabBar] with four tabs: All, Trending, Playlists, Albums.
+/// Each tab is an independent widget that manages its own provider and data.
+///
+/// [genre] is the genre ID (e.g. `'hiphop'`) used to resolve the image, title,
+/// and passed down to each tab widget for its provider family key.
 class GenrePage extends StatelessWidget {
   const GenrePage({super.key, required this.genre});
   final String genre;
@@ -61,6 +71,7 @@ class GenrePage extends StatelessWidget {
                   errorBuilder: (_, _, _) =>
                       Container(height: 220, color: Colors.grey[900]),
                 ),
+                // Back button respects the status bar safe area.
                 Positioned(
                   top: MediaQuery.of(context).padding.top,
                   left: 8,

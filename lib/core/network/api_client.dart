@@ -8,6 +8,7 @@ class ApiClient {
 
   static const String _baseUrl =
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
+  static const String baseUrl = _baseUrl;
 
   static const String _tokenKey = 'access_token';
 
@@ -41,8 +42,9 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final skipAuth = options.extra['skipAuth'] == true;
           final token = await getToken();
-          if (token != null) {
+          if (!skipAuth && token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
@@ -58,7 +60,7 @@ class ApiClient {
                 final response = await dio.fetch(error.requestOptions);
                 return handler.resolve(response);
               } catch (e) {
-                await clearToken();
+                // Keep token intact here; auth provider decides session validity.
                 return handler.next(error);
               }
             }

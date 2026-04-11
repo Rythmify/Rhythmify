@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
@@ -68,7 +69,7 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
           IconButton(
             key: const Key('insights_cast_icon_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
         ],
         bottom: TabBar(
@@ -93,8 +94,6 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
     );
   }
 }
-
-// ── SoundCloud tab ─────────────────────────────────────────────────────────────
 
 class _SoundCloudTab extends ConsumerWidget {
   @override
@@ -278,8 +277,6 @@ class _SoundCloudDataView extends StatelessWidget {
   }
 }
 
-// ── All Platforms tab ──────────────────────────────────────────────────────────
-
 class _AllPlatformsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -361,8 +358,6 @@ class _AllPlatformsTab extends StatelessWidget {
     );
   }
 }
-
-// ── Shared sub-widgets ─────────────────────────────────────────────────────────
 
 class _StatItem extends StatelessWidget {
   final IconData icon;

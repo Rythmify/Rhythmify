@@ -130,7 +130,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final grouped = _group(state.entries);
     final sections = grouped.keys.toList();
 
-    // Flatten into a mixed list of [String header | RecentlyPlayedEntry]
     final flatItems = <Object>[];
     for (final section in sections) {
       flatItems.add(section); // String header
@@ -141,7 +140,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
     return Column(
       children: [
-        // ── Action row: delete + shuffle + play ────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
@@ -177,7 +175,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           ),
         ),
 
-        // ── Track list ─────────────────────────────────────────────────────
         Expanded(
           child: ListView.builder(
             key: const Key('history_list_view'),
@@ -199,7 +196,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 );
               }
 
-              // Pagination sentinel
               if (item is _Sentinel) {
                 return item.isLoading
                     ? const Padding(
@@ -214,7 +210,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     : const SizedBox.shrink();
               }
 
-              // Track row — convert RecentlyPlayedEntry → lightweight Track for TrackCard
               final entry = item as RecentlyPlayedEntry;
               final track = Track(
                 id: entry.trackId,

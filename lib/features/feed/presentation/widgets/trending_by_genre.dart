@@ -293,7 +293,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
           return Column(
             children: chunk.map((track) {
               return SizedBox(
-                width: 330,
+                width: 380,
                 child: ListTile(
                   key: Key('item_${track.id}'),
                   contentPadding: EdgeInsets.zero,

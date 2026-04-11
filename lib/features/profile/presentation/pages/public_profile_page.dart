@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
@@ -10,6 +11,7 @@ import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
 import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
+import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 
@@ -60,6 +62,7 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
+  bool _showIncompleteBanner = true;
 
   /// The resolved user ID used for all API calls on this page.
   ///
@@ -138,7 +141,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           IconButton(
             key: const Key('public_profile_cast_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
           IconButton(
             key: const Key('public_profile_more_button'),
@@ -209,6 +212,20 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     ].where((e) => e != null && e.isNotEmpty).join(', '),
                     style: AppTheme.bodyMedium,
                   ),
+                if (isOwnProfile &&
+                    _showIncompleteBanner &&
+                    _isProfileIncomplete(state.profile)) ...[
+                  const SizedBox(height: 12),
+                  Dismissible(
+                    key: const Key('public_profile_complete_data_dismissible'),
+                    direction: DismissDirection.horizontal,
+                    onDismissed: (_) =>
+                        setState(() => _showIncompleteBanner = false),
+                    child: _IncompleteProfileBanner(
+                      onEdit: () => context.push('/profile/edit'),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 4),
                 ProfileStatsRow(
                   followersCount: state.profile.followersCount,
@@ -345,6 +362,69 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             }, childCount: state.likedTracks.length + 1),
           ),
       ],
+    );
+  }
+
+  bool _isProfileIncomplete(ProfileEntity profile) {
+    bool isBlank(String? value) => value == null || value.trim().isEmpty;
+    return isBlank(profile.username) ||
+        isBlank(profile.avatarUrl) ||
+        isBlank(profile.coverUrl) ||
+        isBlank(profile.city) ||
+        isBlank(profile.country) ||
+        isBlank(profile.bio);
+  }
+}
+
+class _IncompleteProfileBanner extends StatelessWidget {
+  final VoidCallback onEdit;
+
+  const _IncompleteProfileBanner({required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('public_profile_complete_data_banner'),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A3E),
+        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1A237E), Color(0xFF0D47A1)],
+        ),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Complete your profile data to unlock a better experience.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            key: const Key('public_profile_complete_data_button'),
+            onPressed: onEdit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Complete',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

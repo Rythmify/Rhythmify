@@ -100,15 +100,23 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String dateOfBirth,
   }) async {
     try {
+      /// Request body for [POST /auth/register].
+      ///
+      /// Sends [captcha_token] as `null` to bypass CAPTCHA in development.
+      /// [platform] is included as `'mobile'` to identify the client type.
+      final requestData = {
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+        'gender': gender,
+        'date_of_birth': dateOfBirth,
+        'captcha_token': null,
+        'platform': 'mobile',
+      };
+
       final response = await client.dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'display_name': displayName,
-          'gender': gender,
-          'date_of_birth': dateOfBirth,
-        },
+        data: requestData,
       );
 
       final responseData = response.data is List

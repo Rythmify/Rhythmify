@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../../../../core/utils/formatters.dart';
 
+/// Search results tab displaying the playlists list from [searchResultsProvider].
+/// Renders a loading spinner, error message, empty state, or a scrollable list of [_PlaylistTile].
 class PlaylistsTab extends ConsumerWidget {
   const PlaylistsTab({super.key});
 
@@ -42,6 +44,8 @@ class PlaylistsTab extends ConsumerWidget {
   }
 }
 
+/// A single playlist row showing artwork, title, track count, and formatted duration.
+/// Accepts a raw [Map<String, String>] until a teammate-owned Playlist entity is available.
 class _PlaylistTile extends StatelessWidget {
   final Map<String, String> playlist;
   const _PlaylistTile({super.key, required this.playlist});
@@ -69,6 +73,7 @@ class _PlaylistTile extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
         subtitle: Text(
           'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
           maxLines: 1,

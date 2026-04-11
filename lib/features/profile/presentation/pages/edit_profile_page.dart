@@ -22,6 +22,9 @@ import '../widgets/unsaved_changes_dialog.dart';
 ///
 /// ### Editable fields
 /// - **Display name** (max 50 chars) — inline [TextField]
+/// - **Username** (max 30 chars) — inline [TextField]
+/// - **First name** (max 50 chars) — inline [TextField]
+/// - **Last name** (max 50 chars) — inline [TextField]
 /// - **City** (max 35 chars) — inline [TextField]
 /// - **Country** — bottom-sheet country picker ([_showCountryPicker])
 ///   stores an ISO alpha-2 code internally but displays the full name.
@@ -50,6 +53,9 @@ class EditProfilePage extends ConsumerStatefulWidget {
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _displayNameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _cityController = TextEditingController();
   final _bioController = TextEditingController();
 
@@ -103,6 +109,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     super.initState();
     _loadCurrentValues();
     _displayNameController.addListener(_onChanged);
+    _usernameController.addListener(_onChanged);
+    _firstNameController.addListener(_onChanged);
+    _lastNameController.addListener(_onChanged);
     _cityController.addListener(_onChanged);
     _bioController.addListener(_onChanged);
   }
@@ -115,6 +124,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final state = ref.read(profileProvider);
     if (state is ProfileLoaded) {
       _displayNameController.text = state.profile.displayName;
+      _usernameController.text = state.profile.username ?? '';
+      _firstNameController.text = state.profile.firstName ?? '';
+      _lastNameController.text = state.profile.lastName ?? '';
       _cityController.text = state.profile.city ?? '';
       _bioController.text = state.profile.bio ?? '';
 
@@ -139,6 +151,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   void dispose() {
     _displayNameController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _cityController.dispose();
     _bioController.dispose();
     super.dispose();
@@ -200,6 +215,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         .read(profileProvider.notifier)
         .updateProfile(
           displayName: _displayNameController.text.trim(),
+          username: _usernameController.text.trim().toLowerCase(),
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
           city: _cityController.text.trim(),
           country: _selectedCountry,
           bio: _bioController.text.trim(),
@@ -451,10 +469,31 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           ),
                           const Divider(color: AppTheme.surface, height: 1),
                           _buildField(
+                            key: const Key('edit_profile_username_textfield'),
+                            label: 'Username',
+                            controller: _usernameController,
+                            maxLength: 30,
+                          ),
+                          const Divider(color: AppTheme.surface, height: 1),
+                          _buildField(
                             key: const Key('edit_profile_city_textfield'),
                             label: 'City',
                             controller: _cityController,
                             maxLength: 35,
+                          ),
+                          const Divider(color: AppTheme.surface, height: 1),
+                          _buildField(
+                            key: const Key('edit_profile_first_name_textfield'),
+                            label: 'First Name',
+                            controller: _firstNameController,
+                            maxLength: 50,
+                          ),
+                          const Divider(color: AppTheme.surface, height: 1),
+                          _buildField(
+                            key: const Key('edit_profile_last_name_textfield'),
+                            label: 'Last Name',
+                            controller: _lastNameController,
+                            maxLength: 50,
                           ),
                           const Divider(color: AppTheme.surface, height: 1),
                           _buildChevronField(

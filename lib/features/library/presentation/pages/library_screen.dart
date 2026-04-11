@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -25,26 +25,7 @@ class LibraryScreen extends ConsumerStatefulWidget {
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool _showBanner = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadBannerPreference();
-  }
-
-  Future<void> _loadBannerPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _showBanner = prefs.getBool('show_import_banner') ?? true;
-    });
-  }
-
-  Future<void> _dismissBanner() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('show_import_banner', false);
-    setState(() {
-      _showBanner = false;
-    });
-  }
+  void _dismissBanner() => setState(() => _showBanner = false);
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +58,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
           IconButton(
             key: const Key('library_settings_icon_button'),
@@ -97,13 +78,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       body: ListView(
         key: const Key('library_main_scroll_view'),
         children: [
-          // ── Import banner card ────────────────────────────────────────────
           if (_showBanner)
-            _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
+            Dismissible(
+              key: const Key('library_import_banner_dismissible'),
+              direction: DismissDirection.horizontal,
+              onDismissed: (_) => _dismissBanner(),
+              child: _ImportBannerCard(
+                onImport: () =>
+                    context.push('/library/settings/import-my-music'),
+                onClose: _dismissBanner,
+              ),
+            ),
 
           if (_showBanner) const SizedBox(height: 8),
 
-          // ── Menu items ────────────────────────────────────────────────────
           _menuItem(
             context,
             label: 'Your likes',
@@ -149,7 +137,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
           const SizedBox(height: 8),
 
-          // ── Recently played row ───────────────────────────────────────────
           _RecentlyPlayedSection(
             entries: historyState.entries.take(10).toList(),
             onSeeAll: () => context.push('/library/history'),
@@ -224,7 +211,6 @@ class _ImportBannerCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Background vinyl illustration placeholder
             Positioned(
               right: 12,
               top: 0,
@@ -294,8 +280,6 @@ class _ImportBannerCard extends StatelessWidget {
     );
   }
 }
-
-// ── Recently Played Section ────────────────────────────────────────────────────
 
 class _RecentlyPlayedSection extends StatelessWidget {
   final List<RecentlyPlayedEntry> entries;

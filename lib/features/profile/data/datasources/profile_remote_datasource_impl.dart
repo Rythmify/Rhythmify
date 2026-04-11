@@ -1,11 +1,12 @@
-// coverage:ignore-file
-/// HTTP implementation of profile remote datasource operations.
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
+
+// coverage:ignore-file
+/// HTTP implementation of profile remote datasource operations.
 
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final ApiClient client;
@@ -29,6 +30,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -38,6 +42,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         '/users/me',
         data: {
           'display_name': displayName,
+          'username': username,
+          'first_name': firstName,
+          'last_name': lastName,
           'city': city,
           'country': country,
           'bio': bio,
@@ -144,8 +151,11 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
+      final resolvedUserId = userId == 'me'
+          ? (await getProfile(userId: 'me')).id
+          : userId;
       final response = await client.dio.get(
-        '/users/$userId/tracks',
+        '/users/$resolvedUserId/tracks',
         queryParameters: {'page': page, 'limit': limit},
       );
 

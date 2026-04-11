@@ -1,10 +1,11 @@
-/// Profile repository that converts datasource exceptions into domain failures.
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/profile_remote_datasource.dart';
+
+/// Profile repository that converts datasource exceptions into domain failures.
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDatasource remoteDatasource;
@@ -26,6 +27,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -33,6 +37,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final profile = await remoteDatasource.updateProfile(
         displayName: displayName,
+        username: username,
+        firstName: firstName,
+        lastName: lastName,
         city: city,
         country: country,
         bio: bio,

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
 import '../widgets/vibes_genre_albums.dart';
 
+/// The Albums tab on the genre page.
+/// Watches [genreAlbumsProvider] for [genreId] and renders a 2-column grid of [GenreAlbumCard].
+/// Each tab instance is independently keyed by [genreId] via the autoDispose family provider.
 class GenreAlbumsTab extends ConsumerWidget {
   const GenreAlbumsTab({super.key, required this.genreId});
   final String genreId;

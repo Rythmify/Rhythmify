@@ -141,13 +141,7 @@ class AuthNotifier extends Notifier<AuthState> {
   bool _isInvalidSessionError(Object error) {
     if (error is DioException) {
       final status = error.response?.statusCode;
-      final code = error.response?.data?['error']?['code']?.toString();
       if (status == 401) return true;
-      if (code == 'AUTH_INVALID_CREDENTIALS' ||
-          code == 'AUTH_REFRESH_TOKEN_INVALID' ||
-          code == 'AUTH_TOKEN_EXPIRED') {
-        return true;
-      }
     }
     return false;
   }
@@ -183,11 +177,10 @@ class AuthNotifier extends Notifier<AuthState> {
       dateOfBirth: dateOfBirth,
     );
 
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) => state = AuthEmailVerificationRequired(basicUser.email),
+    );
   }
 
   Future<void> signInWithGoogleAccount() async {
@@ -233,5 +226,9 @@ class AuthNotifier extends Notifier<AuthState> {
       (failure) => state = AuthError(failure.message),
       (_) => state = const AuthUnauthenticated(),
     );
+  }
+
+  void setUnauthenticated() {
+    state = const AuthUnauthenticated();
   }
 }

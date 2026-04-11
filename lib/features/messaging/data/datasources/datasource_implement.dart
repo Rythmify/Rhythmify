@@ -40,6 +40,7 @@ class DatasourceImplement implements DatasourceInterface {
     final response = await dio.get(
       ApiEndPoints.getConversation(conversationId),
     );
+    print('MESSAGES RESPONSE: ${response.data}');
 
     if (response.data is! Map<String, dynamic>) {
       throw Exception(
@@ -116,10 +117,15 @@ class DatasourceImplement implements DatasourceInterface {
     required String conversationId,
     required String messageId,
   }) async {
-    await dio.patch(
-      ApiEndPoints.markMessagesAsRead(conversationId, messageId),
-      data: {'is_read': true},
-    );
+    try {
+      await dio.patch(
+        ApiEndPoints.markMessagesAsRead(conversationId, messageId),
+        data: {'is_read': true},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 409) return;
+      rethrow;
+    }
   }
 
   @override

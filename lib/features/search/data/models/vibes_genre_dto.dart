@@ -8,7 +8,12 @@ import '../../domain/entities/vibes_genre_artists.dart';
 import '../../domain/entities/vibes_genre_introducing_section.dart';
 import '../../domain/entities/vibes_genre_introducing_playlist.dart';
 
+/// DTO responsible for deserializing all genre/vibes-related API responses
+/// into their corresponding domain entities.
+/// All methods are static — no instantiation needed.
 class GenreDto {
+  /// Parses a track JSON map into a [Track] entity via [TrackDto].
+  /// Normalises the artist field: maps `artist_name` → `artist` if `artist` is absent.
   static Track _parseTrack(Map<String, dynamic> json) {
     return TrackDto.fromJson({
       ...json,
@@ -17,6 +22,8 @@ class GenreDto {
     });
   }
 
+  /// Parses a full genre page response into a [GenreContent] bundle.
+  /// Expects a top-level `data` key containing genre, introducing, playlists, albums, artists, and tracks.
   static GenreContent fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
 
@@ -34,6 +41,7 @@ class GenreDto {
     );
   }
 
+  /// Parses genre metadata (name, counts, cover image) into a [GenreInfo].
   static GenreInfo _parseGenreInfo(Map<String, dynamic> json) {
     return GenreInfo(
       id: json['id'] as String,
@@ -46,6 +54,7 @@ class GenreDto {
     );
   }
 
+  /// Parses the "Introducing" section, which contains a featured playlist and track previews.
   static IntroducingSection _parseIntroducing(Map<String, dynamic> json) {
     return IntroducingSection(
       playlist: _parseIntroducingPlaylist(json['playlist']),
@@ -55,6 +64,7 @@ class GenreDto {
     );
   }
 
+  /// Parses the featured playlist inside the Introducing section, including its preview track.
   static IntroducingPlaylist _parseIntroducingPlaylist(
     Map<String, dynamic> json,
   ) {
@@ -72,6 +82,7 @@ class GenreDto {
     );
   }
 
+  /// Parses a single playlist entry on the genre page into a [GenrePlaylist].
   static GenrePlaylist _parseGenrePlaylist(Map<String, dynamic> json) {
     return GenrePlaylist(
       id: json['id'] as String,
@@ -86,6 +97,7 @@ class GenreDto {
     );
   }
 
+  /// Parses a single album entry on the genre page into a [GenreAlbum].
   static GenreAlbum _parseGenreAlbum(Map<String, dynamic> json) {
     return GenreAlbum(
       id: json['id'] as String,
@@ -99,6 +111,7 @@ class GenreDto {
     );
   }
 
+  /// Parses a single artist entry on the genre page into a [GenreArtist].
   static GenreArtist _parseGenreArtist(Map<String, dynamic> json) {
     return GenreArtist(
       id: json['id'] as String,
@@ -111,6 +124,8 @@ class GenreDto {
     );
   }
 
+  /// Parses a playlists-only endpoint response into a list of [GenrePlaylist].
+  /// Used by the independent playlists tab provider.
   static List<GenrePlaylist> playlistsFromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     return (data['playlists'] as List)
@@ -118,16 +133,22 @@ class GenreDto {
         .toList();
   }
 
+  /// Parses an albums-only endpoint response into a list of [GenreAlbum].
+  /// Used by the independent albums tab provider.
   static List<GenreAlbum> albumsFromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     return (data['albums'] as List).map((a) => _parseGenreAlbum(a)).toList();
   }
 
+  /// Parses an artists-only endpoint response into a list of [GenreArtist].
+  /// Used by the independent artists tab provider.
   static List<GenreArtist> artistsFromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     return (data['artists'] as List).map((a) => _parseGenreArtist(a)).toList();
   }
 
+  /// Parses a tracks-only endpoint response into a list of [Track].
+  /// Used by the independent tracks/trending tab provider.
   static List<Track> tracksFromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     return (data['tracks'] as List).map((t) => _parseTrack(t)).toList();

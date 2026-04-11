@@ -1,9 +1,9 @@
-/// In-memory profile datasource for local development and repeatable tests.
 import 'dart:math';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
 
+/// In-memory profile datasource for local development and repeatable tests.
 class ProfileMockDatasource implements ProfileRemoteDatasource {
   // ── Base mock profiles ────────────────────────────────
   static final List<Map<String, dynamic>> _mockProfiles = [
@@ -292,6 +292,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -305,6 +308,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
     _currentUserProfile = {
       ...(_currentUserProfile ?? Map.from(_mockProfiles[0])),
       'display_name': displayName,
+      'username': username,
+      'first_name': firstName,
+      'last_name': lastName,
       'city': city,
       'country': country,
       'bio': bio,
