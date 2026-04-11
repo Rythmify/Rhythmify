@@ -164,6 +164,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     Expanded(
                       child: ListView.builder(
+                        reverse: true,
                         padding: const EdgeInsets.only(
                           left: 16,
                           right: 16,
@@ -172,7 +173,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         itemCount: groups.length,
                         itemBuilder: (context, groupIndex) {
-                          final group = groups[groupIndex];
+                          final group = groups[groups.length - 1 - groupIndex];
                           final isMe = group.first.senderId == myId;
 
                           return Padding(
