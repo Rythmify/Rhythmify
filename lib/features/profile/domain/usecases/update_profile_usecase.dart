@@ -15,16 +15,23 @@ class UpdateProfileUseCase {
 
   /// Updates the profile with the given fields.
   ///
-  /// [displayName], [city], [country] (ISO alpha-2), and [bio].
+  /// [displayName], [username], [firstName], [lastName], [city], [country]
+  /// (ISO alpha-2), and [bio].
   /// Returns [Right] with updated [ProfileEntity], or [Left] with a [Failure].
   Future<Either<Failure, ProfileEntity>> call({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
   }) {
     return repository.updateProfile(
       displayName: displayName,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       city: city,
       country: country,
       bio: bio,

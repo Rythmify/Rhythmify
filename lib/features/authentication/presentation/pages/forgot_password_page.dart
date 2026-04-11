@@ -6,40 +6,37 @@ import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 
-/// The password entry screen for existing users signing in.
-///
-/// Receives the user's [email] from the previous screen and prompts
-/// them to enter their password. On success, navigates to `/home`.
-class LoginPasswordPage extends ConsumerStatefulWidget {
-  /// The email address entered on the previous [SignInPage].
-  final String email;
+/// Lets the user request a password reset email.
+class ForgotPasswordPage extends ConsumerStatefulWidget {
+  final String? initialEmail;
 
-  /// Creates a [LoginPasswordPage] with the given [email].
-  const LoginPasswordPage({super.key, required this.email});
+  const ForgotPasswordPage({super.key, this.initialEmail});
 
   @override
-  ConsumerState<LoginPasswordPage> createState() => _LoginPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
-  final _passwordController = TextEditingController();
+class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.initialEmail ?? '';
+  }
+
+  @override
   void dispose() {
-    _passwordController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  /// Validates the password field and triggers sign-in.
-  void _onContinue() {
+  void _onResetPassword() {
     if (_formKey.currentState?.validate() ?? false) {
       ref
           .read(authProvider.notifier)
-          .signInWithEmailAndPassword(
-            email: widget.email,
-            password: _passwordController.text,
-          );
+          .resetPassword(email: _emailController.text.trim());
     }
   }
 
@@ -56,17 +53,25 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
           ),
         );
       }
-      if (next is AuthAuthenticated) {
-        context.go('/home');
+
+      if (previous is AuthLoading && next is AuthUnauthenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'If this email is registered, a reset link has been sent.',
+            ),
+          ),
+        );
+        context.go('/sign-in');
       }
     });
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Sign in'),
+        title: const Text('Forgot password'),
         leading: IconButton(
-          key: const Key('authentication_login_password_back_icon_button'),
+          key: const Key('authentication_forgot_password_back_icon_button'),
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
@@ -79,28 +84,25 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Your email address', style: AppTheme.bodyMedium),
-                const SizedBox(height: 4),
-                // Display the email passed from the previous screen
                 Text(
-                  widget.email,
-                  key: const Key(
-                    'authentication_login_password_email_display_text',
-                  ),
-                  style: AppTheme.bodyLarge,
+                  'Enter your email and we will send you a reset link.',
+                  style: AppTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
                 AuthTextField(
                   key: const Key(
-                    'authentication_login_password_auth_text_field',
+                    'authentication_forgot_password_email_auth_text_field',
                   ),
-                  hint: 'Your password',
-                  controller: _passwordController,
-                  isPassword: true,
+                  hint: 'Your email address',
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
+                      return 'Please enter your email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -111,9 +113,11 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   height: 50,
                   child: ElevatedButton(
                     key: const Key(
-                      'authentication_login_password_sign_in_elevated_button',
+                      'authentication_forgot_password_send_reset_elevated_button',
                     ),
-                    onPressed: authState is AuthLoading ? null : _onContinue,
+                    onPressed: authState is AuthLoading
+                        ? null
+                        : _onResetPassword,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.surface,
                       foregroundColor: AppTheme.textPrimary,
@@ -127,19 +131,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                             color: Colors.white,
                             strokeWidth: 2,
                           )
-                        : Text('Sign in', style: AppTheme.labelLarge),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  key: const Key(
-                    'authentication_login_password_forgot_password_gesture_detector',
-                  ),
-                  onTap: () =>
-                      context.push('/forgot-password', extra: widget.email),
-                  child: Text(
-                    'Forgot password?',
-                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.link),
+                        : Text('Send reset link', style: AppTheme.labelLarge),
                   ),
                 ),
               ],
