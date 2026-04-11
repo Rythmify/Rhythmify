@@ -27,11 +27,17 @@ abstract class ProfileRepository {
   /// Returns [Left] with [ValidationFailure] if any field is invalid.
   ///
   /// [displayName] — the new display name (max 50 characters).
+  /// [username] — the unique username (max 30 characters).
+  /// [firstName] — the user's first name.
+  /// [lastName] — the user's last name.
   /// [city] — the city portion of the user's location.
   /// [country] — the ISO alpha-2 country code (e.g. `'EG'`).
   /// [bio] — the user's biography text.
   Future<Either<Failure, ProfileEntity>> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,

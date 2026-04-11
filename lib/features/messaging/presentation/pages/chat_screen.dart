@@ -9,6 +9,7 @@ import 'package:rythmify/features/messaging/presentation/providers/is_blocked_by
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/unread_messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/blocked_by_widget.dart';
@@ -47,11 +48,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     controller = TextEditingController();
+    if (widget.conv != null) {
+      Future.microtask(() {
+        ref.invalidate(messageProvider(widget.conv!.conversationId));
+        ref.invalidate(conversationProvider);
+        final socket = ref.read(socketProvider);
+        socket.joinConversation(widget.conv!.conversationId);
+        socket.onMessageReceived((data) {
+          if (mounted) {
+            ref.invalidate(messageProvider(widget.conv!.conversationId));
+            ref.invalidate(conversationProvider);
+          }
+        });
+        socket.onMessageReadUpdated((data) {
+          if (mounted) {
+            ref.invalidate(messageProvider(widget.conv!.conversationId));
+          }
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     controller.dispose();
+
+    if (widget.conv != null) {
+      ref.read(socketProvider).leaveConversation(widget.conv!.conversationId);
+    }
     super.dispose();
   }
 
@@ -137,6 +161,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   children: [
                     Expanded(
                       child: ListView.builder(
+                        reverse: true,
                         padding: const EdgeInsets.only(
                           left: 16,
                           right: 16,
@@ -145,7 +170,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         itemCount: groups.length,
                         itemBuilder: (context, groupIndex) {
-                          final group = groups[groupIndex];
+                          final group = groups[groups.length - 1 - groupIndex];
                           final isMe = group.first.senderId == myId;
 
                           return Padding(
@@ -662,6 +687,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .sendMessage(newParticipantId: widget.newParticipantId, body: null);
 
       if (newConv == null) return;
+
+      final socket = ref.read(socketProvider);
+      socket.joinConversation(widget.conv!.conversationId);
+      socket.onMessageReceived((data) {
+        ref.invalidate(messageProvider(newConv.conversationId));
+        ref.invalidate(conversationProvider);
+      });
 
       String remaining = controller.text;
 

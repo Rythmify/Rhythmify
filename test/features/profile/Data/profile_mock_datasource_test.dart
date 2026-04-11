@@ -25,6 +25,9 @@ void main() {
   test('updateProfile updates persisted current user', () async {
     final updated = await datasource.updateProfile(
       displayName: 'Updated',
+      username: 'updated_user',
+      firstName: 'Updated',
+      lastName: 'User',
       city: 'Cairo',
       country: 'EG',
       bio: 'Bio',
@@ -40,6 +43,9 @@ void main() {
     expect(
       () => datasource.updateProfile(
         displayName: '  ',
+        username: 'user',
+        firstName: 'First',
+        lastName: 'Last',
         city: 'Cairo',
         country: 'EG',
         bio: 'Bio',
