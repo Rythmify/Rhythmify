@@ -27,6 +27,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -34,6 +37,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final profile = await remoteDatasource.updateProfile(
         displayName: displayName,
+        username: username,
+        firstName: firstName,
+        lastName: lastName,
         city: city,
         country: country,
         bio: bio,

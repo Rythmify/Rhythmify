@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -26,26 +25,7 @@ class LibraryScreen extends ConsumerStatefulWidget {
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool _showBanner = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadBannerPreference();
-  }
-
-  Future<void> _loadBannerPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _showBanner = prefs.getBool('show_import_banner') ?? true;
-    });
-  }
-
-  Future<void> _dismissBanner() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('show_import_banner', false);
-    setState(() {
-      _showBanner = false;
-    });
-  }
+  void _dismissBanner() => setState(() => _showBanner = false);
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +79,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         key: const Key('library_main_scroll_view'),
         children: [
           if (_showBanner)
-            _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
+            Dismissible(
+              key: const Key('library_import_banner_dismissible'),
+              direction: DismissDirection.horizontal,
+              onDismissed: (_) => _dismissBanner(),
+              child: _ImportBannerCard(
+                onImport: () =>
+                    context.push('/library/settings/import-my-music'),
+                onClose: _dismissBanner,
+              ),
+            ),
 
           if (_showBanner) const SizedBox(height: 8),
 

@@ -7,6 +7,9 @@ abstract class ProfileRemoteDatasource {
 
   Future<ProfileModel> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,

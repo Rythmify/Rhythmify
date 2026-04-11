@@ -21,6 +21,12 @@ class ProfileEntity extends Equatable {
   /// May be `null` if the user has not set one.
   final String? username;
 
+  /// The user's first name.
+  final String? firstName;
+
+  /// The user's last name.
+  final String? lastName;
+
   /// The URL of the user's avatar/profile picture.
   ///
   /// May be `null` if the user has not uploaded a photo.
@@ -71,12 +77,15 @@ class ProfileEntity extends Equatable {
 
   /// Creates a [ProfileEntity] with all required fields.
   ///
-  /// Optional fields ([username], [avatarUrl], [coverUrl], [city],
-  /// [country], [bio]) default to `null`. [isVerified] defaults to `false`.
+  /// Optional fields ([username], [firstName], [lastName], [avatarUrl],
+  /// [coverUrl], [city], [country], [bio]) default to `null`.
+  /// [isVerified] defaults to `false`.
   const ProfileEntity({
     required this.id,
     required this.displayName,
     this.username,
+    this.firstName,
+    this.lastName,
     this.avatarUrl,
     this.coverUrl,
     this.city,
@@ -106,6 +115,8 @@ class ProfileEntity extends Equatable {
       id: id,
       displayName: displayName,
       username: username,
+      firstName: firstName,
+      lastName: lastName,
       avatarUrl: avatarUrl,
       coverUrl: coverUrl,
       city: city,
@@ -125,6 +136,8 @@ class ProfileEntity extends Equatable {
     id,
     displayName,
     username,
+    firstName,
+    lastName,
     avatarUrl,
     coverUrl,
     city,
