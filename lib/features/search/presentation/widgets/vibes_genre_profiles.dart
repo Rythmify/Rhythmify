@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/vibes_genre_artists.dart';
 
+/// A compact vertical artist card used in the Profiles horizontal scroll on the genre page.
+/// Shows a circular avatar, display name, and a Follow button.
+/// Handles network, local asset, and missing profile pictures.
 class GenreProfileCard extends StatelessWidget {
   const GenreProfileCard({super.key, required this.artist});
   final GenreArtist artist;
@@ -15,6 +18,7 @@ class GenreProfileCard extends StatelessWidget {
             key: Key('genre_profile_avatar_${artist.id}'),
             radius: 40,
             backgroundColor: Colors.grey[800],
+            // Uses NetworkImage for http URLs, AssetImage for local paths, falls back to icon.
             backgroundImage: artist.profilePicture.isNotEmpty
                 ? (artist.profilePicture.startsWith('http')
                       ? NetworkImage(artist.profilePicture) as ImageProvider

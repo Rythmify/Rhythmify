@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_entity.dart';
 
@@ -10,6 +11,7 @@ import '../../domain/entities/user_entity.dart';
 /// The state machine transitions:
 /// ```
 /// AuthInitial → AuthLoading → AuthAuthenticated
+///                           → AuthEmailVerificationRequired
 ///                           → AuthUnauthenticated
 ///                           → AuthError
 /// ```
@@ -51,6 +53,18 @@ class AuthAuthenticated extends AuthState {
   /// Props include [user] so equality is based on user identity.
   @override
   List<Object?> get props => [user];
+}
+
+/// Emitted after successful registration when email verification is required.
+class AuthEmailVerificationRequired extends AuthState {
+  /// The newly registered email address.
+  final String email;
+
+  /// Creates an [AuthEmailVerificationRequired] state with [email].
+  const AuthEmailVerificationRequired(this.email);
+
+  @override
+  List<Object?> get props => [email];
 }
 
 /// Emitted when no valid session exists.

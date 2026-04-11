@@ -5,6 +5,8 @@ import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/profile_remote_datasource.dart';
 
+/// Profile repository that converts datasource exceptions into domain failures.
+
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDatasource remoteDatasource;
 

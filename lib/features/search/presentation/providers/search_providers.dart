@@ -6,23 +6,32 @@ import '../../domain/entities/search_results.dart';
 import '../../domain/usecases/get_search_suggestions.dart';
 import '../../domain/usecases/get_search_results.dart';
 
+// ── Dependency graph ──────────────────────────────────────────────────────────
+
+/// Provides the mock data source. Swap to a real HTTP source at integration time.
 final searchRemoteSourceProvider = Provider<SearchRemoteSource>(
   (_) => SearchRemoteSourceMock(),
 );
 
+/// Provides the repository, injecting the remote source.
 final searchRepositoryProvider = Provider(
   (ref) =>
       SearchRepositoryImpl(remoteSource: ref.watch(searchRemoteSourceProvider)),
 );
 
+/// Provides the [GetSearchSuggestions] use case.
 final getSearchSuggestionsProvider = Provider(
   (ref) => GetSearchSuggestions(ref.watch(searchRepositoryProvider)),
 );
 
+/// Provides the [GetSearchResults] use case.
 final getSearchResultsProvider = Provider(
   (ref) => GetSearchResults(ref.watch(searchRepositoryProvider)),
 );
 
+// ── State notifiers ───────────────────────────────────────────────────────────
+
+/// Holds the current text in the search bar.
 class SearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -34,6 +43,8 @@ final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
   SearchQueryNotifier.new,
 );
 
+/// Tracks whether the user has submitted a search (i.e. pressed enter / search button).
+/// When `true`, the results tabs are shown instead of suggestions.
 class SearchSubmittedNotifier extends Notifier<bool> {
   @override
   bool build() => false;
@@ -46,12 +57,17 @@ final searchSubmittedProvider = NotifierProvider<SearchSubmittedNotifier, bool>(
   SearchSubmittedNotifier.new,
 );
 
+// ── Async providers ───────────────────────────────────────────────────────────
+
+/// Debounces [searchQueryProvider] by 400ms to avoid firing a request on every keystroke.
 final debouncedQueryProvider = StreamProvider.autoDispose<String>((ref) async* {
   final query = ref.watch(searchQueryProvider);
   await Future.delayed(const Duration(milliseconds: 400));
   yield query;
 });
 
+/// Fetches autocomplete suggestions for the debounced query.
+/// Returns an empty list if the query is blank.
 final searchSuggestionsProvider =
     FutureProvider.autoDispose<List<SearchSuggestion>>((ref) async {
       final query = ref.watch(debouncedQueryProvider).value ?? '';
@@ -59,6 +75,8 @@ final searchSuggestionsProvider =
       return ref.read(getSearchSuggestionsProvider).call(query);
     });
 
+/// Fetches full search results for the current query.
+/// Returns an empty [SearchResults] if the query is blank.
 final searchResultsProvider = FutureProvider.autoDispose<SearchResults>((
   ref,
 ) async {

@@ -1,5 +1,7 @@
 import '../../domain/entities/profile_entity.dart';
 
+/// Data model for serializing/deserializing profile payloads.
+///
 class ProfileModel extends ProfileEntity {
   const ProfileModel({
     required super.id,

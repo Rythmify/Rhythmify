@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/vibes_genre_playlist.dart';
 
+/// A card displaying a single genre playlist in the Playlists grid.
+/// Handles both network and local asset cover images, with a grey fallback on error.
 class GenrePlaylistCard extends StatelessWidget {
   const GenrePlaylistCard({super.key, required this.playlist});
   final GenrePlaylist playlist;
@@ -13,6 +15,7 @@ class GenrePlaylistCard extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(0),
+          // Uses [Image.network] for http URLs, [Image.asset] for local paths.
           child:
               playlist.coverImage.isNotEmpty &&
                   playlist.coverImage.startsWith('http')

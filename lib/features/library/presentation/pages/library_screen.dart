@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -49,9 +50,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final currentUserEmail = authState is AuthAuthenticated
-        ? authState.user.email
-        : '';
     final currentUserAvatar = authState is AuthAuthenticated
         ? authState.user.avatarUrl
         : null;
@@ -63,10 +61,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         title: const Text('Library'),
         centerTitle: false,
         actions: [
+          TextButton(
+            key: const Key('library_upgrade_pro_button'),
+            onPressed: () => context.push('/upgrade'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primaryBrand,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Upgrade to Pro',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
           IconButton(
             key: const Key('library_cast_icon_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
           IconButton(
             key: const Key('library_settings_icon_button'),
@@ -86,13 +98,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       body: ListView(
         key: const Key('library_main_scroll_view'),
         children: [
-          // ── Import banner card ────────────────────────────────────────────
           if (_showBanner)
             _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
 
           if (_showBanner) const SizedBox(height: 8),
 
-          // ── Menu items ────────────────────────────────────────────────────
           _menuItem(
             context,
             label: 'Your likes',
@@ -109,7 +119,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             context,
             label: 'Albums',
             key: const Key('library_albums_item'),
-            onTap: () => context.push('/library/albums'),
+            onTap: () => context.pushNamed('library-albums'),
           ),
           _menuItem(
             context,
@@ -138,43 +148,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
           const SizedBox(height: 8),
 
-          // ── Recently played row ───────────────────────────────────────────
           _RecentlyPlayedSection(
             entries: historyState.entries.take(10).toList(),
             onSeeAll: () => context.push('/library/history'),
           ),
-
-          // ── Dev logout ────────────────────────────────────────────────────
-          if (currentUserEmail.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  Text(
-                    'Logged in as $currentUserEmail',
-                    style: AppTheme.labelSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          ref.read(authProvider.notifier).signOutUser(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('DEV LOGOUT'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
 
           const SizedBox(height: 120),
         ],
@@ -245,7 +222,6 @@ class _ImportBannerCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Background vinyl illustration placeholder
             Positioned(
               right: 12,
               top: 0,
@@ -315,8 +291,6 @@ class _ImportBannerCard extends StatelessWidget {
     );
   }
 }
-
-// ── Recently Played Section ────────────────────────────────────────────────────
 
 class _RecentlyPlayedSection extends StatelessWidget {
   final List<RecentlyPlayedEntry> entries;

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
+import 'comment_action_bottom_sheet.dart';
 
 class CommentCard extends StatelessWidget {
   final Comment comment;
@@ -35,40 +37,46 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: isReply ? 32 : 40,
-            height: isReply ? 32 : 40,
-            decoration: const BoxDecoration(
-              color: Colors.grey,
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: comment.userPfp == null
-                  ? Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: isReply ? 16 : 20,
-                    )
-                  : (comment.userPfp!.startsWith('http') ||
-                            comment.userPfp!.startsWith('https')
-                        ? Image.network(
-                            comment.userPfp!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: isReply ? 16 : 20,
-                            ),
-                          )
-                        : Image.asset(
-                            comment.userPfp!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: isReply ? 16 : 20,
-                            ),
-                          )),
+          InkWell(
+            onTap: () => context.push('/profile/${comment.userId}'),
+            borderRadius: BorderRadius.circular(isReply ? 16 : 20),
+            child: Container(
+              width: isReply ? 32 : 40,
+              height: isReply ? 32 : 40,
+              decoration: const BoxDecoration(
+                color: Colors.grey,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: comment.userPfp == null || comment.userPfp!.isEmpty
+                    ? Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: isReply ? 16 : 20,
+                      )
+                    : (comment.userPfp!.startsWith('http') ||
+                              comment.userPfp!.startsWith('https')
+                          ? Image.network(
+                              comment.userPfp!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: isReply ? 16 : 20,
+                                  ),
+                            )
+                          : Image.asset(
+                              comment.userPfp!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: isReply ? 16 : 20,
+                                  ),
+                            )),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -78,11 +86,23 @@ class CommentCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      comment.userDisplayName,
-                      style: AppTheme.bodyNormal.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                    InkWell(
+                      onTap: () => context.push('/profile/${comment.userId}'),
+                      borderRadius: BorderRadius.circular(
+                        4,
+                      ), // Gives the ripple a nice rounded edge
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 2.0,
+                          vertical: 2.0,
+                        ), // Slight padding so the ripple doesn't cut off the text
+                        child: Text(
+                          comment.userDisplayName,
+                          style: AppTheme.bodyNormal.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -147,12 +167,30 @@ class CommentCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 25),
                     ],
-                    GestureDetector(
-                      onTap: onMore,
-                      child: const Icon(
-                        Icons.more_vert,
-                        size: 18,
-                        color: Colors.white70,
+                    InkWell(
+                      onTap: () {
+                        // Just open the bottom sheet directly
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) =>
+                              CommentActionBottomSheet(comment: comment),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      highlightColor: Colors.white.withValues(alpha: 0.1),
+                      splashColor: Colors.white.withValues(alpha: 0.2),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 4.0,
+                          vertical: 4.0,
+                        ),
+                        child: Icon(
+                          Icons.more_vert,
+                          size: 18,
+                          color: Colors.white70,
+                        ),
                       ),
                     ),
                   ],

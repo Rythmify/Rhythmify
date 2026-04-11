@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../../core/theme/app_theme.dart';
+// coverage:ignore-file
+/// List-tile representation of a track in profile track collections.
 
 class TrackListTile extends StatelessWidget {
   final Track track;

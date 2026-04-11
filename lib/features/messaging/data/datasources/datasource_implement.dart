@@ -132,7 +132,6 @@ class DatasourceImplement implements DatasourceInterface {
   Future<List<PotentialConversationModel>> getFollowings(String myId) async {
     try {
       final url = ApiEndPoints.getFollowings();
-      print('FOLLOWINGS URL: $url');
 
       final response = await dio.get(url);
 
@@ -145,10 +144,7 @@ class DatasourceImplement implements DatasourceInterface {
                 PotentialConversationModel.fromJson(e as Map<String, dynamic>),
           )
           .toList();
-    } on DioException catch (e) {
-      print('FOLLOWINGS ERROR STATUS: ${e.response?.statusCode}');
-      print('FOLLOWINGS REQUEST URI: ${e.requestOptions.uri}');
-      print('FOLLOWINGS ERROR DATA: ${e.response?.data}');
+    } on DioException {
       rethrow;
     }
   }
@@ -159,7 +155,6 @@ class DatasourceImplement implements DatasourceInterface {
   ) async {
     try {
       final url = ApiEndPoints.getSearchedUsers(query);
-      print('SEARCH USERS URL: $url');
 
       final response = await dio.get(url);
 
@@ -172,10 +167,7 @@ class DatasourceImplement implements DatasourceInterface {
                 PotentialConversationModel.fromJson(e as Map<String, dynamic>),
           )
           .toList();
-    } on DioException catch (e) {
-      print('SEARCH USERS ERROR STATUS: ${e.response?.statusCode}');
-      print('SEARCH USERS REQUEST URI: ${e.requestOptions.uri}');
-      print('SEARCH USERS ERROR DATA: ${e.response?.data}');
+    } on DioException {
       rethrow;
     }
   }

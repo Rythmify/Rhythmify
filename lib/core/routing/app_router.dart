@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
+import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -11,6 +15,7 @@ import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
+import '../../features/authentication/presentation/pages/verify_email_page.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -50,6 +55,13 @@ import '../../features/playlist/presentation/screens/playlist_detail_screen.dart
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/advertising_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/analytics_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/basic_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/communication_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/import_my_music_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/inbox_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/legal_settings_screen.dart';
 
 //  Library imports
 import '../../features/library/presentation/pages/library_screen.dart';
@@ -91,6 +103,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
+          state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
@@ -103,6 +116,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (authState is AuthAuthenticated) {
         if (isAuthRoute) return '/home';
+        return null;
+      }
+
+      if (authState is AuthEmailVerificationRequired) {
+        if (!isAuthRoute) return '/verify-email';
         return null;
       }
 
@@ -149,6 +167,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             email: data['email'] as String,
             password: data['password'] as String,
           );
+        },
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyEmailPage(email: email);
         },
       ),
 
@@ -237,13 +262,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'notifications',
                     builder: (context, state) => const NotificationsScreen(),
                   ),
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
                 ],
               ),
             ],
@@ -256,16 +274,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/feed',
                 builder: (context, state) => const FeedScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    name: 'behindTheTrack',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
@@ -277,15 +285,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/search',
                 builder: (context, state) => const SearchScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
@@ -301,13 +300,71 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'settings',
                     builder: (context, state) => const SettingsScreen(),
+                    routes: [
+                      GoRoute(
+                        //1- import music
+                        path: 'import-my-music',
+                        builder: (context, state) =>
+                            const ImportMyMusicScreen(),
+                      ),
+                      GoRoute(
+                        //2- Account
+                        path: 'account',
+                        builder: (context, state) => const AccountScreen(),
+                      ),
+                      GoRoute(
+                        //4- Basic settings
+                        path: 'basic-settings',
+                        builder: (context, state) =>
+                            const BasicSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //5- Social settings
+                        path: 'social-settings',
+                        builder: (context, state) =>
+                            const SocialSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //6- Inbox
+                        path: 'inbox-settings',
+                        builder: (context, state) =>
+                            const InboxSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //7- Notifications
+                        path: 'notifications',
+                        builder: (context, state) =>
+                            const NotificationsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //9- Analytics
+                        path: 'analytics',
+                        builder: (context, state) =>
+                            const AnalyticsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //10- Communications
+                        path: 'Communications',
+                        builder: (context, state) =>
+                            const CommunicationSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //11- Advesrtising
+                        path: 'Advesrtising',
+                        builder: (context, state) =>
+                            const AdvertisingSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //13- Legal
+                        path: 'Legal',
+                        builder: (context, state) =>
+                            const LegalSettingsScreen(),
+                      ),
+                    ],
                   ),
                   GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
+                    path: 'playlist',
+                    builder: (context, state) => const PlaylistScreen(),
                   ),
                   GoRoute(
                     path: 'following',
@@ -316,6 +373,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
                   // ── Playlists ──────────────────────────────────────────
                   GoRoute(
+                    name: 'library-playlists',
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
@@ -334,6 +392,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
                   GoRoute(
+                    name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
                   ),
@@ -352,6 +411,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // ── Stations ───────────────────────────────────────────
                   // StationsPage re-exports LibraryStationsScreen
                   GoRoute(
+                    name: 'library-stations',
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
@@ -391,21 +451,22 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'behind-the-track/:trackId',
-                    builder: (context, state) {
-                      final trackId = state.pathParameters['trackId']!;
-                      return BehindTheTrackPage(trackId: trackId);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
         ],
       ),
 
+      // ── Root Level Pages (Renders ON TOP of Navigation Bar) ─────────
+      GoRoute(
+        path: '/behind-the-track/:trackId',
+        name: 'behindTheTrack',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final trackId = state.pathParameters['trackId']!;
+          return BehindTheTrackPage(trackId: trackId);
+        },
+      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,

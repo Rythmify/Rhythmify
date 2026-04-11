@@ -2,6 +2,7 @@ import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
 import 'package:rythmify/features/profile/data/datasources/profile_mock_datasource.dart';
 
+/// In-memory auth datasource used for development and deterministic tests.
 class AuthMockDatasource implements AuthRemoteDatasource {
   static final List<Map<String, dynamic>> _mockUsers = [
     {

@@ -1,6 +1,7 @@
 import '../entities/search_results.dart';
 import '../repositories/search_repository.dart';
 
+/// Use case that fetches search results
 class GetSearchResults {
   final SearchRepository repository;
   GetSearchResults(this.repository);

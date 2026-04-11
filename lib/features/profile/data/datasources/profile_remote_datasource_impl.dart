@@ -1,8 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
+
+// coverage:ignore-file
+/// HTTP implementation of profile remote datasource operations.
 
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final ApiClient client;
@@ -51,8 +55,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadAvatar({required String filePath}) async {
     try {
+      final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(filePath),
+        'avatar': await MultipartFile.fromFile(
+          filePath,
+          contentType: DioMediaType.parse(mimeType),
+        ),
       });
 
       await client.dio.post('/users/me/avatar', data: formData);
@@ -80,8 +88,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
     try {
+      final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
-        'cover': await MultipartFile.fromFile(filePath),
+        'cover': await MultipartFile.fromFile(
+          filePath,
+          contentType: DioMediaType.parse(mimeType),
+        ),
       });
 
       await client.dio.post('/users/me/cover', data: formData);

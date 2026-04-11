@@ -7,6 +7,8 @@ import '../../data/repositories/library_repository_impl.dart';
 import '../../domain/entities/library_entities.dart';
 import '../../domain/usecases/library_usecases.dart';
 
+/// Riverpod providers and notifier states for Library feature flows.
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Feature flag — flip to false to use real API
 // ─────────────────────────────────────────────────────────────────────────────

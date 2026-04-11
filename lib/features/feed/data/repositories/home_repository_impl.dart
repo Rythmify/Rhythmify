@@ -1,4 +1,3 @@
-import '../datasources/home_datasource.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../domain/entities/home_data.dart';
 import '../../domain/entities/genre_tab_tracks.dart';
@@ -6,30 +5,43 @@ import '../../domain/entities/hot_for_you.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../datasources/home_mock_datasource.dart';
+import '../datasources/home_remote_datasource.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
-  final HomeDatasource datasource;
+  final HomeRemoteDatasource? _remote;
+  final HomeMockDatasource? _mock;
 
-  HomeRepositoryImpl(this.datasource);
+  HomeRepositoryImpl.remote(HomeRemoteDatasource remote)
+    : _remote = remote,
+      _mock = null;
+
+  HomeRepositoryImpl.mock(HomeMockDatasource mock)
+    : _mock = mock,
+      _remote = null;
 
   @override
-  Future<HomeData> getHomeData() => datasource.getHomeData();
+  Future<HomeData> getHomeData() =>
+      _mock?.getHomeData() ?? _remote!.getHomeData();
 
   @override
   Future<GenreTabTracks> getTrendingByGenre(String genreId) =>
-      datasource.getTrendingByGenre(genreId);
+      _mock?.getTrendingByGenre(genreId) ??
+      _remote!.getTrendingByGenre(genreId);
 
   @override
-  Future<HotForYou> getHotForYou() => datasource.getHotForYou();
+  Future<HotForYou> getHotForYou() =>
+      _mock?.getHotForYou() ?? _remote!.getHotForYou();
 
   @override
   Future<List<Track>> getMoreOfWhatYouLike() =>
-      datasource.getMoreOfWhatYouLike();
+      _mock?.getMoreOfWhatYouLike() ?? _remote!.getMoreOfWhatYouLike();
 
   @override
-  Future<List<MixedForYouItem>> getMixedForYou() => datasource.getMixedForYou();
+  Future<List<MixedForYouItem>> getMixedForYou() =>
+      _mock?.getMixedForYou() ?? _remote!.getMixedForYou();
 
   @override
   Future<List<DiscoverStation>> getDiscoverStations() =>
-      datasource.getDiscoverStations();
+      _mock?.getDiscoverStations() ?? _remote!.getDiscoverStations();
 }

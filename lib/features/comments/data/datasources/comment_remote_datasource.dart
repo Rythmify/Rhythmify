@@ -30,6 +30,10 @@ abstract class CommentRemoteDataSource {
   Future<void> unlikeComment(String commentId);
 
   Future<void> deleteComment(String commentId);
+
+  Future<void> blockUser(String userId);
+
+  Future<void> unblockUser(String userId);
 }
 
 class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
@@ -123,5 +127,15 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
   @override
   Future<void> deleteComment(String commentId) async {
     await _apiClient.dio.delete('/comments/$commentId');
+  }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    await _apiClient.dio.post('/users/$userId/block');
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    await _apiClient.dio.delete('/users/$userId/block');
   }
 }
