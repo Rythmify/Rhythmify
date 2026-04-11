@@ -229,14 +229,19 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
               borderRadius: BorderRadius.circular(8),
               color: Colors.grey[900],
             ),
-            child:
-                widget.track.coverImage != null &&
-                    widget.track.coverImage!.startsWith('http')
-                ? Image.network(widget.track.coverImage!, fit: BoxFit.cover)
-                : Image.asset(
-                    widget.track.coverImage ?? widget.track.artworkUrl,
-                    fit: BoxFit.cover,
-                  ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                7.2,
+              ), // Slightly less than 8 to fit perfectly inside the 0.8 border
+              child:
+                  widget.track.coverImage != null &&
+                      widget.track.coverImage!.startsWith('http')
+                  ? Image.network(widget.track.coverImage!, fit: BoxFit.cover)
+                  : Image.asset(
+                      widget.track.coverImage ?? widget.track.artworkUrl,
+                      fit: BoxFit.cover,
+                    ),
+            ),
           ),
         ],
       ),

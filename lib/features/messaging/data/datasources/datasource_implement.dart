@@ -40,7 +40,6 @@ class DatasourceImplement implements DatasourceInterface {
     final response = await dio.get(
       ApiEndPoints.getConversation(conversationId),
     );
-    print('MESSAGES RESPONSE: ${response.data}');
 
     if (response.data is! Map<String, dynamic>) {
       throw Exception(

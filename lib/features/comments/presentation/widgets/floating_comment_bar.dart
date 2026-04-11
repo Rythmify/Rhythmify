@@ -6,7 +6,13 @@ import '../providers/floating_comments_provider.dart';
 import '../providers/track_comments_notifier.dart';
 import '../widgets/floating_comment.dart';
 
+/// A fixed bottom bar widget for leaving quick floating comments during playback.
+///
+/// This widget sits above the audio player controls and allows the user to post
+/// a new comment at the current playback timestamp. It also listens to the
+/// [floatingCommentsProvider] to animate incoming floating comments synchronously.
 class FloatingCommentBar extends ConsumerStatefulWidget {
+  /// Creates a [FloatingCommentBar].
   const FloatingCommentBar({super.key});
 
   @override

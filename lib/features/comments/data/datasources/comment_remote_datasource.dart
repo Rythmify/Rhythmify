@@ -1,7 +1,11 @@
 import '../../data/models/comment_dto.dart';
 import '../../../../core/network/api_client.dart';
 
+/// Abstract contract for the remote API data source.
+///
+/// Handles network communication to fetch and mutate comments data.
 abstract class CommentRemoteDataSource {
+  /// Fetches paginated root comments from the API.
   Future<List<CommentDto>> getTrackComments({
     required String trackId,
     required int page,
@@ -9,6 +13,7 @@ abstract class CommentRemoteDataSource {
     required String sortValue,
   });
 
+  /// Fetches paginated replies from the API.
   Future<List<CommentDto>> getCommentReplies({
     required String commentId,
     required int page,
@@ -16,8 +21,10 @@ abstract class CommentRemoteDataSource {
     required String sortValue,
   });
 
+  /// Fetches a large batch of all comments for building floating interactions.
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId);
 
+  /// Posts a new comment or reply to the API.
   Future<CommentDto> postComment({
     required String trackId,
     required String content,
@@ -25,20 +32,29 @@ abstract class CommentRemoteDataSource {
     String? parentId,
   });
 
+  /// Posts a like to the API.
   Future<void> likeComment(String commentId);
 
+  /// Deletes a like from the API.
   Future<void> unlikeComment(String commentId);
 
+  /// Deletes a comment via the API.
   Future<void> deleteComment(String commentId);
 
+  /// Blocks a user via the API.
   Future<void> blockUser(String userId);
 
+  /// Unblocks a user via the API.
   Future<void> unblockUser(String userId);
 }
 
+/// Concrete implementation of [CommentRemoteDataSource] using [ApiClient].
+///
+/// It executes actual HTTP requests to the backend server.
 class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
   final ApiClient _apiClient;
 
+  /// Creates a [CommentRemoteDataSourceImpl] injected with an [_apiClient].
   CommentRemoteDataSourceImpl(this._apiClient);
 
   @override
@@ -48,17 +64,11 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
     required int limit,
     required String sortValue,
   }) async {
-    // Convert page/limit to offset for the API
     final offset = (page - 1) * limit;
 
     final response = await _apiClient.dio.get(
       '/tracks/$trackId/comments',
-      queryParameters: {
-        'limit': limit,
-        'offset': offset,
-        // The API defaults to sort, passing it down from the repository
-        'sort': sortValue,
-      },
+      queryParameters: {'limit': limit, 'offset': offset, 'sort': sortValue},
     );
 
     final items = response.data['data']['items'] as List;
@@ -85,7 +95,6 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
 
   @override
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
-    // Fetches a large batch for the audio waveform floating comments
     final response = await _apiClient.dio.get(
       '/tracks/$trackId/comments',
       queryParameters: {'limit': 1000, 'offset': 0},
