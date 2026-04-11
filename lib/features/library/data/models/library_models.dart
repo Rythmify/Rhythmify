@@ -1,8 +1,8 @@
+import '../../domain/entities/library_entities.dart';
+
 /// Data transfer models for the Library feature.
 ///
 /// These models parse API/mock payloads and map them to Library domain entities.
-import '../../domain/entities/library_entities.dart';
-
 // ── FollowedUser ──────────────────────────────────────────────────────────────
 
 class FollowedUserModel extends FollowedUser {

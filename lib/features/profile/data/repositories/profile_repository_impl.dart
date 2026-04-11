@@ -1,10 +1,11 @@
-/// Profile repository that converts datasource exceptions into domain failures.
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/profile_remote_datasource.dart';
+
+/// Profile repository that converts datasource exceptions into domain failures.
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDatasource remoteDatasource;

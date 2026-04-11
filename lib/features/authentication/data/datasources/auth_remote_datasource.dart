@@ -1,6 +1,6 @@
-/// Remote datasource contract for authentication network operations.
 import '../models/user_model.dart';
 
+/// Remote datasource contract for authentication network operations.
 abstract class AuthRemoteDatasource {
   Future<UserModel> signInWithEmail({
     required String email,

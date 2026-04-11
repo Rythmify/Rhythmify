@@ -1,7 +1,7 @@
-/// Contract for profile-related remote data operations.
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 
+/// Contract for profile-related remote data operations.
 abstract class ProfileRemoteDatasource {
   Future<ProfileModel> getProfile({required String userId});
 
