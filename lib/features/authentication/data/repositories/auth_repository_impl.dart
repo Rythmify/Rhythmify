@@ -1,10 +1,10 @@
-/// Authentication repository that maps datasource errors to domain failures.
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/auth_remote_datasource.dart';
 
+/// Authentication repository that maps datasource errors to domain failures.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDatasource remoteDatasource;
 

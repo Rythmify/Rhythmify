@@ -1,9 +1,9 @@
-/// In-memory profile datasource for local development and repeatable tests.
 import 'dart:math';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
 
+/// In-memory profile datasource for local development and repeatable tests.
 class ProfileMockDatasource implements ProfileRemoteDatasource {
   // ── Base mock profiles ────────────────────────────────
   static final List<Map<String, dynamic>> _mockProfiles = [
