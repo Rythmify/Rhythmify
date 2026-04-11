@@ -98,13 +98,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       body: ListView(
         key: const Key('library_main_scroll_view'),
         children: [
-          // ── Import banner card ────────────────────────────────────────────
           if (_showBanner)
             _ImportBannerCard(onImport: () {}, onClose: _dismissBanner),
 
           if (_showBanner) const SizedBox(height: 8),
 
-          // ── Menu items ────────────────────────────────────────────────────
           _menuItem(
             context,
             label: 'Your likes',
@@ -150,7 +148,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
           const SizedBox(height: 8),
 
-          // ── Recently played row ───────────────────────────────────────────
           _RecentlyPlayedSection(
             entries: historyState.entries.take(10).toList(),
             onSeeAll: () => context.push('/library/history'),
@@ -225,7 +222,6 @@ class _ImportBannerCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Background vinyl illustration placeholder
             Positioned(
               right: 12,
               top: 0,
@@ -295,8 +291,6 @@ class _ImportBannerCard extends StatelessWidget {
     );
   }
 }
-
-// ── Recently Played Section ────────────────────────────────────────────────────
 
 class _RecentlyPlayedSection extends StatelessWidget {
   final List<RecentlyPlayedEntry> entries;

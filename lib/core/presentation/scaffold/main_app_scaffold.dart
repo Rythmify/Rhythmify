@@ -60,17 +60,11 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Determine if mini player should be visible based on the current route
     final routerState = GoRouterState.of(context);
     final location = routerState.uri.path;
     final isChatRoute = location.contains('/chat');
     final isVisible = !isChatRoute;
-
-    // We use a local variable to capture the minSize during build
     final currentMinSize = _minSize;
-
-    // Displacement for the "go down" animation.
-    // We move it by the full screen height to be absolutely sure it's gone on chat routes.
     final double displacement = isVisible ? 0 : screenHeight;
 
     return Scaffold(
@@ -78,10 +72,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 1. Main Content (Back to Full Screen)
           Positioned.fill(child: widget.navigationShell),
-
-          // 2. Draggable Player (Behind the Nav Bar)
           if (hasTrack)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
@@ -133,7 +124,6 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                                   ),
                                 ),
 
-                                // Mini Player (Anchored to top of the sheet)
                                 if (t < 0.5)
                                   Positioned(
                                     top: 0,
@@ -160,7 +150,6 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
               ),
             ),
 
-          // 3. Bottom Navigation (Floating on top)
           Positioned(
             left: 0,
             right: 0,
