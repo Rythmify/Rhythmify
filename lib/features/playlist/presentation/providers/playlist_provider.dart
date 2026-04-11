@@ -78,7 +78,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
   PlaylistListState build() {
     // Re-read playlists whenever the seeder pushes new data so counts update
-    ref.listen<void>(playlistMockSeederProvider, (_, __) {
+    ref.listen<void>(playlistMockSeederProvider, (_, _) {
       Future.microtask(loadPlaylists);
     });
     ref.watch(playlistMockSeederProvider);
