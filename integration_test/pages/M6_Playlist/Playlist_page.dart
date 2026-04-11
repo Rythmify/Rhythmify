@@ -29,6 +29,24 @@ class PlaylistPage extends BasePage {
     await tapByKey(playlistDetailBackButton);
   }
 
+  /// Taps the playlist with [name] in the playlists list to open its detail screen.
+  Future<void> tapPlaylistInList(String playlistName) async {
+    await tester.tap(find.text(playlistName));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  /// Taps the ⋮ more button next to the playlist with [name] in the playlists list.
+  Future<void> tapMoreForPlaylist(String playlistName) async {
+    final tileRow = find.ancestor(
+      of: find.text(playlistName),
+      matching: find.byType(Row),
+    ).first;
+    await tester.tap(
+      find.descendant(of: tileRow, matching: find.byIcon(Icons.more_vert)),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
+
   // ── Create Playlist ─────────────────────────────────────────────────────────
 
   /// Taps the "+" create button on the Playlists list screen.
@@ -69,8 +87,17 @@ class PlaylistPage extends BasePage {
   }
 
   /// Taps the "Delete playlist" option in the options sheet.
+  /// Drags the sheet upward first so the Delete option becomes visible.
   Future<void> tapOptionDelete() async {
-    await tapByKey(optionsDelete);
+    await tester.dragUntilVisible(
+      find.byKey(Key(optionsDelete)),
+      find.byKey(Key(optionsLike)),
+      const Offset(0, -100),
+      maxIteration: 20,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key(optionsDelete)));
+    await tester.pumpAndSettle();
   }
 
   // ── Edit Playlist Sheet ─────────────────────────────────────────────────────
