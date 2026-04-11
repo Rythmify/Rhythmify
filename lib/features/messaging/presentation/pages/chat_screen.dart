@@ -51,12 +51,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if(widget.conv!=null)
     {
       Future.microtask((){
+        ref.invalidate(messageProvider(widget.conv!.conversationId));
+        ref.invalidate(conversationProvider);
         final socket=ref.read(socketProvider);
         socket.joinConversation(widget.conv!.conversationId);
         socket.onMessageReceived((data){
           if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
             ref.invalidate(conversationProvider);
+          }
+        });
+        socket.onMessageReadUpdated((data){
+          if(mounted)
+          {
+            ref.invalidate(messageProvider(widget.conv!.conversationId));
           }
         });
       });
@@ -66,6 +74,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     controller.dispose();
+
     if(widget.conv!=null)
     {
       ref.read(socketProvider).leaveConversation(widget.conv!.conversationId);

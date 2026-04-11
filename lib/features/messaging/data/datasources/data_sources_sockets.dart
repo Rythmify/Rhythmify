@@ -5,9 +5,10 @@ class DataSourcesSockets{
 
   void connect(String url, String token)
   {
+    print('🔌 Connecting socket with token: ${token.substring(0, 20)}...');
     _socket=IO.io(url,IO.OptionBuilder()
       .setTransports(['websocket'])
-      .setAuth({'token':token})
+      .setAuth({'token': 'Bearer $token'})
       .disableAutoConnect()
       .build()
     );
@@ -15,6 +16,7 @@ class DataSourcesSockets{
     _socket.onConnect((_) => print('✅ Socket connected'));
     _socket.onDisconnect((_) => print('❌ Socket disconnected'));
     _socket.on('error', (data) => print('⚠️ Socket error: $data'));
+    _socket.connect();
   }
 
   void joinConversation(String conversationId)
@@ -55,15 +57,18 @@ class DataSourcesSockets{
     _socket.emit('message:stop_typing',{'conversationId':conversationId});
   }
 
-  void onMessageReceived(Function(Map<String,dynamic>) callback)
+  void onMessageReceived(Function(Map<String, dynamic>) callback) 
   {
-    _socket.on('message:received', (data)=>callback(data));
+    _socket.off('message:received');
+    _socket.on('message:received', (data) => callback(data));
   }
 
-  void onMessageReadUpdated(Function(Map<String,dynamic>) callback)
+  void onMessageReadUpdated(Function(Map<String, dynamic>) callback) 
   {
-    _socket.on('message:read_updated', (data)=>callback(data));
+    _socket.off('message:read_updated');
+    _socket.on('message:read_updated', (data) => callback(data));
   }
+
 
   void onTyping(Function(Map<String,dynamic>) callback)
   {
