@@ -91,7 +91,18 @@ class PlaylistMockData {
     return List<Track>.from(_sourceTracks[playlistId] ?? []);
   }
 
-  List<PlaylistTrack> getSuggestions() => List.unmodifiable(_suggestions);
+// In playlist_mock_data.dart, update getSuggestions:
+List<PlaylistTrack> getSuggestions({String? excludePlaylistId, bool shuffle = false}) {
+  if (excludePlaylistId == null) return List.unmodifiable(_suggestions);
+  final existingIds = (_sourceTracks[excludePlaylistId] ?? [])
+      .map((t) => t.id)
+      .toSet();
+  final filtered = _suggestions
+      .where((s) => !existingIds.contains(s.id))
+      .toList();
+  if (shuffle) filtered.shuffle();
+  return filtered;
+}
 
   // ── Mutations ─────────────────────────────────────────────────────────────
 

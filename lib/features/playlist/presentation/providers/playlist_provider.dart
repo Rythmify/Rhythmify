@@ -169,7 +169,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     return PlaylistDetailState(
       playlist: playlist,
       tracks: _db.getTracksFor(_playlistId),
-      suggestions: _db.getSuggestions(),
+      suggestions: _db.getSuggestions(excludePlaylistId: _playlistId),
     );
   }
 
@@ -218,9 +218,14 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     );
   }
 
-  void refreshSuggestions() {
-    state = state.copyWith(suggestions: _db.getSuggestions());
-  }
+void refreshSuggestions() {
+  state = state.copyWith(
+    suggestions: _db.getSuggestions(
+      excludePlaylistId: _playlistId,
+      shuffle: true,
+    ),
+  );
+}
 
   void reload() {
     state = _buildState();
