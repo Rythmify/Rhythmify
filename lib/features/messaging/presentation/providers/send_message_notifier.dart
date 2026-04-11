@@ -41,7 +41,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
       final message = await (uCase(conversationId, body, trackId, playlistId));
 
       final socket = ref.read(socketProvider);
-      socket.sendMessage(conversationId, {'messageId': message.messageId}); 
+      socket.sendMessage(conversationId, {'messageId': message.messageId});
 
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(conversationId));

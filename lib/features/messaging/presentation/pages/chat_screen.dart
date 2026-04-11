@@ -48,22 +48,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     controller = TextEditingController();
-    if(widget.conv!=null)
-    {
-      Future.microtask((){
+    if (widget.conv != null) {
+      Future.microtask(() {
         ref.invalidate(messageProvider(widget.conv!.conversationId));
         ref.invalidate(conversationProvider);
-        final socket=ref.read(socketProvider);
+        final socket = ref.read(socketProvider);
         socket.joinConversation(widget.conv!.conversationId);
-        socket.onMessageReceived((data){
+        socket.onMessageReceived((data) {
           if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
             ref.invalidate(conversationProvider);
           }
         });
-        socket.onMessageReadUpdated((data){
-          if(mounted)
-          {
+        socket.onMessageReadUpdated((data) {
+          if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
           }
         });
@@ -75,8 +73,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     controller.dispose();
 
-    if(widget.conv!=null)
-    {
+    if (widget.conv != null) {
       ref.read(socketProvider).leaveConversation(widget.conv!.conversationId);
     }
     super.dispose();
@@ -691,13 +688,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       if (newConv == null) return;
 
-      final socket=ref.read(socketProvider);
+      final socket = ref.read(socketProvider);
       socket.joinConversation(widget.conv!.conversationId);
-      socket.onMessageReceived((data){
+      socket.onMessageReceived((data) {
         ref.invalidate(messageProvider(newConv.conversationId));
         ref.invalidate(conversationProvider);
       });
-
 
       String remaining = controller.text;
 
