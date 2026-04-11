@@ -26,10 +26,11 @@ void main() {
           'audioUrl': 'http://audio.mp3',
           'duration': 180000,
           'createdAt': '2023-10-15T10:00:00.000Z',
-        }
+        },
       ];
-      when(() => mockLocalDataSource.getFullTracks())
-          .thenAnswer((_) async => tJsonList);
+      when(
+        () => mockLocalDataSource.getFullTracks(),
+      ).thenAnswer((_) async => tJsonList);
 
       final result = await repository.getTrackDetails('track-123');
 
@@ -47,10 +48,11 @@ void main() {
           'audioUrl': 'http://audio.mp3',
           'duration': 180000,
           'createdAt': '2023-10-15T10:00:00.000Z',
-        }
+        },
       ];
-      when(() => mockLocalDataSource.getSummaryTracks())
-          .thenAnswer((_) async => tJsonList);
+      when(
+        () => mockLocalDataSource.getSummaryTracks(),
+      ).thenAnswer((_) async => tJsonList);
 
       final result = await repository.getTracks();
 
@@ -61,11 +63,12 @@ void main() {
     test('getWaveform returns list of doubles', () async {
       final tResponse = {
         'data': {
-          'peaks': [0.1, 0.5, 1, 0.2]
-        }
+          'peaks': [0.1, 0.5, 1, 0.2],
+        },
       };
-      when(() => mockLocalDataSource.getWaveform(any()))
-          .thenAnswer((_) async => tResponse);
+      when(
+        () => mockLocalDataSource.getWaveform(any()),
+      ).thenAnswer((_) async => tResponse);
 
       final result = await repository.getWaveform('track-123');
 
@@ -77,11 +80,12 @@ void main() {
         'data': {
           'items': [
             {'id': 't1', 'name': 'Pop'},
-          ]
-        }
+          ],
+        },
       };
-      when(() => mockLocalDataSource.getTags())
-          .thenAnswer((_) async => tResponse);
+      when(
+        () => mockLocalDataSource.getTags(),
+      ).thenAnswer((_) async => tResponse);
 
       final result = await repository.getTags();
 

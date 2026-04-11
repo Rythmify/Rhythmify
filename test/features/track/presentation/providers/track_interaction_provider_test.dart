@@ -7,6 +7,7 @@ import 'package:rythmify/features/track/presentation/providers/track_dependency_
 import 'package:rythmify/features/track/presentation/providers/track_interaction_provider.dart';
 
 class MockToggleLike extends Mock implements ToggleLike {}
+
 class MockToggleRepost extends Mock implements ToggleRepost {}
 
 void main() {
@@ -32,43 +33,49 @@ void main() {
 
   group('TrackInteractionNotifier', () {
     test('handleToggleLike calls ToggleLike usecase', () async {
-      when(() => mockToggleLike.call(any(), any()))
-          .thenAnswer((_) async {});
+      when(() => mockToggleLike.call(any(), any())).thenAnswer((_) async {});
 
       final notifier = container.read(trackInteractionProvider);
-      
+
       await notifier.handleToggleLike('track-123', false);
 
       verify(() => mockToggleLike.call('track-123', false)).called(1);
     });
 
     test('handleToggleLike handles errors gracefully', () async {
-      when(() => mockToggleLike.call(any(), any()))
-          .thenThrow(Exception('Error'));
+      when(
+        () => mockToggleLike.call(any(), any()),
+      ).thenThrow(Exception('Error'));
 
       final notifier = container.read(trackInteractionProvider);
-      
-      await expectLater(notifier.handleToggleLike('track-123', false), completes);
+
+      await expectLater(
+        notifier.handleToggleLike('track-123', false),
+        completes,
+      );
     });
 
     test('handleToggleRepost calls ToggleRepost usecase', () async {
-      when(() => mockToggleRepost.call(any(), any()))
-          .thenAnswer((_) async {});
+      when(() => mockToggleRepost.call(any(), any())).thenAnswer((_) async {});
 
       final notifier = container.read(trackInteractionProvider);
-      
+
       await notifier.handleToggleRepost('track-123', true);
 
       verify(() => mockToggleRepost.call('track-123', true)).called(1);
     });
 
     test('handleToggleRepost handles errors gracefully', () async {
-      when(() => mockToggleRepost.call(any(), any()))
-          .thenThrow(Exception('Error'));
+      when(
+        () => mockToggleRepost.call(any(), any()),
+      ).thenThrow(Exception('Error'));
 
       final notifier = container.read(trackInteractionProvider);
-      
-      await expectLater(notifier.handleToggleRepost('track-123', true), completes);
+
+      await expectLater(
+        notifier.handleToggleRepost('track-123', true),
+        completes,
+      );
     });
   });
 }

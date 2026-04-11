@@ -1,23 +1,27 @@
 import '../entities/comment.dart';
 import '../repositories/comment_repository.dart';
 
-/// Use case to post a new comment or reply to a track.
+/// A Domain layer UseCase to post a new comment or reply to a track.
+///
+/// This UseCase contains the business logic for creating a new comment via the [CommentRepository].
 class PostCommentUseCase {
   final CommentRepository _repository;
 
+  /// Creates a [PostCommentUseCase] with the provided [_repository].
   PostCommentUseCase(this._repository);
 
-  /// Executes the use case.
+  /// Executes the use case to create the comment.
   ///
-  /// If [parentId] is null, it creates a root comment.
-  /// If [parentId] is provided, it creates a reply.
+  /// Requires the [trackId] it belongs to, the text [content], and the [trackTimestamp].
+  /// If [parentId] is null, it creates a root comment; if provided, it creates a reply.
+  /// Returns a [Future] resolving to the newly created [Comment] entity.
+  /// Throws an [ArgumentError] if the provided [content] is empty or just whitespace.
   Future<Comment> call({
     required String trackId,
     required String content,
     required int trackTimestamp,
     String? parentId,
   }) {
-    // Optional: Add domain-level validation here (e.g., throw error if content is empty)
     if (content.trim().isEmpty) {
       throw ArgumentError('Comment content cannot be empty.');
     }

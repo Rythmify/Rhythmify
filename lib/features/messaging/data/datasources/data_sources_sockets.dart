@@ -4,7 +4,6 @@ class DataSourcesSockets {
   late io.Socket _socket;
 
   void connect(String url, String token) {
-
     _socket = io.io(
       url,
       io.OptionBuilder()

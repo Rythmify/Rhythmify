@@ -13,10 +13,15 @@ import 'package:rythmify/features/comments/domain/usecases/toggle_comment_like_u
 import 'package:rythmify/features/comments/presentation/providers/comment_di_providers.dart';
 import 'package:rythmify/features/comments/presentation/providers/track_comments_notifier.dart';
 
-class MockGetTrackCommentsUseCase extends Mock implements GetTrackCommentsUseCase {}
+class MockGetTrackCommentsUseCase extends Mock
+    implements GetTrackCommentsUseCase {}
+
 class MockDeleteCommentUseCase extends Mock implements DeleteCommentUseCase {}
+
 class MockPostCommentUseCase extends Mock implements PostCommentUseCase {}
-class MockToggleCommentLikeUseCase extends Mock implements ToggleCommentLikeUseCase {}
+
+class MockToggleCommentLikeUseCase extends Mock
+    implements ToggleCommentLikeUseCase {}
 
 class MockAuthNotifier extends AuthNotifier with Mock {
   final AuthState _initialState;
@@ -65,7 +70,9 @@ void main() {
         deleteCommentProvider.overrideWithValue(mockDeleteComment),
         postCommentProvider.overrideWithValue(mockPostComment),
         toggleCommentLikeProvider.overrideWithValue(mockToggleCommentLike),
-        authProvider.overrideWith(() => MockAuthNotifier(AuthAuthenticated(tUser))),
+        authProvider.overrideWith(
+          () => MockAuthNotifier(AuthAuthenticated(tUser)),
+        ),
       ],
     );
   });
@@ -84,8 +91,11 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment]);
 
-      final sub = container.listen(trackCommentsProvider('track-456'), (prev, next) {});
-      
+      final sub = container.listen(
+        trackCommentsProvider('track-456'),
+        (prev, next) {},
+      );
+
       // Wait for fetch
       await Future.delayed(Duration.zero);
 
@@ -93,7 +103,7 @@ void main() {
       expect(state.comments, [tComment]);
       expect(state.currentPage, 2);
       expect(state.hasReachedMax, true);
-      
+
       sub.close();
     });
 
@@ -106,17 +116,28 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       notifier.setInitialCount(5);
-      expect(container.read(trackCommentsProvider('track-456')).totalCommentCount, 5);
+      expect(
+        container.read(trackCommentsProvider('track-456')).totalCommentCount,
+        5,
+      );
 
       notifier.incrementTotalCount();
-      expect(container.read(trackCommentsProvider('track-456')).totalCommentCount, 6);
+      expect(
+        container.read(trackCommentsProvider('track-456')).totalCommentCount,
+        6,
+      );
 
       notifier.decrementTotalCount();
-      expect(container.read(trackCommentsProvider('track-456')).totalCommentCount, 5);
+      expect(
+        container.read(trackCommentsProvider('track-456')).totalCommentCount,
+        5,
+      );
     });
 
     test('incrementReplyCount and decrementReplyCount', () async {
@@ -128,18 +149,28 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment]);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       notifier.incrementReplyCount('comment-123');
       expect(
-        container.read(trackCommentsProvider('track-456')).comments.first.replyCount,
+        container
+            .read(trackCommentsProvider('track-456'))
+            .comments
+            .first
+            .replyCount,
         3,
       );
 
       notifier.decrementReplyCount('comment-123');
       expect(
-        container.read(trackCommentsProvider('track-456')).comments.first.replyCount,
+        container
+            .read(trackCommentsProvider('track-456'))
+            .comments
+            .first
+            .replyCount,
         2,
       );
     });
@@ -155,15 +186,14 @@ void main() {
 
       when(() => mockDeleteComment(any())).thenThrow(Exception('Fail'));
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       notifier.setInitialCount(1);
 
-      expect(
-        () => notifier.deleteComment('comment-123'),
-        throwsException,
-      );
+      expect(() => notifier.deleteComment('comment-123'), throwsException);
       await Future.delayed(Duration.zero);
 
       final state = container.read(trackCommentsProvider('track-456'));
@@ -189,7 +219,9 @@ void main() {
         ),
       ).thenAnswer((_) async => returnedComment);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       await notifier.postNewComment('New comment', 1000);
@@ -208,10 +240,16 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment]);
 
-      when(() => mockToggleCommentLike(any(), isCurrentlyLiked: any(named: 'isCurrentlyLiked')))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockToggleCommentLike(
+          any(),
+          isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       await notifier.toggleLike('comment-123');
@@ -230,7 +268,9 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       notifier.toggleSort(CommentSortType.oldest);
@@ -247,8 +287,10 @@ void main() {
           page: 1,
           sortType: any(named: 'sortType'),
         ),
-      ).thenAnswer((_) async => List.generate(20, (i) => tComment.copyWith(id: 'c$i')));
-      
+      ).thenAnswer(
+        (_) async => List.generate(20, (i) => tComment.copyWith(id: 'c$i')),
+      );
+
       when(
         () => mockGetTrackComments(
           trackId: any(named: 'trackId'),
@@ -257,10 +299,15 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment.copyWith(id: 'c20')]);
 
-      final notifier = container.read(trackCommentsProvider('track-456').notifier);
+      final notifier = container.read(
+        trackCommentsProvider('track-456').notifier,
+      );
       await Future.delayed(Duration.zero);
 
-      expect(container.read(trackCommentsProvider('track-456')).comments.length, 20);
+      expect(
+        container.read(trackCommentsProvider('track-456')).comments.length,
+        20,
+      );
 
       await notifier.fetchNextPage();
 

@@ -6,7 +6,8 @@ import 'package:rythmify/features/comments/data/repositories/comment_remote_repo
 import 'package:rythmify/features/comments/domain/entities/comment.dart';
 import 'package:rythmify/features/comments/domain/repositories/comment_repository.dart';
 
-class MockCommentRemoteDataSource extends Mock implements CommentRemoteDataSource {}
+class MockCommentRemoteDataSource extends Mock
+    implements CommentRemoteDataSource {}
 
 void main() {
   late CommentRemoteRepositoryImpl repository;
@@ -188,28 +189,43 @@ void main() {
 
   group('toggleCommentLike', () {
     test('should unlike and return false if currently liked', () async {
-      when(() => mockRemoteDataSource.unlikeComment(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.unlikeComment(any()),
+      ).thenAnswer((_) async {});
 
-      final result = await repository.toggleCommentLike('comment-123', isCurrentlyLiked: true);
+      final result = await repository.toggleCommentLike(
+        'comment-123',
+        isCurrentlyLiked: true,
+      );
 
       expect(result, false);
       verify(() => mockRemoteDataSource.unlikeComment('comment-123')).called(1);
     });
 
     test('should like and return true if currently not liked', () async {
-      when(() => mockRemoteDataSource.likeComment(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.likeComment(any()),
+      ).thenAnswer((_) async {});
 
-      final result = await repository.toggleCommentLike('comment-123', isCurrentlyLiked: false);
+      final result = await repository.toggleCommentLike(
+        'comment-123',
+        isCurrentlyLiked: false,
+      );
 
       expect(result, true);
       verify(() => mockRemoteDataSource.likeComment('comment-123')).called(1);
     });
 
     test('should throw Exception if datasource throws', () async {
-      when(() => mockRemoteDataSource.likeComment(any())).thenThrow(Exception('Error'));
+      when(
+        () => mockRemoteDataSource.likeComment(any()),
+      ).thenThrow(Exception('Error'));
 
       expect(
-        () => repository.toggleCommentLike('comment-123', isCurrentlyLiked: false),
+        () => repository.toggleCommentLike(
+          'comment-123',
+          isCurrentlyLiked: false,
+        ),
         throwsException,
       );
     });
@@ -217,7 +233,9 @@ void main() {
 
   group('deleteComment', () {
     test('should call delete on datasource', () async {
-      when(() => mockRemoteDataSource.deleteComment(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.deleteComment(any()),
+      ).thenAnswer((_) async {});
 
       await repository.deleteComment('comment-123');
 
@@ -225,35 +243,42 @@ void main() {
     });
 
     test('should throw Exception if datasource throws', () async {
-      when(() => mockRemoteDataSource.deleteComment(any())).thenThrow(Exception('Error'));
+      when(
+        () => mockRemoteDataSource.deleteComment(any()),
+      ).thenThrow(Exception('Error'));
 
-      expect(
-        () => repository.deleteComment('comment-123'),
-        throwsException,
-      );
+      expect(() => repository.deleteComment('comment-123'), throwsException);
     });
   });
 
   group('blockUser & unblockUser', () {
     test('should call blockUser on datasource', () async {
-      when(() => mockRemoteDataSource.blockUser(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.blockUser(any()),
+      ).thenAnswer((_) async {});
       await repository.blockUser('user-789');
       verify(() => mockRemoteDataSource.blockUser('user-789')).called(1);
     });
 
     test('should throw Exception if blockUser throws', () async {
-      when(() => mockRemoteDataSource.blockUser(any())).thenThrow(Exception('Error'));
+      when(
+        () => mockRemoteDataSource.blockUser(any()),
+      ).thenThrow(Exception('Error'));
       expect(() => repository.blockUser('user-789'), throwsException);
     });
 
     test('should call unblockUser on datasource', () async {
-      when(() => mockRemoteDataSource.unblockUser(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemoteDataSource.unblockUser(any()),
+      ).thenAnswer((_) async {});
       await repository.unblockUser('user-789');
       verify(() => mockRemoteDataSource.unblockUser('user-789')).called(1);
     });
 
     test('should throw Exception if unblockUser throws', () async {
-      when(() => mockRemoteDataSource.unblockUser(any())).thenThrow(Exception('Error'));
+      when(
+        () => mockRemoteDataSource.unblockUser(any()),
+      ).thenThrow(Exception('Error'));
       expect(() => repository.unblockUser('user-789'), throwsException);
     });
   });

@@ -26,8 +26,9 @@ void main() {
         'duration': 180000,
         'createdAt': '2023-10-15T10:00:00.000Z',
       };
-      when(() => mockRemoteDataSource.getTrackDetails(any()))
-          .thenAnswer((_) async => tJson);
+      when(
+        () => mockRemoteDataSource.getTrackDetails(any()),
+      ).thenAnswer((_) async => tJson);
 
       final result = await repository.getTrackDetails('track-123');
 
@@ -46,10 +47,11 @@ void main() {
           'audioUrl': 'http://audio.mp3',
           'duration': 180000,
           'createdAt': '2023-10-15T10:00:00.000Z',
-        }
+        },
       ];
-      when(() => mockRemoteDataSource.getTracks())
-          .thenAnswer((_) async => tJsonList);
+      when(
+        () => mockRemoteDataSource.getTracks(),
+      ).thenAnswer((_) async => tJsonList);
 
       final result = await repository.getTracks();
 
@@ -61,11 +63,12 @@ void main() {
     test('getWaveform returns list of doubles', () async {
       final tResponse = {
         'data': {
-          'peaks': [0.1, 0.5, 1, 0.2]
-        }
+          'peaks': [0.1, 0.5, 1, 0.2],
+        },
       };
-      when(() => mockRemoteDataSource.getWaveform(any()))
-          .thenAnswer((_) async => tResponse);
+      when(
+        () => mockRemoteDataSource.getWaveform(any()),
+      ).thenAnswer((_) async => tResponse);
 
       final result = await repository.getWaveform('track-123');
 
@@ -78,11 +81,12 @@ void main() {
           'items': [
             {'id': 't1', 'name': 'Pop'},
             {'id': 't2', 'name': 'Rock'},
-          ]
-        }
+          ],
+        },
       };
-      when(() => mockRemoteDataSource.getTags())
-          .thenAnswer((_) async => tResponse);
+      when(
+        () => mockRemoteDataSource.getTags(),
+      ).thenAnswer((_) async => tResponse);
 
       final result = await repository.getTags();
 

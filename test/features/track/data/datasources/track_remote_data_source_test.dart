@@ -5,6 +5,7 @@ import 'package:rythmify/core/network/api_client.dart';
 import 'package:rythmify/features/track/data/datasources/track_remote_data_source.dart';
 
 class MockApiClient extends Mock implements ApiClient {}
+
 class MockDio extends Mock implements Dio {}
 
 void main() {
@@ -36,24 +37,34 @@ void main() {
       verify(() => mockDio.get('/tracks/track-123')).called(1);
     });
 
-    test('getTracks performs GET request and returns list when wrapped in data', () async {
-      final tResponse = {'data': [{'id': 'track-1'}, {'id': 'track-2'}]};
-      when(() => mockDio.get(any())).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: tResponse,
-          statusCode: 200,
-        ),
-      );
+    test(
+      'getTracks performs GET request and returns list when wrapped in data',
+      () async {
+        final tResponse = {
+          'data': [
+            {'id': 'track-1'},
+            {'id': 'track-2'},
+          ],
+        };
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            data: tResponse,
+            statusCode: 200,
+          ),
+        );
 
-      final result = await dataSource.getTracks();
+        final result = await dataSource.getTracks();
 
-      expect(result.length, 2);
-      verify(() => mockDio.get('/tracks')).called(1);
-    });
+        expect(result.length, 2);
+        verify(() => mockDio.get('/tracks')).called(1);
+      },
+    );
 
     test('getTracks performs GET request and returns list directly', () async {
-      final tResponse = [{'id': 'track-1'}];
+      final tResponse = [
+        {'id': 'track-1'},
+      ];
       when(() => mockDio.get(any())).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -69,7 +80,11 @@ void main() {
     });
 
     test('getWaveform performs GET request and returns map', () async {
-      final tResponse = {'data': {'peaks': [0.1, 0.2]}};
+      final tResponse = {
+        'data': {
+          'peaks': [0.1, 0.2],
+        },
+      };
       when(() => mockDio.get(any())).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -85,7 +100,13 @@ void main() {
     });
 
     test('getTags performs GET request and returns map', () async {
-      final tResponse = {'data': {'items': [{'id': 't1', 'name': 'Pop'}]}};
+      final tResponse = {
+        'data': {
+          'items': [
+            {'id': 't1', 'name': 'Pop'},
+          ],
+        },
+      };
       when(() => mockDio.get(any())).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),

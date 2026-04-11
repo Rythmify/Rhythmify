@@ -137,9 +137,7 @@ void main() {
     setUp(() => useCase = GetFloatingCommentsUseCase(mockRepository));
 
     test('should return floating comments map from repository', () async {
-      final tMap = {
-        45: (pfp: 'https://example.com/pfp.png', text: 'Nice!'),
-      };
+      final tMap = {45: (pfp: 'https://example.com/pfp.png', text: 'Nice!')};
 
       when(
         () => mockRepository.getFloatingComments(any()),
@@ -189,24 +187,27 @@ void main() {
       ).called(1);
     });
 
-    test('should throw ArgumentError if content is empty or whitespace', () async {
-      expect(
-        () => useCase(
-          trackId: 'track-456',
-          content: '   ',
-          trackTimestamp: 45000,
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
-      verifyNever(
-        () => mockRepository.postComment(
-          trackId: any(named: 'trackId'),
-          content: any(named: 'content'),
-          trackTimestamp: any(named: 'trackTimestamp'),
-          parentId: any(named: 'parentId'),
-        ),
-      );
-    });
+    test(
+      'should throw ArgumentError if content is empty or whitespace',
+      () async {
+        expect(
+          () => useCase(
+            trackId: 'track-456',
+            content: '   ',
+            trackTimestamp: 45000,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+        verifyNever(
+          () => mockRepository.postComment(
+            trackId: any(named: 'trackId'),
+            content: any(named: 'content'),
+            trackTimestamp: any(named: 'trackTimestamp'),
+            parentId: any(named: 'parentId'),
+          ),
+        );
+      },
+    );
   });
 
   // =========================================================================
@@ -248,9 +249,7 @@ void main() {
     setUp(() => useCase = DeleteCommentUseCase(mockRepository));
 
     test('should call delete on repository', () async {
-      when(
-        () => mockRepository.deleteComment(any()),
-      ).thenAnswer((_) async {});
+      when(() => mockRepository.deleteComment(any())).thenAnswer((_) async {});
 
       await useCase('comment-123');
 
@@ -268,9 +267,7 @@ void main() {
     setUp(() => useCase = BlockUserUseCase(mockRepository));
 
     test('should call blockUser on repository', () async {
-      when(
-        () => mockRepository.blockUser(any()),
-      ).thenAnswer((_) async {});
+      when(() => mockRepository.blockUser(any())).thenAnswer((_) async {});
 
       await useCase('user-789');
 
@@ -288,9 +285,7 @@ void main() {
     setUp(() => useCase = UnblockUserUseCase(mockRepository));
 
     test('should call unblockUser on repository', () async {
-      when(
-        () => mockRepository.unblockUser(any()),
-      ).thenAnswer((_) async {});
+      when(() => mockRepository.unblockUser(any())).thenAnswer((_) async {});
 
       await useCase('user-789');
 

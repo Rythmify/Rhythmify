@@ -6,6 +6,7 @@ import 'package:rythmify/features/comments/data/datasources/comment_remote_datas
 import 'package:rythmify/features/comments/data/models/comment_dto.dart';
 
 class MockApiClient extends Mock implements ApiClient {}
+
 class MockDio extends Mock implements Dio {}
 
 void main() {
@@ -38,55 +39,52 @@ void main() {
   };
 
   group('getTrackComments', () {
-    test('should perform a GET request and return a list of CommentDto', () async {
-      when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: {
-            'data': {
-              'items': [tCommentJson],
+    test(
+      'should perform a GET request and return a list of CommentDto',
+      () async {
+        when(
+          () => mockDio.get(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            data: {
+              'data': {
+                'items': [tCommentJson],
+              },
             },
-          },
-          statusCode: 200,
-        ),
-      );
+            statusCode: 200,
+          ),
+        );
 
-      final result = await dataSource.getTrackComments(
-        trackId: 'track-456',
-        page: 2,
-        limit: 20,
-        sortValue: 'newest',
-      );
+        final result = await dataSource.getTrackComments(
+          trackId: 'track-456',
+          page: 2,
+          limit: 20,
+          sortValue: 'newest',
+        );
 
-      expect(result, isA<List<CommentDto>>());
-      expect(result.length, 1);
-      expect(result.first.id, 'comment-123');
+        expect(result, isA<List<CommentDto>>());
+        expect(result.length, 1);
+        expect(result.first.id, 'comment-123');
 
-      verify(
-        () => mockDio.get(
-          '/tracks/track-456/comments',
-          queryParameters: {
-            'limit': 20,
-            'offset': 20,
-            'sort': 'newest',
-          },
-        ),
-      ).called(1);
-    });
+        verify(
+          () => mockDio.get(
+            '/tracks/track-456/comments',
+            queryParameters: {'limit': 20, 'offset': 20, 'sort': 'newest'},
+          ),
+        ).called(1);
+      },
+    );
   });
 
   group('getCommentReplies', () {
     test('should perform a GET request and return a list of replies', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -112,11 +110,7 @@ void main() {
       verify(
         () => mockDio.get(
           '/comments/comment-123/replies',
-          queryParameters: {
-            'limit': 10,
-            'offset': 0,
-            'sort': 'oldest',
-          },
+          queryParameters: {'limit': 10, 'offset': 0, 'sort': 'oldest'},
         ),
       ).called(1);
     });
@@ -125,10 +119,8 @@ void main() {
   group('getAllCommentsForTrack', () {
     test('should perform a GET request for a large batch', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -147,57 +139,51 @@ void main() {
       verify(
         () => mockDio.get(
           '/tracks/track-456/comments',
-          queryParameters: {
-            'limit': 1000,
-            'offset': 0,
-          },
+          queryParameters: {'limit': 1000, 'offset': 0},
         ),
       ).called(1);
     });
   });
 
   group('postComment', () {
-    test('should perform a POST request and return the created CommentDto', () async {
-      when(
-        () => mockDio.post(
-          any(),
-          data: any(named: 'data'),
-        ),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: {
-            'data': tCommentJson,
-          },
-          statusCode: 201,
-        ),
-      );
+    test(
+      'should perform a POST request and return the created CommentDto',
+      () async {
+        when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            data: {'data': tCommentJson},
+            statusCode: 201,
+          ),
+        );
 
-      final result = await dataSource.postComment(
-        trackId: 'track-456',
-        content: 'Great track!',
-        trackTimestamp: 45000,
-        parentId: 'parent-123',
-      );
+        final result = await dataSource.postComment(
+          trackId: 'track-456',
+          content: 'Great track!',
+          trackTimestamp: 45000,
+          parentId: 'parent-123',
+        );
 
-      expect(result.id, 'comment-123');
-      verify(
-        () => mockDio.post(
-          '/tracks/track-456/comments',
-          data: {
-            'content': 'Great track!',
-            'track_timestamp': 45000,
-            'parent_comment_id': 'parent-123',
-          },
-        ),
-      ).called(1);
-    });
+        expect(result.id, 'comment-123');
+        verify(
+          () => mockDio.post(
+            '/tracks/track-456/comments',
+            data: {
+              'content': 'Great track!',
+              'track_timestamp': 45000,
+              'parent_comment_id': 'parent-123',
+            },
+          ),
+        ).called(1);
+      },
+    );
   });
 
   group('likeComment & unlikeComment', () {
     test('likeComment performs POST request', () async {
       when(() => mockDio.post(any())).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
+        (_) async =>
+            Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
       );
 
       await dataSource.likeComment('comment-123');
@@ -207,7 +193,8 @@ void main() {
 
     test('unlikeComment performs DELETE request', () async {
       when(() => mockDio.delete(any())).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
+        (_) async =>
+            Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
       );
 
       await dataSource.unlikeComment('comment-123');
@@ -219,7 +206,8 @@ void main() {
   group('deleteComment', () {
     test('performs DELETE request', () async {
       when(() => mockDio.delete(any())).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
+        (_) async =>
+            Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
       );
 
       await dataSource.deleteComment('comment-123');
@@ -231,7 +219,8 @@ void main() {
   group('blockUser & unblockUser', () {
     test('blockUser performs POST request', () async {
       when(() => mockDio.post(any())).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
+        (_) async =>
+            Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
       );
 
       await dataSource.blockUser('user-789');
@@ -241,7 +230,8 @@ void main() {
 
     test('unblockUser performs DELETE request', () async {
       when(() => mockDio.delete(any())).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
+        (_) async =>
+            Response(requestOptions: RequestOptions(path: ''), statusCode: 200),
       );
 
       await dataSource.unblockUser('user-789');

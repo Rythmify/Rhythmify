@@ -37,8 +37,9 @@ void main() {
     });
 
     test('should return track details from repository', () async {
-      when(() => mockRepository.getTrackDetails(any()))
-          .thenAnswer((_) async => tTrack);
+      when(
+        () => mockRepository.getTrackDetails(any()),
+      ).thenAnswer((_) async => tTrack);
 
       final result = await usecase('track-123');
 
@@ -60,8 +61,7 @@ void main() {
     });
 
     test('should return list of tracks from repository', () async {
-      when(() => mockRepository.getTracks())
-          .thenAnswer((_) async => [tTrack]);
+      when(() => mockRepository.getTracks()).thenAnswer((_) async => [tTrack]);
 
       final result = await usecase();
 
@@ -79,8 +79,9 @@ void main() {
 
     test('should return list of doubles from repository', () async {
       final tWaveform = [0.1, 0.5, 1.0, 0.2];
-      when(() => mockRepository.getWaveform(any()))
-          .thenAnswer((_) async => tWaveform);
+      when(
+        () => mockRepository.getWaveform(any()),
+      ).thenAnswer((_) async => tWaveform);
 
       final result = await usecase('track-123');
 
@@ -98,8 +99,7 @@ void main() {
 
     test('should return map of tags from repository', () async {
       final tTags = {'tag1': 'Pop', 'tag2': 'Rock'};
-      when(() => mockRepository.getTags())
-          .thenAnswer((_) async => tTags);
+      when(() => mockRepository.getTags()).thenAnswer((_) async => tTags);
 
       final result = await usecase();
 
@@ -116,8 +116,7 @@ void main() {
     });
 
     test('should call recordPlay on repository', () async {
-      when(() => mockRepository.recordPlay(any()))
-          .thenAnswer((_) async {});
+      when(() => mockRepository.recordPlay(any())).thenAnswer((_) async {});
 
       await usecase('track-123');
 
@@ -138,8 +137,9 @@ void main() {
     });
 
     test('should call toggleLike on repository with toggled boolean', () async {
-      when(() => mockRepository.toggleLike(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepository.toggleLike(any(), any()),
+      ).thenAnswer((_) async {});
 
       await usecase('track-123', true);
 
@@ -159,14 +159,18 @@ void main() {
       usecase = ToggleRepost(mockRepository);
     });
 
-    test('should call toggleRepost on repository with toggled boolean', () async {
-      when(() => mockRepository.toggleRepost(any(), any()))
-          .thenAnswer((_) async {});
+    test(
+      'should call toggleRepost on repository with toggled boolean',
+      () async {
+        when(
+          () => mockRepository.toggleRepost(any(), any()),
+        ).thenAnswer((_) async {});
 
-      await usecase('track-123', false);
+        await usecase('track-123', false);
 
-      verify(() => mockRepository.toggleRepost('track-123', true)).called(1);
-    });
+        verify(() => mockRepository.toggleRepost('track-123', true)).called(1);
+      },
+    );
 
     test('should return early if id is empty', () async {
       await usecase('', false);

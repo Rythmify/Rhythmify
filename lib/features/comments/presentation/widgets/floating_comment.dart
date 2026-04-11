@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 
+/// A UI widget that displays a "floating" comment tag over an audio waveform.
+///
+/// This widget renders a horizontal row containing the user's profile picture
+/// (or a fallback icon) next to a dark, semi-transparent bubble showing a snippet
+/// of the comment text. It is used to visualize comments at specific timestamps.
 class FloatingComment extends StatelessWidget {
+  /// The optional network URL for the user's profile picture.
   final String? imageUrl;
+
+  /// The text content to display inside the floating bubble.
   final String text;
 
+  /// Creates a [FloatingComment] with the specified [text] and optional [imageUrl].
   const FloatingComment({super.key, this.imageUrl, required this.text});
 
   @override
   Widget build(BuildContext context) {
-    // The Row is now the root widget
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Profile Picture
         Container(
           width: 32,
           height: 32,
@@ -31,13 +38,11 @@ class FloatingComment extends StatelessWidget {
               ? const Icon(Icons.person, size: 16, color: Colors.white)
               : null,
         ),
-        
+
         const SizedBox(width: 8),
 
-        // 2. The Comment Box
         Flexible(
           child: Container(
-            // Adjusted padding to look balanced without the pfp inside
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.75),

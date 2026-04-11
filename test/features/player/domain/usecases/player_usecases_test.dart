@@ -55,12 +55,18 @@ void main() {
     });
 
     test('should call loadQueue on repository', () async {
-      when(() => mockRepository.loadQueue(any(), initialIndex: any(named: 'initialIndex')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepository.loadQueue(
+          any(),
+          initialIndex: any(named: 'initialIndex'),
+        ),
+      ).thenAnswer((_) async {});
 
       await usecase([tTrack], initialIndex: 1);
 
-      verify(() => mockRepository.loadQueue([tTrack], initialIndex: 1)).called(1);
+      verify(
+        () => mockRepository.loadQueue([tTrack], initialIndex: 1),
+      ).called(1);
     });
   });
 
@@ -152,7 +158,9 @@ void main() {
     });
 
     test('should call updateTrackInfo on repository', () async {
-      when(() => mockRepository.updateTrackInfo(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockRepository.updateTrackInfo(any(), any()),
+      ).thenAnswer((_) async {});
 
       await usecase('track-1', tTrack);
 

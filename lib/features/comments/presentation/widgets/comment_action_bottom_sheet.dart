@@ -15,9 +15,16 @@ import '../providers/track_comments_notifier.dart';
 import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
 
+/// A bottom sheet widget displaying contextual actions for a specific comment.
+///
+/// This Presentation layer widget allows users to interact with a comment, offering
+/// options such as copying text, navigating to the author's profile, playing the
+/// track from the comment's timestamp, deleting (if owned), reporting, or blocking.
 class CommentActionBottomSheet extends ConsumerWidget {
+  /// The [Comment] entity this action sheet is interacting with.
   final Comment comment;
 
+  /// Creates a [CommentActionBottomSheet] for the given [comment].
   const CommentActionBottomSheet({super.key, required this.comment});
 
   void _copyComment(BuildContext context) {

@@ -12,7 +12,9 @@ import 'package:rythmify/features/track/presentation/providers/track_dependency_
 import 'package:rythmify/features/track/presentation/providers/track_provider.dart';
 
 class MockGetTrackDetails extends Mock implements GetTrackDetails {}
+
 class MockGetProfileUseCase extends Mock implements GetProfileUseCase {}
+
 class MockGetTracks extends Mock implements GetTracks {}
 
 void main() {
@@ -62,31 +64,42 @@ void main() {
   });
 
   group('trackDetailsProvider', () {
-    test('should fetch track and populate artist details from profile', () async {
-      when(() => mockGetTrackDetails.call(any()))
-          .thenAnswer((_) async => tTrack);
-      when(() => mockGetProfileUseCase.call(userId: any(named: 'userId')))
-          .thenAnswer((_) async => Right(tProfile));
+    test(
+      'should fetch track and populate artist details from profile',
+      () async {
+        when(
+          () => mockGetTrackDetails.call(any()),
+        ).thenAnswer((_) async => tTrack);
+        when(
+          () => mockGetProfileUseCase.call(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Right(tProfile));
 
-      final result = await container.read(trackDetailsProvider('track-123').future);
+        final result = await container.read(
+          trackDetailsProvider('track-123').future,
+        );
 
-      expect(result.id, 'track-123');
-      expect(result.artist, 'Super John'); // Populated from profile
-      expect(result.artistPfp, 'https://example.com/avatar.jpg');
-      expect(result.artistCity, 'New York');
-      expect(result.artistCountry, 'USA');
+        expect(result.id, 'track-123');
+        expect(result.artist, 'Super John'); // Populated from profile
+        expect(result.artistPfp, 'https://example.com/avatar.jpg');
+        expect(result.artistCity, 'New York');
+        expect(result.artistCountry, 'USA');
 
-      verify(() => mockGetTrackDetails.call('track-123')).called(1);
-      verify(() => mockGetProfileUseCase.call(userId: 'user-789')).called(1);
-    });
+        verify(() => mockGetTrackDetails.call('track-123')).called(1);
+        verify(() => mockGetProfileUseCase.call(userId: 'user-789')).called(1);
+      },
+    );
 
     test('should return track as is if profile fetch fails', () async {
-      when(() => mockGetTrackDetails.call(any()))
-          .thenAnswer((_) async => tTrack);
-      when(() => mockGetProfileUseCase.call(userId: any(named: 'userId')))
-          .thenAnswer((_) async => const Left(ServerFailure('Error')));
+      when(
+        () => mockGetTrackDetails.call(any()),
+      ).thenAnswer((_) async => tTrack);
+      when(
+        () => mockGetProfileUseCase.call(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => const Left(ServerFailure('Error')));
 
-      final result = await container.read(trackDetailsProvider('track-123').future);
+      final result = await container.read(
+        trackDetailsProvider('track-123').future,
+      );
 
       expect(result.id, 'track-123');
       expect(result.artist, 'John Doe'); // Original from track
@@ -99,8 +112,7 @@ void main() {
 
   group('allTracksProvider', () {
     test('should return list of tracks from getTracks usecase', () async {
-      when(() => mockGetTracks.call())
-          .thenAnswer((_) async => [tTrack]);
+      when(() => mockGetTracks.call()).thenAnswer((_) async => [tTrack]);
 
       final result = await container.read(allTracksProvider.future);
 

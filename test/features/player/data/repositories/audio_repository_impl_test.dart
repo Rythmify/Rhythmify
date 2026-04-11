@@ -8,6 +8,7 @@ import 'package:rythmify/features/player/data/datasources/audio_handler.dart';
 import 'package:rythmify/features/player/data/repositories/audio_repository_impl.dart';
 
 class MockRythmifyAudioHandler extends Mock implements RythmifyAudioHandler {}
+
 class MockPlaybackEvent extends Mock implements PlaybackEvent {}
 
 void main() {
@@ -37,11 +38,19 @@ void main() {
     currentIndexController = StreamController<int?>.broadcast();
     playingController = StreamController<bool>.broadcast();
 
-    when(() => mockHandler.playbackEventStream).thenAnswer((_) => playbackEventController.stream);
-    when(() => mockHandler.positionStream).thenAnswer((_) => positionController.stream);
-    when(() => mockHandler.currentIndexStream).thenAnswer((_) => currentIndexController.stream);
-    when(() => mockHandler.playingStream).thenAnswer((_) => playingController.stream);
-    
+    when(
+      () => mockHandler.playbackEventStream,
+    ).thenAnswer((_) => playbackEventController.stream);
+    when(
+      () => mockHandler.positionStream,
+    ).thenAnswer((_) => positionController.stream);
+    when(
+      () => mockHandler.currentIndexStream,
+    ).thenAnswer((_) => currentIndexController.stream);
+    when(
+      () => mockHandler.playingStream,
+    ).thenAnswer((_) => playingController.stream);
+
     when(() => mockHandler.currentQueue).thenReturn([]);
     when(() => mockHandler.playing).thenReturn(false);
     when(() => mockHandler.processingState).thenReturn(ProcessingState.idle);
@@ -62,8 +71,12 @@ void main() {
     });
 
     test('loadQueue sets loading state and calls handler', () async {
-      when(() => mockHandler.loadQueue(any(), initialIndex: any(named: 'initialIndex')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockHandler.loadQueue(
+          any(),
+          initialIndex: any(named: 'initialIndex'),
+        ),
+      ).thenAnswer((_) async {});
 
       await repository.loadQueue([tTrack], initialIndex: 0);
 
@@ -102,34 +115,41 @@ void main() {
       expect(repository.currentState.loopMode, 'all');
     });
 
-    test('updateTrackInfo updates handler and state if track is current', () async {
-      when(() => mockHandler.updateTrackInfo(any(), any())).thenAnswer((_) async {});
-      when(() => mockHandler.currentQueue).thenReturn([tTrack]);
-      
-      // We need to set the current track manually for the test
-      // Since it's internal, we simulate it via the index stream
-      currentIndexController.add(0);
-      await Future.delayed(Duration.zero);
+    test(
+      'updateTrackInfo updates handler and state if track is current',
+      () async {
+        when(
+          () => mockHandler.updateTrackInfo(any(), any()),
+        ).thenAnswer((_) async {});
+        when(() => mockHandler.currentQueue).thenReturn([tTrack]);
 
-      final updatedTrack = tTrack.copyWith(title: 'Updated Title');
-      await repository.updateTrackInfo('track-1', updatedTrack);
+        // We need to set the current track manually for the test
+        // Since it's internal, we simulate it via the index stream
+        currentIndexController.add(0);
+        await Future.delayed(Duration.zero);
 
-      verify(() => mockHandler.updateTrackInfo('track-1', updatedTrack)).called(1);
-      expect(repository.currentState.currentTrack?.title, 'Updated Title');
-    });
-    
+        final updatedTrack = tTrack.copyWith(title: 'Updated Title');
+        await repository.updateTrackInfo('track-1', updatedTrack);
+
+        verify(
+          () => mockHandler.updateTrackInfo('track-1', updatedTrack),
+        ).called(1);
+        expect(repository.currentState.currentTrack?.title, 'Updated Title');
+      },
+    );
+
     test('positionStream updates position in state', () async {
       positionController.add(const Duration(seconds: 5));
       await Future.delayed(Duration.zero);
       expect(repository.currentState.position, const Duration(seconds: 5));
     });
-    
+
     test('playingStream updates status in state', () async {
       when(() => mockHandler.processingState).thenReturn(ProcessingState.ready);
       playingController.add(true);
       await Future.delayed(Duration.zero);
       expect(repository.currentState.status, PlayerStatus.playing);
-      
+
       playingController.add(false);
       await Future.delayed(Duration.zero);
       expect(repository.currentState.status, PlayerStatus.paused);

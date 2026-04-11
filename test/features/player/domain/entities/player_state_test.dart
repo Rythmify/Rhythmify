@@ -55,9 +55,7 @@ void main() {
         position: const Duration(seconds: 10),
       );
 
-      final updatedState = state.copyWith(
-        status: PlayerStatus.paused,
-      );
+      final updatedState = state.copyWith(status: PlayerStatus.paused);
 
       expect(updatedState.status, PlayerStatus.paused);
       expect(updatedState.currentTrack, tTrack);

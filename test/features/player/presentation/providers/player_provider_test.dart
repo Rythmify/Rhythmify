@@ -16,15 +16,26 @@ import 'package:rythmify/features/track/domain/usecases/get_track_details.dart';
 import 'package:rythmify/features/track/domain/usecases/get_waveform.dart';
 import 'package:rythmify/features/track/presentation/providers/track_dependency_providers.dart';
 
-class MockGetPlayerStateStreamUseCase extends Mock implements GetPlayerStateStreamUseCase {}
+class MockGetPlayerStateStreamUseCase extends Mock
+    implements GetPlayerStateStreamUseCase {}
+
 class MockLoadQueueUseCase extends Mock implements LoadQueueUseCase {}
+
 class MockPlayTrackUseCase extends Mock implements PlayTrackUseCase {}
+
 class MockPauseTrackUseCase extends Mock implements PauseTrackUseCase {}
+
 class MockSkipToNextUseCase extends Mock implements SkipToNextUseCase {}
+
 class MockSkipToPreviousUseCase extends Mock implements SkipToPreviousUseCase {}
+
 class MockSeekPositionUseCase extends Mock implements SeekPositionUseCase {}
-class MockUpdateTrackInfoUseCase extends Mock implements UpdateTrackInfoUseCase {}
+
+class MockUpdateTrackInfoUseCase extends Mock
+    implements UpdateTrackInfoUseCase {}
+
 class MockGetTrackDetailsUseCase extends Mock implements GetTrackDetails {}
+
 class MockGetWaveformUseCase extends Mock implements GetWaveform {}
 
 void main() {
@@ -65,11 +76,15 @@ void main() {
     mockGetWaveform = MockGetWaveformUseCase();
 
     streamController = StreamController<AppPlayerState>.broadcast();
-    when(() => mockGetPlayerStateStream.call()).thenAnswer((_) => streamController.stream);
+    when(
+      () => mockGetPlayerStateStream.call(),
+    ).thenAnswer((_) => streamController.stream);
 
     container = ProviderContainer(
       overrides: [
-        getPlayerStateStreamUseCaseProvider.overrideWithValue(mockGetPlayerStateStream),
+        getPlayerStateStreamUseCaseProvider.overrideWithValue(
+          mockGetPlayerStateStream,
+        ),
         loadQueueUseCaseProvider.overrideWithValue(mockLoadQueue),
         playTrackUseCaseProvider.overrideWithValue(mockPlayTrack),
         pauseTrackUseCaseProvider.overrideWithValue(mockPauseTrack),
@@ -96,9 +111,12 @@ void main() {
 
     test('setPosition updates state', () {
       final notifier = container.read(seekDragPositionProvider.notifier);
-      
+
       notifier.setPosition(const Duration(seconds: 10));
-      expect(container.read(seekDragPositionProvider), const Duration(seconds: 10));
+      expect(
+        container.read(seekDragPositionProvider),
+        const Duration(seconds: 10),
+      );
 
       notifier.setPosition(null);
       expect(container.read(seekDragPositionProvider), isNull);
@@ -108,7 +126,7 @@ void main() {
   group('PlayerNotifier', () {
     test('initial state uses stream to update itself', () async {
       final sub = container.listen(playerStateProvider, (prev, next) {});
-      
+
       streamController.add(const AppPlayerState(status: PlayerStatus.playing));
       await Future.delayed(Duration.zero);
 
@@ -123,7 +141,7 @@ void main() {
       final notifier = container.read(playerStateProvider.notifier);
 
       notifier.setDragging(true);
-      
+
       streamController.add(const AppPlayerState(status: PlayerStatus.playing));
       await Future.delayed(Duration.zero);
 
@@ -134,8 +152,10 @@ void main() {
     });
 
     test('loadAndPlayQueue calls correct use cases', () async {
-      when(() => mockLoadQueue.call(any(), initialIndex: any(named: 'initialIndex')))
-          .thenAnswer((_) async {});
+      when(
+        () =>
+            mockLoadQueue.call(any(), initialIndex: any(named: 'initialIndex')),
+      ).thenAnswer((_) async {});
       when(() => mockPlayTrack.call()).thenAnswer((_) async {});
 
       final notifier = container.read(playerStateProvider.notifier);
@@ -145,45 +165,60 @@ void main() {
       verify(() => mockPlayTrack.call()).called(1);
     });
 
-    test('playOptimistic loads queue and updates track in background', () async {
-      when(() => mockLoadQueue.call(any(), initialIndex: any(named: 'initialIndex')))
-          .thenAnswer((_) async {});
-      when(() => mockPlayTrack.call()).thenAnswer((_) async {});
-      
-      when(() => mockGetTrackDetails.call(any())).thenAnswer((_) async => tTrack);
-      when(() => mockGetWaveform.call(any())).thenAnswer((_) async => [0.1, 0.2]);
-      when(() => mockUpdateTrackInfo.call(any(), any())).thenAnswer((_) async {});
+    test(
+      'playOptimistic loads queue and updates track in background',
+      () async {
+        when(
+          () => mockLoadQueue.call(
+            any(),
+            initialIndex: any(named: 'initialIndex'),
+          ),
+        ).thenAnswer((_) async {});
+        when(() => mockPlayTrack.call()).thenAnswer((_) async {});
 
-      final notifier = container.read(playerStateProvider.notifier);
-      await notifier.playOptimistic(tTrack);
+        when(
+          () => mockGetTrackDetails.call(any()),
+        ).thenAnswer((_) async => tTrack);
+        when(
+          () => mockGetWaveform.call(any()),
+        ).thenAnswer((_) async => [0.1, 0.2]);
+        when(
+          () => mockUpdateTrackInfo.call(any(), any()),
+        ).thenAnswer((_) async {});
 
-      verify(() => mockLoadQueue.call([tTrack], initialIndex: 0)).called(1);
-      verify(() => mockPlayTrack.call()).called(1);
+        final notifier = container.read(playerStateProvider.notifier);
+        await notifier.playOptimistic(tTrack);
 
-      // The background task needs time to run
-      await Future.delayed(Duration.zero);
+        verify(() => mockLoadQueue.call([tTrack], initialIndex: 0)).called(1);
+        verify(() => mockPlayTrack.call()).called(1);
 
-      verify(() => mockGetTrackDetails.call('track-1')).called(1);
-      verify(() => mockGetWaveform.call('track-1')).called(1);
-      
-      final updatedTrack = tTrack.copyWith(waveformData: [0.1, 0.2]);
-      verify(() => mockUpdateTrackInfo.call('track-1', updatedTrack)).called(1);
-    });
+        // The background task needs time to run
+        await Future.delayed(Duration.zero);
+
+        verify(() => mockGetTrackDetails.call('track-1')).called(1);
+        verify(() => mockGetWaveform.call('track-1')).called(1);
+
+        final updatedTrack = tTrack.copyWith(waveformData: [0.1, 0.2]);
+        verify(
+          () => mockUpdateTrackInfo.call('track-1', updatedTrack),
+        ).called(1);
+      },
+    );
 
     test('togglePlayPause calls pause if playing', () {
       final notifier = container.read(playerStateProvider.notifier);
-      
+
       // Simulate stream update to change state to playing
       streamController.add(const AppPlayerState(status: PlayerStatus.playing));
-      
+
       notifier.togglePlayPause();
-      
+
       verify(() => mockPauseTrack.call()).called(1);
     });
 
     test('skipToNext calls skipNextUseCase', () {
       when(() => mockSkipNext.call()).thenAnswer((_) async {});
-      
+
       final notifier = container.read(playerStateProvider.notifier);
       notifier.skipToNext();
 
@@ -192,7 +227,7 @@ void main() {
 
     test('skipToPrevious calls skipPrevUseCase', () {
       when(() => mockSkipPrev.call()).thenAnswer((_) async {});
-      
+
       final notifier = container.read(playerStateProvider.notifier);
       notifier.skipToPrevious();
 
@@ -201,24 +236,29 @@ void main() {
 
     test('seek calls seekPositionUseCase', () {
       when(() => mockSeekPosition.call(any())).thenAnswer((_) async {});
-      
+
       final notifier = container.read(playerStateProvider.notifier);
       notifier.seek(const Duration(seconds: 10));
 
-      verify(() => mockSeekPosition.call(const Duration(seconds: 10))).called(1);
+      verify(
+        () => mockSeekPosition.call(const Duration(seconds: 10)),
+      ).called(1);
     });
 
     test('updatePosition updates local state position', () {
       final notifier = container.read(playerStateProvider.notifier);
       notifier.updatePosition(const Duration(seconds: 15));
-      
-      expect(container.read(playerStateProvider).position, const Duration(seconds: 15));
+
+      expect(
+        container.read(playerStateProvider).position,
+        const Duration(seconds: 15),
+      );
     });
 
     test('stopPlayback pauses and seeks to zero', () async {
       when(() => mockPauseTrack.call()).thenAnswer((_) async {});
       when(() => mockSeekPosition.call(any())).thenAnswer((_) async {});
-      
+
       final notifier = container.read(playerStateProvider.notifier);
       await notifier.stopPlayback();
 

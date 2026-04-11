@@ -12,8 +12,16 @@ import '../widgets/comment_reply_card.dart';
 import 'package:flutter/material.dart';
 import '../widgets/comment_card.dart';
 
+/// A full-screen page displaying the complete list of comments for a track.
+///
+/// This Presentation layer page manages the primary comment feed, rendering
+/// [CommentCard]s and nested [CommentReplyCard]s. It integrates with
+/// [TrackCommentsNotifier] for pagination, sorting, and posting root comments.
 class CommentsScreen extends ConsumerStatefulWidget {
+  /// The [Track] entity these comments belong to.
   final Track track;
+
+  /// Creates a [CommentsScreen] for the specified [track].
   const CommentsScreen({super.key, required this.track});
 
   @override

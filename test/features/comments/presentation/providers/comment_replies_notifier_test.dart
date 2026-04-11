@@ -14,10 +14,15 @@ import 'package:rythmify/features/comments/presentation/providers/comment_replie
 import 'package:rythmify/features/comments/presentation/providers/track_comments_notifier.dart';
 
 // Mocks
-class MockGetCommentRepliesUseCase extends Mock implements GetCommentRepliesUseCase {}
+class MockGetCommentRepliesUseCase extends Mock
+    implements GetCommentRepliesUseCase {}
+
 class MockDeleteCommentUseCase extends Mock implements DeleteCommentUseCase {}
+
 class MockPostCommentUseCase extends Mock implements PostCommentUseCase {}
-class MockToggleCommentLikeUseCase extends Mock implements ToggleCommentLikeUseCase {}
+
+class MockToggleCommentLikeUseCase extends Mock
+    implements ToggleCommentLikeUseCase {}
 
 class MockAuthNotifier extends AuthNotifier with Mock {
   final AuthState _initialState;
@@ -71,8 +76,12 @@ void main() {
         deleteCommentProvider.overrideWithValue(mockDeleteComment),
         postCommentProvider.overrideWithValue(mockPostComment),
         toggleCommentLikeProvider.overrideWithValue(mockToggleCommentLike),
-        authProvider.overrideWith(() => MockAuthNotifier(AuthAuthenticated(tUser))),
-        trackCommentsProvider('track-456').overrideWith((ref) => mockTrackCommentsNotifier),
+        authProvider.overrideWith(
+          () => MockAuthNotifier(AuthAuthenticated(tUser)),
+        ),
+        trackCommentsProvider(
+          'track-456',
+        ).overrideWith((ref) => mockTrackCommentsNotifier),
       ],
     );
   });
@@ -91,7 +100,10 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment]);
 
-      final sub = container.listen(commentRepliesProvider('comment-123'), (prev, next) {});
+      final sub = container.listen(
+        commentRepliesProvider('comment-123'),
+        (prev, next) {},
+      );
       await Future.delayed(Duration.zero);
 
       final state = container.read(commentRepliesProvider('comment-123'));
@@ -102,54 +114,64 @@ void main() {
       sub.close();
     });
 
-    test('deleteReply optimistically updates and calls tracking methods', () async {
-      when(
-        () => mockGetReplies(
-          commentId: any(named: 'commentId'),
-          page: any(named: 'page'),
-          sortType: any(named: 'sortType'),
-        ),
-      ).thenAnswer((_) async => [tComment]);
+    test(
+      'deleteReply optimistically updates and calls tracking methods',
+      () async {
+        when(
+          () => mockGetReplies(
+            commentId: any(named: 'commentId'),
+            page: any(named: 'page'),
+            sortType: any(named: 'sortType'),
+          ),
+        ).thenAnswer((_) async => [tComment]);
 
-      when(() => mockDeleteComment(any())).thenAnswer((_) async {});
+        when(() => mockDeleteComment(any())).thenAnswer((_) async {});
 
-      final notifier = container.read(commentRepliesProvider('comment-123').notifier);
-      await Future.delayed(Duration.zero);
+        final notifier = container.read(
+          commentRepliesProvider('comment-123').notifier,
+        );
+        await Future.delayed(Duration.zero);
 
-      await notifier.deleteReply('reply-123', 'track-456', 'comment-123');
+        await notifier.deleteReply('reply-123', 'track-456', 'comment-123');
 
-      final state = container.read(commentRepliesProvider('comment-123'));
-      expect(state.comments, isEmpty);
-      verify(() => mockDeleteComment('reply-123')).called(1);
-    });
+        final state = container.read(commentRepliesProvider('comment-123'));
+        expect(state.comments, isEmpty);
+        verify(() => mockDeleteComment('reply-123')).called(1);
+      },
+    );
 
-    test('postReply optimistically updates and calls tracking methods', () async {
-      when(
-        () => mockGetReplies(
-          commentId: any(named: 'commentId'),
-          page: any(named: 'page'),
-          sortType: any(named: 'sortType'),
-        ),
-      ).thenAnswer((_) async => []);
+    test(
+      'postReply optimistically updates and calls tracking methods',
+      () async {
+        when(
+          () => mockGetReplies(
+            commentId: any(named: 'commentId'),
+            page: any(named: 'page'),
+            sortType: any(named: 'sortType'),
+          ),
+        ).thenAnswer((_) async => []);
 
-      final returnedComment = tComment.copyWith(id: 'real-id');
-      when(
-        () => mockPostComment(
-          trackId: any(named: 'trackId'),
-          content: any(named: 'content'),
-          trackTimestamp: any(named: 'trackTimestamp'),
-          parentId: any(named: 'parentId'),
-        ),
-      ).thenAnswer((_) async => returnedComment);
+        final returnedComment = tComment.copyWith(id: 'real-id');
+        when(
+          () => mockPostComment(
+            trackId: any(named: 'trackId'),
+            content: any(named: 'content'),
+            trackTimestamp: any(named: 'trackTimestamp'),
+            parentId: any(named: 'parentId'),
+          ),
+        ).thenAnswer((_) async => returnedComment);
 
-      final notifier = container.read(commentRepliesProvider('comment-123').notifier);
-      await Future.delayed(Duration.zero);
+        final notifier = container.read(
+          commentRepliesProvider('comment-123').notifier,
+        );
+        await Future.delayed(Duration.zero);
 
-      await notifier.postReply('track-456', 'New reply', 1000);
+        await notifier.postReply('track-456', 'New reply', 1000);
 
-      final state = container.read(commentRepliesProvider('comment-123'));
-      expect(state.comments.first.id, 'real-id');
-    });
+        final state = container.read(commentRepliesProvider('comment-123'));
+        expect(state.comments.first.id, 'real-id');
+      },
+    );
 
     test('toggleLike optimistically updates', () async {
       when(
@@ -160,10 +182,16 @@ void main() {
         ),
       ).thenAnswer((_) async => [tComment]);
 
-      when(() => mockToggleCommentLike(any(), isCurrentlyLiked: any(named: 'isCurrentlyLiked')))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockToggleCommentLike(
+          any(),
+          isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      final notifier = container.read(commentRepliesProvider('comment-123').notifier);
+      final notifier = container.read(
+        commentRepliesProvider('comment-123').notifier,
+      );
       await Future.delayed(Duration.zero);
 
       await notifier.toggleLike('reply-123');

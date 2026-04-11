@@ -6,10 +6,7 @@ void main() {
   Widget buildWidgetUnderTest({String? imageUrl, required String text}) {
     return MaterialApp(
       home: Scaffold(
-        body: FloatingComment(
-          imageUrl: imageUrl,
-          text: text,
-        ),
+        body: FloatingComment(imageUrl: imageUrl, text: text),
       ),
     );
   }
@@ -21,19 +18,29 @@ void main() {
       expect(find.text('Great drop!'), findsOneWidget);
     });
 
-    testWidgets('renders default icon when imageUrl is null', (WidgetTester tester) async {
-      await tester.pumpWidget(buildWidgetUnderTest(text: 'No image', imageUrl: null));
+    testWidgets('renders default icon when imageUrl is null', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        buildWidgetUnderTest(text: 'No image', imageUrl: null),
+      );
 
       expect(find.byIcon(Icons.person), findsOneWidget);
     });
 
-    testWidgets('renders default icon when imageUrl is empty', (WidgetTester tester) async {
-      await tester.pumpWidget(buildWidgetUnderTest(text: 'Empty image', imageUrl: ''));
+    testWidgets('renders default icon when imageUrl is empty', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        buildWidgetUnderTest(text: 'Empty image', imageUrl: ''),
+      );
 
       expect(find.byIcon(Icons.person), findsOneWidget);
     });
-    
-    testWidgets('has correct structure when imageUrl is provided', (WidgetTester tester) async {
+
+    testWidgets('has correct structure when imageUrl is provided', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         buildWidgetUnderTest(
           text: 'Has image',
