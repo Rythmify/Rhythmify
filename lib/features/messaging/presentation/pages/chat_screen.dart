@@ -9,6 +9,7 @@ import 'package:rythmify/features/messaging/presentation/providers/is_blocked_by
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/unread_messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/blocked_by_widget.dart';
@@ -47,11 +48,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     controller = TextEditingController();
+    if(widget.conv!=null)
+    {
+      Future.microtask((){
+        final socket=ref.read(socketProvider);
+        socket.joinConversation(widget.conv!.conversationId);
+        socket.onMessageReceived((data){
+          if (mounted) {
+            ref.invalidate(messageProvider(widget.conv!.conversationId));
+            ref.invalidate(conversationProvider);
+          }
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     controller.dispose();
+    if(widget.conv!=null)
+    {
+      ref.read(socketProvider).leaveConversation(widget.conv!.conversationId);
+    }
     super.dispose();
   }
 
@@ -662,6 +680,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .sendMessage(newParticipantId: widget.newParticipantId, body: null);
 
       if (newConv == null) return;
+
+      final socket=ref.read(socketProvider);
+      socket.joinConversation(widget.conv!.conversationId);
+      socket.onMessageReceived((data){
+        ref.invalidate(messageProvider(newConv.conversationId));
+        ref.invalidate(conversationProvider);
+      });
+
 
       String remaining = controller.text;
 

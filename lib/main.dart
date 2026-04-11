@@ -30,9 +30,9 @@ void main() async {
   // added by hana/rana to test upload/messaging module
   // TEMPORARY — hardcoded test token from Postman
   // Remove when M1 authentication is properly integrated
-  await apiClient.saveToken(
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzU2NzUwNTMsImV4cCI6MTc3NTY3NTk1M30.Ru7fXmdRyyyx1Tv93A691V_EgwNl2SEZPfusHhrYk3s',
-  );
+  //await apiClient.saveToken(
+  //  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJyb2xlIjoibGlzdGVuZXIiLCJpYXQiOjE3NzU2NzUwNTMsImV4cCI6MTc3NTY3NTk1M30.Ru7fXmdRyyyx1Tv93A691V_EgwNl2SEZPfusHhrYk3s',
+  //);
 
   runApp(
     ProviderScope(
