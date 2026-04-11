@@ -35,28 +35,25 @@ class PlaylistDetailScreen extends ConsumerWidget {
   void _playAll(WidgetRef ref) {
     final tracks = _sourceTracks();
     if (tracks.isEmpty) return;
-    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-          tracks,
-          initialIndex: 0,
-        );
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(tracks, initialIndex: 0);
   }
 
   void _shuffle(WidgetRef ref) {
     final tracks = List<Track>.from(_sourceTracks())..shuffle();
     if (tracks.isEmpty) return;
-    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-          tracks,
-          initialIndex: 0,
-        );
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(tracks, initialIndex: 0);
   }
 
   void _playFrom(WidgetRef ref, int index) {
     final tracks = _sourceTracks();
     if (tracks.isEmpty || index >= tracks.length) return;
-    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-          tracks,
-          initialIndex: index,
-        );
+    ref
+        .read(playerStateProvider.notifier)
+        .loadAndPlayQueue(tracks, initialIndex: index);
   }
 
   // ── Build ──────────────────────────────────────────────────────────────────
@@ -172,9 +169,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
-                      playlist.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
+                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
                       color: playlist.isLiked
                           ? const Color(0xFFFF5500)
                           : Colors.white,
@@ -304,9 +299,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         child: ElevatedButton(
                           key: const Key('refresh_suggestions_button'),
                           onPressed: () => ref
-                              .read(
-                                playlistDetailProvider(playlistId).notifier,
-                              )
+                              .read(playlistDetailProvider(playlistId).notifier)
                               .refreshSuggestions(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2A2A2A),

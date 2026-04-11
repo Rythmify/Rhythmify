@@ -99,13 +99,17 @@ void main() {
     });
 
     test('copyWith clearCover nulls out coverUrl', () {
-      final withCover = playlist.copyWith(coverUrl: 'https://example.com/cover.jpg');
+      final withCover = playlist.copyWith(
+        coverUrl: 'https://example.com/cover.jpg',
+      );
       final cleared = withCover.copyWith(clearCover: true);
       expect(cleared.coverUrl, isNull);
     });
 
     test('copyWith without clearCover preserves coverUrl', () {
-      final withCover = playlist.copyWith(coverUrl: 'https://example.com/cover.jpg');
+      final withCover = playlist.copyWith(
+        coverUrl: 'https://example.com/cover.jpg',
+      );
       final updated = withCover.copyWith(name: 'New Name');
       expect(updated.coverUrl, 'https://example.com/cover.jpg');
     });

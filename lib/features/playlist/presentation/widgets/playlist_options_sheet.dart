@@ -137,7 +137,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                     ? 'Make ${playlist.typeLabel.toLowerCase()} private'
                     : 'Make ${playlist.typeLabel.toLowerCase()} public',
                 onTap: () {
-                  ref.read(playlistListProvider.notifier).updatePlaylist(
+                  ref
+                      .read(playlistListProvider.notifier)
+                      .updatePlaylist(
                         playlistId: playlistId,
                         name: playlist.name,
                         isPublic: !playlist.isPublic,

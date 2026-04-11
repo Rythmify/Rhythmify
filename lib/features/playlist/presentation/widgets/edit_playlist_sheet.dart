@@ -59,8 +59,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   }
 
   void _removeLocal(String trackId) {
-  setState(() => _tracks.removeWhere((t) => t.id == trackId));
-}
+    setState(() => _tracks.removeWhere((t) => t.id == trackId));
+  }
 
   // ── Image picker ─────────────────────────────────────────────────────────────
   // Uses ElevatedButton.onPressed instead of GestureDetector because
@@ -117,21 +117,27 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
 
   // ── Convert ───────────────────────────────────────────────────────────────────
 
-// Separate method that takes the pre-captured navigator
-void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
-  switch (targetType) {
-    case PlaylistType.album:
-      ref.read(playlistListProvider.notifier).convertToAlbum(widget.playlistId);
-    case PlaylistType.station:
-      ref.read(playlistListProvider.notifier).convertToStation(widget.playlistId);
-    case PlaylistType.playlist:
-      ref.read(playlistListProvider.notifier).convertToPlaylist(widget.playlistId);
+  // Separate method that takes the pre-captured navigator
+  void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
+    switch (targetType) {
+      case PlaylistType.album:
+        ref
+            .read(playlistListProvider.notifier)
+            .convertToAlbum(widget.playlistId);
+      case PlaylistType.station:
+        ref
+            .read(playlistListProvider.notifier)
+            .convertToStation(widget.playlistId);
+      case PlaylistType.playlist:
+        ref
+            .read(playlistListProvider.notifier)
+            .convertToPlaylist(widget.playlistId);
+    }
+    ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
+    sheetNav.pop(); // edit sheet
+    sheetNav.pop(); // options sheet
+    widget.onConverted?.call(targetType);
   }
-  ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
-  sheetNav.pop(); // edit sheet
-  sheetNav.pop(); // options sheet
-  widget.onConverted?.call(targetType);
-}
 
   // ── Build ─────────────────────────────────────────────────────────────────────
 
@@ -481,50 +487,50 @@ void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
     );
   }
 
-void _showConvertConfirm(
-  BuildContext context, {
-  required PlaylistType targetType,
-  required String label,
-}) {
-  // Capture the sheet navigator before opening the dialog
-  final sheetNav = Navigator.of(context);
+  void _showConvertConfirm(
+    BuildContext context, {
+    required PlaylistType targetType,
+    required String label,
+  }) {
+    // Capture the sheet navigator before opening the dialog
+    final sheetNav = Navigator.of(context);
 
-  showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: const Color(0xFF1E1E1E),
-      title: Text(
-        'Convert to $label?',
-        style: const TextStyle(color: Colors.white),
-      ),
-      content: Text(
-        _convertDescription(targetType),
-        style: TextStyle(color: Colors.grey[400], fontSize: 13),
-      ),
-      actions: [
-        TextButton(
-          key: Key('convert_cancel_$label'),
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.white54),
-          ),
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: Text(
+          'Convert to $label?',
+          style: const TextStyle(color: Colors.white),
         ),
-        TextButton(
-          key: Key('convert_confirm_$label'),
-          onPressed: () {
-            Navigator.of(dialogContext).pop(); // close dialog
-            _convertWithNav(targetType, sheetNav); // close sheets + convert
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFFFF5500),
-          ),
-          child: Text('Convert to $label'),
+        content: Text(
+          _convertDescription(targetType),
+          style: TextStyle(color: Colors.grey[400], fontSize: 13),
         ),
-      ],
-    ),
-  );
-}
+        actions: [
+          TextButton(
+            key: Key('convert_cancel_$label'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            key: Key('convert_confirm_$label'),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // close dialog
+              _convertWithNav(targetType, sheetNav); // close sheets + convert
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFF5500),
+            ),
+            child: Text('Convert to $label'),
+          ),
+        ],
+      ),
+    );
+  }
 
   String _convertDescription(PlaylistType type) {
     switch (type) {

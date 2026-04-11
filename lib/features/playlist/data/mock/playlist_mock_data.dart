@@ -53,21 +53,23 @@ class PlaylistMockData {
 
   // ── Seeding ────────────────────────────────────────────────────────────────
 
-void seedFromRealTracks(List<Track> tracks) {
-  for (final id in _sourceTracks.keys) {
-    _sourceTracks[id] = List<Track>.from(tracks);
+  void seedFromRealTracks(List<Track> tracks) {
+    for (final id in _sourceTracks.keys) {
+      _sourceTracks[id] = List<Track>.from(tracks);
+    }
+    // Update counts for all playlists immediately so library shows correct numbers
+    for (final id in _sourceTracks.keys) {
+      getTracksFor(
+        id,
+      ); // this updates trackCount and totalDuration in _playlists
+    }
+    _suggestions
+      ..clear()
+      ..addAll(
+        tracks.take(5).map((t) => PlaylistTrack.fromTrack(t, position: 0)),
+      );
+    debugPrint('[PlaylistMockData] seeded ${tracks.length} tracks');
   }
-  // Update counts for all playlists immediately so library shows correct numbers
-  for (final id in _sourceTracks.keys) {
-    getTracksFor(id); // this updates trackCount and totalDuration in _playlists
-  }
-  _suggestions
-    ..clear()
-    ..addAll(
-      tracks.take(5).map((t) => PlaylistTrack.fromTrack(t, position: 0)),
-    );
-  debugPrint('[PlaylistMockData] seeded ${tracks.length} tracks');
-}
 
   // ── Read ──────────────────────────────────────────────────────────────────
 
@@ -82,44 +84,44 @@ void seedFromRealTracks(List<Track> tracks) {
   }
 
   List<PlaylistTrack> getTracksFor(String playlistId) {
-  final tracks = _sourceTracks[playlistId] ?? [];
-  
-  // Keep trackCount and totalDuration in sync
-  final i = _playlists.indexWhere((p) => p.id == playlistId);
-  if (i != -1) {
-    final total = tracks.fold(
-      Duration.zero,
-      (sum, t) => sum + t.duration,
-    );
-    _playlists[i] = _playlists[i].copyWith(
-      trackCount: tracks.length,
-      totalDuration: total,
-    );
-  }
+    final tracks = _sourceTracks[playlistId] ?? [];
 
-  return tracks
-      .asMap()
-      .entries
-      .map((e) => PlaylistTrack.fromTrack(e.value, position: e.key + 1))
-      .toList();
-}
+    // Keep trackCount and totalDuration in sync
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i != -1) {
+      final total = tracks.fold(Duration.zero, (sum, t) => sum + t.duration);
+      _playlists[i] = _playlists[i].copyWith(
+        trackCount: tracks.length,
+        totalDuration: total,
+      );
+    }
+
+    return tracks
+        .asMap()
+        .entries
+        .map((e) => PlaylistTrack.fromTrack(e.value, position: e.key + 1))
+        .toList();
+  }
 
   List<Track> getSourceTracksFor(String playlistId) {
     return List<Track>.from(_sourceTracks[playlistId] ?? []);
   }
 
-// In playlist_mock_data.dart, update getSuggestions:
-List<PlaylistTrack> getSuggestions({String? excludePlaylistId, bool shuffle = false}) {
-  if (excludePlaylistId == null) return List.unmodifiable(_suggestions);
-  final existingIds = (_sourceTracks[excludePlaylistId] ?? [])
-      .map((t) => t.id)
-      .toSet();
-  final filtered = _suggestions
-      .where((s) => !existingIds.contains(s.id))
-      .toList();
-  if (shuffle) filtered.shuffle();
-  return filtered;
-}
+  // In playlist_mock_data.dart, update getSuggestions:
+  List<PlaylistTrack> getSuggestions({
+    String? excludePlaylistId,
+    bool shuffle = false,
+  }) {
+    if (excludePlaylistId == null) return List.unmodifiable(_suggestions);
+    final existingIds = (_sourceTracks[excludePlaylistId] ?? [])
+        .map((t) => t.id)
+        .toSet();
+    final filtered = _suggestions
+        .where((s) => !existingIds.contains(s.id))
+        .toList();
+    if (shuffle) filtered.shuffle();
+    return filtered;
+  }
 
   // ── Mutations ─────────────────────────────────────────────────────────────
 
@@ -176,30 +178,32 @@ List<PlaylistTrack> getSuggestions({String? excludePlaylistId, bool shuffle = fa
     debugPrint('[PlaylistMockData] coverImage updated: $playlistId');
   }
 
-void addTrack({required String playlistId, required Track track}) {
-  _sourceTracks.putIfAbsent(playlistId, () => []);
-  final already = _sourceTracks[playlistId]!.any((t) => t.id == track.id);
-  if (!already) {
-    _sourceTracks[playlistId]!.add(track);
+  void addTrack({required String playlistId, required Track track}) {
+    _sourceTracks.putIfAbsent(playlistId, () => []);
+    final already = _sourceTracks[playlistId]!.any((t) => t.id == track.id);
+    if (!already) {
+      _sourceTracks[playlistId]!.add(track);
+      // Recompute count immediately so library list reflects the change
+      getTracksFor(playlistId);
+      debugPrint('[PlaylistMockData] addTrack: ${track.id} → $playlistId');
+    }
+  }
+
+  void removeTrack({required String playlistId, required String trackId}) {
+    _sourceTracks[playlistId]?.removeWhere((t) => t.id == trackId);
     // Recompute count immediately so library list reflects the change
     getTracksFor(playlistId);
-    debugPrint('[PlaylistMockData] addTrack: ${track.id} → $playlistId');
+    debugPrint('[PlaylistMockData] removeTrack: $trackId from $playlistId');
   }
-}
-
-void removeTrack({required String playlistId, required String trackId}) {
-  _sourceTracks[playlistId]?.removeWhere((t) => t.id == trackId);
-  // Recompute count immediately so library list reflects the change
-  getTracksFor(playlistId);
-  debugPrint('[PlaylistMockData] removeTrack: $trackId from $playlistId');
-}
 
   void toggleLike(String playlistId) {
-  final i = _playlists.indexWhere((p) => p.id == playlistId);
-  if (i == -1) return;
-  _playlists[i] = _playlists[i].copyWith(isLiked: !_playlists[i].isLiked);
-  debugPrint('[PlaylistMockData] toggleLike: $playlistId → ${_playlists[i].isLiked}');
-}
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return;
+    _playlists[i] = _playlists[i].copyWith(isLiked: !_playlists[i].isLiked);
+    debugPrint(
+      '[PlaylistMockData] toggleLike: $playlistId → ${_playlists[i].isLiked}',
+    );
+  }
 
   // ── Convert operations ─────────────────────────────────────────────────────
 

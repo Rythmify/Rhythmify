@@ -88,13 +88,14 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
   final _db = PlaylistMockData.instance;
 
-void loadPlaylists() {
-  // Recompute counts for every playlist before refreshing state
-  for (final p in _db.getMyPlaylists()) {
-    _db.getTracksFor(p.id);
+  void loadPlaylists() {
+    // Must call getTracksFor first — it updates _playlists[i] with fresh counts.
+    // getMyPlaylists() after this returns the already-updated objects.
+    for (final p in List.from(_db.getMyPlaylists())) {
+      _db.getTracksFor(p.id);
+    }
+    state = state.copyWith(playlists: _db.getMyPlaylists());
   }
-  state = state.copyWith(playlists: _db.getMyPlaylists());
-}
 
   PlaylistEntity createPlaylist({
     required String name,
@@ -240,7 +241,7 @@ final _detailProviderCache =
     <String, NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>>{};
 
 NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>
-    playlistDetailProvider(String playlistId) {
+playlistDetailProvider(String playlistId) {
   return _detailProviderCache.putIfAbsent(
     playlistId,
     () => NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
