@@ -95,16 +95,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    final isBlockedAsync = ref.watch(
-      isBlockedProvider(widget.conv?.participantId ?? widget.newParticipantId!),
-    );
+    final participantId = widget.conv?.participantId ?? widget.newParticipantId;
+
+    final isBlockedAsync = participantId != null
+        ? ref.watch(isBlockedProvider(participantId))
+        : const AsyncValue<bool>.data(false);
     final bool isBlocked = isBlockedAsync.value ?? false;
 
-    final isBlockedByAsync = ref.watch(
-      isBlockedByProvider(
-        widget.conv?.participantId ?? widget.newParticipantId!,
-      ),
-    );
+    final isBlockedByAsync = participantId != null
+        ? ref.watch(isBlockedByProvider(participantId))
+        : const AsyncValue<bool>.data(false);
     final bool isBlockedBy = isBlockedByAsync.value ?? false;
 
     return Scaffold(
@@ -114,34 +114,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
         title: Text(
-          widget.conv?.participantName ?? widget.newParticipantName ?? '',
+          widget.conv?.participantName ?? widget.newParticipantName ?? 'Chat',
           key: const Key('chat_participant_name_text'),
         ),
         backgroundColor: Colors.black,
         actions: [
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                builder: (_) => PopUpMenuWidget(
-                  participantId:
-                      widget.conv?.participantId ?? widget.newParticipantId!,
-                  parentContext: context,
-                ),
-                backgroundColor: const Color(0xFF121212),
-              );
-            },
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-          ),
+          if (participantId != null)
+            IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => PopUpMenuWidget(
+                    participantId: participantId,
+                    parentContext: context,
+                  ),
+                  backgroundColor: const Color(0xFF121212),
+                );
+              },
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+            ),
         ],
       ),
       body: widget.conv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
-          : msgProvider!.when(
+          : msgProvider?.when(
               data: (msg) {
-                unreadMsgProvider!.whenData((unreads) {
+                unreadMsgProvider?.whenData((unreads) {
                   if (unreads.isNotEmpty) {
                     Future.microtask(() async {
                       if (!mounted) return;
@@ -178,7 +178,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         itemCount: groups.length,
                         itemBuilder: (context, groupIndex) {
                           final group = groups[groups.length - 1 - groupIndex];
-                          final isMe = group.first.senderId == myId;
+                          final isMe = group.isNotEmpty && group.first.senderId == myId;
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 22),
@@ -204,7 +204,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     myId: myId,
                                     senderId: message.senderId,
                                     userAvatar: index == group.length - 1
-                                        ? widget.conv!.participantAvatar
+                                        ? widget.conv?.participantAvatar
                                         : null,
                                     body: message.body,
                                     embedId: message.embedId,
@@ -212,32 +212,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     borderRadius: radius,
                                   );
                                 }),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: isMe ? 0 : 46,
-                                    right: isMe ? 8 : 0,
-                                    top: 6,
-                                  ),
-                                  child: Text(
-                                    _fixTime(group.last.createdAt),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
+                                if (group.isNotEmpty)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      left: isMe ? 0 : 46,
+                                      right: isMe ? 8 : 0,
+                                      top: 6,
+                                    ),
+                                    child: Text(
+                                      _fixTime(group.last.createdAt),
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
                           );
                         },
                       ),
                     ),
-                    isBlocked
+                    isBlocked && participantId != null
                         ? BlockedUserWidget(
                             key: const Key('chat_screen_blocked_user_widget'),
-                            participantId:
-                                widget.conv?.participantId ??
-                                widget.newParticipantId!,
+                            participantId: participantId,
                           )
                         : isBlockedBy
                         ? const BlockedByWidget(
@@ -252,12 +251,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ),
                                 selectedEmbeds: _selectedEmbeds,
                                 onRemove: (index) => setState(() {
-                                  final removedPermalink =
-                                      'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
-                                  controller.text = controller.text
-                                      .replaceAll(removedPermalink, '')
-                                      .trim();
-                                  _selectedEmbeds.removeAt(index);
+                                  if (index < _selectedEmbeds.length) {
+                                    final removedPermalink =
+                                        'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
+                                    controller.text = controller.text
+                                        .replaceAll(removedPermalink, '')
+                                        .trim();
+                                    _selectedEmbeds.removeAt(index);
+                                  }
                                 }),
                               ),
                               Padding(
@@ -276,6 +277,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         'chat_screen_add_embed_button',
                                       ),
                                       onPressed: () async {
+                                        if (widget.conv == null) return;
                                         final embeds = await context
                                             .push<List<SharedEmbed>>(
                                               '/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists',
@@ -359,7 +361,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        if (mounted) {
+                        if (mounted && widget.conv != null) {
                           ref.invalidate(
                             messageProvider(widget.conv!.conversationId),
                           );
@@ -373,7 +375,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ],
                 ),
               ),
-            ),
+            ) ?? const Center(child: CircularProgressIndicator()),
     );
   }
 

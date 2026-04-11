@@ -24,7 +24,9 @@ class ConversationModel extends Conversation {
       conversationId: json['id'] ?? '',
       participantId: participant['id'] ?? '',
       participantName: participant['display_name'] ?? 'Unknown',
-      participantAvatar: participant['profile_picture'],
+      participantAvatar: participant['profile_picture'] ??
+          participant['avatar_url'] ??
+          participant['avatar'],
       lastMessagePreview:
           lastMessage['body'] ??
           (lastMessage['embed_type'] == 'track'

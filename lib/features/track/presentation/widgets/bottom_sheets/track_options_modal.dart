@@ -108,6 +108,7 @@ class TrackOptionsModal extends ConsumerWidget {
                             Navigator.pop(context);
                             context.push(
                               '/home/inbox/chat/${conv.conversationId}',
+                              extra: conv,
                             );
                           },
                           child: Padding(
