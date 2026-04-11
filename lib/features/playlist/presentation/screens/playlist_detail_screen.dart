@@ -1,4 +1,3 @@
-// lib/features/playlist/presentation/screens/playlist_detail_screen.dart
 /// Detail screen for a playlist, album, or station — all three share this screen.
 /// [PlaylistEntity.type] controls what the header shows and which actions are available.
 /// Player wiring uses [PlaylistMockData.getSourceTracksFor] to get full [Track] entities
@@ -13,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../data/mock/playlist_mock_data.dart';
+import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
@@ -35,40 +35,34 @@ class PlaylistDetailScreen extends ConsumerWidget {
   void _playAll(WidgetRef ref) {
     final tracks = _sourceTracks();
     if (tracks.isEmpty) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(
+    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
           tracks,
-          initialIndex: 0, // ← was startIndex
+          initialIndex: 0,
         );
   }
 
   void _shuffle(WidgetRef ref) {
     final tracks = List<Track>.from(_sourceTracks())..shuffle();
     if (tracks.isEmpty) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(
+    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
           tracks,
-          initialIndex: 0, // ← was startIndex
+          initialIndex: 0,
         );
   }
 
   void _playFrom(WidgetRef ref, int index) {
     final tracks = _sourceTracks();
     if (tracks.isEmpty || index >= tracks.length) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(
+    ref.read(playerStateProvider.notifier).loadAndPlayQueue(
           tracks,
-          initialIndex: index, // ← was startIndex
+          initialIndex: index,
         );
   }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Keep mock store seeded whenever allTracksProvider updates
     ref.watch(playlistMockSeederProvider);
 
     final state = ref.watch(playlistDetailProvider(playlistId));
@@ -178,13 +172,17 @@ class PlaylistDetailScreen extends ConsumerWidget {
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
-                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
+                      playlist.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                       color: playlist.isLiked
                           ? const Color(0xFFFF5500)
                           : Colors.white,
                       size: 24,
                     ),
-                    onPressed: () {},
+                    onPressed: () => ref
+                        .read(playlistDetailProvider(playlistId).notifier)
+                        .toggleLike(),
                   ),
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
@@ -201,12 +199,23 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         builder: (_) => PlaylistOptionsSheet(
                           playlistId: playlistId,
                           isOwner: isOwner,
+                          onConverted: (newType) {
+                            // Use context.go — the only reliable way to switch
+                            // between StatefulShellBranch sibling routes
+                            switch (newType) {
+                              case PlaylistType.album:
+                                context.go('/library/albums');
+                              case PlaylistType.station:
+                                context.go('/library/stations');
+                              case PlaylistType.playlist:
+                                context.go('/library/playlists');
+                            }
+                          },
                         ),
                       );
                     },
                   ),
                   const Spacer(),
-                  // Shuffle
                   IconButton(
                     key: const Key('playlist_detail_shuffle_button'),
                     icon: const Icon(
@@ -214,12 +223,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       color: Colors.white60,
                       size: 24,
                     ),
-                    onPressed: () => _shuffle(ref), // ← wired
+                    onPressed: () => _shuffle(ref),
                   ),
-                  // Play all
                   GestureDetector(
                     key: const Key('playlist_detail_play_button'),
-                    onTap: () => _playAll(ref), // ← wired
+                    onTap: () => _playAll(ref),
                     child: Container(
                       width: 52,
                       height: 52,
@@ -244,18 +252,16 @@ class PlaylistDetailScreen extends ConsumerWidget {
             Expanded(
               child: ListView(
                 children: [
-                  // Existing tracks
                   ...state.tracks.asMap().entries.map((entry) {
                     final index = entry.key;
                     final track = entry.value;
                     return TrackTileInPlaylist(
                       key: Key('playlist_track_${track.id}'),
                       track: track,
-                      onTap: () => _playFrom(ref, index), // ← wired
+                      onTap: () => _playFrom(ref, index),
                     );
                   }),
 
-                  // Suggestions section
                   if (state.showSuggestions) ...[
                     const Padding(
                       padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
@@ -272,7 +278,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       (suggestion) => TrackTileInPlaylist(
                         key: Key('suggestion_${suggestion.id}'),
                         track: suggestion,
-                        onTap: () {}, // suggestions aren't in the queue yet
+                        onTap: () {},
                         trailingWidget: IconButton(
                           key: Key('add_suggestion_${suggestion.id}'),
                           icon: const Icon(
@@ -298,7 +304,9 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         child: ElevatedButton(
                           key: const Key('refresh_suggestions_button'),
                           onPressed: () => ref
-                              .read(playlistDetailProvider(playlistId).notifier)
+                              .read(
+                                playlistDetailProvider(playlistId).notifier,
+                              )
                               .refreshSuggestions(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2A2A2A),
@@ -315,7 +323,8 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     ),
                   ],
 
-                  const SizedBox(height: 80),
+                  // Bottom padding so mini player never covers the last row
+                  const SizedBox(height: 140),
                 ],
               ),
             ),

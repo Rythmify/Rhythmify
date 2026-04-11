@@ -1,4 +1,3 @@
-// lib/features/playlist/presentation/providers/playlist_provider.dart
 /// State management for the playlist module using Riverpod 3.x Notifiers.
 /// [PlaylistListNotifier] owns the flat list of all collections and handles all CRUD.
 /// [PlaylistDetailNotifier] owns one playlist's header, tracks, and suggestions.
@@ -78,7 +77,10 @@ class PlaylistDetailState {
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
   PlaylistListState build() {
-    // Keep mock store seeded whenever allTracksProvider updates
+    // Re-read playlists whenever the seeder pushes new data so counts update
+    ref.listen<void>(playlistMockSeederProvider, (_, __) {
+      Future.microtask(loadPlaylists);
+    });
     ref.watch(playlistMockSeederProvider);
     final playlists = PlaylistMockData.instance.getMyPlaylists();
     return PlaylistListState(playlists: playlists);
@@ -86,9 +88,13 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
   final _db = PlaylistMockData.instance;
 
-  void loadPlaylists() {
-    state = state.copyWith(playlists: _db.getMyPlaylists());
+void loadPlaylists() {
+  // Recompute counts for every playlist before refreshing state
+  for (final p in _db.getMyPlaylists()) {
+    _db.getTracksFor(p.id);
   }
+  state = state.copyWith(playlists: _db.getMyPlaylists());
+}
 
   PlaylistEntity createPlaylist({
     required String name,
@@ -174,20 +180,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 
   void addSuggestion(PlaylistTrack playlistTrack) {
-    // Look up the real Track from the source list so addTrack gets the right type
-    final sourceTrack = _db
-        .getSourceTracksFor(_playlistId)
-        .cast<dynamic>()
-        .followedBy(
-          // Also check the full seeded pool via all playlists
-          PlaylistMockData.instance
-              .getSourceTracksFor('pl-001')
-              .cast<dynamic>(),
-        )
-        .whereType<dynamic>()
-        .toList();
-
-    // Simpler: find by id across any playlist's source tracks
     final allSource = [
       ..._db.getSourceTracksFor('pl-001'),
       ..._db.getSourceTracksFor('pl-002'),
@@ -198,15 +190,13 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         'Source Track not found for id: ${playlistTrack.id}',
       ),
     );
-
     _db.addTrack(playlistId: _playlistId, track: track);
-    final updatedSuggestions = state.suggestions
-        .where((s) => s.id != playlistTrack.id)
-        .toList();
     state = state.copyWith(
       playlist: _db.getById(_playlistId),
       tracks: _db.getTracksFor(_playlistId),
-      suggestions: updatedSuggestions,
+      suggestions: state.suggestions
+          .where((s) => s.id != playlistTrack.id)
+          .toList(),
     );
   }
 
@@ -218,17 +208,22 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     );
   }
 
-void refreshSuggestions() {
-  state = state.copyWith(
-    suggestions: _db.getSuggestions(
-      excludePlaylistId: _playlistId,
-      shuffle: true,
-    ),
-  );
-}
+  void refreshSuggestions() {
+    state = state.copyWith(
+      suggestions: _db.getSuggestions(
+        excludePlaylistId: _playlistId,
+        shuffle: true,
+      ),
+    );
+  }
 
   void reload() {
     state = _buildState();
+  }
+
+  void toggleLike() {
+    _db.toggleLike(_playlistId);
+    state = state.copyWith(playlist: _db.getById(_playlistId));
   }
 }
 
@@ -245,7 +240,7 @@ final _detailProviderCache =
     <String, NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>>{};
 
 NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>
-playlistDetailProvider(String playlistId) {
+    playlistDetailProvider(String playlistId) {
   return _detailProviderCache.putIfAbsent(
     playlistId,
     () => NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
