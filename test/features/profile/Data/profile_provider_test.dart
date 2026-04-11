@@ -117,6 +117,9 @@ class _ProfileNotifierUnderTest extends Notifier<ProfileState> {
 
   Future<void> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -126,6 +129,9 @@ class _ProfileNotifierUnderTest extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
     final result = await updateProfileUC(
       displayName: displayName,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       city: city,
       country: country,
       bio: bio,
@@ -554,6 +560,9 @@ void main() {
       when(
         () => mockRepo.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -562,6 +571,9 @@ void main() {
 
       await notifier.updateProfile(
         displayName: 'Updated Name',
+        username: 'updated_name',
+        firstName: 'Updated',
+        lastName: 'Name',
         city: 'Cairo',
         country: 'EG',
         bio: 'New bio',
@@ -578,6 +590,9 @@ void main() {
         when(
           () => mockRepo.updateProfile(
             displayName: any(named: 'displayName'),
+            username: any(named: 'username'),
+            firstName: any(named: 'firstName'),
+            lastName: any(named: 'lastName'),
             city: any(named: 'city'),
             country: any(named: 'country'),
             bio: any(named: 'bio'),
@@ -586,6 +601,9 @@ void main() {
 
         await notifier.updateProfile(
           displayName: '',
+          username: '',
+          firstName: '',
+          lastName: '',
           city: '',
           country: '',
           bio: '',
@@ -601,6 +619,9 @@ void main() {
       when(
         () => mockRepo.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -609,6 +630,9 @@ void main() {
 
       await notifier.updateProfile(
         displayName: 'KarimWI',
+        username: 'karimwi',
+        firstName: 'Karim',
+        lastName: 'Wi',
         city: 'Giza',
         country: 'EG',
         bio: 'Music producer',
@@ -617,6 +641,9 @@ void main() {
       verify(
         () => mockRepo.updateProfile(
           displayName: 'KarimWI',
+          username: 'karimwi',
+          firstName: 'Karim',
+          lastName: 'Wi',
           city: 'Giza',
           country: 'EG',
           bio: 'Music producer',
@@ -628,6 +655,9 @@ void main() {
       notifier.state = const ProfileInitial();
       await notifier.updateProfile(
         displayName: 'X',
+        username: 'x',
+        firstName: '',
+        lastName: '',
         city: '',
         country: '',
         bio: '',

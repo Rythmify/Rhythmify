@@ -119,6 +119,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<void> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -130,6 +133,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _updateProfile(
       displayName: displayName,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       city: city,
       country: country,
       bio: bio,
