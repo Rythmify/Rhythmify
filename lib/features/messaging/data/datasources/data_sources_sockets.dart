@@ -1,32 +1,81 @@
-import 'dart:convert';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-/// A data source that manages real-time messaging communication using WebSockets.
-///
-/// This class handles connecting to a WebSocket server, listening for incoming
-/// messages, and sending data over the established connection.
-class MessagingSocketDatasource {
-  late WebSocketChannel _channel;
+class DataSourcesSockets {
+  late IO.Socket _socket;
 
-  /// Establishes a WebSocket connection to the provided [url].
-  void connect(String url) {
-    _channel = WebSocketChannel.connect(Uri.parse(url));
+  void connect(String url, String token) {
+    print('🔌 Connecting socket with token: ${token.substring(0, 20)}...');
+    _socket = IO.io(
+      url,
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({'token': 'Bearer $token'})
+          .disableAutoConnect()
+          .build(),
+    );
+
+    _socket.onConnect((_) => print('✅ Socket connected'));
+    _socket.onDisconnect((_) => print('❌ Socket disconnected'));
+    _socket.on('error', (data) => print('⚠️ Socket error: $data'));
+    _socket.connect();
   }
 
-  /// A stream of incoming messages from the WebSocket.
-  ///
-  /// Events are received as JSON strings and decoded into a map.
-  Stream<Map<String, dynamic>> get messages {
-    return _channel.stream.map((event) => jsonDecode(event as String));
+  void joinConversation(String conversationId) {
+    _socket.emit('message:join', {'conversationId': conversationId});
   }
 
-  /// Sends the provided [data] as a JSON-encoded string to the WebSocket server.
-  void send(Map<String, dynamic> data) {
-    _channel.sink.add(jsonEncode(data));
+  void leaveConversation(String conversationId) {
+    _socket.emit('message:leave', {'conversationId': conversationId});
   }
 
-  /// Closes the active WebSocket connection.
+  void sendMessage(String conversationId, Map<String, dynamic> message) {
+    _socket.emit('message:send', {
+      'conversationId': conversationId,
+      'message': message,
+    });
+  }
+
+  void markRead(
+    String conversationId,
+    String messageId,
+    bool isRead,
+    int unreadCount,
+  ) {
+    _socket.emit('message:read', {
+      'conversationId': conversationId,
+      'messageId': messageId,
+      'isRead': isRead,
+      'conversationUnreadCount': unreadCount,
+    });
+  }
+
+  void sendTyping(String conversationId) {
+    _socket.emit('message:typing', {'conversationId': conversationId});
+  }
+
+  void sendStopTyping(String conversationId) {
+    _socket.emit('message:stop_typing', {'conversationId': conversationId});
+  }
+
+  void onMessageReceived(Function(Map<String, dynamic>) callback) {
+    _socket.off('message:received');
+    _socket.on('message:received', (data) => callback(data));
+  }
+
+  void onMessageReadUpdated(Function(Map<String, dynamic>) callback) {
+    _socket.off('message:read_updated');
+    _socket.on('message:read_updated', (data) => callback(data));
+  }
+
+  void onTyping(Function(Map<String, dynamic>) callback) {
+    _socket.on('message:typing', (data) => callback(data));
+  }
+
+  void onStopTyping(Function(Map<String, dynamic>) callback) {
+    _socket.on('message:stop_typing', (data) => callback(data));
+  }
+
   void disconnect() {
-    _channel.sink.close();
+    _socket.disconnect();
   }
 }
