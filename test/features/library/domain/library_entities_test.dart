@@ -38,16 +38,8 @@ void main() {
         isPublic: true,
         status: 'processing',
       );
-      final failed = UploadedTrack(
-        track: t,
-        isPublic: false,
-        status: 'failed',
-      );
-      final ready = UploadedTrack(
-        track: t,
-        isPublic: false,
-        status: 'ready',
-      );
+      final failed = UploadedTrack(track: t, isPublic: false, status: 'failed');
+      final ready = UploadedTrack(track: t, isPublic: false, status: 'ready');
 
       expect(processing.isProcessing, isTrue);
       expect(processing.isReady, isFalse);

@@ -127,10 +127,10 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     _currentQueue = tracks;
 
     final List<AudioSource> audioSources = [];
-    
+
     for (final track in tracks) {
       final String rawUrl = (track.streamUrl ?? track.audioUrl ?? '').trim();
-      
+
       if (rawUrl.isEmpty) {
         // Skip invalid tracks to prevent crash
         continue;
@@ -152,7 +152,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     // Ensure initialIndex is within bounds after potentially skipping tracks
-    final effectiveIndex = initialIndex < audioSources.length ? initialIndex : 0;
+    final effectiveIndex = initialIndex < audioSources.length
+        ? initialIndex
+        : 0;
 
     await _player.setAudioSources(
       audioSources,

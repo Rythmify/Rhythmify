@@ -30,14 +30,16 @@ class TrackRepositoryImpl implements TrackRepository {
   @override
   Future<List<double>> getWaveform(String trackId) async {
     final response = await remoteDataSource.getWaveform(trackId);
-    
+
     List<dynamic> peaks = [];
-    if (response.containsKey('data') && response['data'] is Map && response['data'].containsKey('peaks')) {
+    if (response.containsKey('data') &&
+        response['data'] is Map &&
+        response['data'].containsKey('peaks')) {
       peaks = response['data']['peaks'];
     } else if (response.containsKey('peaks')) {
       peaks = response['peaks'];
     }
-    
+
     return peaks.map((p) => (p as num).toDouble()).toList();
   }
 

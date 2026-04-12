@@ -74,10 +74,10 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     final filtered = _query.isEmpty
         ? state.tracks
         : state.tracks
-            .where(
-              (t) => t.title.toLowerCase().contains(_query.toLowerCase()),
-            )
-            .toList();
+              .where(
+                (t) => t.title.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
     // Wrap everything in a CustomScrollView so the entire page is scrollable,
     // which allows the RefreshIndicator to trigger.
@@ -85,7 +85,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
       key: const Key('uploads_scroll_view'),
       controller: _scrollController, // Attach your pagination controller here
       // AlwaysScrollableScrollPhysics ensures pull-to-refresh works even if the list is empty or too short to scroll normally
-      physics: const AlwaysScrollableScrollPhysics(), 
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         // ── Empty state matching SoundCloud screenshot ────────────────────────
         if (state.tracks.isEmpty)
@@ -162,7 +162,9 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
                   key: const Key('uploads_search_text_field'),
                   controller: _searchController,
                   onChanged: (v) => setState(() => _query = v),
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search in your uploads',
                     hintStyle: AppTheme.bodyMedium,
@@ -212,4 +214,3 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     );
   }
 }
-
