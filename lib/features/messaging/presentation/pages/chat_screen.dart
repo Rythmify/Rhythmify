@@ -613,62 +613,85 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         .join('\n');
   }
 
+  Future<void> _processAndSendMessages(String conversationId, String text) async {
+    final trackUrlRegex = RegExp(r'https://rythmify\.com/tracks/([a-zA-Z0-9\-]+)');
+    final playlistUrlRegex = RegExp(r'https://rythmify\.com/playlists/([a-zA-Z0-9\-]+)');
+
+    final permalinkToEmbed = <String, SharedEmbed>{};
+    for (final embed in _selectedEmbeds) {
+      final url =
+          'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
+      permalinkToEmbed[url] = embed;
+    }
+
+    String remaining = text;
+
+    while (remaining.isNotEmpty) {
+      String? foundUrl;
+      int foundIndex = remaining.length;
+      String? extractedTrackId;
+      String? extractedPlaylistId;
+
+      for (final url in permalinkToEmbed.keys) {
+        final idx = remaining.indexOf(url);
+        if (idx != -1 && idx < foundIndex) {
+          foundIndex = idx;
+          foundUrl = url;
+          final embed = permalinkToEmbed[url]!;
+          extractedTrackId = embed.embedType == 'track' ? embed.embedId : null;
+          extractedPlaylistId = embed.embedType != 'track' ? embed.embedId : null;
+        }
+      }
+
+      final trackMatch = trackUrlRegex.firstMatch(remaining);
+      if (trackMatch != null && trackMatch.start < foundIndex) {
+        foundIndex = trackMatch.start;
+        foundUrl = trackMatch.group(0);
+        extractedTrackId = trackMatch.group(1);
+        extractedPlaylistId = null;
+      }
+
+      final playlistMatch = playlistUrlRegex.firstMatch(remaining);
+      if (playlistMatch != null && playlistMatch.start < foundIndex) {
+        foundIndex = playlistMatch.start;
+        foundUrl = playlistMatch.group(0);
+        extractedTrackId = null;
+        extractedPlaylistId = playlistMatch.group(1);
+      }
+
+      if (foundUrl != null) {
+        final textBefore = remaining.substring(0, foundIndex).trim();
+        if (textBefore.isNotEmpty) {
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(conversationId: conversationId, body: textBefore);
+        }
+        
+        await ref
+            .read(sendMessageProvider.notifier)
+            .sendMessage(
+              conversationId: conversationId,
+              trackId: extractedTrackId,
+              playlistId: extractedPlaylistId,
+            );
+            
+        remaining = remaining.substring(foundIndex + foundUrl.length).trim();
+      } else {
+        if (remaining.trim().isNotEmpty) {
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(conversationId: conversationId, body: remaining.trim());
+        }
+        remaining = '';
+      }
+    }
+  }
+
   Future<void> _sendInExistingConv() async {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-      final permalinkToEmbed = <String, SharedEmbed>{};
-      for (final embed in _selectedEmbeds) {
-        final url =
-            'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
-        permalinkToEmbed[url] = embed;
-      }
-
-      String remaining = controller.text;
-
-      while (remaining.isNotEmpty) {
-        String? foundUrl;
-        int foundIndex = remaining.length;
-
-        for (final url in permalinkToEmbed.keys) {
-          final idx = remaining.indexOf(url);
-          if (idx != -1 && idx < foundIndex) {
-            foundIndex = idx;
-            foundUrl = url;
-          }
-        }
-
-        if (foundUrl != null) {
-          final textBefore = remaining.substring(0, foundIndex).trim();
-          if (textBefore.isNotEmpty) {
-            await ref
-                .read(sendMessageProvider.notifier)
-                .sendMessage(
-                  conversationId: widget.conv!.conversationId,
-                  body: textBefore,
-                );
-          }
-          final embed = permalinkToEmbed[foundUrl]!;
-          await ref
-              .read(sendMessageProvider.notifier)
-              .sendMessage(
-                conversationId: widget.conv!.conversationId,
-                trackId: embed.embedType == 'track' ? embed.embedId : null,
-                playlistId: embed.embedType != 'track' ? embed.embedId : null,
-              );
-          remaining = remaining.substring(foundIndex + foundUrl.length).trim();
-        } else {
-          if (remaining.trim().isNotEmpty) {
-            await ref
-                .read(sendMessageProvider.notifier)
-                .sendMessage(
-                  conversationId: widget.conv!.conversationId,
-                  body: remaining.trim(),
-                );
-          }
-          remaining = '';
-        }
-      }
+      await _processAndSendMessages(widget.conv!.conversationId, controller.text);
 
       if (mounted) {
         ref.invalidate(conversationProvider);
@@ -690,13 +713,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-      final permalinkToEmbed = <String, SharedEmbed>{};
-      for (final embed in _selectedEmbeds) {
-        final url =
-            'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
-        permalinkToEmbed[url] = embed;
-      }
-
       Conversation? newConv = await ref
           .read(sendMessageProvider.notifier)
           .sendMessage(newParticipantId: widget.newParticipantId, body: null);
@@ -711,51 +727,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       });
 
-      String remaining = controller.text;
-
-      while (remaining.isNotEmpty) {
-        String? foundUrl;
-        int foundIndex = remaining.length;
-
-        for (final url in permalinkToEmbed.keys) {
-          final idx = remaining.indexOf(url);
-          if (idx != -1 && idx < foundIndex) {
-            foundIndex = idx;
-            foundUrl = url;
-          }
-        }
-
-        if (foundUrl != null) {
-          final textBefore = remaining.substring(0, foundIndex).trim();
-          if (textBefore.isNotEmpty) {
-            await ref
-                .read(sendMessageProvider.notifier)
-                .sendMessage(
-                  conversationId: newConv.conversationId,
-                  body: textBefore,
-                );
-          }
-          final embed = permalinkToEmbed[foundUrl]!;
-          await ref
-              .read(sendMessageProvider.notifier)
-              .sendMessage(
-                conversationId: newConv.conversationId,
-                trackId: embed.embedType == 'track' ? embed.embedId : null,
-                playlistId: embed.embedType != 'track' ? embed.embedId : null,
-              );
-          remaining = remaining.substring(foundIndex + foundUrl.length).trim();
-        } else {
-          if (remaining.trim().isNotEmpty) {
-            await ref
-                .read(sendMessageProvider.notifier)
-                .sendMessage(
-                  conversationId: newConv.conversationId,
-                  body: remaining.trim(),
-                );
-          }
-          remaining = '';
-        }
-      }
+      await _processAndSendMessages(newConv.conversationId, controller.text);
 
       if (mounted) {
         ref.invalidate(conversationProvider);
