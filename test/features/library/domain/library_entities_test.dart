@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rythmify/core/domain/entities/track.dart';
 import 'package:rythmify/features/library/domain/entities/library_entities.dart';
 
 void main() {
@@ -23,32 +24,29 @@ void main() {
     });
 
     test('UploadedTrack status helpers map correctly', () {
-      final processing = UploadedTrack(
+      final t = Track(
         id: 't1',
+        userId: 'u',
         title: 'Song',
-        playCount: 0,
-        likeCount: 0,
+        artist: 'Artist',
+        audioUrl: '',
+        duration: Duration.zero,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      final processing = UploadedTrack(
+        track: t,
         isPublic: true,
         status: 'processing',
-        createdAt: DateTime(2026, 1, 1),
       );
       final failed = UploadedTrack(
-        id: 't2',
-        title: 'Song',
-        playCount: 0,
-        likeCount: 0,
+        track: t,
         isPublic: false,
         status: 'failed',
-        createdAt: DateTime(2026, 1, 1),
       );
       final ready = UploadedTrack(
-        id: 't3',
-        title: 'Song',
-        playCount: 0,
-        likeCount: 0,
+        track: t,
         isPublic: false,
         status: 'ready',
-        createdAt: DateTime(2026, 1, 1),
       );
 
       expect(processing.isProcessing, isTrue);

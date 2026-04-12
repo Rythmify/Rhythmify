@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/domain/entities/track.dart';
 
 // coverage:ignore-file
 /// Domain entities used by Library pages, use cases, and repositories.
@@ -66,25 +67,22 @@ class LibraryPlaylist extends Equatable {
 // UploadedTrack — used in Your Uploads page
 // ─────────────────────────────────────────────
 class UploadedTrack extends Equatable {
-  final String id;
-  final String title;
-  final String? artworkUrl;
-  final int playCount;
-  final int likeCount;
+  final Track track;
   final bool isPublic;
   final String status; // "ready" | "processing" | "failed"
-  final DateTime createdAt;
 
   const UploadedTrack({
-    required this.id,
-    required this.title,
-    this.artworkUrl,
-    required this.playCount,
-    required this.likeCount,
+    required this.track,
     required this.isPublic,
     required this.status,
-    required this.createdAt,
   });
+
+  String get id => track.id;
+  String get title => track.title;
+  String? get artworkUrl => track.coverImage;
+  int get playCount => track.playCount;
+  int get likeCount => track.likeCount;
+  DateTime get createdAt => track.createdAt;
 
   bool get isProcessing => status == 'processing';
   bool get isFailed => status == 'failed';
