@@ -129,7 +129,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     final List<AudioSource> audioSources = [];
 
     for (final track in tracks) {
-      final String rawUrl = (track.streamUrl ?? track.audioUrl ?? '').trim();
+      final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
 
       if (rawUrl.isEmpty) {
         // Skip invalid tracks to prevent crash
