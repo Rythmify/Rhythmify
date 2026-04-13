@@ -55,7 +55,8 @@ class ScrollingArtworkBackground extends ConsumerWidget {
       StackTrace? stackTrace,
     ) {
       return Container(
-        width: MediaQuery.of(context).size.width,
+        width: double.infinity,
+        height: double.infinity,
         color: Colors.grey[900],
         child: const Center(
           child: Icon(Icons.music_note, color: Colors.white24, size: 100),
@@ -69,16 +70,18 @@ class ScrollingArtworkBackground extends ConsumerWidget {
           ? Image.network(
               artworkUrl,
               key: Key('player_artwork_network_$keySuffix'),
-              height: MediaQuery.of(context).size.height,
-              fit: BoxFit.fitHeight,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover, // Changed from fitHeight to cover
               alignment: Alignment(alignmentX, 0.0),
               errorBuilder: errorPlaceholder,
             )
           : Image.asset(
               artworkUrl,
               key: Key('player_artwork_asset_$keySuffix'),
-              height: MediaQuery.of(context).size.height,
-              fit: BoxFit.fitHeight,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover, // Changed from fitHeight to cover
               alignment: Alignment(alignmentX, 0.0),
               errorBuilder: errorPlaceholder,
             );
@@ -99,7 +102,7 @@ class ScrollingArtworkBackground extends ConsumerWidget {
           ),
 
           // --------- Optimized Static Blur Layer ----------
-          // We apply the blur strictly to a duplicated image,
+          // We apply the blur strictly to a duplicated image
           IgnorePointer(
             child: AnimatedOpacity(
               opacity: (isPaused || isDragging) ? 1.0 : 0.0,
