@@ -37,7 +37,7 @@ class TrackOptionsModal extends ConsumerWidget {
 
   void _shareToWhatsApp(BuildContext context) {
     final text =
-        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
     final urlString = 'whatsapp://send?text=${Uri.encodeComponent(text)}';
     _launchUrl(urlString);
     Navigator.pop(context);
@@ -45,7 +45,7 @@ class TrackOptionsModal extends ConsumerWidget {
 
   void _shareToSMS(BuildContext context) {
     final text =
-        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
     final urlString = 'sms:?body=${Uri.encodeComponent(text)}';
     _launchUrl(urlString);
     Navigator.pop(context);
@@ -53,7 +53,7 @@ class TrackOptionsModal extends ConsumerWidget {
 
   void _copyLink(BuildContext context) {
     final text =
-        'Listen Now On Rythmify: https://rythmify.com/track/${track.id}';
+        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(
       context,
@@ -108,6 +108,7 @@ class TrackOptionsModal extends ConsumerWidget {
                             Navigator.pop(context);
                             context.push(
                               '/home/inbox/chat/${conv.conversationId}',
+                              extra: conv,
                             );
                           },
                           child: Padding(

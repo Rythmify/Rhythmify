@@ -126,22 +126,39 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
 
-    final audioSources = tracks.map((track) {
-      final rawUrl = (track.streamUrl ?? track.audioUrl).trim();
+    final List<AudioSource> audioSources = [];
+
+    for (final track in tracks) {
+      final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
+
+      if (rawUrl.isEmpty) {
+        // Skip invalid tracks to prevent crash
+        continue;
+      }
+
       if (rawUrl.startsWith('assets/')) {
-        return AudioSource.asset(rawUrl, tag: track.id);
+        audioSources.add(AudioSource.asset(rawUrl, tag: track.id));
       } else {
         final resolvedUri = _resolveTrackUri(rawUrl);
-        if (resolvedUri == null) {
-          throw Exception('Track URL is invalid: $rawUrl');
+        if (resolvedUri != null) {
+          audioSources.add(AudioSource.uri(resolvedUri, tag: track.id));
         }
-        return AudioSource.uri(resolvedUri, tag: track.id);
+        // If resolution fails, we skip this track instead of throwing
       }
-    }).toList();
+    }
+
+    if (audioSources.isEmpty) {
+      return;
+    }
+
+    // Ensure initialIndex is within bounds after potentially skipping tracks
+    final effectiveIndex = initialIndex < audioSources.length
+        ? initialIndex
+        : 0;
 
     await _player.setAudioSources(
       audioSources,
-      initialIndex: initialIndex,
+      initialIndex: effectiveIndex,
       initialPosition: Duration.zero,
     );
   }
