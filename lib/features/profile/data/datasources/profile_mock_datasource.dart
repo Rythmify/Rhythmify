@@ -1,5 +1,6 @@
 import 'dart:math';
 import '../models/profile_model.dart';
+import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
 
@@ -416,6 +417,39 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
     return tracks
         .sublist(start, end)
         .map((t) => TrackModel.fromJson(Map<String, dynamic>.from(t)))
+        .toList();
+  }
+
+  @override
+  Future<List<ProfileUserSummaryModel>> getFollowers({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final start = (page - 1) * limit;
+    final end = min(start + limit, _mockProfiles.length);
+    if (start >= _mockProfiles.length) return [];
+    return _mockProfiles
+        .sublist(start, end)
+        .map((user) => ProfileUserSummaryModel.fromJson(user))
+        .toList();
+  }
+
+  @override
+  Future<List<ProfileUserSummaryModel>> getFollowing({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final start = (page - 1) * limit;
+    final end = min(start + limit, _mockProfiles.length);
+    if (start >= _mockProfiles.length) return [];
+    return _mockProfiles.reversed
+        .toList()
+        .sublist(start, end)
+        .map((user) => ProfileUserSummaryModel.fromJson(user))
         .toList();
   }
 }

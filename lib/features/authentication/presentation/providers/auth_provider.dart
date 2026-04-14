@@ -48,9 +48,13 @@ class AuthNotifier extends Notifier<AuthState> {
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
 
+    apiClient.onSessionExpired = () {
+      state = const AuthUnauthenticated();
+    };
+
     Future.microtask(() => checkAuthStatus());
 
-    return const AuthLoading();
+    return const AuthChecking();
   }
 
   /// Fetches the full profile from `/users/me` and merges it with
@@ -92,9 +96,16 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     try {
-      final token = await apiClient.getToken();
+      var token = await apiClient.getToken();
+      final refreshToken = await apiClient.getRefreshToken();
 
-      if (token == null) {
+      if ((token == null || token.isEmpty) &&
+          refreshToken != null &&
+          refreshToken.isNotEmpty) {
+        token = await apiClient.refreshAccessToken();
+      }
+
+      if (token == null || token.isEmpty) {
         state = const AuthUnauthenticated();
         return;
       }
@@ -115,7 +126,7 @@ class AuthNotifier extends Notifier<AuthState> {
       state = AuthAuthenticated(user);
     } catch (e) {
       if (_isInvalidSessionError(e)) {
-        await apiClient.clearToken();
+        await apiClient.clearTokens();
         state = const AuthUnauthenticated();
         return;
       }
@@ -209,7 +220,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthLoading();
     final result = await _signOut();
     result.fold((failure) => state = AuthError(failure.message), (_) async {
-      await apiClient.clearToken();
+      await apiClient.clearTokens();
       state = const AuthUnauthenticated();
     });
   }

@@ -25,6 +25,8 @@ import '../../features/authentication/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
+import '../../features/profile/presentation/pages/profile_connections_page.dart';
+import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
 
 //  Feed imports
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -203,6 +205,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
           return LikesPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/followers',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return ProfileConnectionsPage(
+            userId: userId,
+            type: ProfileConnectionsType.followers,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/following',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return ProfileConnectionsPage(
+            userId: userId,
+            type: ProfileConnectionsType.following,
+          );
         },
       ),
 
