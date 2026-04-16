@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/core/domain/entities/track.dart';
-import 'package:rythmify/features/search/data/datasources/search_remote_datasource.dart';
 import 'package:rythmify/features/search/data/repositories/search_repository_impl.dart';
 import 'package:rythmify/features/search/domain/entities/search_results.dart';
 import 'package:rythmify/features/search/domain/entities/search_suggestion.dart';
@@ -9,6 +8,7 @@ import 'package:rythmify/features/search/domain/repositories/search_repository.d
 import 'package:rythmify/features/search/domain/usecases/get_search_results.dart';
 import 'package:rythmify/features/search/domain/usecases/get_search_suggestions.dart';
 import 'package:rythmify/features/search/presentation/providers/search_providers.dart';
+import '../../../lib/features/search/data/datasources/search_mock_datasource.dart';
 
 void main() {
   group('Search Feature Tests', () {

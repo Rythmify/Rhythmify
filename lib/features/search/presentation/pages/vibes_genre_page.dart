@@ -37,19 +37,29 @@ const _genreTitles = {
 /// [genre] is the genre ID (e.g. `'hiphop'`) used to resolve the image, title,
 /// and passed down to each tab widget for its provider family key.
 class GenrePage extends StatelessWidget {
-  const GenrePage({super.key, required this.genre});
-  final String genre;
+  const GenrePage({
+    super.key,
+    required this.genreId,
+    required this.genreName,
+    required this.coverImage, // TODO: use when endpoint adds cover_image
+  });
+
+  final String genreId;
+  final String genreName;
+  final String coverImage;
 
   @override
   Widget build(BuildContext context) {
-    final imagePath = _genreImages[genre] ?? 'assets/images/placeholder.png';
-    final title = _genreTitles[genre] ?? genre;
+    // fallback until cover_image is added to /genres endpoint
+    final imagePath = coverImage.isNotEmpty
+        ? coverImage
+        : 'assets/images/placeholder.png';
 
     final tabs = [
-      GenreAllTab(genreId: genre),
-      GenreTrendingTab(genreId: genre),
-      GenrePlaylistsTab(genreId: genre),
-      GenreAlbumsTab(genreId: genre),
+      GenreAllTab(genreId: genreId),
+      GenreTrendingTab(genreId: genreId),
+      GenrePlaylistsTab(genreId: genreId),
+      GenreAlbumsTab(genreId: genreId),
     ];
 
     return DefaultTabController(
@@ -58,20 +68,28 @@ class GenrePage extends StatelessWidget {
         key: const Key('genre_page'),
         body: Column(
           children: [
-            // ── Header Image ─────────────────────────────
             Stack(
               key: const Key('genre_header'),
               children: [
-                Image.asset(
-                  imagePath,
-                  key: const Key('genre_header_image'),
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      Container(height: 220, color: Colors.grey[900]),
-                ),
-                // Back button respects the status bar safe area.
+                coverImage.isNotEmpty
+                    ? Image.network(
+                        imagePath,
+                        key: const Key('genre_header_image'),
+                        width: double.infinity,
+                        height: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            Container(height: 220, color: Colors.grey[900]),
+                      )
+                    : Image.asset(
+                        imagePath,
+                        key: const Key('genre_header_image'),
+                        width: double.infinity,
+                        height: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            Container(height: 220, color: Colors.grey[900]),
+                      ),
                 Positioned(
                   top: MediaQuery.of(context).padding.top,
                   left: 8,
@@ -85,7 +103,7 @@ class GenrePage extends StatelessWidget {
                   bottom: 16,
                   left: 16,
                   child: Text(
-                    title,
+                    genreName, // ← uses passed name directly
                     key: const Key('genre_title'),
                     style: const TextStyle(
                       color: Colors.white,
@@ -97,11 +115,8 @@ class GenrePage extends StatelessWidget {
                 ),
               ],
             ),
-
-            // ── TabBar ───────────────────────────────────
             const TabBar(
               key: Key('genre_tab_bar'),
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               isScrollable: false,
               tabAlignment: TabAlignment.fill,
               dividerColor: Colors.transparent,
@@ -120,8 +135,6 @@ class GenrePage extends StatelessWidget {
                 Tab(key: Key('genre_tab_albums'), text: 'Albums'),
               ],
             ),
-
-            // ── TabBarView ───────────────────────────────
             Expanded(
               child: TabBarView(
                 key: const Key('genre_tab_view'),

@@ -12,13 +12,19 @@ import '../../domain/entities/vibes_genre_playlist.dart';
 import '../../domain/entities/vibes_genre_album.dart';
 import '../../domain/entities/vibes_genre_artists.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../data/datasources/vibes_genre_mock_datasource.dart';
+import '../../../../core/network/api_client.dart';
+// now has Impl
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
+const bool _useMock = false;
+
+final genreRemoteSourceProvider = Provider<GenreRemoteSource>((ref) {
+  if (_useMock) return GenreRemoteSourceMock();
+  return GenreRemoteSourceImpl(dio: apiClient.dio);
+});
 
 /// Provides the mock data source. Swap to a real HTTP source at integration time.
-final genreRemoteSourceProvider = Provider<GenreRemoteSource>(
-  (_) => GenreRemoteSourceMock(),
-);
 
 /// Provides the repository, injecting the remote source.
 final genreRepositoryProvider = Provider(
@@ -59,6 +65,7 @@ final getGenreAllTracksProvider = Provider(
 /// Fetches the full [GenreContent] bundle for the genre page.
 final genreContentProvider = FutureProvider.autoDispose
     .family<GenreContent, String>((ref, genreId) {
+      print('GENRE CONTENT PROVIDER CALLED with id: $genreId');
       return ref.read(getGenreContentProvider).call(genreId);
     });
 
