@@ -143,7 +143,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
     final response = await _apiClient.dio.get(
       '/tracks/$trackId/comments',
-      queryParameters: {'limit': 1000, 'offset': 0},
+      queryParameters: {'limit': 20, 'offset': 0},
     );
 
     final items = response.data['data']['items'] as List;
