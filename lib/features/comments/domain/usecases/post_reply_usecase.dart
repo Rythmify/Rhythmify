@@ -9,13 +9,7 @@ class PostReplyUseCase {
   PostReplyUseCase(this._repository);
 
   /// Executes the use case to post the reply.
-  Future<Comment> call({
-    required String commentId,
-    required String content,
-  }) {
-    return _repository.postReply(
-      commentId: commentId,
-      content: content,
-    );
+  Future<Comment> call({required String commentId, required String content}) {
+    return _repository.postReply(commentId: commentId, content: content);
   }
 }

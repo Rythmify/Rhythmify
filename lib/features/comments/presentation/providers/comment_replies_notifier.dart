@@ -163,10 +163,7 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     // Send to Server
     try {
       final postReply = ref.read(postReplyProvider);
-      final realReply = await postReply(
-        commentId: parentId,
-        content: content,
-      );
+      final realReply = await postReply(commentId: parentId, content: content);
 
       final populatedRealReply = realReply.copyWith(
         userId: user.id,

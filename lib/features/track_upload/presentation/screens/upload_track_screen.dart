@@ -120,7 +120,9 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
               ),
             ],
           ),
-          if (state.draft != null && state.draft!.trackId == null && state.draft!.status == UploadStatus.uploading)
+          if (state.draft != null &&
+              state.draft!.trackId == null &&
+              state.draft!.status == UploadStatus.uploading)
             UploadProgressOverlay(
               onDismiss: () {
                 ref.read(uploadFormProvider.notifier).reset();
@@ -172,24 +174,26 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     if (draft == null) return;
 
     if (draft.trackId != null) {
-      ref.read(uploadFormProvider.notifier).handleUpdate(
-        ref: ref,
-        onSuccess: () {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Track updated successfully!')),
-            );
-            context.pop();
-          }
-        },
-        onError: (error) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Update failed: $error')),
-            );
-          }
-        },
-      );
+      ref
+          .read(uploadFormProvider.notifier)
+          .handleUpdate(
+            ref: ref,
+            onSuccess: () {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Track updated successfully!')),
+                );
+                context.pop();
+              }
+            },
+            onError: (error) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Update failed: $error')),
+                );
+              }
+            },
+          );
       return;
     }
 
@@ -211,7 +215,9 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       );
     } catch (_) {}
 
-    ref.read(uploadFormProvider.notifier).startUpload(
+    ref
+        .read(uploadFormProvider.notifier)
+        .startUpload(
           ref: ref,
           onSuccess: (trackId) {
             if (context.mounted) {
@@ -259,7 +265,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
     _titleController = TextEditingController(text: draft?.title ?? '');
     _tagController = TextEditingController();
     _collaboratorController = TextEditingController();
-    _descriptionController = TextEditingController(text: draft?.description ?? '');
+    _descriptionController = TextEditingController(
+      text: draft?.description ?? '',
+    );
   }
 
   @override
@@ -288,7 +296,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
     if (isUpdate && _titleController.text.isEmpty && draft?.title != null) {
       _titleController.text = draft!.title!;
     }
-    if (isUpdate && _descriptionController.text.isEmpty && draft?.description != null) {
+    if (isUpdate &&
+        _descriptionController.text.isEmpty &&
+        draft?.description != null) {
       _descriptionController.text = draft!.description!;
     }
 
@@ -316,7 +326,10 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                             const SizedBox(height: 8),
                             const Text(
                               'Audio file cannot be changed during update',
-                              style: TextStyle(color: Colors.grey, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ],
@@ -422,24 +435,38 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
             height: 52,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: state.canSave ? Colors.white : const Color(0xFF2E2E2E),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                backgroundColor: state.canSave
+                    ? Colors.white
+                    : const Color(0xFF2E2E2E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
                 elevation: 0,
               ),
-              onPressed: state.canSave ? () {
-                final parent = context.findAncestorStateOfType<_UploadTrackScreenState>();
-                if (parent != null) parent._handleSave(context);
-              } : null,
-              child: state.isLoading 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                : Text(
-                    isUpdate ? 'Update' : 'Save',
-                    style: TextStyle(
-                      color: state.canSave ? Colors.black : Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              onPressed: state.canSave
+                  ? () {
+                      final parent = context
+                          .findAncestorStateOfType<_UploadTrackScreenState>();
+                      if (parent != null) parent._handleSave(context);
+                    }
+                  : null,
+              child: state.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      isUpdate ? 'Update' : 'Save',
+                      style: TextStyle(
+                        color: state.canSave ? Colors.black : Colors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
             ),
           ),
         ),
@@ -452,7 +479,10 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Delete Track', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Delete Track',
+          style: TextStyle(color: Colors.white),
+        ),
         content: const Text(
           'Are you sure you want to permanently delete this track? This action cannot be undone.',
           style: TextStyle(color: Colors.grey),
@@ -465,26 +495,33 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ref.read(uploadFormProvider.notifier).handleDelete(
-                ref: ref,
-                onSuccess: () {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Track deleted successfully')),
-                    );
-                    context.pop();
-                  }
-                },
-                onError: (error) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Delete failed: $error')),
-                    );
-                  }
-                },
-              );
+              ref
+                  .read(uploadFormProvider.notifier)
+                  .handleDelete(
+                    ref: ref,
+                    onSuccess: () {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Track deleted successfully'),
+                          ),
+                        );
+                        context.pop();
+                      }
+                    },
+                    onError: (error) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Delete failed: $error')),
+                        );
+                      }
+                    },
+                  );
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
@@ -502,9 +539,15 @@ class _AdvancedTab extends StatelessWidget {
         children: [
           Icon(Icons.tune_rounded, color: Colors.grey, size: 48),
           SizedBox(height: 16),
-          Text('Advanced settings', style: TextStyle(color: Colors.white, fontSize: 16)),
+          Text(
+            'Advanced settings',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
           SizedBox(height: 8),
-          Text('Coming soon', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            'Coming soon',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -521,9 +564,15 @@ class _PermissionsTab extends StatelessWidget {
         children: [
           Icon(Icons.lock_outline_rounded, color: Colors.grey, size: 48),
           SizedBox(height: 16),
-          Text('Permissions', style: TextStyle(color: Colors.white, fontSize: 16)),
+          Text(
+            'Permissions',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
           SizedBox(height: 8),
-          Text('Coming soon', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            'Coming soon',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -539,7 +588,14 @@ class _FieldLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         if (required) ...[
           const SizedBox(width: 3),
           const Text('*', style: TextStyle(color: Colors.red, fontSize: 13)),
@@ -582,8 +638,12 @@ class _InputField extends StatelessWidget {
         fillColor: AppTheme.background,
         counterText: showCharCount ? null : '',
         contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1.5)),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white, width: 1.5),
+        ),
       ),
     );
   }
@@ -593,7 +653,11 @@ class _ArtistField extends StatefulWidget {
   final String primaryArtist;
   final TextEditingController controller;
   final ValueChanged<String> onArtistChanged;
-  const _ArtistField({required this.primaryArtist, required this.controller, required this.onArtistChanged});
+  const _ArtistField({
+    required this.primaryArtist,
+    required this.controller,
+    required this.onArtistChanged,
+  });
   @override
   State<_ArtistField> createState() => _ArtistFieldState();
 }
@@ -606,25 +670,54 @@ class _ArtistFieldState extends State<_ArtistField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
-          spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(20)),
-              child: Text(widget.primaryArtist.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+              decoration: BoxDecoration(
+                color: Colors.white12,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                widget.primaryArtist.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             for (final collab in _collaborators)
               GestureDetector(
                 onTap: () => setState(() => _collaborators.remove(collab)),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(collab.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(
+                        collab.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.close_rounded, color: Colors.white54, size: 14),
+                      const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white54,
+                        size: 14,
+                      ),
                     ],
                   ),
                 ),
@@ -642,8 +735,12 @@ class _ArtistFieldState extends State<_ArtistField> {
             filled: true,
             fillColor: AppTheme.background,
             contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1.5)),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white24),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 1.5),
+            ),
           ),
           onSubmitted: (value) {
             final name = value.trim();
@@ -662,36 +759,64 @@ class _GenrePicker extends StatelessWidget {
   final List<String> genres;
   final String? selectedGenre;
   final ValueChanged<String> onChanged;
-  const _GenrePicker({required this.genres, required this.selectedGenre, required this.onChanged});
+  const _GenrePicker({
+    required this.genres,
+    required this.selectedGenre,
+    required this.onChanged,
+  });
   void _show(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (_) => ListView.builder(
         itemCount: genres.length,
         itemBuilder: (_, i) {
           final genre = genres[i];
           final isSelected = genre == selectedGenre;
           return ListTile(
-            title: Text(genre, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
-            trailing: isSelected ? const Icon(Icons.check_rounded, color: Colors.white) : null,
-            onTap: () { onChanged(genre); Navigator.pop(context); },
+            title: Text(
+              genre,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            trailing: isSelected
+                ? const Icon(Icons.check_rounded, color: Colors.white)
+                : null,
+            onTap: () {
+              onChanged(genre);
+              Navigator.pop(context);
+            },
           );
         },
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _show(context),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.white24))),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.white24)),
+        ),
         child: Row(
           children: [
-            Expanded(child: Text(selectedGenre ?? 'Help fans discover your track', style: TextStyle(color: selectedGenre != null ? Colors.white : Colors.grey, fontSize: 14))),
+            Expanded(
+              child: Text(
+                selectedGenre ?? 'Help fans discover your track',
+                style: TextStyle(
+                  color: selectedGenre != null ? Colors.white : Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
             const Icon(Icons.unfold_more_rounded, color: Colors.grey, size: 20),
           ],
         ),
@@ -705,7 +830,12 @@ class _TagsInput extends StatelessWidget {
   final List<String> selectedTags;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
-  const _TagsInput({required this.controller, required this.selectedTags, required this.onAdd, required this.onRemove});
+  const _TagsInput({
+    required this.controller,
+    required this.selectedTags,
+    required this.onAdd,
+    required this.onRemove,
+  });
   @override
   Widget build(BuildContext context) {
     final atLimit = selectedTags.length >= 10;
@@ -718,14 +848,26 @@ class _TagsInput extends StatelessWidget {
           style: const TextStyle(color: Colors.white, fontSize: 14),
           cursorColor: Colors.white,
           decoration: InputDecoration(
-            hintText: atLimit ? 'Maximum 10 tags reached' : 'Add tags to describe track for reachability',
+            hintText: atLimit
+                ? 'Maximum 10 tags reached'
+                : 'Add tags to describe track for reachability',
             hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
             filled: true,
             fillColor: AppTheme.background,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1.5)),
-            suffixIcon: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 0,
+              vertical: 10,
+            ),
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white24),
+            ),
+            focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 1.5),
+            ),
+            suffixIcon: const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey,
+            ),
           ),
           onSubmitted: (value) {
             final tag = value.trim().toLowerCase();
@@ -737,19 +879,37 @@ class _TagsInput extends StatelessWidget {
         const SizedBox(height: 10),
         if (selectedTags.isNotEmpty)
           Wrap(
-            spacing: 8, runSpacing: 8,
+            spacing: 8,
+            runSpacing: 8,
             children: selectedTags.map((tag) {
               return GestureDetector(
                 onTap: () => onRemove(tag),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white24)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white24),
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(tag, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      Text(
+                        tag,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.close_rounded, color: Colors.white54, size: 12),
+                      const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white54,
+                        size: 12,
+                      ),
                     ],
                   ),
                 ),
@@ -769,9 +929,19 @@ class _PrivacySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _PrivacyOption(title: 'Public', subtitle: 'Anyone can find this', isSelected: isPublic, onTap: () => onChanged(true)),
+        _PrivacyOption(
+          title: 'Public',
+          subtitle: 'Anyone can find this',
+          isSelected: isPublic,
+          onTap: () => onChanged(true),
+        ),
         const SizedBox(height: 16),
-        _PrivacyOption(title: 'Unlisted (Private)', subtitle: 'Anyone with private link can access', isSelected: !isPublic, onTap: () => onChanged(false)),
+        _PrivacyOption(
+          title: 'Unlisted (Private)',
+          subtitle: 'Anyone with private link can access',
+          isSelected: !isPublic,
+          onTap: () => onChanged(false),
+        ),
       ],
     );
   }
@@ -782,7 +952,12 @@ class _PrivacyOption extends StatelessWidget {
   final String subtitle;
   final bool isSelected;
   final VoidCallback onTap;
-  const _PrivacyOption({required this.title, required this.subtitle, required this.isSelected, required this.onTap});
+  const _PrivacyOption({
+    required this.title,
+    required this.subtitle,
+    required this.isSelected,
+    required this.onTap,
+  });
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -794,16 +969,35 @@ class _PrivacyOption extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontSize: 15, fontWeight: FontWeight.w500)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
           Container(
-            width: 24, height: 24,
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isSelected ? Colors.white : Colors.white38, width: 2)),
-            child: isSelected ? const Icon(Icons.check_rounded, color: Colors.white, size: 14) : null,
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Colors.white : Colors.white38,
+                width: 2,
+              ),
+            ),
+            child: isSelected
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                : null,
           ),
         ],
       ),

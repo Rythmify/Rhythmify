@@ -79,7 +79,7 @@ class AppTheme {
     color: semiWhite,
   );
 
-    static TextStyle get homeTitle => GoogleFonts.inter(
+  static TextStyle get homeTitle => GoogleFonts.inter(
     fontSize: 21,
     fontWeight: FontWeight.w900,
     letterSpacing: -0.25,

@@ -39,28 +39,40 @@ class TrackActionBar extends ConsumerWidget {
             syncedTrack.isLiked ? Icons.favorite : Icons.favorite_border,
             Formatters.formatCount(syncedTrack.likeCount),
             onTap: () {
-              ref.read(trackInteractionProvider).handleToggleLike(
-                syncedTrack.id,
-                syncedTrack.isLiked,
-                currentTrack: syncedTrack,
-              );
+              ref
+                  .read(trackInteractionProvider)
+                  .handleToggleLike(
+                    syncedTrack.id,
+                    syncedTrack.isLiked,
+                    currentTrack: syncedTrack,
+                  );
             },
-            iconColor: syncedTrack.isLiked ? AppTheme.primaryBrand : AppTheme.fadedWhite,
-            textColor: syncedTrack.isLiked ? AppTheme.primaryBrand : AppTheme.fadedWhite,
+            iconColor: syncedTrack.isLiked
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
+            textColor: syncedTrack.isLiked
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
           ),
           const SizedBox(width: 16),
           _buildActionButton(
             Icons.repeat,
             Formatters.formatCount(syncedTrack.repostCount),
             onTap: () {
-              ref.read(trackInteractionProvider).handleToggleRepost(
-                syncedTrack.id,
-                syncedTrack.isReposted,
-                currentTrack: syncedTrack,
-              );
+              ref
+                  .read(trackInteractionProvider)
+                  .handleToggleRepost(
+                    syncedTrack.id,
+                    syncedTrack.isReposted,
+                    currentTrack: syncedTrack,
+                  );
             },
-            iconColor: syncedTrack.isReposted ? AppTheme.primaryBrand : AppTheme.fadedWhite,
-            textColor: syncedTrack.isReposted ? AppTheme.primaryBrand : AppTheme.fadedWhite,
+            iconColor: syncedTrack.isReposted
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
+            textColor: syncedTrack.isReposted
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
           ),
           const SizedBox(width: 16),
           _buildActionButton(

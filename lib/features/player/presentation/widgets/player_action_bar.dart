@@ -26,8 +26,8 @@ class PlayerActionBar extends ConsumerWidget {
     final trackAsync = ref.watch(trackDetailsProvider(trackId));
 
     // Get the globally synced track state for instant UI updates
-    final track = trackAsync.value != null 
-        ? ref.watch(syncedTrackProvider(trackAsync.value!)) 
+    final track = trackAsync.value != null
+        ? ref.watch(syncedTrackProvider(trackAsync.value!))
         : null;
 
     // Changed Container to Material so the InkWell tap effects have a canvas to draw on
@@ -42,11 +42,13 @@ class PlayerActionBar extends ConsumerWidget {
             InkWell(
               onTap: () {
                 if (track != null) {
-                  ref.read(trackInteractionProvider).handleToggleLike(
-                    track.id,
-                    track.isLiked,
-                    currentTrack: track,
-                  );
+                  ref
+                      .read(trackInteractionProvider)
+                      .handleToggleLike(
+                        track.id,
+                        track.isLiked,
+                        currentTrack: track,
+                      );
                 }
               },
               borderRadius: BorderRadius.circular(8),

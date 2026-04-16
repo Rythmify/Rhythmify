@@ -98,7 +98,9 @@ class TrackDraft {
       title: title ?? this.title,
       artist: artist ?? this.artist,
       genre: genre ?? this.genre,
-      localArtworkPath: clearArtwork ? null : localArtworkPath ?? this.localArtworkPath,
+      localArtworkPath: clearArtwork
+          ? null
+          : localArtworkPath ?? this.localArtworkPath,
       description: clearDescription ? null : description ?? this.description,
       caption: clearCaption ? null : caption ?? this.caption,
       tags: tags ?? this.tags,

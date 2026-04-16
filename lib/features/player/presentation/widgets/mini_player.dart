@@ -100,7 +100,11 @@ class MiniPlayer extends ConsumerWidget {
                 onPressed: () {
                   ref
                       .read(trackInteractionProvider)
-                      .handleToggleLike(track.id, track.isLiked, currentTrack: track);
+                      .handleToggleLike(
+                        track.id,
+                        track.isLiked,
+                        currentTrack: track,
+                      );
                 },
               ),
             ],

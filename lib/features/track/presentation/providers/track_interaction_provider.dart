@@ -24,17 +24,25 @@ class TrackInteractionNotifier {
   ///
   /// Calls [toggleLikeUseCaseProvider] to update the track state.
   /// Side effects: Updates the remote/local state via [TrackRepository].
-  Future<void> handleToggleLike(String trackId, bool isCurrentlyLiked, {Track? currentTrack}) async {
+  Future<void> handleToggleLike(
+    String trackId,
+    bool isCurrentlyLiked, {
+    Track? currentTrack,
+  }) async {
     try {
       // Instantly update the UI via the global sync provider
-      _ref.read(trackSyncProvider.notifier).toggleLike(trackId, isCurrentlyLiked, currentTrack);
+      _ref
+          .read(trackSyncProvider.notifier)
+          .toggleLike(trackId, isCurrentlyLiked, currentTrack);
 
       final toggleLike = _ref.read(toggleLikeUseCaseProvider);
       // We pass !isCurrentlyLiked because we want to set it to the opposite state
       await toggleLike.call(trackId, !isCurrentlyLiked);
     } catch (e) {
       // If it fails, revert the optimistic update
-      _ref.read(trackSyncProvider.notifier).toggleLike(trackId, !isCurrentlyLiked, null);
+      _ref
+          .read(trackSyncProvider.notifier)
+          .toggleLike(trackId, !isCurrentlyLiked, null);
     }
   }
 
@@ -42,17 +50,25 @@ class TrackInteractionNotifier {
   ///
   /// Calls [toggleRepostUseCaseProvider] to update the track state.
   /// Side effects: Synchronizes the change with [TrackRepository].
-  Future<void> handleToggleRepost(String trackId, bool isCurrentlyReposted, {Track? currentTrack}) async {
+  Future<void> handleToggleRepost(
+    String trackId,
+    bool isCurrentlyReposted, {
+    Track? currentTrack,
+  }) async {
     try {
       // Instantly update the UI via the global sync provider
-      _ref.read(trackSyncProvider.notifier).toggleRepost(trackId, isCurrentlyReposted, currentTrack);
+      _ref
+          .read(trackSyncProvider.notifier)
+          .toggleRepost(trackId, isCurrentlyReposted, currentTrack);
 
       final toggleRepost = _ref.read(toggleRepostUseCaseProvider);
       // We pass !isCurrentlyReposted because we want to set it to the opposite state
       await toggleRepost.call(trackId, !isCurrentlyReposted);
     } catch (e) {
       // If it fails, revert the optimistic update
-      _ref.read(trackSyncProvider.notifier).toggleRepost(trackId, !isCurrentlyReposted, null);
+      _ref
+          .read(trackSyncProvider.notifier)
+          .toggleRepost(trackId, !isCurrentlyReposted, null);
     }
   }
 }

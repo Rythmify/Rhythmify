@@ -80,12 +80,13 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
-        
+
         // --- LAYER 1: Track Artwork ---
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
-            image: widget.track.coverImage != null &&
+            image:
+                widget.track.coverImage != null &&
                     widget.track.coverImage!.startsWith('http')
                 ? NetworkImage(widget.track.coverImage!) as ImageProvider
                 : AssetImage(
@@ -94,17 +95,19 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             fit: BoxFit.cover,
           ),
         ),
-        
+
         // --- LAYER 2: Clip & Blur ---
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            
+
             // --- LAYER 3: Dark Tint & Border ---
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.3), // Slightly dark layer for text
+                color: Colors.black.withValues(
+                  alpha: 0.3,
+                ), // Slightly dark layer for text
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: Colors.white24, // Subtle white border
@@ -225,10 +228,11 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
-                        image: widget.track.coverImage != null &&
+                        image:
+                            widget.track.coverImage != null &&
                                 widget.track.coverImage!.startsWith('http')
                             ? NetworkImage(widget.track.coverImage!)
-                                as ImageProvider
+                                  as ImageProvider
                             : AssetImage(
                                 widget.track.coverImage ??
                                     widget.track.artworkUrl,
@@ -254,7 +258,8 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(7.2),
-              child: widget.track.coverImage != null &&
+              child:
+                  widget.track.coverImage != null &&
                       widget.track.coverImage!.startsWith('http')
                   ? Image.network(widget.track.coverImage!, fit: BoxFit.cover)
                   : Image.asset(

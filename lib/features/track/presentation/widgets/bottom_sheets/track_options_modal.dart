@@ -70,8 +70,11 @@ class TrackOptionsModal extends ConsumerWidget {
     final syncedTrack = ref.watch(syncedTrackProvider(track));
     final convsAsync = ref.watch(conversationProvider);
     final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
-    final isOwner = currentUserId != null && currentUserId == syncedTrack.userId;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+    final isOwner =
+        currentUserId != null && currentUserId == syncedTrack.userId;
 
     // WRAPPED IN DRAGGABLE SCROLLABLE SHEET
     return DraggableScrollableSheet(
@@ -229,7 +232,8 @@ class TrackOptionsModal extends ConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => UploadTrackScreen(track: syncedTrack),
+                            builder: (context) =>
+                                UploadTrackScreen(track: syncedTrack),
                           ),
                         );
                       },
@@ -250,7 +254,11 @@ class TrackOptionsModal extends ConsumerWidget {
                     onTap: () {
                       ref
                           .read(trackInteractionProvider)
-                          .handleToggleLike(syncedTrack.id, syncedTrack.isLiked, currentTrack: syncedTrack);
+                          .handleToggleLike(
+                            syncedTrack.id,
+                            syncedTrack.isLiked,
+                            currentTrack: syncedTrack,
+                          );
                       Navigator.pop(context);
                     },
                   ),
@@ -300,14 +308,20 @@ class TrackOptionsModal extends ConsumerWidget {
                     iconColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
-                    label: syncedTrack.isReposted ? 'Reposted' : 'Repost on Rythmify',
+                    label: syncedTrack.isReposted
+                        ? 'Reposted'
+                        : 'Repost on Rythmify',
                     labelColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
                     onTap: () {
                       ref
                           .read(trackInteractionProvider)
-                          .handleToggleRepost(syncedTrack.id, syncedTrack.isReposted, currentTrack: syncedTrack);
+                          .handleToggleRepost(
+                            syncedTrack.id,
+                            syncedTrack.isReposted,
+                            currentTrack: syncedTrack,
+                          );
                       Navigator.pop(context);
                     },
                   ),
