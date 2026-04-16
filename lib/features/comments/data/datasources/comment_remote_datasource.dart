@@ -21,6 +21,13 @@ abstract class CommentRemoteDataSource {
     required String sortValue,
   });
 
+  /// Returns paginated replies to the specified top-level comment.
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  });
+
   /// Fetches a large batch of all comments for building floating interactions.
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId);
 
@@ -30,6 +37,12 @@ abstract class CommentRemoteDataSource {
     required String content,
     required int trackTimestamp,
     String? parentId,
+  });
+
+  /// Posts a reply to the specified top-level comment.
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
   });
 
   /// Posts a like to the API.
@@ -89,7 +102,40 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
       queryParameters: {'limit': limit, 'offset': offset, 'sort': sortValue},
     );
 
-    final items = response.data['data']['items'] as List;
+    final data = response.data['data'];
+    final List items;
+    if (data is List) {
+      items = data;
+    } else if (data is Map && data['items'] is List) {
+      items = data['items'] as List;
+    } else {
+      items = [];
+    }
+
+    return items.map((json) => CommentDto.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    final response = await _apiClient.dio.get(
+      '/comments/$commentId/replies',
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
+
+    final data = response.data['data'];
+    final List items;
+    if (data is List) {
+      items = data;
+    } else if (data is Map && data['items'] is List) {
+      items = data['items'] as List;
+    } else {
+      items = [];
+    }
+
     return items.map((json) => CommentDto.fromJson(json)).toList();
   }
 
@@ -97,7 +143,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
     final response = await _apiClient.dio.get(
       '/tracks/$trackId/comments',
-      queryParameters: {'limit': 1000, 'offset': 0},
+      queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
     );
 
     final items = response.data['data']['items'] as List;
@@ -116,8 +162,21 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
       data: {
         'content': content,
         'track_timestamp': trackTimestamp,
-        'parent_comment_id': ?parentId,
+        'parent_comment_id': parentId,
       },
+    );
+
+    return CommentDto.fromJson(response.data['data']);
+  }
+
+  @override
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    final response = await _apiClient.dio.post(
+      '/comments/$commentId/replies',
+      data: {'content': content},
     );
 
     return CommentDto.fromJson(response.data['data']);

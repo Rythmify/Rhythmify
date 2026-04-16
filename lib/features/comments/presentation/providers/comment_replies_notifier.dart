@@ -56,11 +56,11 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
 
     try {
-      final getCommentReplies = ref.read(getCommentRepliesProvider);
-      final replies = await getCommentReplies(
+      final getReplies = ref.read(getRepliesProvider);
+      final replies = await getReplies(
         commentId: parentId,
-        page: state.currentPage,
-        sortType: state.sortType,
+        limit: 20,
+        offset: (state.currentPage - 1) * 20,
       );
 
       if (replies.isEmpty) {
@@ -162,13 +162,8 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
 
     // Send to Server
     try {
-      final postComment = ref.read(postCommentProvider);
-      final realReply = await postComment(
-        trackId: trackId,
-        content: content,
-        trackTimestamp: trackTimestamp,
-        parentId: parentId,
-      );
+      final postReply = ref.read(postReplyProvider);
+      final realReply = await postReply(commentId: parentId, content: content);
 
       final populatedRealReply = realReply.copyWith(
         userId: user.id,
@@ -220,7 +215,25 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
+      final newLikeStatus = await toggleCommentLike(
+        commentId,
+        isCurrentlyLiked: currentLikeState,
+      );
+
+      // Synchronize with backend result if it differs from optimistic update
+      if (newLikeStatus != !currentLikeState) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            if (c.id == commentId) {
+              return c.copyWith(
+                isLikedByMe: newLikeStatus,
+                likesCount: newLikeStatus ? c.likesCount + 1 : c.likesCount - 1,
+              );
+            }
+            return c;
+          }).toList(),
+        );
+      }
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

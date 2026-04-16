@@ -241,7 +241,26 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
+      final newLikeStatus = await toggleCommentLike(
+        commentId,
+        isCurrentlyLiked: currentLikeState,
+      );
+
+      // If the backend returned a different status than our optimistic update, sync it.
+      // This is especially important if the user said "make the state to be known".
+      if (newLikeStatus != !currentLikeState) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            if (c.id == commentId) {
+              return c.copyWith(
+                isLikedByMe: newLikeStatus,
+                likesCount: newLikeStatus ? c.likesCount + 1 : c.likesCount - 1,
+              );
+            }
+            return c;
+          }).toList(),
+        );
+      }
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

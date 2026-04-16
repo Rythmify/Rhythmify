@@ -12,6 +12,8 @@ import '../widgets/comment_reply_card.dart';
 import 'package:flutter/material.dart';
 import '../widgets/comment_card.dart';
 
+import '../../../track/presentation/providers/track_sync_provider.dart';
+
 /// A full-screen page displaying the complete list of comments for a track.
 ///
 /// This Presentation layer page manages the primary comment feed, rendering
@@ -49,8 +51,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       });
     });
 
-    // ─── ADD THIS ───
-    // Wait for the first frame to build, then seed the initial count
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(trackCommentsProvider(widget.track.id).notifier)
@@ -125,7 +125,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   context,
                   ref,
                   'Track Time',
-                  CommentSortType.trackTime,
+                  CommentSortType.timestamp,
                   state.sortType,
                 ),
                 const SizedBox(height: 24),
@@ -193,6 +193,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final syncedTrack = ref.watch(syncedTrackProvider(widget.track));
     final state = ref.watch(trackCommentsProvider(widget.track.id));
     final playerPosition = ref.watch(
       playerStateProvider.select((s) => s.position),
@@ -227,7 +228,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       ),
       body: Column(
         children: [
-          _buildTrackHeader(),
+          _buildTrackHeader(syncedTrack),
           Expanded(
             child: CustomScrollView(
               controller: _scrollController,
@@ -329,10 +330,10 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     );
   }
 
-  Widget _buildTrackHeader() {
+  Widget _buildTrackHeader(Track syncedTrack) {
     final isNetworkImage =
-        widget.track.artworkUrl.startsWith('http') ||
-        widget.track.artworkUrl.startsWith('https');
+        syncedTrack.artworkUrl.startsWith('http') ||
+        syncedTrack.artworkUrl.startsWith('https');
 
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -353,7 +354,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   borderRadius: BorderRadius.circular(5),
                   child: isNetworkImage
                       ? Image.network(
-                          widget.track.artworkUrl,
+                          syncedTrack.artworkUrl,
                           width: 47,
                           height: 47,
                           fit: BoxFit.cover,
@@ -365,7 +366,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                               ),
                         )
                       : Image.asset(
-                          widget.track.artworkUrl,
+                          syncedTrack.artworkUrl,
                           width: 47,
                           height: 47,
                           fit: BoxFit.cover,
@@ -384,14 +385,14 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.track.title,
+                      syncedTrack.title,
                       style: AppTheme.bodyNormal.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      widget.track.artist,
+                      syncedTrack.artist,
                       style: AppTheme.labelSmall.copyWith(
                         color: Colors.white70,
                       ),
@@ -421,7 +422,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    '${widget.track.likeCount}  people liked that track',
+                    '${syncedTrack.likeCount}  people liked that track',
                     style: AppTheme.labelSmall.copyWith(
                       color: Colors.white70,
                       fontSize: 12,

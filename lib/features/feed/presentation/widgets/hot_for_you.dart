@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:ui'; // Ensure this is imported for ImageFilter
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/domain/entities/track.dart';
@@ -8,7 +9,6 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 
 import '../providers/home_providers.dart';
-import 'dart:ui';
 
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
@@ -22,8 +22,8 @@ class HotForYouSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 18, left: 21),
-          child: Text("Hot For You 🔥", style: AppTheme.titleLarge),
+          padding: const EdgeInsets.only(bottom: 6, left: 21),
+          child: Text("Hot For You 🔥", style: AppTheme.homeTitle),
         ),
         asyncHotForYou.when(
           loading: () => const Center(
@@ -77,12 +77,13 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
+
+        // --- LAYER 1: Track Artwork ---
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey, width: 0.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
             image:
                 widget.track.coverImage != null &&
@@ -94,80 +95,106 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             fit: BoxFit.cover,
           ),
         ),
-        child: FrostedGlassBox(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
+
+        // --- LAYER 2: Clip & Blur ---
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+
+            // --- LAYER 3: Dark Tint & Border ---
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(
+                  alpha: 0.3,
+                ), // Slightly dark layer for text
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white24, // Subtle white border
+                  width: 1.0,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
-                    buildAlbum(),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.track.title,
-                            key: const Key('hot_for_you_track_title_text'),
-                            style: AppTheme.bodyNormal,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        buildAlbum(),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.track.title,
+                                key: const Key('hot_for_you_track_title_text'),
+                                style: AppTheme.bodyNormal.copyWith(
+                                  fontSize: 16,
+                                  color: AppTheme.textPrimary,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.track.artist,
+                                key: const Key('hot_for_you_track_artist_text'),
+                                style: AppTheme.bodyNormal.copyWith(
+                                  fontSize: 13,
+                                  color: AppTheme.fadedWhite,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.track.artist,
-                            key: const Key('hot_for_you_track_artist_text'),
-                            style: AppTheme.bodyNormal.copyWith(
-                              color: AppTheme.semiWhite,
-                            ),
+                        ),
+                        IconButton(
+                          key: const Key('hot_for_you_play_icon_button'),
+                          iconSize: 60,
+                          icon: Icon(
+                            isPlaying && isThisTrack
+                                ? Icons.pause_circle
+                                : Icons.play_circle,
+                            color: AppTheme.textPrimary,
                           ),
-                        ],
-                      ),
+                          onPressed: () {
+                            if (isThisTrack) {
+                              ref
+                                  .read(playerStateProvider.notifier)
+                                  .togglePlayPause();
+                            } else {
+                              ref
+                                  .read(playerStateProvider.notifier)
+                                  .loadAndPlayQueue([widget.track]);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      key: const Key('hot_for_you_play_icon_button'),
-                      iconSize: 60,
-                      icon: Icon(
-                        isPlaying && isThisTrack
-                            ? Icons.pause_circle
-                            : Icons.play_circle,
-                        color: AppTheme.textPrimary,
-                      ),
-                      onPressed: () {
-                        if (isThisTrack) {
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .togglePlayPause();
-                        } else {
-                          ref
-                              .read(playerStateProvider.notifier)
-                              .loadAndPlayQueue([widget.track]);
-                        }
-                      },
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.favorite,
+                          color: AppTheme.fadedWhite,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "${formatCount(widget.track.likeCount)} people liked your track",
+                          key: const Key('hot_for_you_like_count_text'),
+                          style: AppTheme.bodyNormal.copyWith(
+                            fontSize: 12,
+                            color: AppTheme.fadedWhite,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.favorite,
-                      color: AppTheme.semiWhite,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "${formatCount(widget.track.likeCount)} people liked your track",
-                      key: const Key('hot_for_you_like_count_text'),
-                      style: AppTheme.bodyNormal.copyWith(
-                        fontSize: 12,
-                        color: AppTheme.semiWhite,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -230,9 +257,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
               color: Colors.grey[900],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                7.2,
-              ), // Slightly less than 8 to fit perfectly inside the 0.8 border
+              borderRadius: BorderRadius.circular(7.2),
               child:
                   widget.track.coverImage != null &&
                       widget.track.coverImage!.startsWith('http')
@@ -258,42 +283,5 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-}
-
-class FrostedGlassBox extends StatelessWidget {
-  final Widget child;
-
-  const FrostedGlassBox({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      key: const Key('frosted_glass_repaint_boundary'),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: const SizedBox.shrink(),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(150),
-                border: Border.all(
-                  color: Colors.white.withAlpha(50),
-                  width: 0.5,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: child,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
