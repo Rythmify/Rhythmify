@@ -12,12 +12,14 @@ import '../../domain/usecases/get_tags.dart';
 import '../../domain/usecases/toggle_like.dart';
 import '../../domain/usecases/toggle_repost.dart';
 import '../../domain/usecases/record_play.dart';
+import '../../domain/usecases/update_track.dart';
+import '../../domain/usecases/delete_track.dart';
 
 // ====================
 //  --- The Switch ---
 // ====================
 
-const bool _useMock = true;
+const bool _useMock = false;
 
 // ============================================
 //  --- Data Source & Repository Providers ---
@@ -116,4 +118,14 @@ final toggleRepostUseCaseProvider = Provider<ToggleRepost>((ref) {
 /// Depends on [trackRepositoryProvider].
 final recordPlayUseCaseProvider = Provider<RecordPlay>((ref) {
   return RecordPlay(ref.watch(trackRepositoryProvider));
+});
+
+/// Provides the [UpdateTrack] use case.
+final updateTrackUseCaseProvider = Provider<UpdateTrack>((ref) {
+  return UpdateTrack(ref.watch(trackRepositoryProvider));
+});
+
+/// Provides the [DeleteTrack] use case.
+final deleteTrackUseCaseProvider = Provider<DeleteTrack>((ref) {
+  return DeleteTrack(ref.watch(trackRepositoryProvider));
 });

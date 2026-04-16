@@ -1,22 +1,18 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class DataSourcesSockets {
-  late IO.Socket _socket;
+  late io.Socket _socket;
 
   void connect(String url, String token) {
-    print('🔌 Connecting socket with token: ${token.substring(0, 20)}...');
-    _socket = IO.io(
+    _socket = io.io(
       url,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': 'Bearer $token'})
           .disableAutoConnect()
           .build(),
     );
 
-    _socket.onConnect((_) => print('✅ Socket connected'));
-    _socket.onDisconnect((_) => print('❌ Socket disconnected'));
-    _socket.on('error', (data) => print('⚠️ Socket error: $data'));
     _socket.connect();
   }
 

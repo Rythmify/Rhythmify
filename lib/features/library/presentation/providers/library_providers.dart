@@ -297,14 +297,9 @@ class UploadsNotifier extends Notifier<UploadsState> {
           .map(
             (t) => t.id == trackId
                 ? UploadedTrack(
-                    id: t.id,
-                    title: t.title,
-                    artworkUrl: t.artworkUrl,
-                    playCount: t.playCount,
-                    likeCount: t.likeCount,
+                    track: t.track,
                     isPublic: isPublic,
                     status: t.status,
-                    createdAt: t.createdAt,
                   )
                 : t,
           )

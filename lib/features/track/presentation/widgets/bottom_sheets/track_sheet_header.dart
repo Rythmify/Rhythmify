@@ -123,7 +123,7 @@ class TrackSheetHeader extends StatelessWidget {
                     Text(
                       track.title,
                       style: AppTheme.titleLarge,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(

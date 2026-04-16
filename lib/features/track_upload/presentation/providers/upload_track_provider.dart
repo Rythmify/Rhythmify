@@ -3,6 +3,8 @@ import 'package:rythmify/features/track_upload/data/datasources/upload_track_rem
 import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/features/track_upload/domain/usecases/upload_track_usecase.dart';
+import 'package:rythmify/core/domain/entities/track.dart' as track_entity;
+import 'package:rythmify/features/track/presentation/providers/track_dependency_providers.dart';
 import 'package:flutter/foundation.dart';
 
 /// Provider: UploadFormNotifier & UploadFormState
@@ -29,7 +31,7 @@ import 'package:flutter/foundation.dart';
 class UploadFormState {
   final TrackDraft? draft; // null until audio is picked
   final List<String> availableTags; // fetched from backend
-  final List<String> availableGenres; // ← ADD THIS
+  final List<String> availableGenres;
   final bool isLoading; // true while uploading
   final String? errorMessage; // set when something goes wrong
   final int currentTab; // 0=TrackInfo, 1=Advanced, 2=Permissions
@@ -37,7 +39,7 @@ class UploadFormState {
   const UploadFormState({
     this.draft,
     this.availableTags = const [],
-    this.availableGenres = const [], // ← ADD THIS
+    this.availableGenres = const [],
     this.isLoading = false,
     this.errorMessage,
     this.currentTab = 0,
@@ -54,7 +56,7 @@ class UploadFormState {
   UploadFormState copyWith({
     TrackDraft? draft,
     List<String>? availableTags,
-    List<String>? availableGenres, // ← ADD THIS
+    List<String>? availableGenres,
     bool? isLoading,
     String? errorMessage,
     int? currentTab,
@@ -76,6 +78,26 @@ class UploadFormState {
 class UploadFormNotifier extends Notifier<UploadFormState> {
   @override
   UploadFormState build() => const UploadFormState();
+
+  void initFromTrack(track_entity.Track track) {
+    state = state.copyWith(
+      draft: TrackDraft(
+        trackId: track.id,
+        remoteArtworkUrl: track.coverImage,
+        artistId: track.userId,
+        localAudioPath: '', // Not needed for updates
+        duration: track.duration,
+        title: track.title,
+        artist: track.artist,
+        genre: track.genre,
+        tags: track.tags,
+        description: track.description,
+        isPublic: true, // Default to public for now
+        status: UploadStatus.draft,
+        audioStatus: UploadStatus.success, // Audio already on server
+      ),
+    );
+  }
 
   // Replace initDraft with this version that also starts upload
   void initDraft({
@@ -246,6 +268,59 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   // Private helper — updates the draft inside state
   void _updateDraft(TrackDraft updated) {
     state = state.copyWith(draft: updated);
+  }
+
+  Future<void> handleUpdate({
+    required WidgetRef ref,
+    required void Function() onSuccess,
+    required void Function(String error) onError,
+  }) async {
+    final draft = state.draft;
+    if (draft == null || draft.trackId == null) return;
+
+    state = state.copyWith(isLoading: true);
+
+    final updateTrack = ref.read(updateTrackUseCaseProvider);
+
+    final Map<String, dynamic> data = {
+      "title": draft.title,
+      "description": draft.description,
+      "genre": draft.genre,
+      "tags": draft.tags,
+      "artists": draft.artist,
+      "cover_image_path": draft.localArtworkPath,
+    };
+
+    try {
+      await updateTrack.call(draft.trackId!, data);
+      state = state.copyWith(isLoading: false);
+      onSuccess();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      onError(e.toString());
+    }
+  }
+
+  Future<void> handleDelete({
+    required WidgetRef ref,
+    required void Function() onSuccess,
+    required void Function(String error) onError,
+  }) async {
+    final draft = state.draft;
+    if (draft == null || draft.trackId == null) return;
+
+    state = state.copyWith(isLoading: true);
+
+    final deleteTrack = ref.read(deleteTrackUseCaseProvider);
+
+    try {
+      await deleteTrack.call(draft.trackId!);
+      state = state.copyWith(isLoading: false);
+      onSuccess();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      onError(e.toString());
+    }
   }
 }
 

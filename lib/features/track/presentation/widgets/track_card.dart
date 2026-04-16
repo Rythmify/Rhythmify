@@ -13,9 +13,22 @@ import 'bottom_sheets/track_options_modal.dart';
 ///
 /// Depends on [playerStateProvider].
 class TrackCard extends ConsumerWidget {
+  /// Track item rendered by this card.
   final Track track;
 
-  const TrackCard({super.key, required this.track});
+  /// Optional external tap callback.
+  final VoidCallback? onTap;
+
+  /// Whether to observe player state and show dynamic playback status.
+  final bool observePlayerState;
+
+  /// Creates a [TrackCard].
+  const TrackCard({
+    super.key,
+    required this.track,
+    this.onTap,
+    this.observePlayerState = true,
+  });
 
   // --- Formatting Helpers ---
   String _formatDuration(int seconds) {
@@ -32,16 +45,21 @@ class TrackCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Read our real player state
-    final playerState = ref.watch(playerStateProvider);
+    final playerState = observePlayerState
+        ? ref.watch(playerStateProvider)
+        : const AppPlayerState();
     final currentPlayingId = playerState.currentTrack?.id;
     final isPlaying = playerState.status == PlayerStatus.playing;
-
-    final isThisTrackLoaded = currentPlayingId == track.id;
+    final isThisTrackLoaded =
+        observePlayerState && currentPlayingId == track.id;
 
     return InkWell(
       key: Key('track_card_${track.id}_inkwell'),
       onTap: () {
+        if (onTap != null) {
+          onTap!();
+          return;
+        }
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {

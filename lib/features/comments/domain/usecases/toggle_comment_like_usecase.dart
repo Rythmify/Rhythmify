@@ -1,18 +1,21 @@
 import '../repositories/comment_repository.dart';
 
-/// Use case to toggle the like state of a comment for the current user.
+/// A Domain layer UseCase to toggle the like state of a comment for the current user.
+///
+/// This UseCase delegates the mutation action to the [CommentRepository].
 class ToggleCommentLikeUseCase {
   final CommentRepository _repository;
 
+  /// Creates a [ToggleCommentLikeUseCase] with the provided [_repository].
   ToggleCommentLikeUseCase(this._repository);
 
-  /// Executes the use case.
+  /// Executes the use case to toggle the like status.
   ///
-  /// Note: The UI layer (BLoC/Provider) should optimistically update the UI
-  /// before awaiting this network call to ensure the app feels responsive.
-  ///
-  /// [commentId] The ID of the comment to like/unlike.
-  /// [isCurrentlyLiked] The current like state of the comment in the UI.
+  /// Requires the target [commentId] and the [isCurrentlyLiked] state representing
+  /// the current status in the UI to determine the proper API action (like/unlike).
+  /// Note: The Presentation layer should optimistically update the UI before
+  /// awaiting this network call to ensure responsiveness.
+  /// Returns a [Future] resolving to a boolean indicating the new like status.
   Future<bool> call(String commentId, {required bool isCurrentlyLiked}) {
     return _repository.toggleCommentLike(
       commentId,

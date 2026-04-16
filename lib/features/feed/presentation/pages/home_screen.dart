@@ -159,7 +159,7 @@ class HomeScreen extends ConsumerWidget {
           /// Displays trending tracks grouped by genre.
           TrendingByGenre(),
 
-          const SizedBox(height: 24),
+          //const SizedBox(height: 24),
 
           /// Displays personalized "Hot For You" recommendations.
           HotForYouSection(),
@@ -169,12 +169,12 @@ class HomeScreen extends ConsumerWidget {
           /// Displays mixed playlist recommendations.
           MixedPlaylistsSection(),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 30),
 
           /// Displays discovery-based station suggestions.
           DiscoverWithStationsSection(),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 30),
 
           /// Displays additional personalized music suggestions.
           MoreOfWhatYouLikeSection(),

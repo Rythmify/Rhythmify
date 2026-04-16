@@ -1,4 +1,5 @@
 import '../models/profile_model.dart';
+import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 
 /// Contract for profile-related remote data operations.
@@ -28,6 +29,20 @@ abstract class ProfileRemoteDatasource {
   Future<void> unfollowUser({required String userId});
 
   Future<List<TrackModel>> getLikedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated followers list for a profile.
+  Future<List<ProfileUserSummaryModel>> getFollowers({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated following list for a profile.
+  Future<List<ProfileUserSummaryModel>> getFollowing({
     required String userId,
     required int page,
     required int limit,

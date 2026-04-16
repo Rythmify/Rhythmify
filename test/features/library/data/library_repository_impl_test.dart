@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/core/errors/failures.dart';
+import 'package:rythmify/core/data/models/track_dto.dart';
 import 'package:rythmify/features/library/data/datasources/library_remote_datasource.dart';
 import 'package:rythmify/features/library/data/models/library_models.dart';
 import 'package:rythmify/features/library/data/repositories/library_repository_impl.dart';
@@ -33,13 +34,15 @@ void main() {
     createdAt: DateTime(2026, 1, 1),
   );
   final upload = UploadedTrackModel(
-    id: 't1',
-    title: 'T',
-    playCount: 10,
-    likeCount: 5,
+    track: TrackDto.fromJson({
+      'id': 't1',
+      'title': 'T',
+      'play_count': 10,
+      'like_count': 5,
+      'created_at': DateTime(2026, 1, 1).toIso8601String(),
+    }),
     isPublic: true,
     status: 'ready',
-    createdAt: DateTime(2026, 1, 1),
   );
   final insight = const TrackInsightModel(
     trackId: 't1',

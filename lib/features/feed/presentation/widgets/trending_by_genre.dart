@@ -55,10 +55,9 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Trending by Genre", style: AppTheme.titleLarge),
+          padding: const EdgeInsets.only(bottom: 6, left: 16),
+          child: Text("Trending by Genre", style: AppTheme.homeTitle),
         ),
-        const SizedBox(height: 10),
         asyncHome.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text('Error: $e'),

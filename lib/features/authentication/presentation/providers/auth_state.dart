@@ -39,6 +39,15 @@ class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
+/// Emitted while app startup is validating persisted auth session.
+///
+/// Unlike [AuthLoading], this state is used for silent bootstrap checks
+/// and should not block auth-form buttons in sign-in/create-account flows.
+class AuthChecking extends AuthState {
+  /// Creates an [AuthChecking] state.
+  const AuthChecking();
+}
+
 /// Emitted when the user is successfully authenticated.
 ///
 /// Carries the authenticated [user]'s identity. The router redirects

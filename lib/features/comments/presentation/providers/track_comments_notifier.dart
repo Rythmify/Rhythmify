@@ -7,6 +7,10 @@ import 'track_comments_state.dart';
 import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+/// A Riverpod [StateNotifierProvider] that provides a [TrackCommentsNotifier] for a specific track.
+///
+/// This provider is family-scoped, meaning each track ID gets its own dedicated
+/// [TrackCommentsNotifier] instance managing an isolated [TrackCommentsState].
 final trackCommentsProvider =
     StateNotifierProvider.family<
       TrackCommentsNotifier,
@@ -16,25 +20,39 @@ final trackCommentsProvider =
       return TrackCommentsNotifier(ref, trackId);
     });
 
+/// Manages the root comments state for a specific track.
+///
+/// Handles fetching paginated comments, sorting, posting new root comments,
+/// deleting comments, and toggling likes. Optimistically updates its internal
+/// [TrackCommentsState] for immediate UI feedback.
 class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
+
+  /// The unique identifier of the track this notifier manages comments for.
   final String trackId;
 
+  /// Creates a [TrackCommentsNotifier] and triggers an initial fetch of root comments.
   TrackCommentsNotifier(this.ref, this.trackId)
     : super(TrackCommentsState.initial()) {
     fetchComments();
   }
 
+  /// Increments the total comment count displayed on the track UI.
   void incrementTotalCount() {
     state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
   }
 
+  /// Decrements the total comment count displayed on the track UI safely above 0.
   void decrementTotalCount() {
     if (state.totalCommentCount > 0) {
       state = state.copyWith(totalCommentCount: state.totalCommentCount - 1);
     }
   }
 
+  /// Fetches a paginated list of root comments from the backend.
+  ///
+  /// If [refresh] is true, resets pagination to page 1 and clears existing comments.
+  /// Updates `isFetchingNextPage` and `hasReachedMax` loading states accordingly.
   Future<void> fetchComments({bool refresh = false}) async {
     if (state.isFetchingNextPage && !refresh) return;
 
@@ -72,6 +90,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Increments the reply count of a specific root comment in the local state.
   void incrementReplyCount(String commentId) {
     state = state.copyWith(
       comments: state.comments.map((c) {
@@ -83,6 +102,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
   }
 
+  /// Decrements the reply count of a specific root comment in the local state.
   void decrementReplyCount(String commentId) {
     state = state.copyWith(
       comments: state.comments.map((c) {
@@ -94,18 +114,21 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
   }
 
+  /// Sets the initial total comment count from external track metadata.
   void setInitialCount(int initialCount) {
-    // Only set it if it's currently 0 (to avoid overwriting live updates)
     if (state.totalCommentCount == 0) {
       state = state.copyWith(totalCommentCount: initialCount);
     }
   }
 
+  /// Deletes a specific root comment belonging to the current user.
+  ///
+  /// Optimistically removes the comment from the local state. Reverts the state
+  /// if the backend deletion fails.
   Future<void> deleteComment(String commentId) async {
     final originalComments = [...state.comments];
     final originalCount = state.totalCommentCount;
 
-    // Optimistically update list and total count
     state = state.copyWith(
       comments: state.comments.where((c) => c.id != commentId).toList(),
       totalCommentCount: originalCount > 0 ? originalCount - 1 : 0,
@@ -114,7 +137,6 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
       final deleteCommentUseCase = ref.read(deleteCommentProvider);
       await deleteCommentUseCase(commentId);
     } catch (e) {
-      // Revert both on failure
       state = state.copyWith(
         comments: originalComments,
         totalCommentCount: originalCount,
@@ -123,17 +145,23 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Triggers a fetch for the next page of comments.
   Future<void> fetchNextPage() async {
     if (state.hasReachedMax || state.isFetchingNextPage) return;
     await fetchComments();
   }
 
+  /// Toggles the comment sorting strategy and refreshes the list from page 1.
   void toggleSort(CommentSortType sortType) {
     if (state.sortType == sortType) return;
     state = state.copyWith(sortType: sortType);
     fetchComments(refresh: true);
   }
 
+  /// Posts a new root comment to the track.
+  ///
+  /// Optimistically inserts a temporary comment into the UI state and replaces
+  /// it with the actual backend response upon success. Reverts on failure.
   Future<void> postNewComment(String content, int trackTimestamp) async {
     final authState = ref.read(authProvider);
     if (authState is! AuthAuthenticated) return;
@@ -156,7 +184,6 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
     final originalCount = state.totalCommentCount;
 
-    // Optimistically insert comment and increment total count
     state = state.copyWith(
       comments: [tempComment, ...state.comments],
       totalCommentCount: originalCount + 1,
@@ -180,7 +207,6 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
             .toList(),
       );
     } catch (e) {
-      // Revert comment list and total count
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != tempComment.id).toList(),
         totalCommentCount: originalCount,
@@ -188,6 +214,10 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Toggles the like status of a specific root comment.
+  ///
+  /// Optimistically updates the like icon and count in the UI before awaiting
+  /// the network request. Reverts the state if the request fails.
   Future<void> toggleLike(String commentId) async {
     final targetCommentIndex = state.comments.indexWhere(
       (c) => c.id == commentId,
@@ -211,7 +241,26 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
+      final newLikeStatus = await toggleCommentLike(
+        commentId,
+        isCurrentlyLiked: currentLikeState,
+      );
+
+      // If the backend returned a different status than our optimistic update, sync it.
+      // This is especially important if the user said "make the state to be known".
+      if (newLikeStatus != !currentLikeState) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            if (c.id == commentId) {
+              return c.copyWith(
+                isLikedByMe: newLikeStatus,
+                likesCount: newLikeStatus ? c.likesCount + 1 : c.likesCount - 1,
+              );
+            }
+            return c;
+          }).toList(),
+        );
+      }
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

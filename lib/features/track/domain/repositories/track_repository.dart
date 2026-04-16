@@ -38,17 +38,23 @@ abstract class TrackRepository {
   /// Toggles the user's 'like' status for a specific track.
   ///
   /// [id] The unique identifier of the track.
-  /// [isCurrentlyLiked] The current state to be toggled.
-  Future<void> toggleLike(String id, bool isCurrentlyLiked);
+  /// [shouldLike] Whether the track should be liked after this mutation.
+  Future<void> toggleLike(String id, bool shouldLike);
 
   /// Toggles the user's 'repost' status for a specific track.
   ///
   /// [id] The unique identifier of the track.
-  /// [isCurrentlyReposted] The current state to be toggled.
-  Future<void> toggleRepost(String id, bool isCurrentlyReposted);
+  /// [shouldRepost] Whether the track should be reposted after this mutation.
+  Future<void> toggleRepost(String id, bool shouldRepost);
 
   /// Records a play event for the specified track.
   ///
   /// This triggers an increment in the track's play count on the backend.
   Future<void> recordPlay(String id);
+
+  /// Updates the metadata for the provided track.
+  Future<void> updateTrack(String id, Map<String, dynamic> data);
+
+  /// Deletes the provided track.
+  Future<void> deleteTrack(String id);
 }

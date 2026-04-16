@@ -5,15 +5,33 @@ import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
 import 'comment_action_bottom_sheet.dart';
 
+/// A reusable UI widget that displays a standard comment or reply.
+///
+/// This Presentation layer widget renders a comment's author, timestamp, content,
+/// and interactive elements like the 'like' button and 'reply' button.
 class CommentCard extends StatelessWidget {
+  /// The [Comment] entity containing the data to display.
   final Comment comment;
+
+  /// Callback triggered when the user taps the like heart icon.
   final VoidCallback? onLike;
+
+  /// Callback triggered when the user taps the "Reply" text button.
   final VoidCallback? onReply;
+
+  /// Callback triggered when the user taps the vertical ellipsis (more options).
   final VoidCallback? onMore;
+
+  /// Callback triggered when the user toggles the "Show replies" dropdown.
   final VoidCallback? onShowReplies;
+
+  /// Indicates whether this card is being rendered as a nested reply (adds left padding).
   final bool isReply;
+
+  /// Indicates whether the replies section for this comment is currently expanded.
   final bool isExpanded;
 
+  /// Creates a [CommentCard] for the specified [comment].
   const CommentCard({
     super.key,
     required this.comment,

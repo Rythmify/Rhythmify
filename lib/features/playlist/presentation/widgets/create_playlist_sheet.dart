@@ -9,14 +9,13 @@
 //   - A "Create playlist" button
 //   - A "Cancel" text button
 //
-// HOW TO SHOW IT:
-//   showModalBottomSheet(
-//     context: context,
-//     isScrollControlled: true,
-//     backgroundColor: Colors.transparent,
-//     builder: (_) => const CreatePlaylistSheet(),
-//   );
 // ============================================================
+/// Bottom sheet for creating a new playlist.
+/// Calls [PlaylistListNotifier.createPlaylist] on confirm and returns the new
+/// playlist ID via [onCreated] so the caller can navigate directly to it.
+/// Pre-fills the name field with "Untitled playlist" and selects all text so
+/// the user can start typing immediately without clearing it manually.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

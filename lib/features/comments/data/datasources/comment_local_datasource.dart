@@ -3,7 +3,10 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../data/models/comment_dto.dart';
 
 /// Abstract contract for the local data source.
+///
+/// This interface defines the local database operations for managing comments.
 abstract class CommentLocalDataSource {
+  /// Fetches paginated root comments for a track.
   Future<List<CommentDto>> getTrackComments({
     required String trackId,
     required int page,
@@ -11,6 +14,7 @@ abstract class CommentLocalDataSource {
     required String sortValue,
   });
 
+  /// Fetches paginated replies for a specific comment.
   Future<List<CommentDto>> getCommentReplies({
     required String commentId,
     required int page,
@@ -18,16 +22,35 @@ abstract class CommentLocalDataSource {
     required String sortValue,
   });
 
+  /// Returns paginated replies to the specified top-level comment.
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  });
+
+  /// Fetches all comments for a track to build the floating widget map.
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId);
 
+  /// Inserts a newly created comment or reply.
   Future<CommentDto> insertComment(CommentDto comment);
 
+  /// Posts a reply to the specified top-level comment.
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  });
+
+  /// Toggles the like status for a comment, returning the new status.
   Future<bool> toggleLike(String commentId);
 
+  /// Deletes a comment by its ID.
   Future<void> deleteComment(String commentId);
 
+  /// Simulates blocking a user.
   Future<void> blockUser(String userId);
 
+  /// Simulates unblocking a user.
   Future<void> unblockUser(String userId);
 }
 
@@ -37,24 +60,17 @@ abstract class CommentLocalDataSource {
 /// objects in memory, and performs standard database operations (filtering,
 /// sorting, paginating) on that in-memory list.
 class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
-  // In-memory "database" table
   List<CommentDto> _db = [];
   bool _isInitialized = false;
-
-  // Simulate network/database latency
   final Duration _delay = const Duration(milliseconds: 500);
 
-  /// Initializes the mock database by reading the JSON file.
-  /// This is called internally before any read/write operation.
   Future<void> _initDatabase() async {
     if (_isInitialized) return;
-
     try {
       final jsonString = await rootBundle.loadString(
         'assets/mocks/mock_comments.json',
       );
       final List<dynamic> jsonData = jsonDecode(jsonString);
-
       _db = jsonData.map((json) => CommentDto.fromJson(json)).toList();
       _isInitialized = true;
     } catch (e) {
@@ -72,18 +88,13 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     await _initDatabase();
     await Future.delayed(_delay);
 
-    // Filter: Match track ID AND ensure it's a root comment (no parent)
     var results = _db
         .where((c) => c.trackId == trackId && c.parentCommentId == null)
         .toList();
-
-    // Sort: Mimic SQL ORDER BY
     _sortComments(results, sortValue);
 
-    // Paginate: Mimic SQL LIMIT & OFFSET
     final startIndex = (page - 1) * limit;
     if (startIndex >= results.length) return [];
-
     return results.skip(startIndex).take(limit).toList();
   }
 
@@ -97,21 +108,38 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
     await _initDatabase();
     await Future.delayed(_delay);
 
-    // Filter by the specific parent comment ID
     var results = _db.where((c) => c.parentCommentId == commentId).toList();
     _sortComments(results, sortValue);
 
     final startIndex = (page - 1) * limit;
     if (startIndex >= results.length) return [];
-
     return results.skip(startIndex).take(limit).toList();
+  }
+
+  @override
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    var results = _db.where((c) => c.parentCommentId == commentId).toList();
+    // Default sort by newest for getReplies mock
+    results.sort(
+      (a, b) =>
+          DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)),
+    );
+
+    if (offset >= results.length) return [];
+    return results.skip(offset).take(limit).toList();
   }
 
   @override
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
     await _initDatabase();
     await Future.delayed(_delay);
-    // Used for building the floating widget map on the audio waveform
     return _db.where((c) => c.trackId == trackId).toList();
   }
 
@@ -119,17 +147,14 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   Future<CommentDto> insertComment(CommentDto comment) async {
     await _initDatabase();
     await Future.delayed(_delay);
-
     _db.add(comment);
 
-    // If it's a reply, increment the replyCount of the parent comment
     if (comment.parentCommentId != null) {
       final parentIndex = _db.indexWhere(
         (c) => c.id == comment.parentCommentId,
       );
       if (parentIndex != -1) {
         final parent = _db[parentIndex];
-
         _db[parentIndex] = CommentDto(
           id: parent.id,
           trackId: parent.trackId,
@@ -150,6 +175,34 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   }
 
   @override
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    final parent = _db.firstWhere((c) => c.id == commentId);
+
+    final reply = CommentDto(
+      id: 'mock_reply_${DateTime.now().millisecondsSinceEpoch}',
+      trackId: parent.trackId,
+      userId: 'current_user_id',
+      userDisplayName: 'Current User',
+      userPfp: null,
+      content: content,
+      timestamp: parent.timestamp,
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+      likeCount: 0,
+      isLikedByMe: false,
+      replyCount: 0,
+      parentCommentId: commentId,
+    );
+
+    return insertComment(reply);
+  }
+
+  @override
   Future<bool> toggleLike(String commentId) async {
     await _initDatabase();
     await Future.delayed(_delay);
@@ -163,7 +216,6 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
         ? comment.likeCount + 1
         : comment.likeCount - 1;
 
-    // Update row
     _db[index] = CommentDto(
       id: comment.id,
       trackId: comment.trackId,
@@ -178,7 +230,6 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
       replyCount: comment.replyCount,
       parentCommentId: comment.parentCommentId,
     );
-
     return isNowLiked;
   }
 
@@ -191,17 +242,14 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
 
   @override
   Future<void> blockUser(String userId) async {
-    // Mock implementation doesn't need to do anything locally
     await Future.delayed(_delay);
   }
 
   @override
   Future<void> unblockUser(String userId) async {
-    // Mock implementation doesn't need to do anything locally
     await Future.delayed(_delay);
   }
 
-  /// Internal helper to sort comments by the requested strategy.
   void _sortComments(List<CommentDto> comments, String sortValue) {
     if (sortValue == 'newest') {
       comments.sort(

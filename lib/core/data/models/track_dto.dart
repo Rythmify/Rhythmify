@@ -13,6 +13,7 @@ class TrackDto {
       title: data['title'] as String? ?? '',
       artist:
           data['artist'] as String? ??
+          data['artist_name'] as String? ??
           data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',

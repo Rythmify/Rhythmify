@@ -2,18 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
+import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
-import '../widgets/track_list_tile.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../track/presentation/widgets/track_card.dart';
 
 /// A full-screen profile page showing a user's public information and tracks.
 ///
@@ -200,6 +201,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildCoverPhoto(state.profile.coverUrl),
+                const SizedBox(height: 12),
                 ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
                 const SizedBox(height: 12),
                 Text(state.profile.displayName, style: AppTheme.headlineLarge),
@@ -230,6 +233,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 ProfileStatsRow(
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
+                  onFollowersTap: () =>
+                      context.push('/profile/$_resolvedUserId/followers'),
+                  onFollowingTap: () =>
+                      context.push('/profile/$_resolvedUserId/following'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -332,36 +339,72 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             ),
           )
         else
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              // Pagination spinner at the end of the list
-              if (index == state.likedTracks.length) {
-                return state.isLoadingTracks
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryBrand,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink();
-              }
-
-              final track = state.likedTracks[index];
-
-              return TrackListTile(
-                key: Key('item_${track.id}'),
-                track: track,
-                onTap: () {
-                  ref.read(playerStateProvider.notifier).playOptimistic(track);
-                },
-                onMoreTap: () {},
-              );
-            }, childCount: state.likedTracks.length + 1),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                ...state.likedTracks.map(
+                  (track) => TrackCard(
+                    key: Key('item_${track.id}'),
+                    track: track,
+                    observePlayerState: false,
+                    onTap: () {
+                      ref
+                          .read(playerStateProvider.notifier)
+                          .playOptimistic(track);
+                    },
+                  ),
+                ),
+                if (state.isLoadingTracks)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.primaryBrand,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
       ],
+    );
+  }
+
+  /// Builds profile cover media with image fallback and solid surface fallback.
+  Widget _buildCoverPhoto(String? coverUrl) {
+    final hasCover = coverUrl != null && coverUrl.trim().isNotEmpty;
+    if (!hasCover) {
+      return Container(
+        key: const Key('public_profile_cover_empty_container'),
+        width: double.infinity,
+        height: 150,
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: CachedNetworkImage(
+        key: const Key('public_profile_cover_image'),
+        imageUrl: coverUrl,
+        width: double.infinity,
+        height: 150,
+        fit: BoxFit.cover,
+        placeholder: (_, _) => Container(
+          color: AppTheme.surface,
+          height: 150,
+          width: double.infinity,
+        ),
+        errorWidget: (_, _, _) => Container(
+          key: const Key('public_profile_cover_error_container'),
+          color: AppTheme.surface,
+          height: 150,
+          width: double.infinity,
+        ),
+      ),
     );
   }
 

@@ -23,7 +23,21 @@ class CoverImagePickerWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(uploadFormProvider).draft;
-    final hasArtwork = draft?.localArtworkPath != null;
+    final hasLocalArtwork = draft?.localArtworkPath != null;
+    final hasRemoteArtwork = draft?.remoteArtworkUrl != null;
+
+    DecorationImage? decorationImage;
+    if (hasLocalArtwork) {
+      decorationImage = DecorationImage(
+        image: FileImage(File(draft!.localArtworkPath!)),
+        fit: BoxFit.cover,
+      );
+    } else if (hasRemoteArtwork) {
+      decorationImage = DecorationImage(
+        image: NetworkImage(draft!.remoteArtworkUrl!),
+        fit: BoxFit.cover,
+      );
+    }
 
     return GestureDetector(
       key: const Key('track_upload_cover_image_picker_gesture_detector'),
@@ -35,14 +49,9 @@ class CoverImagePickerWidget extends ConsumerWidget {
           color: AppTheme.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.white12),
-          image: hasArtwork
-              ? DecorationImage(
-                  image: FileImage(File(draft!.localArtworkPath!)),
-                  fit: BoxFit.cover,
-                )
-              : null,
+          image: decorationImage,
         ),
-        child: hasArtwork
+        child: (hasLocalArtwork || hasRemoteArtwork)
             ? null
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,

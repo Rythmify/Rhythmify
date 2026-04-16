@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import 'bottom_sheets/track_options_modal.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../providers/track_interaction_provider.dart';
+import '../providers/track_sync_provider.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -13,35 +17,74 @@ import 'bottom_sheets/track_options_modal.dart';
 /// to control playback or load the track into the active queue.
 ///
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
-
 class TrackActionBar extends ConsumerWidget {
-  final dynamic track;
+  final Track track;
 
   const TrackActionBar({super.key, required this.track});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get the globally synced track state for instant UI updates
+    final syncedTrack = ref.watch(syncedTrackProvider(track));
+
     final playerState = ref.watch(playerStateProvider);
     final isPlaying = playerState.status == PlayerStatus.playing;
-    final isThisTrack = playerState.currentTrack?.id == track.id;
+    final isThisTrack = playerState.currentTrack?.id == syncedTrack.id;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           _buildActionButton(
-            Icons.favorite_border,
-            Formatters.formatCount(track.likeCount),
+            syncedTrack.isLiked ? Icons.favorite : Icons.favorite_border,
+            Formatters.formatCount(syncedTrack.likeCount),
+            onTap: () {
+              ref
+                  .read(trackInteractionProvider)
+                  .handleToggleLike(
+                    syncedTrack.id,
+                    syncedTrack.isLiked,
+                    currentTrack: syncedTrack,
+                  );
+            },
+            iconColor: syncedTrack.isLiked
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
+            textColor: syncedTrack.isLiked
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
           ),
           const SizedBox(width: 16),
           _buildActionButton(
             Icons.repeat,
-            Formatters.formatCount(track.repostCount),
+            Formatters.formatCount(syncedTrack.repostCount),
+            onTap: () {
+              ref
+                  .read(trackInteractionProvider)
+                  .handleToggleRepost(
+                    syncedTrack.id,
+                    syncedTrack.isReposted,
+                    currentTrack: syncedTrack,
+                  );
+            },
+            iconColor: syncedTrack.isReposted
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
+            textColor: syncedTrack.isReposted
+                ? AppTheme.primaryBrand
+                : AppTheme.fadedWhite,
           ),
           const SizedBox(width: 16),
           _buildActionButton(
             Icons.chat_outlined,
-            Formatters.formatCount(track.commentCount),
+            Formatters.formatCount(syncedTrack.commentCount),
+            onTap: () {
+              context.pushNamed(
+                'comments',
+                pathParameters: {'trackId': syncedTrack.id},
+                extra: syncedTrack,
+              );
+            },
           ),
           const SizedBox(width: 20),
           InkWell(
@@ -51,7 +94,7 @@ class TrackActionBar extends ConsumerWidget {
                 isScrollControlled: true,
                 useRootNavigator: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => TrackOptionsModal(track: track),
+                builder: (context) => TrackOptionsModal(track: syncedTrack),
               );
             },
             borderRadius: BorderRadius.circular(8),
@@ -70,7 +113,7 @@ class TrackActionBar extends ConsumerWidget {
                 ref.read(playerStateProvider.notifier).togglePlayPause();
               } else {
                 ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-                  track,
+                  syncedTrack,
                 ]);
               }
             },
@@ -93,19 +136,32 @@ class TrackActionBar extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.fadedWhite, size: 24),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: AppTheme.labelLarge.copyWith(
-            color: AppTheme.fadedWhite,
-            fontWeight: FontWeight.bold,
-          ),
+  Widget _buildActionButton(
+    IconData icon,
+    String value, {
+    VoidCallback? onTap,
+    Color iconColor = AppTheme.fadedWhite,
+    Color textColor = AppTheme.fadedWhite,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 24),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: AppTheme.labelLarge.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
