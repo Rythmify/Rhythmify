@@ -1,5 +1,3 @@
-// coverage:ignore-file
-/// Riverpod notifier orchestration for loading and mutating profile state.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
@@ -15,6 +13,9 @@ import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
+
+// coverage:ignore-file
+/// Riverpod notifier orchestration for loading and mutating profile state.
 
 const bool useProfileMockData = false;
 

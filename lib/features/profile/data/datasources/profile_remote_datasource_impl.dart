@@ -1,11 +1,12 @@
-// coverage:ignore-file
-/// HTTP implementation of profile remote datasource operations.
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
+
+// coverage:ignore-file
+/// HTTP implementation of profile remote datasource operations.
 
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final ApiClient client;
