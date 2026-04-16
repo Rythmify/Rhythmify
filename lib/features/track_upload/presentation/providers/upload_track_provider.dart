@@ -31,7 +31,7 @@ import 'package:flutter/foundation.dart';
 class UploadFormState {
   final TrackDraft? draft; // null until audio is picked
   final List<String> availableTags; // fetched from backend
-  final List<String> availableGenres; // ← ADD THIS
+  final List<String> availableGenres;
   final bool isLoading; // true while uploading
   final String? errorMessage; // set when something goes wrong
   final int currentTab; // 0=TrackInfo, 1=Advanced, 2=Permissions
@@ -39,7 +39,7 @@ class UploadFormState {
   const UploadFormState({
     this.draft,
     this.availableTags = const [],
-    this.availableGenres = const [], // ← ADD THIS
+    this.availableGenres = const [],
     this.isLoading = false,
     this.errorMessage,
     this.currentTab = 0,
@@ -56,7 +56,7 @@ class UploadFormState {
   UploadFormState copyWith({
     TrackDraft? draft,
     List<String>? availableTags,
-    List<String>? availableGenres, // ← ADD THIS
+    List<String>? availableGenres,
     bool? isLoading,
     String? errorMessage,
     int? currentTab,
@@ -83,6 +83,7 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
     state = state.copyWith(
       draft: TrackDraft(
         trackId: track.id,
+        remoteArtworkUrl: track.coverImage,
         artistId: track.userId,
         localAudioPath: '', // Not needed for updates
         duration: track.duration,

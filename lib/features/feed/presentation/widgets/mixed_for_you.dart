@@ -15,10 +15,9 @@ class MixedPlaylistsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Mixed For You", style: AppTheme.titleLarge),
+          padding: const EdgeInsets.only(bottom: 6, left: 16),
+          child: Text("Mixed For You", style: AppTheme.homeTitle),
         ),
-        const SizedBox(height: 15),
         asyncMixedForYou.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) =>

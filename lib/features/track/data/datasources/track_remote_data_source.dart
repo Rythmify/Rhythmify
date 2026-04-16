@@ -38,6 +38,9 @@ abstract class TrackRemoteDataSource {
   /// Updates the metadata for the provided track.
   Future<void> updateTrack(String trackId, Map<String, dynamic> data);
 
+  /// Updates the cover image for the provided track.
+  Future<void> updateTrackCover(String trackId, File imageFile);
+
   /// Deletes the provided track.
   Future<void> deleteTrack(String trackId);
 }
@@ -102,36 +105,42 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
 
   @override
   Future<void> updateTrack(String trackId, Map<String, dynamic> data) async {
-    // If we have a local artwork path, we need to send as FormData
-    if (data.containsKey('cover_image_path') && data['cover_image_path'] != null) {
-      final artworkPath = data['cover_image_path'] as String;
+    final Map<String, dynamic> metadata = Map.from(data);
+    String? artworkPath;
+
+    // Extract artwork path if present
+    if (metadata.containsKey('cover_image_path')) {
+      artworkPath = metadata.remove('cover_image_path') as String?;
+    }
+
+    // 1. Update artwork if a new local path is provided
+    if (artworkPath != null) {
       final artworkFile = File(artworkPath);
-      
       if (await artworkFile.exists()) {
-        final Map<String, dynamic> formDataMap = Map.from(data);
-        formDataMap.remove('cover_image_path');
-        
-        final artMime = lookupMimeType(artworkPath) ?? 'image/jpeg';
-        formDataMap['cover_image'] = await MultipartFile.fromFile(
-          artworkPath,
-          contentType: DioMediaType.parse(artMime),
-        );
-
-        final formData = FormData.fromMap(formDataMap);
-        // Handle tags if present as a list
-        if (data.containsKey('tags') && data['tags'] is List) {
-          formData.fields.removeWhere((e) => e.key == 'tags');
-          for (final tag in data['tags'] as List) {
-            formData.fields.add(MapEntry('tags[]', tag));
-          }
-        }
-
-        await client.dio.patch('/tracks/$trackId', data: formData);
-        return;
+        await updateTrackCover(trackId, artworkFile);
       }
     }
 
-    await client.dio.patch('/tracks/$trackId', data: data);
+    // 2. Update other metadata if any remains
+    // We filter out null values to avoid overwriting existing data with nulls
+    metadata.removeWhere((key, value) => value == null);
+
+    if (metadata.isNotEmpty) {
+      await client.dio.patch('/tracks/$trackId', data: metadata);
+    }
+  }
+
+  @override
+  Future<void> updateTrackCover(String trackId, File imageFile) async {
+    final artMime = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+    final formData = FormData.fromMap({
+      'cover_image': await MultipartFile.fromFile(
+        imageFile.path,
+        contentType: DioMediaType.parse(artMime),
+      ),
+    });
+
+    await client.dio.patch('/tracks/$trackId/cover', data: formData);
   }
 
   @override
