@@ -11,6 +11,9 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../providers/track_interaction_provider.dart';
 import '../../providers/track_sync_provider.dart';
 import '../../../../messaging/presentation/providers/conversations_provider.dart';
+import '../../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../authentication/presentation/providers/auth_state.dart';
+import '../../../../track_upload/presentation/screens/upload_track_screen.dart';
 
 import 'bottom_sheet_container.dart';
 import 'track_sheet_header.dart';
@@ -66,6 +69,9 @@ class TrackOptionsModal extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final syncedTrack = ref.watch(syncedTrackProvider(track));
     final convsAsync = ref.watch(conversationProvider);
+    final authState = ref.watch(authProvider);
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
+    final isOwner = currentUserId != null && currentUserId == syncedTrack.userId;
 
     // WRAPPED IN DRAGGABLE SCROLLABLE SHEET
     return DraggableScrollableSheet(
@@ -211,9 +217,24 @@ class TrackOptionsModal extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
+                const Divider(color: Colors.white24, height: 1),
                 // 3. Info actions ONLY show if mode is 'info'
                 if (mode == TrackModalMode.info) ...[
+                  if (isOwner) ...[
+                    _buildActionRow(
+                      icon: Icons.edit_note,
+                      label: 'Update track',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UploadTrackScreen(track: syncedTrack),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
                     icon: syncedTrack.isLiked

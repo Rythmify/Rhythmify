@@ -92,4 +92,14 @@ class MockTrackRepositoryImpl implements TrackRepository {
   Future<void> recordPlay(String id) async {
     await Future.delayed(const Duration(milliseconds: 200));
   }
+
+  @override
+  Future<void> updateTrack(String id, Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
+  @override
+  Future<void> deleteTrack(String id) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
 }

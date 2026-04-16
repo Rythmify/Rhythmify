@@ -51,4 +51,10 @@ abstract class TrackRepository {
   ///
   /// This triggers an increment in the track's play count on the backend.
   Future<void> recordPlay(String id);
+
+  /// Updates the metadata for the provided track.
+  Future<void> updateTrack(String id, Map<String, dynamic> data);
+
+  /// Deletes the provided track.
+  Future<void> deleteTrack(String id);
 }

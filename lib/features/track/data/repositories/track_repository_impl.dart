@@ -74,4 +74,14 @@ class TrackRepositoryImpl implements TrackRepository {
   Future<void> recordPlay(String id) async {
     await remoteDataSource.recordPlay(id);
   }
+
+  @override
+  Future<void> updateTrack(String id, Map<String, dynamic> data) async {
+    await remoteDataSource.updateTrack(id, data);
+  }
+
+  @override
+  Future<void> deleteTrack(String id) async {
+    await remoteDataSource.deleteTrack(id);
+  }
 }
