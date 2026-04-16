@@ -53,17 +53,25 @@ class TrackRepositoryImpl implements TrackRepository {
   }
 
   @override
-  Future<void> toggleLike(String id, bool isCurrentlyLiked) async {
-    // Implementation for remote like toggle
+  Future<void> toggleLike(String id, bool shouldLike) async {
+    if (shouldLike) {
+      await remoteDataSource.likeTrack(id);
+    } else {
+      await remoteDataSource.unlikeTrack(id);
+    }
   }
 
   @override
-  Future<void> toggleRepost(String id, bool isCurrentlyReposted) async {
-    // Implementation for remote repost toggle
+  Future<void> toggleRepost(String id, bool shouldRepost) async {
+    if (shouldRepost) {
+      await remoteDataSource.repostTrack(id);
+    } else {
+      await remoteDataSource.undoRepostTrack(id);
+    }
   }
 
   @override
   Future<void> recordPlay(String id) async {
-    // Implementation for remote play recording
+    await remoteDataSource.recordPlay(id);
   }
 }

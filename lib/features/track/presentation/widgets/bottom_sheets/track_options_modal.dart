@@ -9,6 +9,7 @@ import '../../../../../core/domain/entities/track.dart';
 import '../../../../../core/presentation/pages/report_page.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../providers/track_interaction_provider.dart';
+import '../../providers/track_sync_provider.dart';
 import '../../../../messaging/presentation/providers/conversations_provider.dart';
 
 import 'bottom_sheet_container.dart';
@@ -63,6 +64,7 @@ class TrackOptionsModal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final syncedTrack = ref.watch(syncedTrackProvider(track));
     final convsAsync = ref.watch(conversationProvider);
 
     // WRAPPED IN DRAGGABLE SCROLLABLE SHEET
@@ -80,7 +82,7 @@ class TrackOptionsModal extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Header always shows at the top
-                TrackSheetHeader(track: track),
+                TrackSheetHeader(track: syncedTrack),
 
                 // 2. Share stuff ALWAYS shows
                 Padding(
@@ -214,20 +216,20 @@ class TrackOptionsModal extends ConsumerWidget {
                 if (mode == TrackModalMode.info) ...[
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
-                    icon: track.isLiked
+                    icon: syncedTrack.isLiked
                         ? Icons.favorite
                         : Icons.favorite_border,
-                    iconColor: track.isLiked
+                    iconColor: syncedTrack.isLiked
                         ? AppTheme.primaryBrand
                         : Colors.white,
-                    label: track.isLiked ? 'Liked' : 'Like track',
-                    labelColor: track.isLiked
+                    label: syncedTrack.isLiked ? 'Liked' : 'Like track',
+                    labelColor: syncedTrack.isLiked
                         ? AppTheme.primaryBrand
                         : Colors.white,
                     onTap: () {
                       ref
                           .read(trackInteractionProvider)
-                          .handleToggleLike(track.id, track.isLiked);
+                          .handleToggleLike(syncedTrack.id, syncedTrack.isLiked, currentTrack: syncedTrack);
                       Navigator.pop(context);
                     },
                   ),
@@ -257,7 +259,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Go to profile',
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/profile/${track.userId}');
+                      context.push('/profile/${syncedTrack.userId}');
                     },
                   ),
                   _buildActionRow(
@@ -267,24 +269,24 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.pop(context);
                       context.pushNamed(
                         'comments',
-                        pathParameters: {'trackId': track.id},
-                        extra: track,
+                        pathParameters: {'trackId': syncedTrack.id},
+                        extra: syncedTrack,
                       );
                     },
                   ),
                   _buildActionRow(
                     icon: Icons.repeat,
-                    iconColor: track.isReposted
+                    iconColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
-                    label: track.isReposted ? 'Reposted' : 'Repost on Rythmify',
-                    labelColor: track.isReposted
+                    label: syncedTrack.isReposted ? 'Reposted' : 'Repost on Rythmify',
+                    labelColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
                     onTap: () {
                       ref
                           .read(trackInteractionProvider)
-                          .handleToggleRepost(track.id, track.isReposted);
+                          .handleToggleRepost(syncedTrack.id, syncedTrack.isReposted, currentTrack: syncedTrack);
                       Navigator.pop(context);
                     },
                   ),
@@ -295,7 +297,7 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.pop(context);
                       context.pushNamed(
                         'behindTheTrack',
-                        pathParameters: {'trackId': track.id},
+                        pathParameters: {'trackId': syncedTrack.id},
                       );
                     },
                   ),
@@ -307,7 +309,7 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (context) =>
-                              ReportPage(reportedContentId: track.id),
+                              ReportPage(reportedContentId: syncedTrack.id),
                         ),
                       );
                     },
