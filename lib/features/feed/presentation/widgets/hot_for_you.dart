@@ -77,7 +77,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
         
@@ -104,7 +104,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
             // --- LAYER 3: Dark Tint & Border ---
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4), // Slightly dark layer for text
+                color: Colors.black.withValues(alpha: 0.3), // Slightly dark layer for text
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: Colors.white24, // Subtle white border
@@ -126,17 +126,23 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                               Text(
                                 widget.track.title,
                                 key: const Key('hot_for_you_track_title_text'),
-                                style: AppTheme.bodyNormal,
-                                maxLines: 1,
+                                style: AppTheme.bodyNormal.copyWith(
+                                  fontSize: 16,
+                                  color: AppTheme.textPrimary,
+                                ),
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
                                 widget.track.artist,
                                 key: const Key('hot_for_you_track_artist_text'),
                                 style: AppTheme.bodyNormal.copyWith(
-                                  color: AppTheme.semiWhite,
+                                  fontSize: 13,
+                                  color: AppTheme.fadedWhite,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -169,7 +175,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                       children: [
                         const Icon(
                           Icons.favorite,
-                          color: AppTheme.semiWhite,
+                          color: AppTheme.fadedWhite,
                           size: 18,
                         ),
                         const SizedBox(width: 6),
@@ -178,7 +184,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                           key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.bodyNormal.copyWith(
                             fontSize: 12,
-                            color: AppTheme.semiWhite,
+                            color: AppTheme.fadedWhite,
                           ),
                         ),
                       ],
