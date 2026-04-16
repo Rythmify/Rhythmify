@@ -22,11 +22,24 @@ abstract class CommentLocalDataSource {
     required String sortValue,
   });
 
+  /// Returns paginated replies to the specified top-level comment.
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  });
+
   /// Fetches all comments for a track to build the floating widget map.
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId);
 
   /// Inserts a newly created comment or reply.
   Future<CommentDto> insertComment(CommentDto comment);
+
+  /// Posts a reply to the specified top-level comment.
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  });
 
   /// Toggles the like status for a comment, returning the new status.
   Future<bool> toggleLike(String commentId);
@@ -104,6 +117,26 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
   }
 
   @override
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    var results = _db.where((c) => c.parentCommentId == commentId).toList();
+    // Default sort by newest for getReplies mock
+    results.sort(
+      (a, b) =>
+          DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)),
+    );
+
+    if (offset >= results.length) return [];
+    return results.skip(offset).take(limit).toList();
+  }
+
+  @override
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
     await _initDatabase();
     await Future.delayed(_delay);
@@ -139,6 +172,34 @@ class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
       }
     }
     return comment;
+  }
+
+  @override
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    final parent = _db.firstWhere((c) => c.id == commentId);
+
+    final reply = CommentDto(
+      id: 'mock_reply_${DateTime.now().millisecondsSinceEpoch}',
+      trackId: parent.trackId,
+      userId: 'current_user_id',
+      userDisplayName: 'Current User',
+      userPfp: null,
+      content: content,
+      timestamp: parent.timestamp,
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+      likeCount: 0,
+      isLikedByMe: false,
+      replyCount: 0,
+      parentCommentId: commentId,
+    );
+
+    return insertComment(reply);
   }
 
   @override

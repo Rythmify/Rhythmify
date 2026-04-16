@@ -58,6 +58,25 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<List<Comment>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      final dtos = await _localDataSource.getReplies(
+        commentId: commentId,
+        limit: limit,
+        offset: offset,
+      );
+
+      return dtos.map((dto) => dto.toDomain()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch replies: $e');
+    }
+  }
+
+  @override
   Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
     String trackId,
   ) async {
@@ -113,6 +132,22 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<Comment> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final insertedDto = await _localDataSource.postReply(
+        commentId: commentId,
+        content: content,
+      );
+      return insertedDto.toDomain();
+    } catch (e) {
+      throw Exception('Failed to post reply: $e');
+    }
+  }
+
+  @override
   Future<bool> toggleCommentLike(
     String commentId, {
     required bool isCurrentlyLiked,
@@ -120,9 +155,10 @@ class MockCommentRepositoryImpl implements CommentRepository {
     try {
       return await _localDataSource.toggleLike(commentId);
     } catch (e) {
-      throw Exception('Failed to toggle like: $e');
+      throw Exception('Failed to toggle like status: $e');
     }
   }
+
 
   @override
   Future<void> deleteComment(String commentId) async {

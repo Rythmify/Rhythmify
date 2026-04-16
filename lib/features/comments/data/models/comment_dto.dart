@@ -68,7 +68,7 @@ class CommentDto {
       trackId: json['track_id'] as String,
       userId: json['user_id'] as String,
       userDisplayName: author['display_name'] as String? ?? 'Unknown User',
-      userPfp: author['avatar_url'] as String?,
+      userPfp: author['profile_picture'] as String?,
       content: json['content'] as String,
       timestamp: json['track_timestamp'] as int? ?? 0,
       createdAt: json['created_at'] as String,

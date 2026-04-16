@@ -54,6 +54,24 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<List<Comment>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      final dtos = await _remoteDataSource.getReplies(
+        commentId: commentId,
+        limit: limit,
+        offset: offset,
+      );
+      return dtos.map((dto) => dto.toDomain()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch replies: $e');
+    }
+  }
+
+  @override
   Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
     String trackId,
   ) async {
@@ -94,6 +112,22 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
       return insertedDto.toDomain();
     } catch (e) {
       throw Exception('Failed to post comment: $e');
+    }
+  }
+
+  @override
+  Future<Comment> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final insertedDto = await _remoteDataSource.postReply(
+        commentId: commentId,
+        content: content,
+      );
+      return insertedDto.toDomain();
+    } catch (e) {
+      throw Exception('Failed to post reply: $e');
     }
   }
 

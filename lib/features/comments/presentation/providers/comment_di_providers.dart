@@ -15,9 +15,11 @@ import '../../data/repositories/comment_remote_repository_impl.dart';
 import '../../domain/repositories/comment_repository.dart';
 import '../../domain/usecases/delete_comment_usecase.dart';
 import '../../domain/usecases/get_comment_replies_usecase.dart';
+import '../../domain/usecases/get_replies_usecase.dart';
 import '../../domain/usecases/get_floating_comments_usecase.dart';
 import '../../domain/usecases/get_track_comments_usecase.dart';
 import '../../domain/usecases/post_comment_usecase.dart';
+import '../../domain/usecases/post_reply_usecase.dart';
 import '../../domain/usecases/toggle_comment_like_usecase.dart';
 import '../../domain/usecases/unblock_user_usecase.dart';
 import '../../domain/usecases/block_user_usecase.dart';
@@ -27,7 +29,7 @@ import '../../domain/usecases/block_user_usecase.dart';
 // ================================
 
 /// Switch to determine whether to use the mock JSON data or the real backend.
-const bool useMockCommentsData = true;
+const bool useMockCommentsData = false;
 
 /// ---------------------
 /// CORE PROVIDERS
@@ -84,6 +86,11 @@ final getCommentRepliesProvider = Provider<GetCommentRepliesUseCase>((ref) {
   return GetCommentRepliesUseCase(ref.watch(commentRepositoryProvider));
 });
 
+/// Provides the [GetRepliesUseCase].
+final getRepliesProvider = Provider<GetRepliesUseCase>((ref) {
+  return GetRepliesUseCase(ref.watch(commentRepositoryProvider));
+});
+
 /// Provides the [GetFloatingCommentsUseCase].
 final getFloatingCommentsProvider = Provider<GetFloatingCommentsUseCase>((ref) {
   return GetFloatingCommentsUseCase(ref.watch(commentRepositoryProvider));
@@ -92,6 +99,11 @@ final getFloatingCommentsProvider = Provider<GetFloatingCommentsUseCase>((ref) {
 /// Provides the [PostCommentUseCase].
 final postCommentProvider = Provider<PostCommentUseCase>((ref) {
   return PostCommentUseCase(ref.watch(commentRepositoryProvider));
+});
+
+/// Provides the [PostReplyUseCase].
+final postReplyProvider = Provider<PostReplyUseCase>((ref) {
+  return PostReplyUseCase(ref.watch(commentRepositoryProvider));
 });
 
 /// Provides the [ToggleCommentLikeUseCase].
