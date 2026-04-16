@@ -1,7 +1,7 @@
 import '../entities/comment.dart';
 
 /// Defines the available sorting strategies for fetching comments.
-enum CommentSortType { newest, oldest, trackTime }
+enum CommentSortType { newest, oldest, timestamp }
 
 extension CommentSortTypeExtension on CommentSortType {
   /// Converts the enum to the string format expected by the backend API.
@@ -11,8 +11,8 @@ extension CommentSortTypeExtension on CommentSortType {
         return 'newest';
       case CommentSortType.oldest:
         return 'oldest';
-      case CommentSortType.trackTime:
-        return 'trackTime';
+      case CommentSortType.timestamp:
+        return 'timestamp';
     }
   }
 }

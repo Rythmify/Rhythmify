@@ -49,8 +49,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
       });
     });
 
-    // ─── ADD THIS ───
-    // Wait for the first frame to build, then seed the initial count
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(trackCommentsProvider(widget.track.id).notifier)
@@ -125,7 +123,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   context,
                   ref,
                   'Track Time',
-                  CommentSortType.trackTime,
+                  CommentSortType.timestamp,
                   state.sortType,
                 ),
                 const SizedBox(height: 24),

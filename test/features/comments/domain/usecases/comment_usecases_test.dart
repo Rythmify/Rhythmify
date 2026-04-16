@@ -47,7 +47,7 @@ void main() {
     test('apiValue should return correct string', () {
       expect(CommentSortType.newest.apiValue, 'newest');
       expect(CommentSortType.oldest.apiValue, 'oldest');
-      expect(CommentSortType.trackTime.apiValue, 'trackTime');
+      expect(CommentSortType.timestamp.apiValue, 'timestamp');
     });
   });
 
