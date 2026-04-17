@@ -49,7 +49,8 @@ class GenreRemoteSourceImpl implements GenreRemoteSource {
 
   @override
   Future<List<Track>> getGenreTrendingTracks(String genreId) async {
-    final response = await _dio.get('/genres/$genreId/tracks');
+    final response = await _dio.get('/home/trending-by-genre/$genreId');
+    dev.log('TRENDING RESPONSE: ${response.data}');
     return GenreDto.parseTrackList(response.data as Map<String, dynamic>);
   }
 
@@ -62,6 +63,7 @@ class GenreRemoteSourceImpl implements GenreRemoteSource {
   @override
   Future<List<GenrePlaylist>> getGenrePlaylists(String genreId) async {
     final response = await _dio.get('/genres/$genreId/playlists');
+    dev.log('PLAYLISTS RESPONSE: ${response.data}');
     return GenreDto.parsePlaylistList(response.data as Map<String, dynamic>);
   }
 

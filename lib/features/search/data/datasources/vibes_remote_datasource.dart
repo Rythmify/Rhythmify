@@ -1,6 +1,7 @@
 import '../../domain/entities/vibes_category.dart';
 import 'package:dio/dio.dart';
 import '../models/vibes_dto.dart';
+import 'dart:developer' as dev;
 
 /// Contract for the vibes/categories remote data source.
 abstract class VibesRemoteSource {
@@ -10,8 +11,6 @@ abstract class VibesRemoteSource {
 
 /// Real HTTP implementation of [VibesRemoteSource].
 
-// ... keep your existing abstract class and Mock class exactly as-is ...
-
 class VibesRemoteSourceImpl implements VibesRemoteSource {
   VibesRemoteSourceImpl({required Dio dio}) : _dio = dio;
 
@@ -20,6 +19,7 @@ class VibesRemoteSourceImpl implements VibesRemoteSource {
   @override
   Future<List<VibeCategory>> getVibes() async {
     final response = await _dio.get('/genres');
+    dev.log('vibes grid response: ${response.data}');
     return VibesDto.parseVibeCategoryList(
       response.data as Map<String, dynamic>,
     );

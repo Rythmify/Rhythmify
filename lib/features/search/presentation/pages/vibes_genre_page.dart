@@ -4,30 +4,6 @@ import '../widgets/vibes_genre_trending_tab.dart';
 import '../widgets/vibes_genre_playlists_tab.dart';
 import '../widgets/vibes_genre_albums_tab.dart';
 
-/// Maps genre IDs to their local asset image paths.
-const _genreImages = {
-  'hiphop': 'assets/images/vibes_hiphop.jpeg',
-  'electronic': 'assets/images/vibes_electronic.jpeg',
-  'pop': 'assets/images/vibes_pop.jpeg',
-  'rnb': 'assets/images/vibes_rb.jpeg',
-  'party': 'assets/images/vibes_party.jpeg',
-  'chill': 'assets/images/vibes_chill.jpeg',
-  'techno': 'assets/images/vibes_techno.jpeg',
-  'workout': 'assets/images/vibes_workout.jpeg',
-};
-
-/// Maps genre IDs to their human-readable display titles.
-const _genreTitles = {
-  'hiphop': 'Hip Hop & Rap',
-  'electronic': 'Electronic',
-  'pop': 'Pop',
-  'rnb': 'R&B',
-  'party': 'Party',
-  'chill': 'Chill',
-  'techno': 'Techno',
-  'workout': 'Workout',
-};
-
 /// The genre/vibes detail page.
 ///
 /// Displays a fixed header image with the genre title overlaid, followed by
@@ -41,7 +17,7 @@ class GenrePage extends StatelessWidget {
     super.key,
     required this.genreId,
     required this.genreName,
-    required this.coverImage, // TODO: use when endpoint adds cover_image
+    required this.coverImage,
   });
 
   final String genreId;
@@ -103,7 +79,7 @@ class GenrePage extends StatelessWidget {
                   bottom: 16,
                   left: 16,
                   child: Text(
-                    genreName, // ← uses passed name directly
+                    genreName, //  uses passed name directly
                     key: const Key('genre_title'),
                     style: const TextStyle(
                       color: Colors.white,

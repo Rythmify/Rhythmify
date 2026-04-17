@@ -16,7 +16,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
     userId: 'a1b2c3d4',
     title: 'Summer Vibes',
     artist: 'DJ Karim',
-    audioUrl: '',
+    audioUrl: 'assets/audio/Track_audio_1.mp3',
     coverImage: 'assets/images/vibes_hiphop.jpeg',
     duration: const Duration(seconds: 213),
     playCount: 4200,
@@ -49,7 +49,7 @@ class GenreRemoteSourceMock implements GenreRemoteSource {
       coverImage: 'assets/images/vibes_hiphop.jpeg',
       previewTrack: _mockTrack,
     ),
-    tracksPreview: List.generate(3, (_) => _mockTrack),
+    tracksPreview: List.generate(2, (_) => _mockTrack),
   );
 
   List<GenrePlaylist> _mockPlaylists(String genreId) => List.generate(

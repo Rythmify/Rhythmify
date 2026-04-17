@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 
 class VibesDto {
   // Fixed height and color pools — cycled by index since /genres returns no visuals.
-  // TODO: replace imagePath fallback with cover_image from endpoint when added.
-  static const List<double> _heights = [130, 160, 120, 150, 140, 170, 125, 155];
+  static const List<double> _heights = [150, 230, 250, 70, 160, 75, 250, 170];
   static const List<Color> _colors = [
     Color(0xFFE91E63),
     Color(0xFF9C27B0),

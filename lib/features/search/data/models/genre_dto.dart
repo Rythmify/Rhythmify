@@ -153,27 +153,31 @@ class GenreDto {
   }
 
   // ── Paginated list parsers ─────────────────────────────────────────────────
-  static List<Track> parseTrackList(Map<String, dynamic> json) {
-    return (json['data'] as List? ?? [])
-        .map((t) => parseTrack(t as Map<String, dynamic>))
-        .toList();
-  }
-
   static List<GenrePlaylist> parsePlaylistList(Map<String, dynamic> json) {
-    return (json['data'] as List? ?? [])
+    final data = json['data'] as Map<String, dynamic>;
+    return (data['playlists'] as List)
         .map((p) => parsePlaylist(p as Map<String, dynamic>))
         .toList();
   }
 
   static List<GenreAlbum> parseAlbumList(Map<String, dynamic> json) {
-    return (json['data'] as List? ?? [])
+    final data = json['data'] as Map<String, dynamic>;
+    return (data['albums'] as List)
         .map((a) => parseAlbum(a as Map<String, dynamic>))
         .toList();
   }
 
   static List<GenreArtist> parseArtistList(Map<String, dynamic> json) {
-    return (json['data'] as List? ?? [])
+    final data = json['data'] as Map<String, dynamic>;
+    return (data['artists'] as List)
         .map((a) => parseArtist(a as Map<String, dynamic>))
+        .toList();
+  }
+
+  static List<Track> parseTrackList(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>;
+    return (data['tracks'] as List)
+        .map((t) => parseTrack(t as Map<String, dynamic>))
         .toList();
   }
 }
