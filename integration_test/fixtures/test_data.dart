@@ -33,8 +33,8 @@ class InvalidPassword {
 }
 
 // Valid test user for login
-const String validEmail = 'bassel@rythmify.com';
-const String validPassword = 'Biso1234';
+const String validEmail = 'nour_sound@rythmify.com';
+const String validPassword = 'Password123!';
 
 // New user for registration
 final TestUser newUser = TestUser(
