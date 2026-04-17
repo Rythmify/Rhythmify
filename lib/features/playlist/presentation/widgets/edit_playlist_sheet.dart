@@ -1,8 +1,5 @@
-/// Bottom sheet for editing an existing playlist, album, or station.
-/// Handles name, description, visibility, cover image, track removal, and type conversion.
-/// Cover image picker uses [ElevatedButton] instead of [GestureDetector] because
-/// taps are swallowed by [DraggableScrollableSheet] in scroll context.
-/// [onConverted] is passed through to the caller so navigation can move to the right Library tab.
+// lib/features/playlist/presentation/widgets/edit_playlist_sheet.dart
+
 library;
 
 import 'dart:io';
@@ -41,7 +38,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   @override
   void initState() {
     super.initState();
-    final state = ref.read(playlistDetailProvider(widget.playlistId));
+    // playlistDetailProvider is already loaded by PlaylistDetailScreen
+    // before this sheet opens — state is ready to read here.
+    final state = ref.read(playlistDetailProvider);
     _nameController = TextEditingController(text: state.playlist?.name ?? '');
     _descController = TextEditingController(
       text: state.playlist?.description ?? '',
@@ -62,11 +61,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     setState(() => _tracks.removeWhere((t) => t.id == trackId));
   }
 
-  // ── Image picker ─────────────────────────────────────────────────────────────
-  // Uses ElevatedButton.onPressed instead of GestureDetector because
-  // GestureDetector taps get swallowed by DraggableScrollableSheet.
-  // ElevatedButton fires reliably in all scroll contexts.
-
   Future<void> _openImagePicker() async {
     final picker = ImagePicker();
     final XFile? picked = await picker.pickImage(
@@ -80,71 +74,61 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-  // ── Save ──────────────────────────────────────────────────────────────────────
+  // ── Save ──────────────────────────────────────────────────────────────────
 
-  void _onSave() {
-    ref
-        .read(playlistListProvider.notifier)
-        .updatePlaylist(
+  Future<void> _onSave() async {
+    // Update metadata + cover image in one API call
+    await ref.read(playlistListProvider.notifier).updatePlaylist(
           playlistId: widget.playlistId,
           name: _nameController.text.trim(),
           isPublic: _isPublic,
           description: _descController.text.trim(),
+          coverImageFile: _pickedCoverFile,
         );
 
-    if (_pickedCoverFile != null) {
-      ref
-          .read(playlistListProvider.notifier)
-          .updateCoverImage(
-            playlistId: widget.playlistId,
-            localPath: _pickedCoverFile!.path,
-          );
-    }
-
-    final originalTracks = ref
-        .read(playlistDetailProvider(widget.playlistId))
-        .tracks;
+    // Remove tracks that the user deleted locally during this edit session
+    final originalTracks = ref.read(playlistDetailProvider).tracks;
     for (final original in originalTracks) {
       if (!_tracks.any((t) => t.id == original.id)) {
-        ref
-            .read(playlistDetailProvider(widget.playlistId).notifier)
+        await ref
+            .read(playlistDetailProvider.notifier)   // ← no (playlistId) arg
             .removeTrack(original.id);
       }
     }
-    ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
+
+    // Reload so the detail screen reflects the saved changes
+    await ref
+        .read(playlistDetailProvider.notifier)        // ← no (playlistId) arg
+        .reload();
+
+    if (!mounted) return;
     Navigator.of(context).pop();
   }
 
-  // ── Convert ───────────────────────────────────────────────────────────────────
+  // ── Convert ───────────────────────────────────────────────────────────────
 
-  // Separate method that takes the pre-captured navigator
   void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
     switch (targetType) {
       case PlaylistType.album:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToAlbum(widget.playlistId);
+        ref.read(playlistListProvider.notifier).convertToAlbum(widget.playlistId);
       case PlaylistType.station:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToStation(widget.playlistId);
+        ref.read(playlistListProvider.notifier).convertToStation(widget.playlistId);
       case PlaylistType.playlist:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToPlaylist(widget.playlistId);
+        ref.read(playlistListProvider.notifier).convertToPlaylist(widget.playlistId);
     }
-    ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
+    ref.read(playlistDetailProvider.notifier).reload(); // ← no (playlistId) arg
     sheetNav.pop(); // edit sheet
     sheetNav.pop(); // options sheet
     widget.onConverted?.call(targetType);
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────────
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    // Watch for cover URL changes from the detail provider
     final currentCoverUrl = ref
-        .watch(playlistDetailProvider(widget.playlistId))
+        .watch(playlistDetailProvider)              // ← no (playlistId) arg
         .playlist
         ?.coverUrl;
 
@@ -228,7 +212,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                // Priority: picked file → existing cover → placeholder
                                 if (_pickedCoverFile != null)
                                   Image.file(
                                     _pickedCoverFile!,
@@ -245,7 +228,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                       size: 36,
                                     ),
                                   ),
-                                // Small photo library icon in corner
                                 Positioned(
                                   bottom: 6,
                                   right: 6,
@@ -413,8 +395,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                               key: const Key('edit_convert_to_station'),
                               icon: Icons.radio,
                               label: 'Convert to Station',
-                              sublabel:
-                                  'Shows "Based on [artist]" in the header',
+                              sublabel: 'Shows "Based on [artist]" in the header',
                               onTap: () => _showConvertConfirm(
                                 context,
                                 targetType: PlaylistType.station,
@@ -475,14 +456,14 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
       return Image.file(
         File(url),
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) =>
+        errorBuilder: (_, __, ___) =>
             const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
       );
     }
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (_, _, _) =>
+      errorBuilder: (_, __, ___) =>
           const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
     );
   }
@@ -492,9 +473,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     required PlaylistType targetType,
     required String label,
   }) {
-    // Capture the sheet navigator before opening the dialog
     final sheetNav = Navigator.of(context);
-
     showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -519,8 +498,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           TextButton(
             key: Key('convert_confirm_$label'),
             onPressed: () {
-              Navigator.of(dialogContext).pop(); // close dialog
-              _convertWithNav(targetType, sheetNav); // close sheets + convert
+              Navigator.of(dialogContext).pop();
+              _convertWithNav(targetType, sheetNav);
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFFF5500),
@@ -643,9 +622,7 @@ class _EditTrackRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: track.isUnavailable
-                        ? Colors.grey[600]
-                        : Colors.white,
+                    color: track.isUnavailable ? Colors.grey[600] : Colors.white,
                     fontSize: 14,
                   ),
                 ),
@@ -657,11 +634,7 @@ class _EditTrackRow extends StatelessWidget {
                 if (track.isUnavailable)
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on,
-                        size: 11,
-                        color: Colors.grey[600],
-                      ),
+                      Icon(Icons.location_on, size: 11, color: Colors.grey[600]),
                       Text(
                         ' Not available',
                         style: TextStyle(color: Colors.grey[600], fontSize: 11),

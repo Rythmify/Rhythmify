@@ -56,17 +56,30 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     super.dispose();
   }
 
-  void _onCreate() {
+// ONLY _onCreate needs to change in create_playlist_sheet.dart
+// Replace your existing _onCreate method with this one.
+// Everything else in the file stays exactly the same.
+
+  Future<void> _onCreate() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
-    // Create via the provider (which calls the mock store).
-    final playlist = ref
+
+    // createPlaylist is now async and returns a Future<PlaylistEntity>
+    // We must await it to get the real playlist back from the server
+    final playlist = await ref
         .read(playlistListProvider.notifier)
         .createPlaylist(name: name, isPublic: _isPublic);
+
+    if (!mounted) return;
     Navigator.of(context).pop();
+    // playlist.id is now the real UUID from the database
     widget.onCreated?.call(playlist.id);
   }
 
+// NOTE: also change the method signature on the button from:
+//   onPressed: _nameController.text.trim().isEmpty ? null : _onCreate,
+// to the same thing — no change needed there since _onCreate is still
+// a method reference. Dart handles async void callbacks fine on buttons.
   @override
   Widget build(BuildContext context) {
     // keyboardHeight pushes the sheet up when the keyboard opens.

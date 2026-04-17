@@ -1,41 +1,214 @@
-/// State management for the playlist module using Riverpod 3.x Notifiers.
-/// [PlaylistListNotifier] owns the flat list of all collections and handles all CRUD.
-/// [PlaylistDetailNotifier] owns one playlist's header, tracks, and suggestions.
-/// Detail providers are cached manually in [_detailProviderCache] as a workaround
-/// for FamilyNotifier being removed in Riverpod 3.x.
-library;
+// lib/features/playlist/presentation/providers/playlist_provider.dart
+//
+// Uses ONLY Notifier<State> and NotifierProvider — the same pattern already
+// used by PlaylistListNotifier in this file, which compiles successfully.
+//
+// For the detail provider we avoid family entirely. Instead:
+//   - playlistDetailProvider is a single NotifierProvider
+//   - The notifier has an init(String playlistId) method
+//   - PlaylistDetailScreen calls init() on first build via ref.listen trick
+//
+// This is the safest approach because it uses zero Riverpod APIs beyond
+// what is already proven to compile in this project.
 
+// ignore_for_file: avoid_print
+
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/mock/playlist_mock_data.dart';
+import '../../../../core/network/api_client.dart';
+import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 
-// ════════════════════════════════════════════════════════════════════════════
-// STATE CLASSES
-// ════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────────────────────
+// Infrastructure
+// ─────────────────────────────────────────────────────────────────────────────
+
+final apiClientProvider = Provider<ApiClient>((ref) => apiClient);
+
+final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
+  final dio = ref.watch(apiClientProvider).dio;
+  print('[PROVIDER SETUP] PlaylistRemoteDatasource ready');
+  return PlaylistRemoteDatasource(dio);
+});
+
+final playlistMockSeederProvider = Provider<void>((_) {});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 1 — LIBRARY LIST
+// ═════════════════════════════════════════════════════════════════════════════
 
 class PlaylistListState {
   const PlaylistListState({
     this.playlists = const [],
+    this.stations = const [],
     this.isLoading = false,
     this.error,
   });
 
   final List<PlaylistEntity> playlists;
+  final List<PlaylistEntity> stations;
   final bool isLoading;
   final String? error;
 
   PlaylistListState copyWith({
     List<PlaylistEntity>? playlists,
+    List<PlaylistEntity>? stations,
     bool? isLoading,
     String? error,
-  }) => PlaylistListState(
-    playlists: playlists ?? this.playlists,
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-  );
+    bool clearError = false,
+  }) {
+    return PlaylistListState(
+      playlists: playlists ?? this.playlists,
+      stations: stations ?? this.stations,
+      isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
+    );
+  }
 }
+
+final playlistListProvider =
+    NotifierProvider<PlaylistListNotifier, PlaylistListState>(
+  PlaylistListNotifier.new,
+);
+
+class PlaylistListNotifier extends Notifier<PlaylistListState> {
+  @override
+  PlaylistListState build() => const PlaylistListState();
+
+  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
+
+  Future<void> loadPlaylists() async {
+    print('[LIST] loadPlaylists()');
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final all = await _ds.fetchMyPlaylists(filter: 'created');
+      state = state.copyWith(
+        playlists: all.where((p) => p.type != PlaylistType.station).toList(),
+        isLoading: false,
+      );
+      print('[LIST] loaded ${state.playlists.length} items ✅');
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: _mapError(e));
+    }
+  }
+
+  Future<void> loadStations() async {
+    print('[LIST] loadStations()');
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final stations = await _ds.fetchStations();
+      state = state.copyWith(stations: stations, isLoading: false);
+      print('[LIST] loaded ${stations.length} stations ✅');
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: _mapError(e));
+    }
+  }
+
+  Future<PlaylistEntity> createPlaylist({
+    required String name,
+    required bool isPublic,
+    String subtype = 'playlist',
+  }) async {
+    print('[LIST] createPlaylist("$name")');
+    final created = await _ds.createPlaylist(
+      name: name,
+      isPublic: isPublic,
+      subtype: subtype,
+    );
+    state = state.copyWith(playlists: [created, ...state.playlists]);
+    print('[LIST] created ${created.id} ✅');
+    return created;
+  }
+
+  Future<void> updatePlaylist({
+    required String playlistId,
+    String? name,
+    bool? isPublic,
+    String? description,
+    File? coverImageFile,
+    String? subtype,
+  }) async {
+    print('[LIST] updatePlaylist($playlistId)');
+    final updated = await _ds.updatePlaylist(
+      playlistId: playlistId,
+      name: name,
+      isPublic: isPublic,
+      description: description,
+      coverImage: coverImageFile,
+      subtype: subtype,
+    );
+    state = state.copyWith(
+      playlists: state.playlists
+          .map((p) => p.id == playlistId ? updated : p)
+          .toList(),
+    );
+    print('[LIST] updated $playlistId ✅');
+  }
+
+  Future<void> deletePlaylist(String playlistId) async {
+    print('[LIST] deletePlaylist($playlistId)');
+    await _ds.deletePlaylist(playlistId);
+    state = state.copyWith(
+      playlists: state.playlists.where((p) => p.id != playlistId).toList(),
+    );
+    print('[LIST] deleted $playlistId ✅');
+  }
+
+  Future<void> convertToAlbum(String id) =>
+      updatePlaylist(playlistId: id, subtype: 'album');
+
+  Future<void> convertToPlaylist(String id) =>
+      updatePlaylist(playlistId: id, subtype: 'playlist');
+
+  Future<void> convertToStation(String id) async =>
+      print('[LIST] convertToStation — no-op');
+
+  void clearError() => state = state.copyWith(clearError: true);
+
+  String _mapError(DioException e) {
+    print('[LIST] HTTP ${e.response?.statusCode} — ${e.response?.data}');
+    switch (e.response?.statusCode) {
+      case 401:
+        return 'Please log in again.';
+      case 403:
+        return 'You don\'t have permission to do that.';
+      case 404:
+        return 'Playlist not found.';
+      case 409:
+        return 'Track already in playlist.';
+      case 422:
+        final code =
+            (e.response?.data?['error']?['code'] as String?) ?? '';
+        if (code == 'BUSINESS_LIMIT_REACHED') {
+          return 'Playlist limit reached. Upgrade to Premium.';
+        }
+        return 'Invalid request.';
+      default:
+        return 'Something went wrong. Try again.';
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PART 2 — DETAIL PROVIDER
+//
+// Uses a plain NotifierProvider (no family) — same as PlaylistListNotifier
+// above, which already compiles.
+//
+// HOW IT WORKS WITHOUT FAMILY:
+//   The notifier starts empty. When PlaylistDetailScreen opens, it calls
+//   ref.read(playlistDetailProvider.notifier).init(playlistId)
+//   which sets the ID and loads data.
+//
+//   Multiple playlists open at different times? This works because
+//   GoRouter creates a new screen instance each time you navigate to a
+//   playlist, and the screen calls init() with its own ID immediately.
+//   The provider state resets to loading when init() is called with a
+//   new ID.
+// ═════════════════════════════════════════════════════════════════════════════
 
 class PlaylistDetailState {
   const PlaylistDetailState({
@@ -43,209 +216,178 @@ class PlaylistDetailState {
     this.tracks = const [],
     this.suggestions = const [],
     this.isLoading = false,
+    this.showSuggestions = false,
     this.error,
+    this.loadedForId,
   });
 
   final PlaylistEntity? playlist;
   final List<PlaylistTrack> tracks;
   final List<PlaylistTrack> suggestions;
   final bool isLoading;
+  final bool showSuggestions;
   final String? error;
-
-  bool get showSuggestions =>
-      suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
+  // Tracks which playlist ID is currently loaded — used to avoid
+  // re-fetching if the same screen rebuilds without changing playlist.
+  final String? loadedForId;
 
   PlaylistDetailState copyWith({
     PlaylistEntity? playlist,
     List<PlaylistTrack>? tracks,
     List<PlaylistTrack>? suggestions,
     bool? isLoading,
+    bool? showSuggestions,
     String? error,
-  }) => PlaylistDetailState(
-    playlist: playlist ?? this.playlist,
-    tracks: tracks ?? this.tracks,
-    suggestions: suggestions ?? this.suggestions,
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// NOTIFIERS
-// ════════════════════════════════════════════════════════════════════════════
-
-class PlaylistListNotifier extends Notifier<PlaylistListState> {
-  @override
-  PlaylistListState build() {
-    // Re-read playlists whenever the seeder pushes new data so counts update
-    ref.listen<void>(playlistMockSeederProvider, (_, _) {
-      Future.microtask(loadPlaylists);
-    });
-    ref.watch(playlistMockSeederProvider);
-    final playlists = PlaylistMockData.instance.getMyPlaylists();
-    return PlaylistListState(playlists: playlists);
-  }
-
-  final _db = PlaylistMockData.instance;
-
-  void loadPlaylists() {
-    // Must call getTracksFor first — it updates _playlists[i] with fresh counts.
-    // getMyPlaylists() after this returns the already-updated objects.
-    for (final p in List.from(_db.getMyPlaylists())) {
-      _db.getTracksFor(p.id);
-    }
-    state = state.copyWith(playlists: _db.getMyPlaylists());
-  }
-
-  PlaylistEntity createPlaylist({
-    required String name,
-    required bool isPublic,
+    bool clearError = false,
+    String? loadedForId,
   }) {
-    final playlist = _db.create(name: name, isPublic: isPublic);
-    loadPlaylists();
-    return playlist;
-  }
-
-  void updatePlaylist({
-    required String playlistId,
-    required String name,
-    required bool isPublic,
-    String? description,
-  }) {
-    _db.update(
-      playlistId: playlistId,
-      name: name,
-      isPublic: isPublic,
-      description: description,
+    return PlaylistDetailState(
+      playlist: playlist ?? this.playlist,
+      tracks: tracks ?? this.tracks,
+      suggestions: suggestions ?? this.suggestions,
+      isLoading: isLoading ?? this.isLoading,
+      showSuggestions: showSuggestions ?? this.showSuggestions,
+      error: clearError ? null : (error ?? this.error),
+      loadedForId: loadedForId ?? this.loadedForId,
     );
-    loadPlaylists();
-  }
-
-  void updateCoverImage({
-    required String playlistId,
-    required String localPath,
-  }) {
-    _db.updateCoverImage(playlistId: playlistId, localPath: localPath);
-    loadPlaylists();
-  }
-
-  void deletePlaylist(String playlistId) {
-    _db.delete(playlistId);
-    loadPlaylists();
-  }
-
-  PlaylistEntity createStation(PlaylistTrack seedTrack) {
-    final station = _db.createStation(seedTrack: seedTrack);
-    loadPlaylists();
-    return station;
-  }
-
-  PlaylistEntity convertToAlbum(String playlistId) {
-    final updated = _db.convertToAlbum(playlistId);
-    loadPlaylists();
-    return updated;
-  }
-
-  PlaylistEntity convertToStation(String playlistId) {
-    final updated = _db.convertToStation(playlistId);
-    loadPlaylists();
-    return updated;
-  }
-
-  PlaylistEntity convertToPlaylist(String playlistId) {
-    final updated = _db.convertToPlaylist(playlistId);
-    loadPlaylists();
-    return updated;
   }
 }
+
+final playlistDetailProvider =
+    NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
+  PlaylistDetailNotifier.new,
+);
 
 class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
-  PlaylistDetailNotifier(this._playlistId);
-
-  final String _playlistId;
-  final _db = PlaylistMockData.instance;
-
   @override
-  PlaylistDetailState build() => _buildState();
+  PlaylistDetailState build() => const PlaylistDetailState();
 
-  PlaylistDetailState _buildState() {
-    final playlist = _db.getById(_playlistId);
-    if (playlist == null) {
-      return const PlaylistDetailState(error: 'Playlist not found');
+  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
+
+  // ── Called by PlaylistDetailScreen, EditPlaylistSheet, PlaylistOptionsSheet
+  // Pass the playlistId. If it's already loaded for that ID, does nothing.
+  Future<void> init(String playlistId) async {
+    if (state.loadedForId == playlistId && !state.isLoading) {
+      print('[DETAIL] init($playlistId) — already loaded, skipping');
+      return;
     }
-    return PlaylistDetailState(
-      playlist: playlist,
-      tracks: _db.getTracksFor(_playlistId),
-      suggestions: _db.getSuggestions(excludePlaylistId: _playlistId),
-    );
+    await _load(playlistId);
   }
 
-  void addSuggestion(PlaylistTrack playlistTrack) {
-    final allSource = [
-      ..._db.getSourceTracksFor('pl-001'),
-      ..._db.getSourceTracksFor('pl-002'),
-    ];
-    final track = allSource.firstWhere(
-      (t) => t.id == playlistTrack.id,
-      orElse: () => throw StateError(
-        'Source Track not found for id: ${playlistTrack.id}',
-      ),
-    );
-    _db.addTrack(playlistId: _playlistId, track: track);
+  Future<void> _load(String playlistId) async {
+    print('[DETAIL] loading $playlistId');
     state = state.copyWith(
-      playlist: _db.getById(_playlistId),
-      tracks: _db.getTracksFor(_playlistId),
-      suggestions: state.suggestions
-          .where((s) => s.id != playlistTrack.id)
-          .toList(),
+      isLoading: true,
+      clearError: true,
+      loadedForId: playlistId,
     );
+    try {
+      final results = await Future.wait([
+        _ds.fetchPlaylistDetail(playlistId),
+        _ds.fetchPlaylistTracks(playlistId),
+      ]);
+
+      final playlist = results[0] as PlaylistEntity;
+      final tracks = results[1] as List<PlaylistTrack>;
+      final showSuggestions = tracks.length < 3;
+
+      state = state.copyWith(
+        playlist: playlist,
+        tracks: tracks,
+        isLoading: false,
+        showSuggestions: showSuggestions,
+        loadedForId: playlistId,
+      );
+      print('[DETAIL] "${playlist.name}" — ${tracks.length} tracks ✅');
+
+      if (showSuggestions) _loadSuggestions(playlistId);
+    } on DioException catch (e) {
+      print('[DETAIL] load failed ${e.response?.statusCode}');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Could not load playlist.',
+      );
+    }
   }
 
-  void removeTrack(String trackId) {
-    _db.removeTrack(playlistId: _playlistId, trackId: trackId);
-    state = state.copyWith(
-      playlist: _db.getById(_playlistId),
-      tracks: _db.getTracksFor(_playlistId),
-    );
+  Future<void> _loadSuggestions(String playlistId) async {
+    print('[DETAIL] loading suggestions');
+    try {
+      final suggested = await _ds.fetchRecommendedTracks(limit: 5);
+      // Only apply if we're still on the same playlist
+      if (state.loadedForId == playlistId) {
+        state = state.copyWith(suggestions: suggested, showSuggestions: true);
+        print('[DETAIL] ${suggested.length} suggestions ✅');
+      }
+    } on DioException catch (_) {
+      print('[DETAIL] suggestions failed — non-fatal');
+    }
   }
 
-  void refreshSuggestions() {
-    state = state.copyWith(
-      suggestions: _db.getSuggestions(
-        excludePlaylistId: _playlistId,
-        shuffle: true,
-      ),
-    );
+  Future<void> toggleLike() async {
+    final playlist = state.playlist;
+    if (playlist == null) return;
+    final playlistId = state.loadedForId!;
+    final nowLiked = !playlist.isLiked;
+    state = state.copyWith(playlist: playlist.copyWith(isLiked: nowLiked));
+    try {
+      if (nowLiked) {
+        await _ds.likePlaylist(playlistId);
+      } else {
+        await _ds.unlikePlaylist(playlistId);
+      }
+      print('[DETAIL] toggleLike → $nowLiked ✅');
+    } on DioException catch (e) {
+      print('[DETAIL] toggleLike failed, reverting: ${e.response?.statusCode}');
+      state = state.copyWith(playlist: playlist.copyWith(isLiked: !nowLiked));
+    }
   }
 
-  void reload() {
-    state = _buildState();
+  Future<void> addSuggestion(PlaylistTrack track) async {
+    final playlistId = state.loadedForId;
+    if (playlistId == null) return;
+    print('[DETAIL] addSuggestion "${track.title}"');
+    try {
+      await _ds.addTrackToPlaylist(playlistId: playlistId, trackId: track.id);
+      state = state.copyWith(
+        tracks: [...state.tracks, track],
+        suggestions: state.suggestions.where((s) => s.id != track.id).toList(),
+        showSuggestions: (state.tracks.length + 1) < 3,
+      );
+      print('[DETAIL] suggestion added ✅');
+    } on DioException catch (e) {
+      print('[DETAIL] addSuggestion failed: ${e.response?.statusCode}');
+    }
   }
 
-  void toggleLike() {
-    _db.toggleLike(_playlistId);
-    state = state.copyWith(playlist: _db.getById(_playlistId));
+  Future<void> refreshSuggestions() async {
+    final playlistId = state.loadedForId;
+    if (playlistId == null) return;
+    print('[DETAIL] refreshSuggestions()');
+    state = state.copyWith(suggestions: []);
+    await _loadSuggestions(playlistId);
   }
-}
 
-// ════════════════════════════════════════════════════════════════════════════
-// PROVIDERS
-// ════════════════════════════════════════════════════════════════════════════
+  Future<void> removeTrack(String trackId) async {
+    final playlistId = state.loadedForId;
+    if (playlistId == null) return;
+    print('[DETAIL] removeTrack $trackId');
+    try {
+      await _ds.removeTrackFromPlaylist(
+          playlistId: playlistId, trackId: trackId);
+      state = state.copyWith(
+        tracks: state.tracks.where((t) => t.id != trackId).toList(),
+      );
+      print('[DETAIL] track removed ✅');
+    } on DioException catch (e) {
+      print('[DETAIL] removeTrack failed: ${e.response?.statusCode}');
+    }
+  }
 
-final playlistListProvider =
-    NotifierProvider<PlaylistListNotifier, PlaylistListState>(
-      PlaylistListNotifier.new,
-    );
-
-final _detailProviderCache =
-    <String, NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>>{};
-
-NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>
-playlistDetailProvider(String playlistId) {
-  return _detailProviderCache.putIfAbsent(
-    playlistId,
-    () => NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
-      () => PlaylistDetailNotifier(playlistId),
-    ),
-  );
+  Future<void> reload() async {
+    final playlistId = state.loadedForId;
+    if (playlistId == null) return;
+    print('[DETAIL] reload()');
+    await _load(playlistId);
+  }
 }

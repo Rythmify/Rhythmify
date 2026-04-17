@@ -1,8 +1,5 @@
-/// Detail screen for a playlist, album, or station — all three share this screen.
-/// [PlaylistEntity.type] controls what the header shows and which actions are available.
-/// Player wiring uses [PlaylistMockData.getSourceTracksFor] to get full [Track] entities
-/// since [PlaylistDetailState] only holds lightweight [PlaylistTrack] rows.
-/// Reached via GoRouter from any module using the /library/playlists/:id route pattern.
+// lib/features/playlist/presentation/screens/playlist_detail_screen.dart
+
 library;
 
 import 'package:flutter/material.dart';
@@ -11,13 +8,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
+import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-class PlaylistDetailScreen extends ConsumerWidget {
+// Changed from ConsumerWidget to ConsumerStatefulWidget so we can call
+// init() exactly once in initState — the cleanest way to trigger a load.
+class PlaylistDetailScreen extends ConsumerStatefulWidget {
   const PlaylistDetailScreen({
     super.key,
     required this.playlistId,
@@ -27,29 +26,64 @@ class PlaylistDetailScreen extends ConsumerWidget {
   final String playlistId;
   final bool isOwner;
 
+  @override
+  ConsumerState<PlaylistDetailScreen> createState() =>
+      _PlaylistDetailScreenState();
+}
+
+class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Call init() after the first frame so the provider is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(playlistDetailProvider.notifier)
+          .init(widget.playlistId);
+    });
+  }
+
+  // ── PlaylistTrack → Track conversion ──────────────────────────────────────
+
+  Track _toTrack(PlaylistTrack pt) {
+    return Track(
+      id: pt.id,
+      userId: '',        // not in PlaylistTrack — player fetches real value
+      title: pt.title,
+      artist: pt.artistName,
+      audioUrl: '',      // not in PlaylistTrack — player fetches real value
+      duration: pt.duration,
+      createdAt: DateTime.now(),
+      coverImage: pt.coverUrl,
+      playCount: pt.playCount,
+    );
+  }
+
+  List<Track> _toTracks(List<PlaylistTrack> pts) => pts.map(_toTrack).toList();
+
   // ── Player helpers ─────────────────────────────────────────────────────────
 
-  List<Track> _sourceTracks() =>
-      PlaylistMockData.instance.getSourceTracksFor(playlistId);
-
-  void _playAll(WidgetRef ref) {
-    final tracks = _sourceTracks();
+  void _playAll() {
+    final tracks = _toTracks(ref.read(playlistDetailProvider).tracks);
     if (tracks.isEmpty) return;
     ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(tracks, initialIndex: 0);
   }
 
-  void _shuffle(WidgetRef ref) {
-    final tracks = List<Track>.from(_sourceTracks())..shuffle();
+  void _shuffle() {
+    final tracks = _toTracks(
+      List<PlaylistTrack>.from(ref.read(playlistDetailProvider).tracks)
+        ..shuffle(),
+    );
     if (tracks.isEmpty) return;
     ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(tracks, initialIndex: 0);
   }
 
-  void _playFrom(WidgetRef ref, int index) {
-    final tracks = _sourceTracks();
+  void _playFrom(int index) {
+    final tracks = _toTracks(ref.read(playlistDetailProvider).tracks);
     if (tracks.isEmpty || index >= tracks.length) return;
     ref
         .read(playerStateProvider.notifier)
@@ -59,10 +93,8 @@ class PlaylistDetailScreen extends ConsumerWidget {
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(playlistMockSeederProvider);
-
-    final state = ref.watch(playlistDetailProvider(playlistId));
+  Widget build(BuildContext context) {
+    final state = ref.watch(playlistDetailProvider);
 
     if (state.isLoading) {
       return const Scaffold(
@@ -176,7 +208,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       size: 24,
                     ),
                     onPressed: () => ref
-                        .read(playlistDetailProvider(playlistId).notifier)
+                        .read(playlistDetailProvider.notifier)
                         .toggleLike(),
                   ),
                   IconButton(
@@ -192,11 +224,9 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
                         builder: (_) => PlaylistOptionsSheet(
-                          playlistId: playlistId,
-                          isOwner: isOwner,
+                          playlistId: widget.playlistId,
+                          isOwner: widget.isOwner,
                           onConverted: (newType) {
-                            // Use context.go — the only reliable way to switch
-                            // between StatefulShellBranch sibling routes
                             switch (newType) {
                               case PlaylistType.album:
                                 context.go('/library/albums');
@@ -218,11 +248,11 @@ class PlaylistDetailScreen extends ConsumerWidget {
                       color: Colors.white60,
                       size: 24,
                     ),
-                    onPressed: () => _shuffle(ref),
+                    onPressed: _shuffle,
                   ),
                   GestureDetector(
                     key: const Key('playlist_detail_play_button'),
-                    onTap: () => _playAll(ref),
+                    onTap: _playAll,
                     child: Container(
                       width: 52,
                       height: 52,
@@ -253,7 +283,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     return TrackTileInPlaylist(
                       key: Key('playlist_track_${track.id}'),
                       track: track,
-                      onTap: () => _playFrom(ref, index),
+                      onTap: () => _playFrom(index),
                     );
                   }),
 
@@ -281,13 +311,9 @@ class PlaylistDetailScreen extends ConsumerWidget {
                             color: Colors.white70,
                             size: 26,
                           ),
-                          onPressed: () {
-                            ref
-                                .read(
-                                  playlistDetailProvider(playlistId).notifier,
-                                )
-                                .addSuggestion(suggestion);
-                          },
+                          onPressed: () => ref
+                              .read(playlistDetailProvider.notifier)
+                              .addSuggestion(suggestion),
                         ),
                       ),
                     ),
@@ -299,7 +325,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                         child: ElevatedButton(
                           key: const Key('refresh_suggestions_button'),
                           onPressed: () => ref
-                              .read(playlistDetailProvider(playlistId).notifier)
+                              .read(playlistDetailProvider.notifier)
                               .refreshSuggestions(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2A2A2A),
@@ -316,7 +342,6 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     ),
                   ],
 
-                  // Bottom padding so mini player never covers the last row
                   const SizedBox(height: 140),
                 ],
               ),
