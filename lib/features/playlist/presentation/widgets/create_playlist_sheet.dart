@@ -1,20 +1,4 @@
-// ============================================================
-// CreatePlaylistSheet
-// ============================================================
-// This is the small bottom sheet shown in Image 5.
-// It has:
-//   - A name text field (pre-filled with "Untitled playlist")
-//   - A character counter (17/100)
-//   - A "Make this playlist public" toggle
-//   - A "Create playlist" button
-//   - A "Cancel" text button
-//
-// ============================================================
-/// Bottom sheet for creating a new playlist.
-/// Calls [PlaylistListNotifier.createPlaylist] on confirm and returns the new
-/// playlist ID via [onCreated] so the caller can navigate directly to it.
-/// Pre-fills the name field with "Untitled playlist" and selects all text so
-/// the user can start typing immediately without clearing it manually.
+// lib/features/playlist/presentation/widgets/create_playlist_sheet.dart
 library;
 
 import 'package:flutter/material.dart';
@@ -26,8 +10,6 @@ import 'playlist_shared_widgets.dart';
 class CreatePlaylistSheet extends ConsumerStatefulWidget {
   const CreatePlaylistSheet({super.key, this.onCreated});
 
-  /// Called after the playlist is created with the new playlist's ID.
-  /// The caller uses this to navigate to the new playlist's detail page.
   final void Function(String playlistId)? onCreated;
 
   @override
@@ -43,7 +25,6 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: 'Untitled playlist');
-    // Select all text so user can type immediately.
     _nameController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _nameController.text.length,
@@ -56,34 +37,26 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     super.dispose();
   }
 
-// ONLY _onCreate needs to change in create_playlist_sheet.dart
-// Replace your existing _onCreate method with this one.
-// Everything else in the file stays exactly the same.
-
+  // async because createPlaylist now hits the real API and returns a Future.
+  // We await it to get the real playlist ID assigned by the database.
   Future<void> _onCreate() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    // createPlaylist is now async and returns a Future<PlaylistEntity>
-    // We must await it to get the real playlist back from the server
     final playlist = await ref
         .read(playlistListProvider.notifier)
         .createPlaylist(name: name, isPublic: _isPublic);
 
     if (!mounted) return;
     Navigator.of(context).pop();
-    // playlist.id is now the real UUID from the database
+    // playlist.id is now the real UUID from the database, not a mock ID
     widget.onCreated?.call(playlist.id);
   }
 
-// NOTE: also change the method signature on the button from:
-//   onPressed: _nameController.text.trim().isEmpty ? null : _onCreate,
-// to the same thing — no change needed there since _onCreate is still
-// a method reference. Dart handles async void callbacks fine on buttons.
   @override
   Widget build(BuildContext context) {
-    // keyboardHeight pushes the sheet up when the keyboard opens.
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final isLoading = ref.watch(playlistListProvider).isLoading;
 
     return Container(
       decoration: const BoxDecoration(
@@ -95,7 +68,6 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const BottomSheetHandle(),
-          // ── Name field ──────────────────────────────────────
           TextField(
             key: const Key('create_playlist_name_field'),
             controller: _nameController,
@@ -118,7 +90,6 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 20),
-          // ── Public toggle ────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -135,27 +106,37 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             ],
           ),
           const SizedBox(height: 20),
-          // ── Create button ────────────────────────────────────
           SizedBox(
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
               key: const Key('create_playlist_create_button'),
-              onPressed: _nameController.text.trim().isEmpty ? null : _onCreate,
+              // Disable while loading to prevent double-taps
+              onPressed: (_nameController.text.trim().isEmpty || isLoading)
+                  ? null
+                  : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: const Text(
-                'Create playlist',
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
-          // ── Cancel button ────────────────────────────────────
           TextButton(
             key: const Key('create_playlist_cancel_button'),
             onPressed: () => Navigator.of(context).pop(),

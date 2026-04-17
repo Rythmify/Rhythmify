@@ -1,16 +1,12 @@
-// The Library "Playlists" tab — shown when user taps Playlists in Library.
-// Uses GoRouter (context.push) for navigation, matching the rest of the app.
-/// Library tab showing all collections with type == playlist.
-/// Filters [playlistListProvider] by [PlaylistType.playlist] and supports live search.
-/// Create button opens [CreatePlaylistSheet] and navigates to the new playlist on confirm.
-/// The ··· menu opens [PlaylistOptionsSheet] with [isOwner] hardcoded to true
-/// until auth is wired — replace with a real ownership check at that point.
+// lib/features/playlist/presentation/screens/library_playlists_screen.dart
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/create_playlist_sheet.dart';
@@ -30,9 +26,35 @@ class _LibraryPlaylistsScreenState
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Trigger the real API call after the first frame.
+    // This replaces the old mock seeder.
+    // You will see in the console:
+    //   [LIST] loadPlaylists()
+    //   [DATASOURCE] → GET /playlists  filter=created
+    //   [DATASOURCE] ← 200  Got 3 playlists from server
+    //   [LIST] loaded 3 items ✅
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(playlistListProvider.notifier).loadPlaylists();
+    });
+  }
+
+  // Returns the logged-in user's ID, or empty string if not authenticated.
+  String _currentUserId() {
+    final authState = ref.read(authProvider);
+    return authState is AuthAuthenticated ? authState.user.id : '';
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
-    final filtered = state.playlists
+
+    // Filter to playlists only (albums and stations are in separate screens)
+    final allPlaylists = state.playlists
+        .where((p) => p.type == PlaylistType.playlist)
+        .toList();
+    final filtered = allPlaylists
         .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
@@ -41,7 +63,7 @@ class _LibraryPlaylistsScreenState
       body: SafeArea(
         child: Column(
           children: [
-            // ── Search bar ──────────────────────────────────────────────────
+            // ── Search bar ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
               child: Row(
@@ -74,7 +96,7 @@ class _LibraryPlaylistsScreenState
                         ),
                         decoration: InputDecoration(
                           hintText:
-                              'Search ${state.playlists.length} playlists',
+                              'Search ${allPlaylists.length} playlists',
                           hintStyle: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -85,9 +107,8 @@ class _LibraryPlaylistsScreenState
                             size: 18,
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ),
@@ -97,7 +118,8 @@ class _LibraryPlaylistsScreenState
                 ],
               ),
             ),
-            // ── Title ───────────────────────────────────────────────────────
+
+            // ── Title ───────────────────────────────────────────────────
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Align(
@@ -112,6 +134,7 @@ class _LibraryPlaylistsScreenState
                 ),
               ),
             ),
+
             // ── Import / Create buttons ──────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -171,7 +194,8 @@ class _LibraryPlaylistsScreenState
                 ],
               ),
             ),
-            // ── Playlist list ──────────────────────────────────────────────
+
+            // ── Playlist list ────────────────────────────────────────────
             Expanded(
               child: state.isLoading
                   ? const Center(
@@ -180,29 +204,35 @@ class _LibraryPlaylistsScreenState
                       ),
                     )
                   : filtered.isEmpty
-                  ? Center(
-                      child: Text(
-                        _searchQuery.isEmpty
-                            ? 'No playlists yet.\nTap Create to make one!'
-                            : 'No results for "$_searchQuery"',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey[500]),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) => _PlaylistListTile(
-                        key: Key('library_playlist_tile_${filtered[index].id}'),
-                        playlist: filtered[index],
-                        // Navigate to detail using GoRouter
-                        onTap: () => context.push(
-                          '/library/playlists/${filtered[index].id}',
-                          extra: true, // isOwner = true for now
+                      ? Center(
+                          child: Text(
+                            _searchQuery.isEmpty
+                                ? 'No playlists yet.\nTap Create to make one!'
+                                : 'No results for "$_searchQuery"',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final playlist = filtered[index];
+                            // Real ownership check using the auth provider
+                            final isOwner =
+                                playlist.ownerId == _currentUserId();
+                            return _PlaylistListTile(
+                              key: Key(
+                                  'library_playlist_tile_${playlist.id}'),
+                              playlist: playlist,
+                              onTap: () => context.push(
+                                '/library/playlists/${playlist.id}',
+                                extra: isOwner,
+                              ),
+                              onMoreTap: () =>
+                                  _showOptions(context, playlist, isOwner),
+                            );
+                          },
                         ),
-                        onMoreTap: () =>
-                            _showOptions(context, filtered[index].id),
-                      ),
-                    ),
             ),
           ],
         ),
@@ -216,24 +246,25 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        // After creating, navigate to the new playlist's detail page.
-        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) =>
+            context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
 
-  void _showOptions(BuildContext context, String playlistId) {
+  void _showOptions(
+      BuildContext context, PlaylistEntity playlist, bool isOwner) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) =>
-          PlaylistOptionsSheet(playlistId: playlistId, isOwner: true),
+      builder: (_) => PlaylistOptionsSheet(
+        playlistId: playlist.id,
+        isOwner: isOwner,
+      ),
     );
   }
 }
-
-// ── Playlist row tile ──────────────────────────────────────────────────────
 
 class _PlaylistListTile extends StatelessWidget {
   const _PlaylistListTile({
@@ -255,7 +286,8 @@ class _PlaylistListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 4),
+            PlaylistCoverImage(
+                playlist: playlist, size: 60, borderRadius: 4),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -274,19 +306,22 @@ class _PlaylistListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     playlist.ownerName,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     playlist.subtitleLine,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style:
+                        TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ),
             IconButton(
               key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+              icon: const Icon(
+                  Icons.more_vert, color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],
