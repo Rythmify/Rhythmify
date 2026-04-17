@@ -12,6 +12,17 @@ class DataSourcesSockets {
           .disableAutoConnect()
           .build(),
     );
+    _socket.onConnecting((_) => print('🔄 Socket connecting to $url...'));
+    _socket.onConnect((_) => print('✅ Socket connected! ID: ${_socket.id}'));
+    _socket.onDisconnect((_) => print('❌ Socket disconnected'));
+    _socket.onConnectError((err) => print('🚨 Connection error: $err'));
+    _socket.onError((err) => print('🚨 Socket error: $err'));
+    _socket.onReconnect((_) => print('🔁 Socket reconnected'));
+    _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt:'));
+    _socket.onReconnectError((err) => print('🚨 Reconnect error: $err'));
+    _socket.onReconnectFailed((_) => print('🚨 Reconnect failed'));
+
+    print('⏳ Attempting to connect to $url');
 
     _socket.connect();
   }

@@ -58,6 +58,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ref.invalidate(conversationProvider);
         _socket.joinConversation(widget.conv!.conversationId);
         _socket.onMessageReceived((data) {
+          print('🔥 onMessageReceived fired: $data');
           if (mounted) {
             ref.invalidate(messageProvider(widget.conv!.conversationId));
             ref.invalidate(conversationProvider);
