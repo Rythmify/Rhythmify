@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 
+/// Controls social visibility preferences divided into two sections:
+/// "Social networking" for waveform comments and activity visibility,
+/// and "Insights visibility" for First/Top Fan status display.
 class SocialSettingsScreen extends StatelessWidget {
   const SocialSettingsScreen({super.key});
 
@@ -31,22 +34,20 @@ class SocialSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: const Key('show_comments_tile'),
               title: 'Show comments and reactions on the waveform',
               subtitle:
                   'Waveform comments and reactions are visible in the fullscreen player',
-              switchExists: true,
               initSwitchValue: true,
               onSwitchChanged: (value) {},
             ),
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: const Key('show_activities_tile'),
               title:
                   'Show my activities in social discovery playlists and modules',
               subtitle:
                   "Your Likes, Reactions and other engagement may be shown to other users in discovery features such as 'Liked By' playlists or update feeds. Turning this off won't hide your Likes on your profile or tracks.",
-              switchExists: true,
               initSwitchValue: true,
               onSwitchChanged: (value) {},
             ),
@@ -63,12 +64,11 @@ class SocialSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: const Key('show_top_fan_tile'),
               title: "Show when I'm a First or Top Fan",
               subtitle:
                   'You will appear in public First Fans and Top Fans lists',
-              switchExists: true,
               initSwitchValue: true,
               onSwitchChanged: (value) {},
             ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// A stateful toggle switch styled to match Rythmify's design.
+/// Active state uses SoundCloud orange [0xFFFF5500], inactive uses grey.
+/// Thumb is always white. Accepts an [initValue] and an [onChanged] callback.
 class SwitchWidget extends StatefulWidget {
   final bool initValue;
   final ValueChanged<bool>? onChanged;
@@ -21,21 +24,46 @@ class _SwitchStateWidget extends State<SwitchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Switch(
-      value: _value,
-      onChanged: (val) {
-        setState(() => _value = val);
-        widget.onChanged?.call(val);
+    return GestureDetector(
+      onTap: () {
+        setState(()=> _value = !_value );
+        widget.onChanged?.call(_value);
       },
-      thumbColor: const WidgetStatePropertyAll(Colors.white),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return const Color(0xFFFF5500);
-        }
-        return Colors.grey;
-      }),
-      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 36,
+        height: 14,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: _value ? const Color(0xFFFF5500) : Colors.grey
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AnimatedPositioned
+            (
+              duration: const Duration(milliseconds: 200),
+              left: _value ? 20 : -4,
+              top: -4,
+              child:Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2)
+                    )
+                  ]
+                ),
+              ),
+            )
+          ],
+        )
+      ),
     );
   }
 }

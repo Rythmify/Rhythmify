@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/no_switch_tile_widget.dart';
 
+/// Provides basic app settings including cache clearing and app icon customisation.
+/// Cache clearing shows a confirmation dialog before proceeding.
 class BasicSettingsScreen extends StatelessWidget {
   const BasicSettingsScreen({super.key});
 
@@ -14,13 +16,13 @@ class BasicSettingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(title: const Text('Basic Settings'), centerTitle: false),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReusableTileWidget(
+            NoSwitchTileWidget(
               key: Key('Clear_application_cache_tile'),
               title: 'Clear application cache',
               subtitle:
                   'clear the application cache to free up memory on your device',
-              switchExists: false,
               onTap: () async {
                 final confirmClearCache = await showDialog<bool>(
                   context: context,
@@ -56,12 +58,10 @@ class BasicSettingsScreen extends StatelessWidget {
                 if (confirmClearCache == true) {}
               },
             ),
-            const SizedBox(height: 20),
-            ReusableTileWidget(
+            NoSwitchTileWidget(
               key: Key('change_app_icon_tile'),
               title: 'Change app icon',
               subtitle: 'Custom app icons to match your style',
-              switchExists: false,
               onTap: () {},
             ),
           ],

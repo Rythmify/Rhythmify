@@ -5,6 +5,8 @@ import 'package:rythmify/features/messaging/data/repositories/mock_conversations
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/add_widget_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
@@ -337,6 +339,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'import-my-music',
                         builder: (context, state) =>
                             const ImportMyMusicScreen(),
+                        routes: [
+                          GoRoute(
+                            //2- Account
+                            path: 'music-providers',
+                            builder: (context, state) => ImportedMusicProvidersScreen(
+                              appBarTitle: state.extra as String,
+                            ),
+                          ),
+                        ]
                       ),
                       GoRoute(
                         //2- Account
@@ -366,6 +377,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'notifications',
                         builder: (context, state) =>
                             const NotificationsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //8- Add widgets
+                        path: 'add-widget',
+                        builder: (context, state) =>
+                            const AddWidgetScreen(),
                       ),
                       GoRoute(
                         //9- Analytics
