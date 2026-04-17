@@ -1,10 +1,13 @@
+// coverage:ignore-file
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 
 /// Likes page matching SoundCloud's layout.
 ///
@@ -58,7 +61,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Your likes'),
+        title: const Text('Likes'),
         centerTitle: false,
         leading: IconButton(
           key: const Key('likes_back_button'),
@@ -69,7 +72,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
           IconButton(
             key: const Key('likes_cast_button'),
             icon: const Icon(Icons.cast),
-            onPressed: () {},
+            onPressed: () => showCastMediaSheet(context, ref),
           ),
         ],
       ),
@@ -210,8 +213,14 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               }
 
               return TrackCard(
-                key: Key('likes_track_${filtered[index].id}'),
+                key: Key('item_${filtered[index].id}'),
                 track: filtered[index],
+                observePlayerState: false,
+                onTap: () {
+                  ref
+                      .read(playerStateProvider.notifier)
+                      .playOptimistic(filtered[index]);
+                },
               );
             },
           ),

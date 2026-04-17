@@ -15,10 +15,9 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("More of what you like", style: AppTheme.titleLarge),
+          padding: const EdgeInsets.only(bottom: 6, left: 16),
+          child: Text("More of what you like", style: AppTheme.homeTitle),
         ),
-        const SizedBox(height: 15),
         asyncMore.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text(

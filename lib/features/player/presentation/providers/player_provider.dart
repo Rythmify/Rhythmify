@@ -46,7 +46,17 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     // Listen to the domain stream and update the presentation state.
     getStreamUseCase.call().listen((newState) {
       if (!_isDragging) {
+        final oldId = state.currentTrack?.id;
+        final newId = newState.currentTrack?.id;
+
         state = newState;
+
+        // If track changed and lacks waveform data, fetch it in background.
+        if (newId != null && newId != oldId) {
+          if (newState.currentTrack?.waveformData == null) {
+            _updateTrackInBackground(newId);
+          }
+        }
       }
     });
 
@@ -124,5 +134,11 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// This tells whether i am moving the slider or not
   void setDragging(bool isDragging) {
     _isDragging = isDragging;
+  }
+
+  /// Stops active playback for session-level events like sign-out.
+  Future<void> stopPlayback() async {
+    await ref.read(pauseTrackUseCaseProvider).call();
+    await ref.read(seekPositionUseCaseProvider).call(Duration.zero);
   }
 }

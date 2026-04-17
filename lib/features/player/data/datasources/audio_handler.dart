@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/domain/entities/track.dart';
 
 /// A custom [BaseAudioHandler] implementation using [just_audio] to manage
@@ -64,7 +65,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
             title: track.title,
             artist: track.artist,
             duration: track.duration,
-            artUri: Uri.parse('asset:///${track.artworkUrl}'),
+            artUri: _resolveArtworkUri(track.artworkUrl),
           ),
         );
       }
@@ -87,7 +88,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
             title: updatedTrack.title,
             artist: updatedTrack.artist,
             duration: updatedTrack.duration,
-            artUri: Uri.parse('asset:///${updatedTrack.artworkUrl}'),
+            artUri: _resolveArtworkUri(updatedTrack.artworkUrl),
             displayDescription: updatedTrack.description,
             genre: updatedTrack.genre,
             extras: {
@@ -125,18 +126,39 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
 
-    final audioSources = tracks.map((track) {
-      final url = track.audioUrl;
-      if (url.startsWith('assets/')) {
-        return AudioSource.asset(url, tag: track.id);
-      } else {
-        return AudioSource.uri(Uri.parse(url), tag: track.id);
+    final List<AudioSource> audioSources = [];
+
+    for (final track in tracks) {
+      final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
+
+      if (rawUrl.isEmpty) {
+        // Skip invalid tracks to prevent crash
+        continue;
       }
-    }).toList();
+
+      if (rawUrl.startsWith('assets/')) {
+        audioSources.add(AudioSource.asset(rawUrl, tag: track.id));
+      } else {
+        final resolvedUri = _resolveTrackUri(rawUrl);
+        if (resolvedUri != null) {
+          audioSources.add(AudioSource.uri(resolvedUri, tag: track.id));
+        }
+        // If resolution fails, we skip this track instead of throwing
+      }
+    }
+
+    if (audioSources.isEmpty) {
+      return;
+    }
+
+    // Ensure initialIndex is within bounds after potentially skipping tracks
+    final effectiveIndex = initialIndex < audioSources.length
+        ? initialIndex
+        : 0;
 
     await _player.setAudioSources(
       audioSources,
-      initialIndex: initialIndex,
+      initialIndex: effectiveIndex,
       initialPosition: Duration.zero,
     );
   }
@@ -151,4 +173,43 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> skipToNext() => _player.seekToNext();
   @override
   Future<void> skipToPrevious() => _player.seekToPrevious();
+}
+
+Uri? _resolveTrackUri(String rawUrl) {
+  if (rawUrl.isEmpty) return null;
+
+  final parsed = Uri.tryParse(rawUrl);
+  if (parsed != null &&
+      parsed.hasScheme &&
+      (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+    return parsed;
+  }
+
+  final base = Uri.parse(ApiClient.baseUrl);
+  final origin = Uri(
+    scheme: base.scheme,
+    host: base.host,
+    port: base.hasPort ? base.port : null,
+  );
+  final resolved = origin.resolve(rawUrl);
+  if (resolved.scheme == 'http' || resolved.scheme == 'https') {
+    return resolved;
+  }
+
+  return null;
+}
+
+Uri? _resolveArtworkUri(String rawUrl) {
+  final trimmed = rawUrl.trim();
+  if (trimmed.isEmpty) return null;
+
+  final parsed = Uri.tryParse(trimmed);
+  if (parsed != null &&
+      parsed.hasScheme &&
+      (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+    return parsed;
+  }
+
+  // Avoid invalid asset/network URI values in system media metadata.
+  return null;
 }

@@ -2,9 +2,15 @@ import '../../domain/entities/comment.dart';
 import '../../domain/repositories/comment_repository.dart';
 import '../datasources/comment_remote_datasource.dart';
 
+/// Concrete implementation of the [CommentRepository] communicating with the remote API.
+///
+/// This repository relies on [CommentRemoteDataSource] to fetch and mutate
+/// data from the network, and maps raw [CommentDto] objects into Domain layer [Comment] entities.
+/// Rethrows caught exceptions for the presentation layer to handle.
 class CommentRemoteRepositoryImpl implements CommentRepository {
   final CommentRemoteDataSource _remoteDataSource;
 
+  /// Creates a [CommentRemoteRepositoryImpl] with the provided [_remoteDataSource].
   CommentRemoteRepositoryImpl(this._remoteDataSource);
 
   @override
@@ -48,6 +54,24 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<List<Comment>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      final dtos = await _remoteDataSource.getReplies(
+        commentId: commentId,
+        limit: limit,
+        offset: offset,
+      );
+      return dtos.map((dto) => dto.toDomain()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch replies: $e');
+    }
+  }
+
+  @override
   Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
     String trackId,
   ) async {
@@ -56,14 +80,10 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
         trackId,
       );
 
-      // Update map to hold the Record
       final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        // Group comments by the exact second to build the O(1) lookup map
         final second = dto.timestamp;
-
-        // We only take the first comment's data for a given second to avoid overlap
         if (!floatingMap.containsKey(second)) {
           floatingMap[second] = (pfp: dto.userPfp, text: dto.content);
         }
@@ -96,6 +116,22 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<Comment> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final insertedDto = await _remoteDataSource.postReply(
+        commentId: commentId,
+        content: content,
+      );
+      return insertedDto.toDomain();
+    } catch (e) {
+      throw Exception('Failed to post reply: $e');
+    }
+  }
+
+  @override
   Future<bool> toggleCommentLike(
     String commentId, {
     required bool isCurrentlyLiked,
@@ -103,10 +139,10 @@ class CommentRemoteRepositoryImpl implements CommentRepository {
     try {
       if (isCurrentlyLiked) {
         await _remoteDataSource.unlikeComment(commentId);
-        return false; // Successfully unliked, return new state
+        return false;
       } else {
         await _remoteDataSource.likeComment(commentId);
-        return true; // Successfully liked, return new state
+        return true;
       }
     } catch (e) {
       throw Exception('Failed to toggle like status: $e');

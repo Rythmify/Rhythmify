@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/vibes_genre_album.dart';
 
+/// A card displaying a single genre album in the Albums grid.
+/// Handles both network and local asset cover images, with a grey fallback on error.
 class GenreAlbumCard extends StatelessWidget {
   const GenreAlbumCard({super.key, required this.album});
   final GenreAlbum album;
@@ -13,6 +15,7 @@ class GenreAlbumCard extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(0),
+          // Uses [Image.network] for http URLs, [Image.asset] for local paths.
           child:
               album.coverImage.isNotEmpty && album.coverImage.startsWith('http')
               ? Image.network(

@@ -8,6 +8,13 @@ import '../widgets/vibes_grid.dart';
 import '../pages/vibes_genre_page.dart';
 import '../providers/vibes_providers.dart';
 
+/// The main search screen. Renders one of three states depending on user input:
+/// - **Idle** (empty query): shows the vibes grid.
+/// - **Typing** (query not submitted): shows the autocomplete suggestions list.
+/// - **Submitted**: shows the tabbed search results page.
+///
+/// Also listens to [searchQueryProvider] to auto-reset the submitted state
+/// when the user clears the search bar.
 class SearchScreen extends ConsumerWidget {
   const SearchScreen({super.key});
 
@@ -16,6 +23,7 @@ class SearchScreen extends ConsumerWidget {
     final query = ref.watch(searchQueryProvider);
     final submitted = ref.watch(searchSubmittedProvider);
 
+    // Reset submitted state whenever the query is cleared.
     ref.listen(searchQueryProvider, (_, next) {
       if (next.trim().isEmpty) {
         ref.read(searchSubmittedProvider.notifier).reset();
@@ -40,6 +48,7 @@ class SearchScreen extends ConsumerWidget {
               child: SearchSuggestionsList(),
             )
           else
+            // Idle state: load and display the vibes grid.
             Expanded(
               key: const Key('vibes_section'),
               child: ref
@@ -71,6 +80,7 @@ class SearchScreen extends ConsumerWidget {
                         VibesGrid(
                           key: const Key('vibes_grid'),
                           vibes: vibes,
+                          // Navigates to the genre page for the tapped vibe.
                           onVibeTap: (vibe) => Navigator.push(
                             context,
                             MaterialPageRoute(

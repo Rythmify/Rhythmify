@@ -7,6 +7,8 @@ import '../../data/repositories/library_repository_impl.dart';
 import '../../domain/entities/library_entities.dart';
 import '../../domain/usecases/library_usecases.dart';
 
+/// Riverpod providers and notifier states for Library feature flows.
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Feature flag — flip to false to use real API
 // ─────────────────────────────────────────────────────────────────────────────
@@ -295,14 +297,9 @@ class UploadsNotifier extends Notifier<UploadsState> {
           .map(
             (t) => t.id == trackId
                 ? UploadedTrack(
-                    id: t.id,
-                    title: t.title,
-                    artworkUrl: t.artworkUrl,
-                    playCount: t.playCount,
-                    likeCount: t.likeCount,
+                    track: t.track,
                     isPublic: isPublic,
                     status: t.status,
-                    createdAt: t.createdAt,
                   )
                 : t,
           )

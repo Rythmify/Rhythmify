@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
+import '../../../track/presentation/providers/track_sync_provider.dart';
 import 'mini_player_progress_button.dart';
 
 /// A persistent mini-player widget that appears when a track is active.
@@ -21,11 +22,14 @@ class MiniPlayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Only rebuilds when the song changes -> not when the timer ticks
-    final track = ref.watch(
+    final baseTrack = ref.watch(
       playerStateProvider.select((state) => state.currentTrack),
     );
 
-    if (track == null) return const SizedBox.shrink();
+    if (baseTrack == null) return const SizedBox.shrink();
+
+    // Get the globally synced track state for instant UI updates
+    final track = ref.watch(syncedTrackProvider(baseTrack));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 11.0),
@@ -96,7 +100,11 @@ class MiniPlayer extends ConsumerWidget {
                 onPressed: () {
                   ref
                       .read(trackInteractionProvider)
-                      .handleToggleLike(track.id, track.isLiked);
+                      .handleToggleLike(
+                        track.id,
+                        track.isLiked,
+                        currentTrack: track,
+                      );
                 },
               ),
             ],

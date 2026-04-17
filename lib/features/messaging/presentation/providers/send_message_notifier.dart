@@ -6,6 +6,7 @@ import 'package:rythmify/features/messaging/domain/usecases/start_conversation_u
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 
 /// Notifier that manages the state of sending a message or starting a conversation.
 ///
@@ -37,7 +38,11 @@ class SendMessageNotifier extends StateNotifier<bool> {
     state = true;
     if (conversationId != null) {
       final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
-      await (uCase(conversationId, body, trackId, playlistId));
+      final message = await (uCase(conversationId, body, trackId, playlistId));
+
+      final socket = ref.read(socketProvider);
+      socket.sendMessage(conversationId, {'messageId': message.messageId});
+
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(conversationId));
       state = false;

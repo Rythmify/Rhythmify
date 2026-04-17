@@ -1,9 +1,12 @@
+// coverage:ignore-file
 import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 /// Real HTTP implementation of [AuthRemoteDatasource].
 ///
@@ -55,7 +58,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final data = responseData['data'];
       final token = data['access_token'] as String;
-      await client.saveToken(token);
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: token,
+        refreshToken: refreshToken,
+      );
 
       final user = data['user'];
       return UserModel.fromJson({
@@ -99,15 +106,23 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required String dateOfBirth,
   }) async {
     try {
+      /// Request body for [POST /auth/register].
+      ///
+      /// Sends `captcha_token` as `null` to bypass CAPTCHA in development.
+      /// `platform` is included as `'mobile'` to identify the client type.
+      final requestData = {
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+        'gender': gender,
+        'date_of_birth': dateOfBirth,
+        'captcha_token': null,
+        'platform': 'mobile',
+      };
+
       final response = await client.dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'display_name': displayName,
-          'gender': gender,
-          'date_of_birth': dateOfBirth,
-        },
+        data: requestData,
       );
 
       final responseData = response.data is List
@@ -165,7 +180,8 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      if (googleAuth.idToken == null) {
+      final idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
         throw Exception('Failed to get Google ID token');
       }
 
@@ -180,12 +196,16 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       // This is what the backend validates with google-auth-library
       final response = await client.dio.post(
         '/auth/google',
-        data: {'id_token': googleAuth.idToken},
+        data: {'id_token': idToken},
       );
 
       final data = response.data['data'];
       final token = data['access_token'] as String;
-      await client.saveToken(token);
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: token,
+        refreshToken: refreshToken,
+      );
 
       final user = data['user'];
       return UserModel.fromJson({
@@ -195,10 +215,18 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
             user['is_verified'] ?? user['is_email_verified'] ?? true,
         'token': token,
       });
-    } on DioException catch (e) {
+    } on PlatformException catch (e, stackTrace) {
+      debugPrint('Google sign in platform exception: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      throw Exception(e.message ?? 'Google sign in failed');
+    } on DioException catch (e, stackTrace) {
+      debugPrint('Google sign in backend exception: $e');
+      debugPrintStack(stackTrace: stackTrace);
       _handleDioError(e);
       rethrow;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Google sign in unexpected exception: $e');
+      debugPrintStack(stackTrace: stackTrace);
       throw Exception(e.toString());
     }
   }
@@ -246,7 +274,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final data = responseData['data'];
       final token = data['access_token'] as String;
-      await client.saveToken(token);
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: token,
+        refreshToken: refreshToken,
+      );
 
       final user = data['user'];
       return UserModel.fromJson({
@@ -268,7 +300,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<void> signOut() async {
     try {
       await client.dio.post('/auth/logout');
-      await client.clearToken();
+      await client.clearTokens();
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

@@ -135,7 +135,8 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   key: const Key(
                     'authentication_login_password_forgot_password_gesture_detector',
                   ),
-                  onTap: () {},
+                  onTap: () =>
+                      context.push('/forgot-password', extra: widget.email),
                   child: Text(
                     'Forgot password?',
                     style: AppTheme.bodyMedium.copyWith(color: AppTheme.link),

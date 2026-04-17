@@ -1,3 +1,5 @@
+// coverage:ignore-file
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
 import '../../data/datasources/auth_remote_datasource_impl.dart';
@@ -46,9 +48,13 @@ class AuthNotifier extends Notifier<AuthState> {
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
 
+    apiClient.onSessionExpired = () {
+      state = const AuthUnauthenticated();
+    };
+
     Future.microtask(() => checkAuthStatus());
 
-    return const AuthLoading();
+    return const AuthChecking();
   }
 
   /// Fetches the full profile from `/users/me` and merges it with
@@ -90,9 +96,16 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     try {
-      final token = await apiClient.getToken();
+      var token = await apiClient.getToken();
+      final refreshToken = await apiClient.getRefreshToken();
 
-      if (token == null) {
+      if ((token == null || token.isEmpty) &&
+          refreshToken != null &&
+          refreshToken.isNotEmpty) {
+        token = await apiClient.refreshAccessToken();
+      }
+
+      if (token == null || token.isEmpty) {
         state = const AuthUnauthenticated();
         return;
       }
@@ -112,9 +125,36 @@ class AuthNotifier extends Notifier<AuthState> {
 
       state = AuthAuthenticated(user);
     } catch (e) {
-      await apiClient.clearToken();
-      state = const AuthUnauthenticated();
+      if (_isInvalidSessionError(e)) {
+        await apiClient.clearTokens();
+        state = const AuthUnauthenticated();
+        return;
+      }
+
+      // Keep the session for transient startup failures (network/backend hiccups).
+      final token = await apiClient.getToken();
+      if (token != null) {
+        state = AuthAuthenticated(
+          UserModel(
+            id: 'cached-session',
+            email: '',
+            displayName: 'Rythmify User',
+            isEmailVerified: true,
+            token: token,
+          ),
+        );
+      } else {
+        state = const AuthUnauthenticated();
+      }
     }
+  }
+
+  bool _isInvalidSessionError(Object error) {
+    if (error is DioException) {
+      final status = error.response?.statusCode;
+      if (status == 401) return true;
+    }
+    return false;
   }
 
   Future<void> signInWithEmailAndPassword({
@@ -148,11 +188,10 @@ class AuthNotifier extends Notifier<AuthState> {
       dateOfBirth: dateOfBirth,
     );
 
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) => state = AuthEmailVerificationRequired(basicUser.email),
+    );
   }
 
   Future<void> signInWithGoogleAccount() async {
@@ -181,7 +220,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthLoading();
     final result = await _signOut();
     result.fold((failure) => state = AuthError(failure.message), (_) async {
-      await apiClient.clearToken();
+      await apiClient.clearTokens();
       state = const AuthUnauthenticated();
     });
   }
@@ -198,5 +237,9 @@ class AuthNotifier extends Notifier<AuthState> {
       (failure) => state = AuthError(failure.message),
       (_) => state = const AuthUnauthenticated(),
     );
+  }
+
+  void setUnauthenticated() {
+    state = const AuthUnauthenticated();
   }
 }

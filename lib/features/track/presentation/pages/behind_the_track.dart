@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../widgets/fans_leaderboard.dart';
@@ -61,7 +62,7 @@ class BehindTheTrackPage extends ConsumerWidget {
                           Icons.cast,
                           color: AppTheme.appBarItems,
                         ),
-                        onPressed: () {},
+                        onPressed: () => showCastMediaSheet(context, ref),
                         style: IconButton.styleFrom(
                           backgroundColor: AppTheme.surface,
                           shape: const CircleBorder(),

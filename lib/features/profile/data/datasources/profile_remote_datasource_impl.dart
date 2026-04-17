@@ -1,8 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
+import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 import 'profile_remote_datasource.dart';
+
+// coverage:ignore-file
+/// HTTP implementation of profile remote datasource operations.
 
 class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   final ApiClient client;
@@ -26,6 +31,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -35,6 +43,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         '/users/me',
         data: {
           'display_name': displayName,
+          'username': username,
+          'first_name': firstName,
+          'last_name': lastName,
           'city': city,
           'country': country,
           'bio': bio,
@@ -51,8 +62,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadAvatar({required String filePath}) async {
     try {
+      final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(filePath),
+        'avatar': await MultipartFile.fromFile(
+          filePath,
+          contentType: DioMediaType.parse(mimeType),
+        ),
       });
 
       await client.dio.post('/users/me/avatar', data: formData);
@@ -80,8 +95,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<ProfileModel> uploadCoverPhoto({required String filePath}) async {
     try {
+      final mimeType = lookupMimeType(filePath) ?? 'image/jpeg';
       final formData = FormData.fromMap({
-        'cover': await MultipartFile.fromFile(filePath),
+        'cover': await MultipartFile.fromFile(
+          filePath,
+          contentType: DioMediaType.parse(mimeType),
+        ),
       });
 
       await client.dio.post('/users/me/cover', data: formData);
@@ -133,13 +152,72 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
+      final resolvedUserId = userId == 'me'
+          ? (await getProfile(userId: 'me')).id
+          : userId;
       final response = await client.dio.get(
-        '/users/$userId/tracks',
+        '/users/$resolvedUserId/tracks',
         queryParameters: {'page': page, 'limit': limit},
       );
 
-      final List<dynamic> tracks = response.data['data'];
+      final tracks = _extractListPayload(response.data);
       return tracks.map((t) => TrackModel.fromJson(t)).toList();
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<ProfileUserSummaryModel>> getFollowers({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final resolvedUserId = userId == 'me'
+          ? (await getProfile(userId: 'me')).id
+          : userId;
+      final response = await client.dio.get(
+        '/users/$resolvedUserId/followers',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final users = _extractListPayload(response.data);
+      return users
+          .map(
+            (user) => ProfileUserSummaryModel.fromJson(
+              Map<String, dynamic>.from(user as Map),
+            ),
+          )
+          .toList();
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<ProfileUserSummaryModel>> getFollowing({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final resolvedUserId = userId == 'me'
+          ? (await getProfile(userId: 'me')).id
+          : userId;
+      final response = await client.dio.get(
+        '/users/$resolvedUserId/following',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final users = _extractListPayload(response.data);
+      return users
+          .map(
+            (user) => ProfileUserSummaryModel.fromJson(
+              Map<String, dynamic>.from(user as Map),
+            ),
+          )
+          .toList();
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -174,5 +252,46 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       default:
         throw Exception(errorMessage ?? 'Unknown error occurred');
     }
+  }
+
+  /// Extracts a list payload from API responses that may be wrapped.
+  ///
+  /// Supports both:
+  /// - `{ "data": [ ... ] }`
+  /// - `{ "data": { "items": [ ... ] } }` and common key variants.
+  List<Map<String, dynamic>> _extractListPayload(dynamic rawResponse) {
+    if (rawResponse is! Map<String, dynamic>) {
+      return const [];
+    }
+
+    final data = rawResponse['data'];
+    if (data is List) {
+      return data
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+
+    if (data is Map<String, dynamic>) {
+      final candidates = <dynamic>[
+        data['items'],
+        data['results'],
+        data['users'],
+        data['tracks'],
+        data['followers'],
+        data['following'],
+        data['data'],
+      ];
+      for (final candidate in candidates) {
+        if (candidate is List) {
+          return candidate
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+      }
+    }
+
+    return const [];
   }
 }

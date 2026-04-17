@@ -4,18 +4,11 @@
 ///
 /// This entity holds all metadata and file references required
 /// before sending the track to the backend.
-///
-/// Responsibilities:
-/// - Store audio file path, duration, and metadata
-/// - Track upload state (status + progress)
-/// - Provide immutable updates using copyWith()
-///
-/// Notes:
-/// - This is NOT the final Track entity (handled in M9)
-/// - This is only used during the upload process
 enum UploadStatus { draft, uploading, success, error }
 
 class TrackDraft {
+  final String? trackId; // null for new uploads, present for updates
+  final String? remoteArtworkUrl; // track's existing cover image URL
   //added recently
   final String? audioFileName;
   // Known at creation
@@ -45,13 +38,15 @@ class TrackDraft {
   int get checklistCount {
     int count = 0;
     if (title != null && title!.trim().isNotEmpty) count++;
-    if (localArtworkPath != null) count++;
+    if (localArtworkPath != null || remoteArtworkUrl != null) count++;
     if (genre != null && genre!.trim().isNotEmpty) count++;
     if (description != null && description!.trim().isNotEmpty) count++;
     return count; // 0 to 4
   }
 
   const TrackDraft({
+    this.trackId,
+    this.remoteArtworkUrl,
     this.audioFileName,
     required this.artistId,
     required this.localAudioPath,
@@ -71,9 +66,9 @@ class TrackDraft {
   });
 
   TrackDraft copyWith({
-    //added recently
+    String? trackId,
+    String? remoteArtworkUrl,
     String? audioFileName,
-
     String? artistId,
     String? localAudioPath,
     Duration? duration,
@@ -87,16 +82,16 @@ class TrackDraft {
     bool? isPublic,
     UploadStatus? status,
     double? uploadProgress,
-    UploadStatus? audioStatus, // ← ADD
-    double? audioUploadProgress, // ← ADD
+    UploadStatus? audioStatus,
+    double? audioUploadProgress,
     bool clearArtwork = false,
     bool clearDescription = false,
     bool clearCaption = false,
   }) {
     return TrackDraft(
-      //added recently
+      trackId: trackId ?? this.trackId,
+      remoteArtworkUrl: remoteArtworkUrl ?? this.remoteArtworkUrl,
       audioFileName: audioFileName ?? this.audioFileName,
-
       artistId: artistId ?? this.artistId,
       localAudioPath: localAudioPath ?? this.localAudioPath,
       duration: duration ?? this.duration,
@@ -112,18 +107,12 @@ class TrackDraft {
       isPublic: isPublic ?? this.isPublic,
       status: status ?? this.status,
       uploadProgress: uploadProgress ?? this.uploadProgress,
-      audioStatus: audioStatus ?? this.audioStatus, // ← ADD
+      audioStatus: audioStatus ?? this.audioStatus,
       audioUploadProgress: audioUploadProgress ?? this.audioUploadProgress,
     );
   }
 
   @override
   String toString() =>
-      'TrackDraft('
-      'title: $title, '
-      'artist: $artist, '
-      'genre: $genre, '
-      'status: $status, '
-      'progress: $uploadProgress'
-      ')';
+      'TrackDraft(title: $title, artist: $artist, genre: $genre, status: $status, progress: $uploadProgress)';
 }

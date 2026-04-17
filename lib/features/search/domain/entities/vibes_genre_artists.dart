@@ -1,3 +1,4 @@
+/// Represents an artist entry displayed on a genre/vibes page.
 class GenreArtist {
   final String id;
   final String displayName;
@@ -5,6 +6,8 @@ class GenreArtist {
   final String profilePicture;
   final bool isVerified;
   final int followerCount;
+
+  /// Number of tracks this artist has within the specific genre.
   final int trackCountInGenre;
 
   const GenreArtist({

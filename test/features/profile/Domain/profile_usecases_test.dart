@@ -122,6 +122,9 @@ void main() {
       when(
         () => mockRepository.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -130,6 +133,9 @@ void main() {
 
       final result = await useCase(
         displayName: 'KarimWI',
+        username: 'karimwi',
+        firstName: 'Karim',
+        lastName: 'Wi',
         city: 'Giza',
         country: 'EG',
         bio: 'Music producer',
@@ -142,6 +148,9 @@ void main() {
       when(
         () => mockRepository.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -153,6 +162,9 @@ void main() {
 
       final result = await useCase(
         displayName: '',
+        username: '',
+        firstName: '',
+        lastName: '',
         city: 'Giza',
         country: 'EG',
         bio: '',
@@ -165,6 +177,9 @@ void main() {
       when(
         () => mockRepository.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -173,6 +188,9 @@ void main() {
 
       await useCase(
         displayName: 'NewName',
+        username: 'newname',
+        firstName: 'New',
+        lastName: 'Name',
         city: 'Cairo',
         country: 'EG',
         bio: 'New bio',
@@ -181,6 +199,9 @@ void main() {
       verify(
         () => mockRepository.updateProfile(
           displayName: 'NewName',
+          username: 'newname',
+          firstName: 'New',
+          lastName: 'Name',
           city: 'Cairo',
           country: 'EG',
           bio: 'New bio',
@@ -192,6 +213,9 @@ void main() {
       when(
         () => mockRepository.updateProfile(
           displayName: any(named: 'displayName'),
+          username: any(named: 'username'),
+          firstName: any(named: 'firstName'),
+          lastName: any(named: 'lastName'),
           city: any(named: 'city'),
           country: any(named: 'country'),
           bio: any(named: 'bio'),
@@ -200,6 +224,9 @@ void main() {
 
       final result = await useCase(
         displayName: 'KarimWI',
+        username: 'karimwi',
+        firstName: 'Karim',
+        lastName: 'Wi',
         city: 'Giza',
         country: 'EG',
         bio: '',
@@ -422,11 +449,10 @@ void main() {
 
         final result = await useCase(userId: 'user-001');
 
-        expect((result as Left).value, isA<ServerFailure>());
-        expect(
-          ((result).value as ServerFailure).message,
-          contains('FOLLOW_SELF'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<ServerFailure>());
+          expect((failure as ServerFailure).message, contains('FOLLOW_SELF'));
+        }, (_) => fail('Expected Left(ServerFailure), got Right'));
       },
     );
 
@@ -617,6 +643,4 @@ void main() {
   });
 }
 
-extension on Either<Failure, void> {
-  dynamic get value => null;
-}
+extension on Either<Failure, void> {}

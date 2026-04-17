@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 
+/// Reusable social-provider login button used across auth screens.
 enum SocialProvider { google, apple, facebook }
 
 class SocialLoginButton extends StatelessWidget {

@@ -1,87 +1,12 @@
 {
   "data": {
-    "genre-1": {
-      "genre_id": "genre-1",
-      "genre_name": "Electronic",
-      "tracks": [ {
-            "id": "2",
-            "title": "Summer Vibes",
-            "cover_image": "assets/images/track_2.jpg",
-            "duration": 213,
-            "genre_name": "Electronic",
-            "play_count": 4200,
-            "like_count": 312,
-            "repost_count": 47,
-            "user_id": "u1",
-            "artist_name": "DJ Karim",
-            "stream_url": "assets/audio/Track_audio_1.mp3",
-            "created_at": "2026-03-01T10:00:00Z"
-          },
-          {
-            "id": "3",
-            "title": "Track2",
-            "cover_image": "assets/images/track_5.jpg",
-            "duration": 213,
-            "genre_name": "Electronic",
-            "play_count": 4200,
-            "like_count": 312,
-            "repost_count": 47,
-            "user_id": "u1",
-            "artist_name": "DJ Karim",
-            "stream_url": "assets/audio/Track_audio_2.mp3",
-            "created_at": "2026-03-01T10:00:00Z"
-          }
-          ,
-          {
-            "id": "4",
-            "title": "Track3",
-            "cover_image": "assets/images/track_4.jpg",
-            "duration": 213,
-            "genre_name": "Electronic",
-            "play_count": 4200,
-            "like_count": 312,
-            "repost_count": 47,
-            "user_id": "u1",
-            "artist_name": "DJ Karim",
-            "stream_url": "assets/audio/Track_audio_3.mp3",
-            "created_at": "2026-03-01T10:00:00Z"
-          }]
-    },
+
     "genre-2": {
       "genre_id": "genre-2",
       "genre_name": "Hip-Hop",
       "tracks": [{
-            "id": "2",
-            "title": "track4",
-            "cover_image": "assets/images/track_2.jpg",
-            "duration": 213,
-            "genre_name": "Electronic",
-            "play_count": 4200,
-            "like_count": 312,
-            "repost_count": 47,
-            "user_id": "u1",
-            "artist_name": "DJ Karim",
-            "stream_url": "assets/audio/Track_audio_1.mp3",
-            "created_at": "2026-03-01T10:00:00Z"
-          },
-          {
-            "id": "3",
-            "title": "Track5",
-            "cover_image": "assets/images/track_5.jpg",
-            "duration": 213,
-            "genre_name": "Electronic",
-            "play_count": 4200,
-            "like_count": 312,
-            "repost_count": 47,
-            "user_id": "u1",
-            "artist_name": "DJ Karim",
-            "stream_url": "assets/audio/Track_audio_2.mp3",
-            "created_at": "2026-03-01T10:00:00Z"
-          }
-          ,
-          {
-            "id": "4",
-            "title": "Track6",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Street Poetry",
             "cover_image": "assets/images/track_4.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -89,7 +14,36 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "King Rell",
+            "stream_url": "assets/audio/Track_audio_1.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          },
+          {
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Late Night Drive",
+            "cover_image": "assets/images/track_8.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "Rico Verse",
+            "stream_url": "assets/audio/Track_audio_2.mp3",
+            "created_at": "2026-03-01T10:00:00Z"
+          }
+          ,
+          {
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "City Shadows",
+            "cover_image": "assets/images/track_3.jpg",
+            "duration": 213,
+            "genre_name": "Electronic",
+            "play_count": 4200,
+            "like_count": 312,
+            "repost_count": 47,
+            "user_id": "u1",
+            "artist_name": "D-Sway",
             "stream_url": "assets/audio/Track_audio_3.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           } ]
@@ -98,22 +52,22 @@
       "genre_id": "genre-3",
       "genre_name": "R&B",
       "tracks": [{
-            "id": "2",
-            "title": "track7",
-            "cover_image": "assets/images/track_2.jpg",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Stay With Me",
+            "cover_image": "assets/images/track_6.jpg",
             "duration": 213,
             "genre_name": "Electronic",
             "play_count": 4200,
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Sienna Blue",
             "stream_url": "assets/audio/Track_audio_1.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           },
           {
-            "id": "3",
-            "title": "Track8",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Velvet Nights",
             "cover_image": "assets/images/track_5.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -121,22 +75,22 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Jace Harmony",
             "stream_url": "assets/audio/Track_audio_2.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
           ,
           {
-            "id": "4",
-            "title": "Track9",
-            "cover_image": "assets/images/track_4.jpg",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Tender Lines",
+            "cover_image": "assets/images/track_1.jpg",
             "duration": 213,
             "genre_name": "Electronic",
             "play_count": 4200,
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Marcus Vale",
             "stream_url": "assets/audio/Track_audio_3.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           } ]
@@ -145,8 +99,8 @@
       "genre_id": "genre-4",
       "genre_name": "Country",
       "tracks": [ {
-            "id": "2",
-            "title": "track10",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Dust on My Boots",
             "cover_image": "assets/images/track_2.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -154,28 +108,28 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Cole Rivers",
             "stream_url": "assets/audio/Track_audio_1.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           },
           {
-            "id": "3",
-            "title": "Track11",
-            "cover_image": "assets/images/track_5.jpg",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Highway Heartbreak",
+            "cover_image": "assets/images/track_9.jpg",
             "duration": 213,
             "genre_name": "Electronic",
             "play_count": 4200,
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Cole Rivers",
             "stream_url": "assets/audio/Track_audio_2.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
           ,
           {
-            "id": "4",
-            "title": "Track12",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Broken Fences",
             "cover_image": "assets/images/track_4.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -183,7 +137,7 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Cole Rivers",
             "stream_url": "assets/audio/Track_audio_3.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           } ]
@@ -192,22 +146,22 @@
       "genre_id": "genre-5",
       "genre_name": "Indie",
       "tracks": [ {
-            "id": "2",
-            "title": "track13",
-            "cover_image": "assets/images/track_2.jpg",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Ghosts of Summer",
+            "cover_image": "assets/images/track_7.jpg",
             "duration": 213,
             "genre_name": "Electronic",
             "play_count": 4200,
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "The Hollow Pines",
             "stream_url": "assets/audio/Track_audio_1.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           },
           {
-            "id": "3",
-            "title": "Track14",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Wanderlight",
             "cover_image": "assets/images/track_5.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -215,22 +169,22 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Echo Bloom",
             "stream_url": "assets/audio/Track_audio_2.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
           ,
           {
-            "id": "4",
-            "title": "Track15",
-            "cover_image": "assets/images/track_4.jpg",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Open Windows",
+            "cover_image": "assets/images/track_3.jpg",
             "duration": 213,
             "genre_name": "Electronic",
             "play_count": 4200,
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "Atlas June",
             "stream_url": "assets/audio/Track_audio_3.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           } ]
@@ -239,8 +193,8 @@
       "genre_id": "genre-6",
       "genre_name": "Classic",
       "tracks": [ {
-            "id": "2",
-            "title": "track16",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Symphony of Dawn",
             "cover_image": "assets/images/track_2.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -248,13 +202,13 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "The Royal Philharmonic Ensemble",
             "stream_url": "assets/audio/Track_audio_1.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           },
           {
-            "id": "3",
-            "title": "Track17",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Waltz of Memories",
             "cover_image": "assets/images/track_5.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -262,14 +216,14 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "The Royal Philharmonic Ensemble",
             "stream_url": "assets/audio/Track_audio_2.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           }
           ,
           {
-            "id": "4",
-            "title": "Track18",
+            "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+            "title": "Strings of Eternity",
             "cover_image": "assets/images/track_4.jpg",
             "duration": 213,
             "genre_name": "Electronic",
@@ -277,7 +231,7 @@
             "like_count": 312,
             "repost_count": 47,
             "user_id": "u1",
-            "artist_name": "DJ Karim",
+            "artist_name": "The Royal Philharmonic Ensemble",
             "stream_url": "assets/audio/Track_audio_3.mp3",
             "created_at": "2026-03-01T10:00:00Z"
           } ]

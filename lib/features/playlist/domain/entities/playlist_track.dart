@@ -1,10 +1,14 @@
 // ============================================================
 // PlaylistTrack
 // ============================================================
-// Represents one track row inside a playlist.
-// This is different from your partner's Track entity — it's
-// a lighter version that only carries what the playlist UI needs.
-// ============================================================
+/// Lightweight track model used inside playlist UI.
+/// Carries only what the playlist screens need to render a row.
+/// [fromTrack] converts a full [Track] entity into this model.
+/// [trackId] holds a reference back to the original [Track] so the
+/// player can receive full entities when the user taps a row.
+library;
+
+import '../../../../core/domain/entities/track.dart';
 
 class PlaylistTrack {
   const PlaylistTrack({
@@ -14,29 +18,30 @@ class PlaylistTrack {
     required this.duration,
     required this.playCount,
     required this.position,
+    this.trackId, // ← original Track.id for player lookup
     this.coverUrl,
     this.isLiked = false,
     this.isUnavailable = false,
   });
 
   final String id;
+  final String? trackId; // ← keep a reference back to the real Track
   final String title;
   final String artistName;
   final Duration duration;
   final int playCount;
 
-  /// 1-based position in the playlist. 0 means "not in a playlist yet"
-  /// (used for suggestion tracks).
+  /// 1-based position in the playlist.
+  /// 0 means "not in a playlist yet" (suggestion tracks).
   final int position;
 
   final String? coverUrl;
   final bool isLiked;
 
-  /// True when the track is geo-restricted or removed.
-  /// SoundCloud shows a pin icon and "Not available" in this case.
+  /// True when geo-restricted or removed from the platform.
   final bool isUnavailable;
 
-  // ── Formatters ───────────────────────────────────────────────
+  // ── Formatters ─────────────────────────────────────────────
 
   /// "3:31", "1:10", etc.
   String get formattedDuration {
@@ -45,7 +50,7 @@ class PlaylistTrack {
     return '$m:$s';
   }
 
-  /// "99K", "1.9M", "41", etc. — same as SoundCloud's display.
+  /// "99K", "1.9M", "41", etc.
   String get formattedPlayCount {
     if (playCount >= 1000000) {
       return '${(playCount / 1000000).toStringAsFixed(1)}M';
@@ -56,9 +61,12 @@ class PlaylistTrack {
     return '$playCount';
   }
 
+  // ── copyWith ───────────────────────────────────────────────
+
   PlaylistTrack copyWith({int? position, bool? isLiked}) {
     return PlaylistTrack(
       id: id,
+      trackId: trackId, // ← preserved
       title: title,
       artistName: artistName,
       duration: duration,
@@ -67,6 +75,25 @@ class PlaylistTrack {
       coverUrl: coverUrl,
       isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
+    );
+  }
+
+  // ── Track integration ──────────────────────────────────────
+
+  /// Creates a PlaylistTrack from Track entity.
+  /// [position] is 1-based; pass 0 for suggestion tracks.
+  factory PlaylistTrack.fromTrack(Track track, {int position = 0}) {
+    return PlaylistTrack(
+      id: track.id,
+      trackId: track.id, // ← same for now; diverges when duplicates exist
+      title: track.title,
+      artistName: track.artist,
+      duration: track.duration,
+      playCount: track.playCount,
+      position: position,
+      coverUrl: track.artworkUrl, // getter: coverImage ?? ''
+      isLiked: track.isLiked,
+      isUnavailable: false,
     );
   }
 }

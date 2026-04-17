@@ -16,10 +16,9 @@ class DiscoverWithStationsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Discover with Stations", style: AppTheme.titleLarge),
+          padding: const EdgeInsets.only(bottom: 6, left: 16),
+          child: Text("Discover with Stations", style: AppTheme.homeTitle),
         ),
-        const SizedBox(height: 15),
         asyncStations.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text(
@@ -83,13 +82,13 @@ class StationCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1),
                   border: Border.all(color: Colors.grey, width: 0.5),
-                  image: DecorationImage(
-                    image: imagePath.isNotEmpty && imagePath.startsWith('http')
-                        ? NetworkImage(imagePath)
-                        : const AssetImage('assets/images/track_1.jpg')
-                              as ImageProvider,
-                    fit: BoxFit.cover,
-                  ),
+                  color: Colors.grey[900], // dark background when no image
+                  image: imagePath.isNotEmpty && imagePath.startsWith('http')
+                      ? DecorationImage(
+                          image: NetworkImage(imagePath),
+                          fit: BoxFit.cover,
+                        )
+                      : null, // no image — just shows the dark background
                 ),
               ),
               Positioned(

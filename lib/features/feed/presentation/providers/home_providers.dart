@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/home_datasource.dart';
+
+import 'package:flutter/foundation.dart';
+import '../../data/datasources/home_mock_datasource.dart';
+import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../domain/usecases/get_home_data.dart';
 import '../../domain/usecases/get_trending_tracks.dart';
@@ -13,25 +16,21 @@ import '../../domain/entities/hot_for_you.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
-import 'package:http/http.dart' as http;
+import '../../../../core/network/api_client.dart';
 
-// ====================
-//  --- The Switch ---
-// ====================
-const bool _useMock = true;
+const bool useMock = true;
 
-final datasourceProvider = Provider(
-  (ref) => HomeDatasource(
-    client: http.Client(),
-    baseUrl:
-        'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1',
-    mockOnly: _useMock,
-  ),
+final remoteDatasourceProvider = Provider(
+  (ref) => HomeRemoteDatasource(dio: apiClient.dio),
 );
+final mockDatasourceProvider = Provider((ref) => HomeMockDatasource());
 
-final repositoryProvider = Provider(
-  (ref) => HomeRepositoryImpl(ref.read(datasourceProvider)),
-);
+final repositoryProvider = Provider((ref) {
+  if (useMock) {
+    return HomeRepositoryImpl.mock(ref.read(mockDatasourceProvider));
+  }
+  return HomeRepositoryImpl.remote(ref.read(remoteDatasourceProvider));
+});
 
 // ====== Use Case Providers ======
 
@@ -61,8 +60,11 @@ final getDiscoverStationsUseCaseProvider = Provider(
 
 // ====== UI State Providers ======
 
-final homeDataProvider = FutureProvider<HomeData>((ref) {
-  return ref.watch(getHomeDataProvider).call();
+final homeDataProvider = FutureProvider<HomeData>((ref) async {
+  final data = await ref.watch(getHomeDataProvider).call();
+  debugPrint('mixedForYou count: ${data.mixedForYou.length}');
+  debugPrint('moreOfWhatYouLike count: ${data.moreOfWhatYouLike.length}');
+  return data;
 });
 
 final trendingByGenreProvider = FutureProvider.family<GenreTabTracks, String>((
@@ -76,14 +78,16 @@ final hotForYouProvider = FutureProvider<HotForYou>((ref) {
   return ref.watch(getHotForYouProvider).call();
 });
 
-final moreOfWhatYouLikeProvider = FutureProvider<List<Track>>((ref) {
-  return ref.watch(getMoreOfWhatYouLikeUseCaseProvider).call();
+final moreOfWhatYouLikeProvider = Provider<AsyncValue<List<Track>>>((ref) {
+  return ref.watch(homeDataProvider).whenData((h) => h.moreOfWhatYouLike);
 });
 
-final mixedForYouProvider = FutureProvider<List<MixedForYouItem>>((ref) {
-  return ref.watch(getMixedForYouUseCaseProvider).call();
+final mixedForYouProvider = Provider<AsyncValue<List<MixedForYouItem>>>((ref) {
+  return ref.watch(homeDataProvider).whenData((h) => h.mixedForYou);
 });
 
-final discoverStationsProvider = FutureProvider<List<DiscoverStation>>((ref) {
-  return ref.watch(getDiscoverStationsUseCaseProvider).call();
+final discoverStationsProvider = Provider<AsyncValue<List<DiscoverStation>>>((
+  ref,
+) {
+  return ref.watch(homeDataProvider).whenData((h) => h.discoverWithStations);
 });

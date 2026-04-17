@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../../../../core/data/models/track_dto.dart';
 import '../models/library_models.dart';
 import 'library_remote_datasource.dart';
 
@@ -107,44 +108,51 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
 
   static final List<UploadedTrackModel> _uploads = [
     UploadedTrackModel(
-      id: 'track-u1',
-      title: 'Cairo Nights v2',
-      artworkUrl: 'https://picsum.photos/seed/t1/300/300',
-      playCount: 4200,
-      likeCount: 87,
+      track: TrackDto.fromJson({
+        'id': 'track-u1',
+        'title': 'Cairo Nights v2',
+        'artwork_url': 'https://picsum.photos/seed/t1/300/300',
+        'play_count': 4200,
+        'like_count': 87,
+        'created_at': DateTime(2026, 3, 1).toIso8601String(),
+      }),
       isPublic: true,
       status: 'ready',
-      createdAt: DateTime(2026, 3, 1),
     ),
     UploadedTrackModel(
-      id: 'track-u2',
-      title: 'Desert Echo (Remaster)',
-      artworkUrl: 'https://picsum.photos/seed/t7/300/300',
-      playCount: 3400,
-      likeCount: 61,
+      track: TrackDto.fromJson({
+        'id': 'track-u2',
+        'title': 'Desert Echo (Remaster)',
+        'artwork_url': 'https://picsum.photos/seed/t7/300/300',
+        'play_count': 3400,
+        'like_count': 61,
+        'created_at': DateTime(2026, 2, 14).toIso8601String(),
+      }),
       isPublic: true,
       status: 'ready',
-      createdAt: DateTime(2026, 2, 14),
     ),
     UploadedTrackModel(
-      id: 'track-u3',
-      title: 'Pyramids at Dusk',
-      artworkUrl: 'https://picsum.photos/seed/t11/300/300',
-      playCount: 0,
-      likeCount: 0,
+      track: TrackDto.fromJson({
+        'id': 'track-u3',
+        'title': 'Pyramids at Dusk',
+        'artwork_url': 'https://picsum.photos/seed/t11/300/300',
+        'play_count': 0,
+        'like_count': 0,
+        'created_at': DateTime(2026, 3, 5).toIso8601String(),
+      }),
       isPublic: false,
       status: 'processing',
-      createdAt: DateTime(2026, 3, 5),
     ),
     UploadedTrackModel(
-      id: 'track-u4',
-      title: 'Old Draft WIP',
-      artworkUrl: null,
-      playCount: 120,
-      likeCount: 3,
+      track: TrackDto.fromJson({
+        'id': 'track-u4',
+        'title': 'Old Draft WIP',
+        'play_count': 120,
+        'like_count': 3,
+        'created_at': DateTime(2025, 10, 10).toIso8601String(),
+      }),
       isPublic: false,
       status: 'ready',
-      createdAt: DateTime(2025, 10, 10),
     ),
   ];
 
@@ -324,14 +332,9 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
     if (idx != -1) {
       final t = _uploads[idx];
       _uploads[idx] = UploadedTrackModel(
-        id: t.id,
-        title: t.title,
-        artworkUrl: t.artworkUrl,
-        playCount: t.playCount,
-        likeCount: t.likeCount,
+        track: t.track,
         isPublic: isPublic,
         status: t.status,
-        createdAt: t.createdAt,
       );
     }
   }

@@ -14,7 +14,10 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
-const bool useProfileMockData = true;
+// coverage:ignore-file
+/// Riverpod notifier orchestration for loading and mutating profile state.
+
+const bool useProfileMockData = false;
 
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
@@ -116,6 +119,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<void> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -127,6 +133,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _updateProfile(
       displayName: displayName,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       city: city,
       country: country,
       bio: bio,

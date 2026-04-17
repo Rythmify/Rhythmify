@@ -6,6 +6,7 @@ import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 
+/// Account creation step for collecting display name and initial profile data.
 class CreateAccountProfilePage extends ConsumerStatefulWidget {
   final String email;
   final String password;
@@ -147,6 +148,9 @@ class _CreateAccountProfilePageState
       }
       if (next is AuthAuthenticated) {
         context.go('/home');
+      }
+      if (next is AuthEmailVerificationRequired) {
+        context.go('/verify-email', extra: next.email);
       }
     });
 

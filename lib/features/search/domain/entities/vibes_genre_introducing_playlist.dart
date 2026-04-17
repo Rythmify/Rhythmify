@@ -1,5 +1,6 @@
 import '../../../../core/domain/entities/track.dart';
 
+/// The featured playlist shown in the "Introducing" section at the top of a genre page.
 class IntroducingPlaylist {
   final String playlistId;
   final String ownerUserId;
@@ -9,7 +10,11 @@ class IntroducingPlaylist {
   final DateTime createdAt;
   final int trackCount;
   final int likeCount;
+
+  /// URL or local asset path for the playlist's cover image.
   final String coverImage;
+
+  /// A single track displayed as a preview inside the Introducing section.
   final Track previewTrack;
 
   const IntroducingPlaylist({

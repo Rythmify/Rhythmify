@@ -7,7 +7,7 @@ import 'package:rythmify/features/messaging/data/datasources/datasource_implemen
 import 'package:rythmify/features/messaging/data/datasources/mock_datasource.dart';
 
 /// toggle between mock data and real API
-const bool useMockData = true;
+const bool useMockData = false;
 
 /// Provider for the [MessagingRepository] implementation.
 ///

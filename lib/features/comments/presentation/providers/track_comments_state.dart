@@ -3,14 +3,29 @@ import '../../domain/entities/comment.dart';
 import '../../domain/repositories/comment_repository.dart';
 
 /// Holds the UI state for a paginated list of comments.
+///
+/// This state class is used by the Presentation layer to track the loaded
+/// comments, pagination metadata, and the current sorting strategy.
 class TrackCommentsState extends Equatable {
+  /// The list of currently loaded [Comment] entities.
   final List<Comment> comments;
+
+  /// The current page number fetched from the repository.
   final int currentPage;
+
+  /// Indicates whether the end of the paginated list has been reached.
   final bool hasReachedMax;
+
+  /// Indicates whether a network request is currently fetching the next page.
   final bool isFetchingNextPage;
+
+  /// The currently selected sorting strategy for the comments.
   final CommentSortType sortType;
+
+  /// The total number of root comments available for the track.
   final int totalCommentCount;
 
+  /// Creates a [TrackCommentsState] with all its required properties.
   const TrackCommentsState({
     required this.comments,
     required this.currentPage,
@@ -20,7 +35,9 @@ class TrackCommentsState extends Equatable {
     required this.totalCommentCount,
   });
 
-  /// Initial factory for a clean slate.
+  /// Factory constructor to create an initial, empty [TrackCommentsState].
+  ///
+  /// Used when the state is first initialized before any data is fetched.
   factory TrackCommentsState.initial() {
     return const TrackCommentsState(
       comments: [],
@@ -32,6 +49,7 @@ class TrackCommentsState extends Equatable {
     );
   }
 
+  /// Creates a copy of this state with the given fields replaced by new values.
   TrackCommentsState copyWith({
     List<Comment>? comments,
     int? currentPage,

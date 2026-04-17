@@ -14,8 +14,7 @@ class CustomBottomSheet {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      useRootNavigator:
-          true, // To ensures it sits above everything (mini player/navbar)
+      useRootNavigator: true,
       builder: (context) {
         return DraggableScrollableSheet(
           initialChildSize: initialChildSize,
