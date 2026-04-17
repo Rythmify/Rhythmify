@@ -2,6 +2,12 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class DataSourcesSockets {
   late io.Socket _socket;
+  String? _currentConversationId;
+  Function()? _onReconnectedToRoom;
+
+  void setOnReconnectedToRoom(Function() callback) {
+    _onReconnectedToRoom = callback;
+  }
 
   void connect(String url, String token) {
     _socket = io.io(
@@ -12,26 +18,35 @@ class DataSourcesSockets {
           .disableAutoConnect()
           .build(),
     );
-    _socket.onConnecting((_) => print('🔄 Socket connecting to $url...'));
-    _socket.onConnect((_) => print('✅ Socket connected! ID: ${_socket.id}'));
+
+    _socket.onConnect((_) {
+      print('✅ Socket connected! ID: ${_socket.id}');
+      if (_currentConversationId != null) {
+        _socket.emit('message:join', {'conversationId': _currentConversationId});
+        _onReconnectedToRoom?.call();
+      }
+    });
+
     _socket.onDisconnect((_) => print('❌ Socket disconnected'));
     _socket.onConnectError((err) => print('🚨 Connection error: $err'));
     _socket.onError((err) => print('🚨 Socket error: $err'));
-    _socket.onReconnect((_) => print('🔁 Socket reconnected'));
-    _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt:'));
-    _socket.onReconnectError((err) => print('🚨 Reconnect error: $err'));
+    _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt'));
     _socket.onReconnectFailed((_) => print('🚨 Reconnect failed'));
-
-    print('⏳ Attempting to connect to $url');
 
     _socket.connect();
   }
 
   void joinConversation(String conversationId) {
-    _socket.emit('message:join', {'conversationId': conversationId});
+    _currentConversationId = conversationId;
+    if (_socket.connected) {
+      print('🚪 Joined room: $conversationId');
+      _socket.emit('message:join', {'conversationId': conversationId});
+    }
+    // If not connected yet, onConnect will handle the join
   }
 
   void leaveConversation(String conversationId) {
+    _currentConversationId = null;
     _socket.emit('message:leave', {'conversationId': conversationId});
   }
 
@@ -75,10 +90,12 @@ class DataSourcesSockets {
   }
 
   void onTyping(Function(Map<String, dynamic>) callback) {
+    _socket.off('message:typing');
     _socket.on('message:typing', (data) => callback(data));
   }
 
   void onStopTyping(Function(Map<String, dynamic>) callback) {
+    _socket.off('message:stop_typing');
     _socket.on('message:stop_typing', (data) => callback(data));
   }
 

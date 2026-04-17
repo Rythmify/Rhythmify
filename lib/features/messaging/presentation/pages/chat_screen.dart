@@ -56,21 +56,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (!mounted) return;
         ref.invalidate(messageProvider(widget.conv!.conversationId));
         ref.invalidate(conversationProvider);
+        if(widget.conv!.participantId.isNotEmpty){
+          ref.invalidate(isBlockedProvider(widget.conv!.participantId));
+          ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+        }
         _socket.joinConversation(widget.conv!.conversationId);
-        _socket.onMessageReceived((data) {
-          print('🔥 onMessageReceived fired: $data');
-          if (mounted) {
-            ref.invalidate(messageProvider(widget.conv!.conversationId));
-            ref.invalidate(conversationProvider);
-          }
-        });
-        _socket.onMessageReadUpdated((data) {
-          if (mounted) {
-            ref.invalidate(messageProvider(widget.conv!.conversationId));
-          }
+        _setupSocketListeners(widget.conv!.conversationId);
+        _socket.setOnReconnectedToRoom(() {
+          if (mounted) _setupSocketListeners(widget.conv!.conversationId);
         });
       });
     }
+  }
+
+  void _setupSocketListeners(String conversationId) {
+    _socket.onMessageReceived((data) {
+      print('🔥 onMessageReceived fired: $data');
+      if (mounted) {
+        ref.invalidate(messageProvider(conversationId));
+        ref.invalidate(conversationProvider);
+      }
+    });
+    _socket.onMessageReadUpdated((data) {
+      if (mounted) {
+        ref.invalidate(messageProvider(conversationId));
+      }
+    });
   }
 
   @override
@@ -730,11 +741,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         setState(() => _selectedEmbeds.clear());
       }
     } catch (e) {
+      print('❌ _sendInExistingConv error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to send message. Please try again.'),
-        ),
+        SnackBar(content: Text('Send error: $e')),
       );
     }
   }
