@@ -3,35 +3,53 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Shared API client that manages authenticated HTTP requests and token refresh.
+///
+/// Token strategy:
+/// - Access token (JWT, 15 min TTL) — stored in [FlutterSecureStorage],
+///   injected via the `Authorization: Bearer` header on every request.
+/// - Refresh token (7 day TTL) — the backend sets it as an **HttpOnly cookie**
+///   on login/register. On mobile we cannot rely on the browser cookie jar,
+///   so we read the `Set-Cookie` response header after login and persist the
+///   value ourselves in [FlutterSecureStorage].  We then replay it as a
+///   `Cookie` request header when calling `POST /auth/refresh`.
+///
+/// Refresh flow (interceptor):
+/// 1. Any `401` that is NOT the refresh endpoint itself triggers a silent
+///    token refresh via [_refreshAccessToken].
+/// 2. [_refreshFuture] ensures only one in-flight refresh exists at a time
+///    (queued requests all wait for the same [Future]).
+/// 3. After a successful refresh the original request is retried once with
+///    the new access token.
+/// 4. If the refresh fails (expired / invalid refresh token) all tokens are
+///    cleared and [onSessionExpired] is invoked so the app navigates to login.
 class ApiClient {
-  // Use your computer's IP for physical phone connection
-  // Change this when we make it online
-
   static const String _baseUrl =
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
   static const String baseUrl = _baseUrl;
 
-  static const String _tokenKey = 'access_token';
+  static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   late final Dio dio;
+
+  /// Guards against concurrent refresh calls — all callers share one [Future].
   Future<String?>? _refreshFuture;
 
-  /// Called when the session becomes invalid and the app should go to login.
+  /// Called when the session becomes permanently invalid.
+  /// The app should navigate to the login screen.
   VoidCallback? onSessionExpired;
 
   ApiClient() {
     dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 15), // Increase timeout
+        connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         headers: {'Content-Type': 'application/json'},
       ),
     );
 
-    // --- ADDING VERBOSE NETWORK LOGS ---
     if (kDebugMode) {
       dio.interceptors.add(
         LogInterceptor(
@@ -43,61 +61,186 @@ class ApiClient {
         ),
       );
     }
-    // ------------------------------------
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final skipAuth = options.extra['skipAuth'] == true;
-          final token = await getToken();
-          if (!skipAuth && token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          return handler.next(options);
-        },
-        onError: (error, handler) async {
-          final request = error.requestOptions;
-          final isRefreshRequest = request.path.contains('/auth/refresh');
-          final alreadyRetried = request.extra['didRefreshRetry'] == true;
-
-          if (error.response?.statusCode == 401 &&
-              !isRefreshRequest &&
-              !alreadyRetried) {
-            try {
-              final newToken = await _refreshAccessToken();
-              if (newToken == null) {
-                await clearTokens();
-                onSessionExpired?.call();
-                return handler.next(error);
-              }
-
-              request.headers['Authorization'] = 'Bearer $newToken';
-              request.extra['didRefreshRetry'] = true;
-              final response = await dio.fetch(request);
-              return handler.resolve(response);
-            } catch (_) {
-              await clearTokens();
-              onSessionExpired?.call();
-              return handler.next(error);
-            }
-          }
-          return handler.next(error);
-        },
+        onRequest: _onRequest,
+        onResponse: _onResponse,
+        onError: _onError,
       ),
     );
   }
 
-  /// Persists a new access token.
-  Future<void> saveToken(String token) async {
-    await _storage.write(key: _tokenKey, value: token);
+  // ─── interceptor callbacks ───────────────────────────────────────────────
+
+  /// Injects the stored access token into every request unless
+  /// `options.extra['skipAuth'] == true`.
+  Future<void> _onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final skipAuth = options.extra['skipAuth'] == true;
+    if (!skipAuth) {
+      final token = await getToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    handler.next(options);
   }
 
-  /// Persists a new refresh token.
-  Future<void> saveRefreshToken(String token) async {
-    await _storage.write(key: _refreshTokenKey, value: token);
+  /// Captures `Set-Cookie` from login / register / refresh responses and
+  /// persists the `refresh_token` cookie value so we can replay it later.
+  ///
+  /// The backend sets `refresh_token=<value>; HttpOnly; ...` — we parse out
+  /// just the value and store it in secure storage.
+  Future<void> _onResponse(
+    Response response,
+    ResponseInterceptorHandler handler,
+  ) async {
+    final setCookie = response.headers['set-cookie'];
+    if (setCookie != null) {
+      for (final cookie in setCookie) {
+        if (cookie.startsWith('refresh_token=')) {
+          // Extract just the token value (everything before the first ';')
+          final value = cookie.split(';').first.split('=').skip(1).join('=');
+          if (value.isNotEmpty) {
+            await saveRefreshToken(value);
+            debugPrint('[ApiClient] refresh_token captured from Set-Cookie');
+          }
+          break;
+        }
+      }
+    }
+    handler.next(response);
   }
 
-  /// Persists both access and refresh tokens.
+  /// Silently refreshes the access token on `401` and retries the request.
+  ///
+  /// Guards:
+  /// - Does NOT retry the refresh endpoint itself (avoids infinite loops).
+  /// - Does NOT retry a request that was already retried once.
+  Future<void> _onError(
+    DioException error,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final request = error.requestOptions;
+    final isRefreshRequest = request.path.contains('/auth/refresh');
+    final alreadyRetried = request.extra['didRefreshRetry'] == true;
+
+    if (error.response?.statusCode == 401 &&
+        !isRefreshRequest &&
+        !alreadyRetried) {
+      try {
+        final newToken = await _refreshAccessToken();
+        if (newToken == null) {
+          await _expireSession();
+          return handler.next(error);
+        }
+
+        // Retry the original request with the new token.
+        request.headers['Authorization'] = 'Bearer $newToken';
+        request.extra['didRefreshRetry'] = true;
+        final response = await dio.fetch(request);
+        return handler.resolve(response);
+      } catch (_) {
+        await _expireSession();
+        return handler.next(error);
+      }
+    }
+
+    handler.next(error);
+  }
+
+  // ─── token refresh ────────────────────────────────────────────────────────
+
+  /// Public entry-point for manual refresh (used in [AuthNotifier.checkAuthStatus]).
+  Future<String?> refreshAccessToken() => _refreshAccessToken();
+
+  /// Ensures only one refresh call is in-flight at a time.
+  ///
+  /// Concurrent callers all await the same [Future] and receive the same token.
+  Future<String?> _refreshAccessToken() {
+    _refreshFuture ??= _performRefresh().whenComplete(() {
+      _refreshFuture = null;
+    });
+    return _refreshFuture!;
+  }
+
+  /// Calls `POST /auth/refresh` with the stored refresh token as a `Cookie`
+  /// header (mirrors the HttpOnly cookie the browser would send automatically).
+  ///
+  /// On success, persists the new access token and any rotated refresh token
+  /// returned in either the response body or a new `Set-Cookie` header.
+  ///
+  /// Returns `null` when:
+  /// - No refresh token is stored.
+  /// - The backend returns an empty / missing `access_token`.
+  Future<String?> _performRefresh() async {
+    final refreshToken = await getRefreshToken();
+    if (refreshToken == null || refreshToken.trim().isEmpty) {
+      debugPrint('[ApiClient] No refresh token available — cannot refresh.');
+      return null;
+    }
+
+    try {
+      final response = await dio.post(
+        '/auth/refresh',
+        options: Options(
+          extra: {'skipAuth': true}, // Don't inject the (expired) access token
+          headers: {
+            // Replay the refresh token as a cookie so the backend's
+            // cookie-parser picks it up just like a browser would.
+            'Cookie': 'refresh_token=$refreshToken',
+          },
+        ),
+      );
+
+      final data = (response.data['data'] as Map<String, dynamic>?) ?? {};
+      final newAccessToken = data['access_token'] as String?;
+
+      if (newAccessToken == null || newAccessToken.isEmpty) {
+        debugPrint('[ApiClient] Refresh response missing access_token.');
+        return null;
+      }
+
+      await saveToken(newAccessToken);
+      debugPrint('[ApiClient] Access token refreshed successfully.');
+
+      // Handle rotated refresh token in body (some backends do this).
+      final rotatedRefresh = data['refresh_token'] as String?;
+      if (rotatedRefresh != null && rotatedRefresh.isNotEmpty) {
+        await saveRefreshToken(rotatedRefresh);
+        debugPrint('[ApiClient] Refresh token rotated (from body).');
+      }
+      // Note: rotation via Set-Cookie is handled by [_onResponse].
+
+      return newAccessToken;
+    } on DioException catch (e) {
+      debugPrint(
+        '[ApiClient] Refresh request failed: ${e.response?.statusCode}',
+      );
+      return null;
+    }
+  }
+
+  /// Clears all tokens and notifies the app the session has expired.
+  Future<void> _expireSession() async {
+    await clearTokens();
+    onSessionExpired?.call();
+  }
+
+  // ─── storage helpers ─────────────────────────────────────────────────────
+
+  /// Persists [token] as the current access token.
+  Future<void> saveToken(String token) =>
+      _storage.write(key: _accessTokenKey, value: token);
+
+  /// Persists [token] as the current refresh token.
+  Future<void> saveRefreshToken(String token) =>
+      _storage.write(key: _refreshTokenKey, value: token);
+
+  /// Persists both tokens in parallel.
   Future<void> saveAuthTokens({
     required String accessToken,
     String? refreshToken,
@@ -108,68 +251,19 @@ class ApiClient {
     }
   }
 
-  /// Returns the current access token if available.
-  Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
-  }
+  /// Returns the stored access token, or `null` if none exists.
+  Future<String?> getToken() => _storage.read(key: _accessTokenKey);
 
-  /// Returns the current refresh token if available.
-  Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshTokenKey);
-  }
+  /// Returns the stored refresh token, or `null` if none exists.
+  Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
 
-  /// Clears only the access token.
-  Future<void> clearToken() async {
-    await _storage.delete(key: _tokenKey);
-  }
+  /// Deletes only the access token (keeps the refresh token).
+  Future<void> clearToken() => _storage.delete(key: _accessTokenKey);
 
-  /// Clears both access and refresh tokens.
+  /// Deletes both the access token and the refresh token.
   Future<void> clearTokens() async {
-    await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);
-  }
-
-  /// Refreshes the access token and rotates refresh token when returned.
-  Future<String?> refreshAccessToken() => _refreshAccessToken();
-
-  /// Ensures only one refresh call is in-flight at a time.
-  Future<String?> _refreshAccessToken() async {
-    if (_refreshFuture != null) {
-      return _refreshFuture!;
-    }
-    _refreshFuture = _performRefresh();
-    try {
-      return await _refreshFuture!;
-    } finally {
-      _refreshFuture = null;
-    }
-  }
-
-  /// Calls `POST /auth/refresh` using the stored refresh token.
-  Future<String?> _performRefresh() async {
-    final refreshToken = await getRefreshToken();
-    if (refreshToken == null || refreshToken.trim().isEmpty) {
-      return null;
-    }
-
-    final response = await dio.post(
-      '/auth/refresh',
-      data: {'refresh_token': refreshToken},
-      options: Options(extra: {'skipAuth': true}),
-    );
-
-    final data = response.data['data'] as Map<String, dynamic>? ?? {};
-    final newToken = data['access_token'] as String?;
-    if (newToken == null || newToken.isEmpty) {
-      return null;
-    }
-
-    await saveToken(newToken);
-    final rotatedRefreshToken = data['refresh_token'] as String?;
-    if (rotatedRefreshToken != null && rotatedRefreshToken.isNotEmpty) {
-      await saveRefreshToken(rotatedRefreshToken);
-    }
-    return newToken;
   }
 }
 
