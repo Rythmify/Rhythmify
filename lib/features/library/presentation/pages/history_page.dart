@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
@@ -42,9 +41,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Future<void> _confirmClear() async {
+    if (!context.mounted) return;
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: const Text(
           'Clear history?',
@@ -56,11 +57,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () {
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop(false);
+              }
+            },
             child: Text('Cancel', style: AppTheme.labelLarge),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () {
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop(true);
+              }
+            },
             child: const Text(
               'Clear',
               style: TextStyle(color: Colors.redAccent),
@@ -69,12 +78,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ],
       ),
     );
-    if (confirm == true) {
+
+    if (confirm == true && context.mounted) {
       await ref.read(historyProvider.notifier).clearHistory();
-      // Use mounted check before navigation
-      if (mounted) {
-        context.pop();
-      }
     }
   }
 
