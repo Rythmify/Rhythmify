@@ -38,7 +38,7 @@ class _WaveformGestureHandlerState
     double currentMs = _controller.value;
     bool hitBoundary = false;
 
-    // Hard stop if the physics engine tries to slide past the song boundaries
+    // Clamp values to boundaries
     if (currentMs <= 0) {
       currentMs = 0;
       hitBoundary = true;
@@ -47,13 +47,14 @@ class _WaveformGestureHandlerState
       hitBoundary = true;
     }
 
-    // Update the UI smoothly during the slide
+    // Update the UI drag state
     ref
         .read(seekDragPositionProvider.notifier)
         .setPosition(Duration(milliseconds: currentMs.round()));
 
     if (hitBoundary && _controller.isAnimating) {
       _controller.stop();
+      _commitSeek();
     }
   }
 

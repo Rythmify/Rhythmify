@@ -71,12 +71,21 @@ class TrackCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 1. Artwork Image (Rounded Square)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.0),
-              child: _buildArtwork(track.artworkUrl),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.0),
+                border: Border.all(
+                  color: Colors.grey.shade700,
+                  width: 0.5,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5.5), 
+                child: _buildArtwork(track.artworkUrl),
+              ),
             ),
-            const SizedBox(width: 14),
+
+            const SizedBox(width: 10),
 
             // Middle Text Column
             Expanded(
@@ -95,7 +104,7 @@ class TrackCard extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
 
                   // Artist
                   Text(
@@ -104,7 +113,7 @@ class TrackCard extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.grey[400], fontSize: 14),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
 
                   // 3. Bottom Status Row (Dynamic)
                   isThisTrackLoaded

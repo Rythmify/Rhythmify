@@ -45,17 +45,19 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
     // Listen to the domain stream and update the presentation state.
     getStreamUseCase.call().listen((newState) {
-      if (!_isDragging) {
-        final oldId = state.currentTrack?.id;
-        final newId = newState.currentTrack?.id;
+      final oldId = state.currentTrack?.id;
+      final newId = newState.currentTrack?.id;
 
+      if (_isDragging) {
+        // ONLY preserve the user's dragged position, update everything else!
+        state = newState.copyWith(position: state.position); 
+      } else {
         state = newState;
+      }
 
-        // If track changed and lacks waveform data, fetch it in background.
-        if (newId != null && newId != oldId) {
-          if (newState.currentTrack?.waveformData == null) {
-            _updateTrackInBackground(newId);
-          }
+      if (newId != null && newId != oldId) {
+        if (newState.currentTrack?.waveformData == null) {
+          _updateTrackInBackground(newId);
         }
       }
     });
