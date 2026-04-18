@@ -18,7 +18,7 @@ import '../../domain/entities/discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/network/api_client.dart';
 
-const bool useMock = true;
+const bool useMock = false;
 
 final remoteDatasourceProvider = Provider(
   (ref) => HomeRemoteDatasource(dio: apiClient.dio),
