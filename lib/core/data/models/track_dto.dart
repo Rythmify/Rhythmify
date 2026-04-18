@@ -12,20 +12,24 @@ class TrackDto {
       userId: data['user_id'] as String? ?? data['artist_id'] as String? ?? '',
       title: data['title'] as String? ?? '',
       artist:
-          data['artist'] as String? ??
+          data['display_name'] as String? ??
           data['artist_name'] as String? ??
+          data['artist'] as String? ??
           data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',
 
-      artistPfp: data['artist_pfp'] as String?,
+      artistPfp: 
+          data['profile_picture'] as String? ??
+          data['artist_pfp'] as String? ??
+          data['user']?['profile_picture'] as String?,
       artistCity: data['artist_city'] as String?,
       artistCountry: data['artist_country'] as String?,
       description: data['description'] as String?,
       coverImage:
           data['cover_image'] as String? ?? data['artwork_url'] as String?,
       audioUrl:
-          data['audio_url'] as String? ?? data['stream_url'] as String? ?? '',
+          data['stream_url'] as String? ?? data['audio_url'] as String? ?? '',
       streamUrl: data['stream_url'] as String?,
       waveformUrl: data['waveform_url'] as String?,
       duration: Duration(
@@ -33,7 +37,11 @@ class TrackDto {
             data['duration'] as int? ?? data['duration_seconds'] as int? ?? 0,
       ),
       createdAt:
-          DateTime.tryParse(data['created_at'] as String? ?? '') ??
+          DateTime.tryParse(
+            data['liked_at'] as String? ??
+            data['created_at'] as String? ?? 
+            ''
+          ) ??
           DateTime.now(),
       updatedAt: data['updated_at'] != null
           ? DateTime.tryParse(data['updated_at'] as String)

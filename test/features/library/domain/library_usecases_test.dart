@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:rythmify/core/domain/entities/track.dart';
 import 'package:rythmify/features/library/domain/entities/library_entities.dart';
 import 'package:rythmify/features/library/domain/repositories/library_repository.dart';
 import 'package:rythmify/features/library/domain/usecases/library_usecases.dart';
@@ -99,7 +98,7 @@ void main() {
     ).thenAnswer((_) async => const Right(<LibraryStation>[]));
     when(
       () => repository.getLikedTracks(page: 1, limit: 20),
-    ).thenAnswer((_) async => const Right(<Track>[]));
+    ).thenAnswer((_) async => const Right(<LikedTrack>[]));
 
     await GetMyInsightsUseCase(repository).call();
     await GetRecentlyPlayedUseCase(repository).call();

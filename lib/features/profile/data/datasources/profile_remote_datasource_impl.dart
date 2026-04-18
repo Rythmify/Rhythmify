@@ -152,11 +152,54 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final resolvedUserId = userId == 'me'
-          ? (await getProfile(userId: 'me')).id
-          : userId;
+      final endpoint = userId == 'me' ? '/me/liked-tracks' : '/users/$userId/tracks';
+
       final response = await client.dio.get(
-        '/users/$resolvedUserId/tracks',
+        endpoint,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      final tracks = _extractListPayload(response.data);
+      return tracks.map((t) => TrackModel.fromJson(t)).toList();
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<TrackModel>> getUploadedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final endpoint = '/tracks/me' ;
+
+      final response = await client.dio.get(
+        endpoint,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      final tracks = _extractListPayload(response.data);
+      return tracks.map((t) => TrackModel.fromJson(t)).toList();
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<TrackModel>> getRepostedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final endpoint = userId == 'me' ? '/me/reposted-tracks' : '/users/$userId/reposts';
+
+      final response = await client.dio.get(
+        endpoint,
         queryParameters: {'page': page, 'limit': limit},
       );
 

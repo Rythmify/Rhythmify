@@ -44,6 +44,15 @@ void main() {
     isPublic: true,
     status: 'ready',
   );
+  final liked = LikedTrackModel(
+    track: TrackDto.fromJson({
+      'id': 't1',
+      'title': 'T',
+      'play_count': 10,
+      'like_count': 5,
+      'created_at': DateTime(2026, 1, 1).toIso8601String(),
+    }),
+  );
   final insight = const TrackInsightModel(
     trackId: 't1',
     title: 'T',
@@ -57,6 +66,8 @@ void main() {
     trackId: 't1',
     title: 'T',
     artistName: 'A',
+    playCount: 10,
+    userId: 'u1',
     durationSeconds: 120,
     playedAt: DateTime(2026, 1, 1),
   );
@@ -144,7 +155,7 @@ void main() {
     when(() => datasource.getStations()).thenAnswer((_) async => [station]);
     when(
       () => datasource.getLikedTracks(page: 1, limit: 20),
-    ).thenAnswer((_) async => [upload]);
+    ).thenAnswer((_) async => [liked]);
 
     expect((await repository.getMyInsights()).isRight(), true);
     expect((await repository.getRecentlyPlayed()).isRight(), true);

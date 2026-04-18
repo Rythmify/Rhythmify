@@ -6,9 +6,11 @@ import '../../domain/usecases/upload_avatar_usecase.dart';
 import '../../domain/usecases/delete_avatar_usecase.dart';
 import '../../domain/usecases/upload_cover_photo_usecase.dart';
 import '../../domain/usecases/delete_cover_photo_usecase.dart';
-import '../../domain/usecases/follow_user_usecase.dart';
-import '../../domain/usecases/unfollow_user_usecase.dart';
+import '../../domain/usecases/get_follow_user_usecase.dart';
+import '../../domain/usecases/get_unfollow_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
+import '../../domain/usecases/get_uploaded_tracks_usecase.dart';
+import '../../domain/usecases/get_reposted_tracks_usecase.dart';
 import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
@@ -30,11 +32,15 @@ class ProfileNotifier extends Notifier<ProfileState> {
   late final DeleteAvatarUseCase _deleteAvatar;
   late final UploadCoverPhotoUseCase _uploadCoverPhoto;
   late final DeleteCoverPhotoUseCase _deleteCoverPhoto;
-  late final FollowUserUseCase _followUser;
-  late final UnfollowUserUseCase _unfollowUser;
+  late final GetFollowUserUseCase _followUser;
+  late final GetUnfollowUserUseCase _unfollowUser;
   late final GetLikedTracksUseCase _getLikedTracks;
+  late final GetUploadedTracksUseCase _getUploadedTracks;
+  late final GetRepostedTracksUseCase _getRepostedTracks;
 
-  int _currentPage = 1;
+  int _likesPage = 1;
+  int _uploadsPage = 1;
+  int _repostsPage = 1;
 
   @override
   ProfileState build() {
@@ -50,11 +56,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _deleteAvatar = DeleteAvatarUseCase(repository);
     _uploadCoverPhoto = UploadCoverPhotoUseCase(repository);
     _deleteCoverPhoto = DeleteCoverPhotoUseCase(repository);
-    _followUser = FollowUserUseCase(repository);
-    _unfollowUser = UnfollowUserUseCase(repository);
+    _followUser = GetFollowUserUseCase(repository);
+    _unfollowUser = GetUnfollowUserUseCase(repository);
     _getLikedTracks = GetLikedTracksUseCase(repository);
-
-    // ── NO auto-load here — initState in each page controls loading ──
+    _getUploadedTracks = GetUploadedTracksUseCase(repository);
+    _getRepostedTracks = GetRepostedTracksUseCase(repository);
 
     return const ProfileInitial();
   }
@@ -64,53 +70,156 @@ class ProfileNotifier extends Notifier<ProfileState> {
     final result = await _getProfile(userId: userId);
     result.fold((failure) => state = ProfileError(failure.message), (profile) {
       state = ProfileLoaded(profile: profile);
-      loadLikedTracks(userId: userId, refresh: true);
+      // Load previews (first 3) for all sections
+      _loadPreviews(userId);
     });
+  }
+
+  Future<void> _loadPreviews(String userId) async {
+    // Load previews (first 3) for all sections sequentially to avoid race conditions
+    await loadUploadedTracks(userId: userId, refresh: true, limit: 3);
+    await loadLikedTracks(userId: userId, refresh: true, limit: 3);
+    await loadRepostedTracks(userId: userId, refresh: true, limit: 3);
   }
 
   Future<void> loadLikedTracks({
     required String userId,
     bool refresh = false,
+    int limit = 20,
   }) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-    if (current.isLoadingTracks) return;
+    
+    // Per-section loading guard
+    if (current.isLoadingLikes && !refresh) return;
 
     if (refresh) {
-      _currentPage = 1;
+      _likesPage = 1;
       state = current.copyWith(
-        likedTracks: [],
-        isLoadingTracks: true,
-        hasMoreTracks: true,
+        isLoadingLikes: true,
+        hasMoreLikes: true,
       );
     } else {
-      if (!current.hasMoreTracks) return;
-      state = current.copyWith(isLoadingTracks: true);
+      if (!current.hasMoreLikes) return;
+      state = current.copyWith(isLoadingLikes: true);
     }
 
     final result = await _getLikedTracks(
       userId: userId,
-      page: _currentPage,
-      limit: 20,
+      page: _likesPage,
+      limit: limit,
     );
 
     result.fold(
       (failure) {
         if (state is ProfileLoaded) {
-          state = (state as ProfileLoaded).copyWith(isLoadingTracks: false);
+          state = (state as ProfileLoaded).copyWith(isLoadingLikes: false);
         }
       },
       (tracks) {
         if (state is ProfileLoaded) {
-          final current = state as ProfileLoaded;
-          final updated = refresh
-              ? tracks
-              : [...current.likedTracks, ...tracks];
-          _currentPage++;
-          state = current.copyWith(
+          final c = state as ProfileLoaded;
+          // If refreshing, REPLACE the list. If not, APPEND.
+          final updated = refresh ? tracks : [...c.likedTracks, ...tracks];
+          _likesPage++;
+          state = c.copyWith(
             likedTracks: updated,
-            isLoadingTracks: false,
-            hasMoreTracks: tracks.length == 20,
+            isLoadingLikes: false,
+            hasMoreLikes: tracks.length == limit,
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> loadUploadedTracks({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {
+    final current = state;
+    if (current is! ProfileLoaded) return;
+    if (current.isLoadingUploads && !refresh) return;
+
+    if (refresh) {
+      _uploadsPage = 1;
+      state = current.copyWith(
+        isLoadingUploads: true,
+        hasMoreUploads: true,
+      );
+    } else {
+      if (!current.hasMoreUploads) return;
+      state = current.copyWith(isLoadingUploads: true);
+    }
+
+    final result = await _getUploadedTracks(
+      userId: userId,
+      page: _uploadsPage,
+      limit: limit,
+    );
+
+    result.fold(
+      (failure) {
+        if (state is ProfileLoaded) {
+          state = (state as ProfileLoaded).copyWith(isLoadingUploads: false);
+        }
+      },
+      (tracks) {
+        if (state is ProfileLoaded) {
+          final c = state as ProfileLoaded;
+          final updated = refresh ? tracks : [...c.uploadedTracks, ...tracks];
+          _uploadsPage++;
+          state = c.copyWith(
+            uploadedTracks: updated,
+            isLoadingUploads: false,
+            hasMoreUploads: tracks.length == limit,
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> loadRepostedTracks({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {
+    final current = state;
+    if (current is! ProfileLoaded) return;
+    if (current.isLoadingReposts && !refresh) return;
+
+    if (refresh) {
+      _repostsPage = 1;
+      state = current.copyWith(
+        isLoadingReposts: true,
+        hasMoreReposts: true,
+      );
+    } else {
+      if (!current.hasMoreReposts) return;
+      state = current.copyWith(isLoadingReposts: true);
+    }
+
+    final result = await _getRepostedTracks(
+      userId: userId,
+      page: _repostsPage,
+      limit: limit,
+    );
+
+    result.fold(
+      (failure) {
+        if (state is ProfileLoaded) {
+          state = (state as ProfileLoaded).copyWith(isLoadingReposts: false);
+        }
+      },
+      (tracks) {
+        if (state is ProfileLoaded) {
+          final c = state as ProfileLoaded;
+          final updated = refresh ? tracks : [...c.repostedTracks, ...tracks];
+          _repostsPage++;
+          state = c.copyWith(
+            repostedTracks: updated,
+            isLoadingReposts: false,
+            hasMoreReposts: tracks.length == limit,
           );
         }
       },

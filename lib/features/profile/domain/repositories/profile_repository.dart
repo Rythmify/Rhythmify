@@ -96,15 +96,21 @@ abstract class ProfileRepository {
   Future<Either<Failure, void>> unfollowUser({required String userId});
 
   /// Fetches a paginated list of tracks liked by the given user.
-  ///
-  /// Returns [Right] with a list of [Track] objects.
-  /// Returns an empty list when [page] exceeds the total pages.
-  ///
-  /// [userId] — the ID of the user whose likes to fetch. Pass `'me'`
-  /// for the current user.
-  /// [page] — the page number (1-based).
-  /// [limit] — the number of tracks per page (default 20).
   Future<Either<Failure, List<Track>>> getLikedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated list of tracks uploaded by the given user.
+  Future<Either<Failure, List<Track>>> getUploadedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated list of tracks reposted by the given user.
+  Future<Either<Failure, List<Track>>> getRepostedTracks({
     required String userId,
     required int page,
     required int limit,

@@ -25,6 +25,8 @@ import '../../features/authentication/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
+import '../../features/profile/presentation/pages/uploaded_tracks_page.dart';
+import '../../features/profile/presentation/pages/reposted_tracks_page.dart';
 import '../../features/profile/presentation/pages/profile_connections_page.dart';
 import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
 
@@ -74,6 +76,7 @@ import '../../features/library/presentation/pages/stations_page.dart';
 import '../../features/library/presentation/pages/albums_page.dart'; // NEW
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
+import '../../features/library/presentation/pages/likes_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -205,6 +208,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
           return LikesPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/uploads',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return UploadedTracksPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/reposts',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return RepostedTracksPage(userId: userId);
         },
       ),
       GoRoute(
@@ -461,6 +478,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
+                  ),
+                  GoRoute(
+                    path: 'likes',
+                    builder: (context, state) => const LibraryLikesPage(),
                   ),
                   GoRoute(
                     path: 'history',

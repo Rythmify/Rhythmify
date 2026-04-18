@@ -219,11 +219,12 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               final entry = item as RecentlyPlayedEntry;
               final track = Track(
                 id: entry.trackId,
-                userId: '',
+                userId: entry.userId,
                 title: entry.title,
                 artist: entry.artistName,
                 audioUrl: '',
                 duration: Duration(seconds: entry.durationSeconds),
+                playCount: entry.playCount,
                 createdAt: entry.playedAt,
                 coverImage: entry.artworkUrl,
               );
@@ -236,6 +237,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             },
           ),
         ),
+        const SizedBox(height: 150),
       ],
     );
   }

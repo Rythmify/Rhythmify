@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/library_entities.dart';
-import '../../../../core/domain/entities/track.dart';
 
 /// Contract for all Library data operations.
 ///
@@ -78,7 +77,7 @@ abstract class LibraryRepository {
   // ── Liked tracks ──────────────────────────────────────────────────────────
 
   /// Fetch paginated liked tracks for the authenticated user.
-  Future<Either<Failure, List<Track>>> getLikedTracks({
+  Future<Either<Failure, List<LikedTrack>>> getLikedTracks({
     required int page,
     required int limit,
   });
