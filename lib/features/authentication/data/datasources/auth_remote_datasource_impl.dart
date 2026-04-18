@@ -58,11 +58,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final data = responseData['data'];
       final token = data['access_token'] as String;
-      final refreshToken = data['refresh_token'] as String?;
-      await client.saveAuthTokens(
-        accessToken: token,
-        refreshToken: refreshToken,
-      );
+      await client.saveToken(token);
+
+      /// refresh token is captured automatically by ApiClient._onResponse
+      /// from the Set-Cookie header — no manual handling needed here;
 
       final user = data['user'];
       return UserModel.fromJson({
