@@ -124,20 +124,37 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-  void _convert(PlaylistType targetType) {
+// ============================================================
+// REPLACE the _convert() method in _EditPlaylistSheetState
+// inside edit_playlist_sheet.dart
+//
+// Now async because convertToAlbum/convertToPlaylist are async.
+// convertToStation stays synchronous.
+// ============================================================
+
+  Future<void> _convert(PlaylistType targetType) async {
+    Navigator.of(context).pop(); // close confirm dialog
+    Navigator.of(context).pop(); // close edit sheet
+
     switch (targetType) {
       case PlaylistType.album:
-        ref.read(playlistListProvider.notifier).convertToAlbum(widget.playlistId);
+        await ref
+            .read(playlistListProvider.notifier)
+            .convertToAlbum(widget.playlistId);
       case PlaylistType.station:
-        ref.read(playlistListProvider.notifier).convertToStation(widget.playlistId);
+        // Station conversion stays local-only for now
+        ref
+            .read(playlistListProvider.notifier)
+            .convertToStation(widget.playlistId);
       case PlaylistType.playlist:
-        ref.read(playlistListProvider.notifier).convertToPlaylist(widget.playlistId);
+        await ref
+            .read(playlistListProvider.notifier)
+            .convertToPlaylist(widget.playlistId);
     }
+
     ref.read(playlistDetailProvider.notifier).reload();
-    Navigator.of(context).pop();
     widget.onConverted?.call(targetType);
   }
-
   void _removeLocal(String trackId) {
     setState(() => _tracks.removeWhere((t) => t.id == trackId));
   }

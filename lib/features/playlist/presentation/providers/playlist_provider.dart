@@ -195,20 +195,43 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   }
 
   // ── CONVERT (local cache only — backend subtype PATCH wired separately) ───
-  PlaylistEntity convertToAlbum(String playlistId) {
-    final updated = _cache.convertToAlbum(playlistId);
-    state = state.copyWith(playlists: _cache.getMyPlaylists());
-    return updated;
+// ── CONVERT TO ALBUM ──────────────────────────────────────────────────────
+  // Calls PATCH /playlists/{id} with subtype=album on the backend.
+  // On success updates local cache and reloads the list.
+  Future<void> convertToAlbum(String playlistId) async {
+    try {
+      await _ds.updatePlaylist(
+        playlistId: playlistId,
+        subtype: 'album',
+        releaseDate: '${DateTime.now().year}-01-01',
+      );
+      _cache.convertToAlbum(playlistId);
+      await loadPlaylists();
+      print('[LIST] ✅ Converted $playlistId to album');
+    } catch (e) {
+      print('[LIST] ❌ convertToAlbum: $e');
+    }
   }
-
+ 
+  // ── CONVERT TO PLAYLIST ───────────────────────────────────────────────────
+  // Calls PATCH /playlists/{id} with subtype=playlist on the backend.
+  Future<void> convertToPlaylist(String playlistId) async {
+    try {
+      await _ds.updatePlaylist(
+        playlistId: playlistId,
+        subtype: 'playlist',
+      );
+      _cache.convertToPlaylist(playlistId);
+      await loadPlaylists();
+      print('[LIST] ✅ Converted $playlistId back to playlist');
+    } catch (e) {
+      print('[LIST] ❌ convertToPlaylist: $e');
+    }
+  }
+ 
+  // ── CONVERT TO STATION (local only for now) ───────────────────────────────
   PlaylistEntity convertToStation(String playlistId) {
     final updated = _cache.convertToStation(playlistId);
-    state = state.copyWith(playlists: _cache.getMyPlaylists());
-    return updated;
-  }
-
-  PlaylistEntity convertToPlaylist(String playlistId) {
-    final updated = _cache.convertToPlaylist(playlistId);
     state = state.copyWith(playlists: _cache.getMyPlaylists());
     return updated;
   }
