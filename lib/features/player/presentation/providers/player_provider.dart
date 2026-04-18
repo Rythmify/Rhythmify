@@ -50,7 +50,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
       if (_isDragging) {
         // ONLY preserve the user's dragged position, update everything else!
-        state = newState.copyWith(position: state.position); 
+        state = newState.copyWith(position: state.position);
       } else {
         state = newState;
       }

@@ -14,13 +14,15 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer(
     audioLoadConfiguration: const AudioLoadConfiguration(
       androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 30),               // Buffer 30 seconds ahead
-        maxBufferDuration: Duration(seconds: 120),              // Up to 2 minutes
-        bufferForPlaybackDuration: Duration(milliseconds: 500), // Start playing fast
+        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
+        maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
+        bufferForPlaybackDuration: Duration(
+          milliseconds: 500,
+        ), // Start playing fast
         bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
       ),
       darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true,             // For iOS seamless playback
+        automaticallyWaitsToMinimizeStalling: true, // For iOS seamless playback
       ),
     ),
   );
@@ -165,7 +167,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     }
 
     // Ensure initialIndex is within bounds after potentially skipping tracks
-    final effectiveIndex = initialIndex < audioSources.length ? initialIndex: 0;
+    final effectiveIndex = initialIndex < audioSources.length
+        ? initialIndex
+        : 0;
 
     await _player.setAudioSources(
       audioSources,
@@ -176,7 +180,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   /// Clears the cached audio files from device storage to free up space.
   /// Call this from your app's settings menu or on startup if cache size gets too large.
-  
+
   // Future<void> clearAudioCache() async {
   //   await LockCachingAudioSource.clearCache();
   // }

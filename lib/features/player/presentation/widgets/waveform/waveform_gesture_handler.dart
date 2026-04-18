@@ -12,8 +12,7 @@ class WaveformGestureHandler extends ConsumerStatefulWidget {
       _WaveformGestureHandlerState();
 }
 
-class _WaveformGestureHandlerState
-    extends ConsumerState<WaveformGestureHandler>
+class _WaveformGestureHandlerState extends ConsumerState<WaveformGestureHandler>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _isDragging = false;
@@ -62,7 +61,7 @@ class _WaveformGestureHandlerState
     final finalDrag = ref.read(seekDragPositionProvider);
     if (finalDrag != null) {
       ref.read(playerStateProvider.notifier).seek(finalDrag);
-      
+
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
         if (!_isDragging && !_controller.isAnimating) {
@@ -98,7 +97,7 @@ class _WaveformGestureHandlerState
 
         final currentDrag = ref.read(seekDragPositionProvider);
         final startPos = currentDrag ?? state.position;
-        
+
         ref.read(seekDragPositionProvider.notifier).setPosition(startPos);
         _controller.value = startPos.inMilliseconds.toDouble();
       },
@@ -121,12 +120,11 @@ class _WaveformGestureHandlerState
         final double velocityPx = details.velocity.pixelsPerSecond.dx;
         final double velocityMsPerSec = -velocityPx * msPerPixel;
 
-        if (velocityPx.abs() > 150)
-        {
+        if (velocityPx.abs() > 150) {
           final simulation = ClampingScrollSimulation(
             position: _controller.value,
             velocity: velocityMsPerSec,
-            friction: 3,       // High friction for a quicker stop
+            friction: 3, // High friction for a quicker stop
             tolerance: const Tolerance(
               velocity: 200.0, // High velocity tolerance ensures a crisp stop
               distance: 1.0,

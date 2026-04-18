@@ -74,13 +74,10 @@ class TrackCard extends ConsumerWidget {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6.0),
-                border: Border.all(
-                  color: Colors.grey.shade700,
-                  width: 0.5,
-                ),
+                border: Border.all(color: Colors.grey.shade700, width: 0.5),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(5.5), 
+                borderRadius: BorderRadius.circular(5.5),
                 child: _buildArtwork(track.artworkUrl),
               ),
             ),
