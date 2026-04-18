@@ -1,8 +1,8 @@
 // lib/features/playlist/data/mock/playlist_mock_data.dart
 //
-// In-memory mock store for playlists, albums, and stations.
-// createStation now correctly takes PlaylistTrack (not Track) so
-// playlist_provider.dart compiles without type errors.
+// In-memory store that now accepts real backend UUIDs via createWithId.
+// All NEW playlists go through createWithId (real UUID from backend).
+// The legacy create() method is kept for anything that doesn't need backend.
 
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
@@ -11,21 +11,7 @@ class PlaylistMockData {
   PlaylistMockData._();
   static final PlaylistMockData instance = PlaylistMockData._();
 
-  final List<PlaylistEntity> _playlists = [
-    PlaylistEntity(
-      id: 'pl-001',
-      name: 'Untitled playlist',
-      ownerName: 'Hana',
-      ownerId: 'user-001',
-      isPublic: true,
-      type: PlaylistType.playlist,
-      trackCount: 0,
-      totalDuration: Duration.zero,
-      coverUrl: null,
-      createdAt: DateTime(2026, 3, 1),
-    ),
-  ];
-
+  final List<PlaylistEntity> _playlists = [];
   final Map<String, List<PlaylistTrack>> _playlistTracks = {};
 
   // ── READ ──────────────────────────────────────────────────────────────────
@@ -49,13 +35,44 @@ class PlaylistMockData {
     }
   }
 
-  // ── WRITE ─────────────────────────────────────────────────────────────────
+  // ── CREATE with real backend UUID ─────────────────────────────────────────
+  // Call this after createPlaylist() returns from the backend.
+  // The id here is the real UUID the backend assigned.
+  PlaylistEntity createWithId({
+    required String id,
+    required String name,
+    required bool isPublic,
+    String ownerName = 'Me',
+    String ownerId = '',
+  }) {
+    // Don't duplicate if already exists (e.g. called twice)
+    if (_playlists.any((p) => p.id == id)) {
+      return _playlists.firstWhere((p) => p.id == id);
+    }
+    final playlist = PlaylistEntity(
+      id: id,
+      name: name,
+      ownerName: ownerName,
+      ownerId: ownerId,
+      isPublic: isPublic,
+      type: PlaylistType.playlist,
+      trackCount: 0,
+      totalDuration: Duration.zero,
+      coverUrl: null,
+      createdAt: DateTime.now(),
+    );
+    _playlists.insert(0, playlist);
+    _playlistTracks[id] = [];
+    print('[MockDB] Registered real playlist: $name  id=$id');
+    return playlist;
+  }
 
+  // ── Legacy create (mock ID) — kept for non-backend flows ─────────────────
   PlaylistEntity create({required String name, required bool isPublic}) {
     final newPlaylist = PlaylistEntity(
       id: 'pl-${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      ownerName: 'Hana',
+      ownerName: 'Me',
       ownerId: 'user-001',
       isPublic: isPublic,
       type: PlaylistType.playlist,
@@ -66,8 +83,7 @@ class PlaylistMockData {
     );
     _playlists.insert(0, newPlaylist);
     _playlistTracks[newPlaylist.id] = [];
-    // ignore: avoid_print
-    print('[MockDB] Created playlist: ${newPlaylist.name}');
+    print('[MockDB] Created mock playlist: ${newPlaylist.name}');
     return newPlaylist;
   }
 
@@ -84,7 +100,6 @@ class PlaylistMockData {
       isPublic: isPublic,
       description: description,
     );
-    // ignore: avoid_print
     print('[MockDB] Updated playlist $playlistId → name=$name');
   }
 
@@ -95,14 +110,12 @@ class PlaylistMockData {
     final index = _playlists.indexWhere((p) => p.id == playlistId);
     if (index == -1) return;
     _playlists[index] = _playlists[index].copyWith(coverUrl: localPath);
-    // ignore: avoid_print
     print('[MockDB] Updated cover for $playlistId');
   }
 
   void delete(String playlistId) {
     _playlists.removeWhere((p) => p.id == playlistId);
     _playlistTracks.remove(playlistId);
-    // ignore: avoid_print
     print('[MockDB] Deleted playlist $playlistId');
   }
 
@@ -118,7 +131,6 @@ class PlaylistMockData {
         totalDuration: _recalcDuration(tracks),
       );
     }
-    // ignore: avoid_print
     print('[MockDB] Added track ${track.title} to $playlistId');
   }
 
@@ -151,7 +163,6 @@ class PlaylistMockData {
       releaseYear: DateTime.now().year.toString(),
     );
     _playlists[index] = updated;
-    // ignore: avoid_print
     print('[MockDB] Converted $playlistId to album');
     return updated;
   }
@@ -164,7 +175,6 @@ class PlaylistMockData {
       seedArtistName: _playlists[index].ownerName,
     );
     _playlists[index] = updated;
-    // ignore: avoid_print
     print('[MockDB] Converted $playlistId to station');
     return updated;
   }
@@ -174,21 +184,17 @@ class PlaylistMockData {
     if (index == -1) return _playlists.first;
     final updated = _playlists[index].copyWith(type: PlaylistType.playlist);
     _playlists[index] = updated;
-    // ignore: avoid_print
     print('[MockDB] Converted $playlistId to playlist');
     return updated;
   }
 
   // ── STATION CREATION ──────────────────────────────────────────────────────
-  // Takes PlaylistTrack (not Track) — this is what the provider passes.
-  // PlaylistTrack.artistName maps to Track.artist via PlaylistTrack.fromTrack.
 
   PlaylistEntity createStation({required PlaylistTrack seedTrack}) {
     final station = PlaylistEntity(
       id: 'st-${DateTime.now().millisecondsSinceEpoch}',
-      // Station name uses artistName from PlaylistTrack
       name: '${seedTrack.artistName} Radio',
-      ownerName: 'Hana',
+      ownerName: 'Me',
       ownerId: 'user-001',
       isPublic: false,
       type: PlaylistType.station,
@@ -196,12 +202,10 @@ class PlaylistMockData {
       totalDuration: Duration.zero,
       coverUrl: seedTrack.coverUrl,
       createdAt: DateTime.now(),
-      // seedArtistName shown as "Based on [name]" in the station header
       seedArtistName: seedTrack.artistName,
     );
     _playlists.insert(0, station);
     _playlistTracks[station.id] = [];
-    // ignore: avoid_print
     print('[MockDB] Created station: ${station.name}');
     return station;
   }

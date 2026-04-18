@@ -256,6 +256,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             Expanded(
               child: ListView(
                 children: [
+                  // ── Playlist tracks ────────────────────────────────────────
                   ...state.tracks.asMap().entries.map((entry) {
                     final index = entry.key;
                     final track = entry.value;
@@ -266,7 +267,13 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     );
                   }),
 
-                  if (state.showSuggestions) ...[
+                  // ── Suggestions section ────────────────────────────────────
+                  // Show if: this is a playlist type AND
+                  //   (a) suggestions are loading, OR
+                  //   (b) suggestions are loaded and non-empty
+                  if (playlist.type == PlaylistType.playlist &&
+                      (state.isSuggestionsLoading ||
+                          state.suggestions.isNotEmpty)) ...[
                     const Padding(
                       padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
                       child: Text(
@@ -278,47 +285,63 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                         ),
                       ),
                     ),
-                    ...state.suggestions.map(
-                      (suggestion) => TrackTileInPlaylist(
-                        key: Key('suggestion_${suggestion.id}'),
-                        track: suggestion,
-                        onTap: () => _fetchAndPlay(suggestion),
-                        trailingWidget: IconButton(
-                          key: Key('add_suggestion_${suggestion.id}'),
-                          icon: const Icon(
-                            Icons.add_box_outlined,
-                            color: Colors.white70,
-                            size: 26,
+
+                    // Loading skeleton while fetching
+                    if (state.isSuggestionsLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFFF5500),
+                            strokeWidth: 2,
                           ),
-                          onPressed: () => ref
-                              .read(playlistDetailProvider.notifier)
-                              .addSuggestion(suggestion),
+                        ),
+                      )
+                    else
+                      ...state.suggestions.map(
+                        (suggestion) => TrackTileInPlaylist(
+                          key: Key('suggestion_${suggestion.id}'),
+                          track: suggestion,
+                          onTap: () => _fetchAndPlay(suggestion),
+                          trailingWidget: IconButton(
+                            key: Key('add_suggestion_${suggestion.id}'),
+                            icon: const Icon(
+                              Icons.add_box_outlined,
+                              color: Colors.white70,
+                              size: 26,
+                            ),
+                            onPressed: () => ref
+                                .read(playlistDetailProvider.notifier)
+                                .addSuggestion(suggestion),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: ElevatedButton(
-                          key: const Key('refresh_suggestions_button'),
-                          onPressed: () => ref
-                              .read(playlistDetailProvider.notifier)
-                              .refreshSuggestions(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2A2A2A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+
+                    // Refresh button — always visible once suggestions loaded
+                    if (!state.isSuggestionsLoading)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: ElevatedButton(
+                            key: const Key('refresh_suggestions_button'),
+                            onPressed: () => ref
+                                .read(playlistDetailProvider.notifier)
+                                .refreshSuggestions(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2A2A2A),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            child: const Text(
+                              'Refresh suggestions',
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
-                          child: const Text(
-                            'Refresh suggestions',
-                            style: TextStyle(color: Colors.white),
-                          ),
                         ),
                       ),
-                    ),
                   ],
 
                   const SizedBox(height: 140),

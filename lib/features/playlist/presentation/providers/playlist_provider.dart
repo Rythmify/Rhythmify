@@ -1,11 +1,6 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
-//
-// Uses PlaylistRemoteDatasource directly for:
-//   - Suggestions → fetchRecommendedTracks() (parallel artist track fetch)
-//   - Station tracks → fetchStationTracks(artistId)
-//
-// This avoids GET /tracks which returns 404 on this backend.
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -54,6 +49,7 @@ class PlaylistDetailState {
     this.tracks = const [],
     this.suggestions = const [],
     this.isLoading = false,
+    this.isSuggestionsLoading = false,
     this.isLiked = false,
     this.error,
   });
@@ -62,6 +58,7 @@ class PlaylistDetailState {
   final List<PlaylistTrack> tracks;
   final List<PlaylistTrack> suggestions;
   final bool isLoading;
+  final bool isSuggestionsLoading;
   final bool isLiked;
   final String? error;
 
@@ -73,6 +70,7 @@ class PlaylistDetailState {
     List<PlaylistTrack>? tracks,
     List<PlaylistTrack>? suggestions,
     bool? isLoading,
+    bool? isSuggestionsLoading,
     bool? isLiked,
     String? error,
   }) =>
@@ -81,6 +79,7 @@ class PlaylistDetailState {
         tracks: tracks ?? this.tracks,
         suggestions: suggestions ?? this.suggestions,
         isLoading: isLoading ?? this.isLoading,
+        isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
         isLiked: isLiked ?? this.isLiked,
         error: error,
       );
@@ -99,17 +98,41 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
   final _db = PlaylistMockData.instance;
 
+  PlaylistRemoteDatasource get _datasource =>
+      ref.read(playlistDatasourceProvider);
+
   void loadPlaylists() {
     state = state.copyWith(playlists: _db.getMyPlaylists());
   }
 
-  PlaylistEntity createPlaylist({
+  // ── CREATE: real backend → store real UUID in mock ────────────────────────
+  // Async — sheet must await and check for null before navigating.
+  Future<PlaylistEntity?> createPlaylist({
     required String name,
     required bool isPublic,
-  }) {
-    final playlist = _db.create(name: name, isPublic: isPublic);
-    loadPlaylists();
-    return playlist;
+  }) async {
+    try {
+      final created = await _datasource.createPlaylist(
+        name: name,
+        isPublic: isPublic,
+      );
+
+      // Store with the real UUID so all subsequent API calls use a valid UUID
+      _db.createWithId(
+        id: created.id,
+        name: created.name,
+        isPublic: created.isPublic,
+        ownerName: created.ownerName,
+        ownerId: created.ownerId,
+      );
+
+      loadPlaylists();
+      print('[LIST] ✅ Created playlist "${created.name}" id=${created.id}');
+      return created;
+    } catch (e) {
+      print('[LIST] ❌ createPlaylist failed: $e');
+      return null;
+    }
   }
 
   void updatePlaylist({
@@ -186,7 +209,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   @override
   PlaylistDetailState build() => const PlaylistDetailState(isLoading: true);
 
-  /// Called from PlaylistDetailScreen.initState.
   Future<void> init(String playlistId) async {
     _currentPlaylistId = playlistId;
     state = const PlaylistDetailState(isLoading: true);
@@ -197,10 +219,11 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       return;
     }
 
-    // ── Stations: load real tracks from backend ──────────────────────────
+    // ── Stations ──────────────────────────────────────────────────────────
     if (playlist.type == PlaylistType.station &&
         playlist.seedArtistName != null) {
-      final stationTracks = await _fetchStationTracks(playlist.seedArtistName!);
+      final stationTracks =
+          await _fetchStationTracks(playlist.seedArtistName!);
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: stationTracks,
@@ -210,72 +233,78 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       return;
     }
 
-    // ── Playlists and albums: mock tracks + real suggestions ─────────────
+    // ── Playlists/Albums: show screen immediately, load suggestions in bg ──
     final mockTracks = _db.getTracksFor(playlistId);
-    final suggestions = await _fetchSuggestions(mockTracks);
-
     state = PlaylistDetailState(
       playlist: playlist,
       tracks: mockTracks,
-      suggestions: suggestions,
+      suggestions: const [],
       isLoading: false,
+      isSuggestionsLoading: playlist.type == PlaylistType.playlist,
     );
-  }
 
-  /// Fetches real recommended tracks using fetchRecommendedTracks()
-  /// which hits GET /users/{artistId}/tracks in parallel.
-  /// Filters out tracks already in the playlist.
-  Future<List<PlaylistTrack>> _fetchSuggestions(
-    List<PlaylistTrack> existingTracks,
-  ) async {
-    try {
-      final existingIds = existingTracks.map((t) => t.id).toSet();
-      final recommended = await _datasource.fetchRecommendedTracks(limit: 15);
-      final filtered = recommended
-          .where((t) => !existingIds.contains(t.id))
-          .take(10)
-          .toList()
-        ..shuffle();
-      // ignore: avoid_print
-      print('[PlaylistDetailNotifier] Loaded ${filtered.length} suggestions');
-      return filtered;
-    } catch (e) {
-      // ignore: avoid_print
-      print('[PlaylistDetailNotifier] Could not load suggestions: $e');
-      return [];
+    if (playlist.type == PlaylistType.playlist) {
+      final suggestions = await _fetchSuggestionsExcluding(mockTracks);
+      state = state.copyWith(
+        suggestions: suggestions,
+        isSuggestionsLoading: false,
+      );
     }
   }
 
-  /// Fetches tracks for a station from GET /home/stations/{artistId}/tracks.
-  Future<List<PlaylistTrack>> _fetchStationTracks(String artistId) async {
-    try {
-      final tracks = await _datasource.fetchStationTracks(artistId, limit: 50);
-      // ignore: avoid_print
-      print('[PlaylistDetailNotifier] Loaded ${tracks.length} station tracks');
-      return tracks;
-    } catch (e) {
-      // ignore: avoid_print
-      print('[PlaylistDetailNotifier] Could not load station tracks: $e');
-      return [];
-    }
-  }
-
-  /// Re-fetches fresh suggestions. Called by "Refresh suggestions" button.
-  Future<void> refreshSuggestions() async {
-    final fresh = await _fetchSuggestions(state.tracks);
-    state = state.copyWith(suggestions: fresh);
-  }
-
-  void addSuggestion(PlaylistTrack track) {
+  // ── Add suggestion ────────────────────────────────────────────────────────
+  Future<void> addSuggestion(PlaylistTrack suggestion) async {
     if (_currentPlaylistId == null) return;
-    _db.addTrack(playlistId: _currentPlaylistId!, track: track);
-    final updatedSuggestions =
-        state.suggestions.where((s) => s.id != track.id).toList();
+
+    // Optimistic removal for instant UI feedback
+    final optimisticSuggestions =
+        state.suggestions.where((s) => s.id != suggestion.id).toList();
+    state = state.copyWith(suggestions: optimisticSuggestions);
+
+    try {
+      await _datasource.addTrackToPlaylist(
+        playlistId: _currentPlaylistId!,
+        trackId: suggestion.id,
+      );
+
+      print('[DETAIL] ✅ "${suggestion.title}" added to backend');
+
+      // Mirror in mock store so track list updates immediately
+      _db.addTrack(playlistId: _currentPlaylistId!, track: suggestion);
+      final updatedTracks = _db.getTracksFor(_currentPlaylistId!);
+
+      // Fresh suggestions excluding everything now in the playlist
+      final freshSuggestions =
+          await _fetchSuggestionsExcluding(updatedTracks);
+
+      state = state.copyWith(
+        playlist: _db.getById(_currentPlaylistId!),
+        tracks: updatedTracks,
+        suggestions: freshSuggestions,
+      );
+    } on DioException catch (e) {
+      print('[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}');
+      state = state.copyWith(
+        suggestions: [...optimisticSuggestions, suggestion],
+        error: 'Could not add "${suggestion.title}". Try again.',
+      );
+    } catch (e) {
+      print('[DETAIL] ❌ addSuggestion unexpected: $e');
+      state = state.copyWith(
+        suggestions: [...optimisticSuggestions, suggestion],
+      );
+    }
+  }
+
+  // ── Refresh suggestions ───────────────────────────────────────────────────
+  Future<void> refreshSuggestions() async {
+    state = state.copyWith(isSuggestionsLoading: true);
+    final fresh = await _fetchSuggestionsExcluding(state.tracks);
     state = state.copyWith(
-      playlist: _db.getById(_currentPlaylistId!),
-      tracks: _db.getTracksFor(_currentPlaylistId!),
-      suggestions: updatedSuggestions,
+      suggestions: fresh,
+      isSuggestionsLoading: false,
     );
+    print('[DETAIL] refresh: ${fresh.length} suggestions');
   }
 
   void removeTrack(String trackId) {
@@ -287,13 +316,32 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     );
   }
 
-  void toggleLike() {
-    state = state.copyWith(isLiked: !state.isLiked);
-  }
+  void toggleLike() => state = state.copyWith(isLiked: !state.isLiked);
 
   void reload() {
-    if (_currentPlaylistId != null) {
-      init(_currentPlaylistId!);
+    if (_currentPlaylistId != null) init(_currentPlaylistId!);
+  }
+
+  Future<List<PlaylistTrack>> _fetchSuggestionsExcluding(
+    List<PlaylistTrack> existing,
+  ) async {
+    try {
+      return await _datasource.fetchRecommendedTracksExcluding(
+        excludeIds: existing.map((t) => t.id).toList(),
+        limit: 5,
+      );
+    } catch (e) {
+      print('[DETAIL] _fetchSuggestionsExcluding failed: $e');
+      return [];
+    }
+  }
+
+  Future<List<PlaylistTrack>> _fetchStationTracks(String artistId) async {
+    try {
+      return await _datasource.fetchStationTracks(artistId, limit: 50);
+    } catch (e) {
+      print('[DETAIL] _fetchStationTracks failed: $e');
+      return [];
     }
   }
 }

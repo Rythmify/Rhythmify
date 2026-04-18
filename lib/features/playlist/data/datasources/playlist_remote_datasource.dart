@@ -88,9 +88,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Full Track by ID (for player)
-  // Endpoint: GET /tracks/{id}
-  // Used by playlist_detail_screen to get the real stream_url
-  // before passing to the player.
   // ============================================================
   Future<Map<String, dynamic>> fetchTrackById(String trackId) async {
     _log('→ GET /tracks/$trackId (fetching full track for player)');
@@ -354,7 +351,7 @@ class PlaylistRemoteDatasource {
       final data = response.data!['data'] as Map<String, dynamic>;
       final trackList = data['tracks'] as List<dynamic>;
       _log('← Got ${trackList.length} station tracks');
-      return _mapUserTracksToPlaylistTracks(trackList);
+      return _mapDiscoveryTracksToPlaylistTracks(trackList);
     } on DioException catch (e) {
       _logError('fetchStationTracks($artistId) failed', e);
       rethrow;
@@ -364,85 +361,174 @@ class PlaylistRemoteDatasource {
   // ============================================================
   // ── RECOMMENDATIONS: Real tracks for suggestions
   //
-  // Fetches from GET /users/{artistId}/tracks — confirmed real tracks.
+  // Strategy:
+  //   Step 1 → GET /home to extract real genre_id values
+  //   Step 2 → GET /genres/{genre_id}/tracks for real UUIDs
   //
-  // SEED ID FILTER:
-  //   Some of DJ Karim's tracks have seed IDs like "c0000018-..."
-  //   that fail POST /playlists/{id}/tracks with 400 even though they
-  //   appear in the tracks listing. We filter these out so only
-  //   tracks with standard UUIDs are shown as suggestions.
-  //   Standard UUIDs follow xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  //   where the first segment is 8 hex chars (not "c0000xxx").
+  // Why not /home tracks directly?
+  //   The discover_with_stations and trending tracks in /home use
+  //   seed IDs (c0000...) that don't exist in the DB → 400 on add.
+  //   /genres/{id}/tracks returns tracks uploaded by real users.
+  //
+  // Why not hardcoded artist IDs?
+  //   Those were seed users. The 39 real uploaded tracks belong to
+  //   real user accounts whose IDs we discover dynamically via genres.
   // ============================================================
-Future<List<PlaylistTrack>> fetchRecommendedTracks({int limit = 5}) async {
-  // GET /tracks returns 404 — not deployed on the server yet.
-  // Fetching from known artists in parallel as a working fallback.
-  // Replace with GET /tracks once backend deploys it.
-  const artistIds = [
-    '00000002-0000-0000-0000-000000000000', // DJ Karim
-    '00000004-0000-0000-0000-000000000000', // Omar Farouk
-    '00000003-0000-0000-0000-000000000000', // Nour El Sound
-    '00000005-0000-0000-0000-000000000000', // Layla Jazz
-    '00000006-0000-0000-0000-000000000000', // SynthLord
-    '00000007-0000-0000-0000-000000000000', // Rana Beats
-  ];
+  Future<List<PlaylistTrack>> fetchRecommendedTracks({int limit = 5}) async {
+    _log('→ fetchRecommendedTracks: two-step fetch via genres');
 
-  _log('→ Fetching tracks from ${artistIds.length} artists in parallel');
+    try {
+      // ── Step 1: Get genre IDs from /home ──────────────────────────────
+      final genreIds = await _fetchGenreIdsFromHome();
 
-  try {
-    final responses = await Future.wait(
-      artistIds.map((id) => _dio.get<Map<String, dynamic>>(
-        '/users/$id/tracks',
-        queryParameters: {'limit': 10},
-      )),
-    );
+      if (genreIds.isEmpty) {
+        _log('← No genre IDs found, returning empty suggestions');
+        return [];
+      }
 
-    final allTracks = <dynamic>[];
-    for (final response in responses) {
-      final data = response.data!['data'] as List<dynamic>? ?? [];
-      allTracks.addAll(data);
+      _log('← Got ${genreIds.length} genre IDs: $genreIds');
+
+      // ── Step 2: Fetch tracks from all genres in parallel ──────────────
+      // We fetch from all genres so we get a wide pool of the 39 real tracks
+      final responses = await Future.wait(
+        genreIds.map((genreId) => _dio
+            .get<Map<String, dynamic>>(
+              '/genres/$genreId/tracks',
+              queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
+            )
+            .catchError((e) {
+          _log('Genre $genreId fetch failed, skipping: $e');
+          return Response<Map<String, dynamic>>(
+            requestOptions: RequestOptions(path: ''),
+            data: null,
+          );
+        })),
+      );
+
+      // ── Collect and deduplicate all tracks ────────────────────────────
+      final seenIds = <String>{};
+      final allTracks = <dynamic>[];
+
+      for (final response in responses) {
+        if (response.data == null) continue;
+        try {
+          final outerData = response.data!['data'];
+          List<dynamic> tracks;
+
+          if (outerData is List) {
+            tracks = outerData;
+          } else if (outerData is Map && outerData.containsKey('tracks')) {
+            tracks = outerData['tracks'] as List<dynamic>;
+          } else {
+            continue;
+          }
+
+          for (final t in tracks) {
+            final id = (t as Map<String, dynamic>)['id'] as String?;
+            if (id == null || id.isEmpty) continue;
+            // Skip seed/fake UUIDs — these fail when added to a playlist
+            if (id.startsWith('c0000')) continue;
+            if (seenIds.contains(id)) continue;
+            seenIds.add(id);
+            allTracks.add(t);
+          }
+        } catch (e) {
+          _log('Error parsing genre response: $e');
+        }
+      }
+
+      _log('← Got ${allTracks.length} unique real tracks across all genres');
+
+      if (allTracks.isEmpty) return [];
+
+      // Shuffle so refresh shows different tracks
+      allTracks.shuffle();
+
+      return _mapDiscoveryTracksToPlaylistTracks(allTracks.take(limit).toList());
+    } on DioException catch (e) {
+      _logError('fetchRecommendedTracks() failed', e);
+      return [];
+    } catch (e) {
+      _log('fetchRecommendedTracks() unexpected error: $e');
+      return [];
     }
-
-    _log('← Got ${allTracks.length} total tracks from all artists');
-
-    final realTracks = allTracks.where((t) {
-      final id = (t as Map<String, dynamic>)['id'] as String? ?? '';
-      return !id.startsWith('c0000');
-    }).toList();
-
-    _log('← ${realTracks.length} real tracks after filtering seed IDs');
-
-    if (realTracks.isEmpty) return [];
-
-    realTracks.shuffle();
-    return _mapUserTracksToPlaylistTracks(realTracks.take(limit).toList());
-  } on DioException catch (e) {
-    _logError('fetchRecommendedTracks() failed', e);
-    return [];
   }
-}
+
+  /// Same as [fetchRecommendedTracks] but excludes tracks already in the playlist.
+  /// Called after adding a suggestion and on refresh button tap.
+  Future<List<PlaylistTrack>> fetchRecommendedTracksExcluding({
+    required List<String> excludeIds,
+    int limit = 5,
+  }) async {
+    // Fetch a larger pool, then filter
+    final all = await fetchRecommendedTracks(limit: 20);
+    final filtered = all.where((t) => !excludeIds.contains(t.id)).toList();
+    filtered.shuffle();
+    return filtered.take(limit).toList();
+  }
 
   // ============================================================
-  // ── INTERNAL HELPER: Map user track JSON → PlaylistTrack
+  // ── INTERNAL: Get genre IDs from /home response
   // ============================================================
-  List<PlaylistTrack> _mapUserTracksToPlaylistTracks(
+  Future<List<String>> _fetchGenreIdsFromHome() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/home');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
+      final genres = trendingByGenre['genres'] as List<dynamic>;
+
+      return genres
+          .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
+          .where((id) => id != null && id.isNotEmpty)
+          .cast<String>()
+          .toList();
+    } catch (e) {
+      _log('_fetchGenreIdsFromHome failed: $e');
+      return [];
+    }
+  }
+
+  // ============================================================
+  // ── INTERNAL HELPER: Map DiscoveryTrack JSON → PlaylistTrack
+  //
+  // DiscoveryTrack shape (from /genres/{id}/tracks and /home stations):
+  // {
+  //   "id": "real-uuid",        ← NOT "track_id"
+  //   "title": "string",
+  //   "artist_name": "string",  ← flat, NOT nested
+  //   "cover_image": "url",     ← nullable
+  //   "duration": 213,          ← seconds as int
+  //   "play_count": 4200,
+  //   "stream_url": "url"       ← nullable
+  // }
+  // ============================================================
+  List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
   }) {
-    return rawList.asMap().entries.map((entry) {
-      final index = entry.key;
-      final json = entry.value as Map<String, dynamic>;
-      return PlaylistTrack(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-        duration: Duration(seconds: json['duration'] as int? ?? 0),
-        playCount: json['play_count'] as int? ?? 0,
-        position: startPosition + index,
-        coverUrl: json['cover_image'] as String?,
-        isUnavailable: false,
-      );
-    }).toList();
+    final result = <PlaylistTrack>[];
+    for (int i = 0; i < rawList.length; i++) {
+      try {
+        final json = rawList[i] as Map<String, dynamic>;
+        final id = json['id'] as String?;
+        if (id == null || id.isEmpty || id.startsWith('c0000')) continue;
+
+        result.add(PlaylistTrack(
+          id: id,
+          title: json['title'] as String? ?? 'Unknown Title',
+          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+          duration: Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
+          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+          position: startPosition + i,
+          coverUrl: json['cover_image'] as String?,
+          isLiked: false,
+          isUnavailable: false,
+        ));
+      } catch (e) {
+        _log('Error mapping track at index $i: $e');
+      }
+    }
+    return result;
   }
 
   // ============================================================

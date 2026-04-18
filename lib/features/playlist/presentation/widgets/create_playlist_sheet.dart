@@ -19,6 +19,7 @@ class CreatePlaylistSheet extends ConsumerStatefulWidget {
 class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
   late final TextEditingController _nameController;
   bool _isPublic = true;
+  bool _isCreating = false;
 
   @override
   void initState() {
@@ -36,16 +37,35 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     super.dispose();
   }
 
-  void _onCreate() {
+  Future<void> _onCreate() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty || _isCreating) return;
 
-    // createPlaylist is synchronous — no await needed
-    final playlist = ref.read(playlistListProvider.notifier).createPlaylist(
+    setState(() => _isCreating = true);
+
+    // createPlaylist is now async and returns null on failure
+    final playlist = await ref.read(playlistListProvider.notifier).createPlaylist(
           name: name,
           isPublic: _isPublic,
         );
 
+    // Guard against widget being disposed while awaiting
+    if (!mounted) return;
+
+    setState(() => _isCreating = false);
+
+    if (playlist == null) {
+      // Show error — backend call failed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not create playlist. Try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Success — close sheet and navigate into the new playlist
     Navigator.of(context).pop();
     widget.onCreated?.call(playlist.id);
   }
@@ -92,7 +112,8 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
               Switch(
                 key: const Key('create_playlist_public_switch'),
                 value: _isPublic,
-                onChanged: (v) => setState(() => _isPublic = v),
+                onChanged:
+                    _isCreating ? null : (v) => setState(() => _isPublic = v),
                 activeThumbColor: const Color(0xFFFF5500),
               ),
             ],
@@ -103,21 +124,33 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             height: 50,
             child: OutlinedButton(
               key: const Key('create_playlist_create_button'),
-              onPressed:
-                  _nameController.text.trim().isEmpty ? null : _onCreate,
+              // Disable while creating or if name is empty
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25)),
               ),
-              child: const Text('Create playlist',
-                  style: TextStyle(color: Colors.white, fontSize: 15)),
+              child: _isCreating
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text('Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15)),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
             key: const Key('create_playlist_cancel_button'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed:
+                _isCreating ? null : () => Navigator.of(context).pop(),
             child: Text('Cancel',
                 style: TextStyle(color: Colors.grey[500], fontSize: 15)),
           ),
