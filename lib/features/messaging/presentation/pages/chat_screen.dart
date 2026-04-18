@@ -637,7 +637,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return embeds
         .map(
           (e) =>
-              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedId}',
+              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedName}',
         )
         .join('\n');
   }
