@@ -39,8 +39,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     super.initState();
     final state = ref.read(playlistDetailProvider);
     _nameController = TextEditingController(text: state.playlist?.name ?? '');
-    _descController =
-        TextEditingController(text: state.playlist?.description ?? '');
+    _descController = TextEditingController(
+      text: state.playlist?.description ?? '',
+    );
     _isPublic = state.playlist?.isPublic ?? true;
     _tracks = List.from(state.tracks);
     _currentType = state.playlist?.type ?? PlaylistType.playlist;
@@ -78,12 +79,16 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
       final originalTracks = ref.read(playlistDetailProvider).tracks;
       for (final original in originalTracks) {
         if (!_tracks.any((t) => t.id == original.id)) {
-          await ref.read(playlistDetailProvider.notifier).removeTrack(original.id);
+          await ref
+              .read(playlistDetailProvider.notifier)
+              .removeTrack(original.id);
         }
       }
 
       // 2. Update playlist metadata on backend
-      await ref.read(playlistListProvider.notifier).updatePlaylist(
+      await ref
+          .read(playlistListProvider.notifier)
+          .updatePlaylist(
             playlistId: widget.playlistId,
             name: name,
             isPublic: _isPublic,
@@ -97,7 +102,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           playlistId: widget.playlistId,
           coverImage: _pickedCoverFile,
         );
-        ref.read(playlistListProvider.notifier).updateCoverImage(
+        ref
+            .read(playlistListProvider.notifier)
+            .updateCoverImage(
               playlistId: widget.playlistId,
               localPath: _pickedCoverFile!.path,
             );
@@ -121,52 +128,52 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-Future<void> _convert(PlaylistType targetType) async {
-  // Close confirm dialog
-  Navigator.of(context).pop();
+  Future<void> _convert(PlaylistType targetType) async {
+    // Close confirm dialog
+    Navigator.of(context).pop();
 
-  // Capture notifier references BEFORE any async gap
-  final listNotifier = ref.read(playlistListProvider.notifier);
-  final detailNotifier = ref.read(playlistDetailProvider.notifier);
-  final onConverted = widget.onConverted;
-  final playlistId = widget.playlistId;
+    // Capture notifier references BEFORE any async gap
+    final listNotifier = ref.read(playlistListProvider.notifier);
+    final detailNotifier = ref.read(playlistDetailProvider.notifier);
+    final onConverted = widget.onConverted;
+    final playlistId = widget.playlistId;
 
-  if (targetType == PlaylistType.station) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const AlertDialog(
-        backgroundColor: Color(0xFF1E1E1E),
-        content: Row(
-          children: [
-            CircularProgressIndicator(color: Color(0xFFFF5500)),
-            SizedBox(width: 20),
-            Text(
-              'Building your station...',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+    if (targetType == PlaylistType.station) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AlertDialog(
+          backgroundColor: Color(0xFF1E1E1E),
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: Color(0xFFFF5500)),
+              SizedBox(width: 20),
+              Text(
+                'Building your station...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
 
-    await listNotifier.convertToStation(playlistId);
+      await listNotifier.convertToStation(playlistId);
 
-    if (mounted) Navigator.of(context).pop(); // close loading dialog
-    if (mounted) Navigator.of(context).pop(); // close edit sheet
-  } else {
-    Navigator.of(context).pop(); // close edit sheet
-
-    if (targetType == PlaylistType.album) {
-      await listNotifier.convertToAlbum(playlistId);
+      if (mounted) Navigator.of(context).pop(); // close loading dialog
+      if (mounted) Navigator.of(context).pop(); // close edit sheet
     } else {
-      await listNotifier.convertToPlaylist(playlistId);
-    }
-  }
+      Navigator.of(context).pop(); // close edit sheet
 
-  detailNotifier.reload();
-  onConverted?.call(targetType);
-}
+      if (targetType == PlaylistType.album) {
+        await listNotifier.convertToAlbum(playlistId);
+      } else {
+        await listNotifier.convertToPlaylist(playlistId);
+      }
+    }
+
+    detailNotifier.reload();
+    onConverted?.call(targetType);
+  }
 
   void _removeLocal(String trackId) {
     setState(() => _tracks.removeWhere((t) => t.id == trackId));
@@ -174,7 +181,10 @@ Future<void> _convert(PlaylistType targetType) async {
 
   @override
   Widget build(BuildContext context) {
-    final currentCoverUrl = ref.watch(playlistDetailProvider).playlist?.coverUrl;
+    final currentCoverUrl = ref
+        .watch(playlistDetailProvider)
+        .playlist
+        ?.coverUrl;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -197,19 +207,23 @@ Future<void> _convert(PlaylistType targetType) async {
                   children: [
                     TextButton(
                       key: const Key('edit_playlist_cancel_button'),
-                      onPressed:
-                          _isSaving ? null : () => Navigator.of(context).pop(),
-                      child: const Text('Cancel',
-                          style: TextStyle(color: Colors.white, fontSize: 15)),
+                      onPressed: _isSaving
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                      ),
                     ),
                     const Expanded(
                       child: Text(
                         'Edit playlist',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700),
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     TextButton(
@@ -220,13 +234,18 @@ Future<void> _convert(PlaylistType targetType) async {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
-                          : const Text('Save',
+                          : const Text(
+                              'Save',
                               style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700)),
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                     ),
                   ],
                 ),
@@ -251,21 +270,28 @@ Future<void> _convert(PlaylistType targetType) async {
                               backgroundColor: const Color(0xFF222222),
                               foregroundColor: Colors.white,
                               shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.zero),
+                                borderRadius: BorderRadius.zero,
+                              ),
                               elevation: 0,
                             ),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
                                 if (_pickedCoverFile != null)
-                                  Image.file(_pickedCoverFile!, fit: BoxFit.cover)
+                                  Image.file(
+                                    _pickedCoverFile!,
+                                    fit: BoxFit.cover,
+                                  )
                                 else if (currentCoverUrl != null &&
                                     currentCoverUrl.isNotEmpty)
                                   _buildExistingCover(currentCoverUrl)
                                 else
                                   const Center(
-                                    child: Icon(Icons.camera_alt,
-                                        color: Colors.white54, size: 36),
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white54,
+                                      size: 36,
+                                    ),
                                   ),
                                 Positioned(
                                   bottom: 6,
@@ -273,12 +299,14 @@ Future<void> _convert(PlaylistType targetType) async {
                                   child: Container(
                                     padding: const EdgeInsets.all(5),
                                     decoration: const BoxDecoration(
-                                        color: Colors.black54,
-                                        shape: BoxShape.circle),
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
                                     child: const Icon(
-                                        Icons.photo_library_outlined,
-                                        color: Colors.white,
-                                        size: 16),
+                                      Icons.photo_library_outlined,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -301,56 +329,79 @@ Future<void> _convert(PlaylistType targetType) async {
                         children: [
                           const SizedBox(height: 14),
                           RichText(
-                            text: const TextSpan(children: [
-                              TextSpan(
+                            text: const TextSpan(
+                              children: [
+                                TextSpan(
                                   text: 'Playlist name ',
                                   style: TextStyle(
-                                      color: Colors.white70, fontSize: 13)),
-                              TextSpan(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                TextSpan(
                                   text: '*',
                                   style: TextStyle(
-                                      color: Colors.redAccent, fontSize: 13)),
-                            ]),
+                                    color: Colors.redAccent,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           TextField(
                             key: const Key('edit_playlist_name_field'),
                             controller: _nameController,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                             decoration: const InputDecoration(
                               border: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white24)),
+                                borderSide: BorderSide(color: Colors.white24),
+                              ),
                               focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white54)),
+                                borderSide: BorderSide(color: Colors.white54),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Text('Description',
-                              style: TextStyle(
-                                  color: Colors.grey[500], fontSize: 13)),
+                          Text(
+                            'Description',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                            ),
+                          ),
                           TextField(
                             key: const Key('edit_playlist_description_field'),
                             controller: _descController,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Describe your playlist',
                               hintStyle: TextStyle(color: Colors.grey[700]),
                               border: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white24)),
+                                borderSide: BorderSide(color: Colors.white24),
+                              ),
                               focusedBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white54)),
+                                borderSide: BorderSide(color: Colors.white54),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Make public',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500)),
+                              const Text(
+                                'Make public',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                               Switch(
                                 key: const Key('edit_playlist_public_switch'),
                                 value: _isPublic,
@@ -370,12 +421,15 @@ Future<void> _convert(PlaylistType targetType) async {
                     // ── Convert To ────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: Text('CONVERT TO',
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 11,
-                              letterSpacing: 1.2,
-                              fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'CONVERT TO',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 11,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -391,13 +445,18 @@ Future<void> _convert(PlaylistType targetType) async {
                               icon: Icons.album,
                               label: 'Convert to Album',
                               sublabel: 'Shows release year in the header',
-                              onTap: () => _showConvertConfirm(context,
-                                  targetType: PlaylistType.album,
-                                  label: 'album'),
+                              onTap: () => _showConvertConfirm(
+                                context,
+                                targetType: PlaylistType.album,
+                                label: 'album',
+                              ),
                             ),
                           if (_currentType == PlaylistType.playlist)
                             const Divider(
-                                color: Colors.white10, height: 1, indent: 16),
+                              color: Colors.white10,
+                              height: 1,
+                              indent: 16,
+                            ),
                           if (_currentType != PlaylistType.station)
                             _ConvertTile(
                               key: const Key('edit_convert_to_station'),
@@ -405,9 +464,11 @@ Future<void> _convert(PlaylistType targetType) async {
                               label: 'Convert to Station',
                               sublabel:
                                   'Shows "Based on [artist]" in the header',
-                              onTap: () => _showConvertConfirm(context,
-                                  targetType: PlaylistType.station,
-                                  label: 'station'),
+                              onTap: () => _showConvertConfirm(
+                                context,
+                                targetType: PlaylistType.station,
+                                label: 'station',
+                              ),
                             ),
                           if (_currentType != PlaylistType.playlist)
                             _ConvertTile(
@@ -415,9 +476,11 @@ Future<void> _convert(PlaylistType targetType) async {
                               icon: Icons.queue_music,
                               label: 'Convert to Playlist',
                               sublabel: 'Removes album/station label',
-                              onTap: () => _showConvertConfirm(context,
-                                  targetType: PlaylistType.playlist,
-                                  label: 'playlist'),
+                              onTap: () => _showConvertConfirm(
+                                context,
+                                targetType: PlaylistType.playlist,
+                                label: 'playlist',
+                              ),
                             ),
                         ],
                       ),
@@ -458,15 +521,19 @@ Future<void> _convert(PlaylistType targetType) async {
 
   Widget _buildExistingCover(String url) {
     if (url.startsWith('/') || url.startsWith('file://')) {
-      return Image.file(File(url),
-          fit: BoxFit.cover,
-          errorBuilder: (e, s, t) =>
-              const Icon(Icons.camera_alt, color: Colors.white54, size: 36));
-    }
-    return Image.network(url,
+      return Image.file(
+        File(url),
         fit: BoxFit.cover,
         errorBuilder: (e, s, t) =>
-            const Icon(Icons.camera_alt, color: Colors.white54, size: 36));
+            const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (e, s, t) =>
+          const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
+    );
   }
 
   void _showConvertConfirm(
@@ -478,22 +545,29 @@ Future<void> _convert(PlaylistType targetType) async {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
-        title: Text('Convert to $label?',
-            style: const TextStyle(color: Colors.white)),
-        content: Text(_convertDescription(targetType),
-            style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+        title: Text(
+          'Convert to $label?',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          _convertDescription(targetType),
+          style: TextStyle(color: Colors.grey[400], fontSize: 13),
+        ),
         actions: [
           TextButton(
             key: Key('convert_cancel_$label'),
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             key: Key('convert_confirm_$label'),
             onPressed: () => _convert(targetType),
-            style:
-                TextButton.styleFrom(foregroundColor: const Color(0xFFFF5500)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFF5500),
+            ),
             child: Text('Convert to $label'),
           ),
         ],
@@ -544,13 +618,15 @@ class _ConvertTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 14)),
+                  Text(
+                    label,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
                   const SizedBox(height: 2),
-                  Text(sublabel,
-                      style:
-                          TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  Text(
+                    sublabel,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -563,11 +639,7 @@ class _ConvertTile extends StatelessWidget {
 }
 
 class _EditTrackRow extends StatelessWidget {
-  const _EditTrackRow({
-    super.key,
-    required this.track,
-    required this.onRemove,
-  });
+  const _EditTrackRow({super.key, required this.track, required this.onRemove});
 
   final PlaylistTrack track;
   final VoidCallback onRemove;
@@ -580,8 +652,11 @@ class _EditTrackRow extends StatelessWidget {
         children: [
           IconButton(
             key: Key('edit_track_remove_${track.id}'),
-            icon: const Icon(Icons.remove_circle,
-                color: Colors.redAccent, size: 26),
+            icon: const Icon(
+              Icons.remove_circle,
+              color: Colors.redAccent,
+              size: 26,
+            ),
             onPressed: onRemove,
           ),
           ClipRRect(
@@ -593,8 +668,12 @@ class _EditTrackRow extends StatelessWidget {
                   ? Image.network(track.coverUrl!, fit: BoxFit.cover)
                   : Container(
                       color: const Color(0xFF2A2A2A),
-                      child: const Icon(Icons.music_note,
-                          color: Colors.grey, size: 22)),
+                      child: const Icon(
+                        Icons.music_note,
+                        color: Colors.grey,
+                        size: 22,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 12),
@@ -602,30 +681,41 @@ class _EditTrackRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(track.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: track.isUnavailable
-                            ? Colors.grey[600]
-                            : Colors.white,
-                        fontSize: 14)),
+                Text(
+                  track.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: track.isUnavailable
+                        ? Colors.grey[600]
+                        : Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
                 if (track.artistName.isNotEmpty)
-                  Text(track.artistName,
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: 12)),
+                  Text(
+                    track.artistName,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
                 if (track.isUnavailable)
-                  Row(children: [
-                    Icon(Icons.location_on, size: 11, color: Colors.grey[600]),
-                    Text(' Not available',
-                        style: TextStyle(
-                            color: Colors.grey[600], fontSize: 11)),
-                  ])
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 11,
+                        color: Colors.grey[600],
+                      ),
+                      Text(
+                        ' Not available',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      ),
+                    ],
+                  )
                 else
                   Text(
-                      '${track.formattedPlayCount} · ${track.formattedDuration}',
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    '${track.formattedPlayCount} · ${track.formattedDuration}',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
               ],
             ),
           ),

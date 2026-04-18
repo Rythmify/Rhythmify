@@ -46,8 +46,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
         .where((p) => p.type == PlaylistType.album)
         .toList();
     final filtered = allAlbums
-        .where(
-            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -87,8 +86,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                     child: TextField(
                       key: const Key('library_albums_search_field'),
                       onChanged: (v) => setState(() => _searchQuery = v),
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
                         hintText:
                             'Search ${allAlbums.length} album${allAlbums.length == 1 ? '' : 's'}',
@@ -102,8 +100,9 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                           size: 18,
                         ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   ),
@@ -118,48 +117,43 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
           Expanded(
             child: state.isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF5500),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFFFF5500)),
                   )
                 : filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          _searchQuery.isEmpty
-                              ? 'No albums yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Album.'
-                              : 'No results for "$_searchQuery"',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.grey[500], fontSize: 14),
+                ? Center(
+                    child: Text(
+                      _searchQuery.isEmpty
+                          ? 'No albums yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Album.'
+                          : 'No results for "$_searchQuery"',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final album = filtered[index];
+                      final isOwner = album.ownerId == _currentUserId();
+                      return _AlbumTile(
+                        key: Key('library_album_tile_${album.id}'),
+                        album: album,
+                        onTap: () => context.push(
+                          '/library/albums/${album.id}',
+                          extra: isOwner,
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final album = filtered[index];
-                          final isOwner =
-                              album.ownerId == _currentUserId();
-                          return _AlbumTile(
-                            key: Key('library_album_tile_${album.id}'),
-                            album: album,
-                            onTap: () => context.push(
-                              '/library/albums/${album.id}',
-                              extra: isOwner,
-                            ),
-                            onMoreTap: () => showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (_) => PlaylistOptionsSheet(
-                                playlistId: album.id,
-                                isOwner: isOwner,
-                                onConverted: (t) =>
-                                    _onConverted(context, t),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                        onMoreTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => PlaylistOptionsSheet(
+                            playlistId: album.id,
+                            isOwner: isOwner,
+                            onConverted: (t) => _onConverted(context, t),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -217,22 +211,19 @@ class _AlbumTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     album.ownerName,
-                    style:
-                        TextStyle(color: Colors.grey[500], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     '${album.releaseYear ?? album.createdAt.year} · Album',
-                    style:
-                        TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ),
             IconButton(
               key: Key('album_tile_more_${album.id}'),
-              icon: const Icon(Icons.more_vert,
-                  color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],

@@ -33,12 +33,11 @@ class PlaylistListState {
     List<PlaylistEntity>? playlists,
     bool? isLoading,
     String? error,
-  }) =>
-      PlaylistListState(
-        playlists: playlists ?? this.playlists,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-      );
+  }) => PlaylistListState(
+    playlists: playlists ?? this.playlists,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+  );
 }
 
 class PlaylistDetailState {
@@ -71,16 +70,15 @@ class PlaylistDetailState {
     bool? isSuggestionsLoading,
     bool? isLiked,
     String? error,
-  }) =>
-      PlaylistDetailState(
-        playlist: playlist ?? this.playlist,
-        tracks: tracks ?? this.tracks,
-        suggestions: suggestions ?? this.suggestions,
-        isLoading: isLoading ?? this.isLoading,
-        isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
-        isLiked: isLiked ?? this.isLiked,
-        error: error,
-      );
+  }) => PlaylistDetailState(
+    playlist: playlist ?? this.playlist,
+    tracks: tracks ?? this.tracks,
+    suggestions: suggestions ?? this.suggestions,
+    isLoading: isLoading ?? this.isLoading,
+    isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
+    isLiked: isLiked ?? this.isLiked,
+    error: error,
+  );
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -201,10 +199,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   // ── CONVERT TO PLAYLIST ───────────────────────────────────────────────────
   Future<void> convertToPlaylist(String playlistId) async {
     try {
-      await _ds.updatePlaylist(
-        playlistId: playlistId,
-        subtype: 'playlist',
-      );
+      await _ds.updatePlaylist(playlistId: playlistId, subtype: 'playlist');
       _cache.convertToPlaylist(playlistId);
       await loadPlaylists();
       print('[LIST] ✅ Converted $playlistId back to playlist');
@@ -249,7 +244,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final related = merged.skip(existingTracks.length).toList()..shuffle();
       final station58 = [...seeds, ...related].take(58).toList();
 
-      print('[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)');
+      print(
+        '[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)',
+      );
 
       // Step 5: update cache
       _cache.convertToStation(playlistId, seedArtistName: playlist?.ownerName);
@@ -263,7 +260,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
       // Step 6: reload list
       await loadPlaylists();
-      print('[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks');
+      print(
+        '[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks',
+      );
     } catch (e) {
       print('[LIST] ❌ convertToStation: $e');
     }
@@ -343,8 +342,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
         // Discovery stations: fetch by artist UUID
         if (playlist.seedArtistName != null) {
-          final stationTracks =
-              await _fetchStationTracks(playlist.seedArtistName!);
+          final stationTracks = await _fetchStationTracks(
+            playlist.seedArtistName!,
+          );
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
@@ -403,8 +403,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<void> addSuggestion(PlaylistTrack suggestion) async {
     if (_currentPlaylistId == null) return;
 
-    final optimistic =
-        state.suggestions.where((s) => s.id != suggestion.id).toList();
+    final optimistic = state.suggestions
+        .where((s) => s.id != suggestion.id)
+        .toList();
     state = state.copyWith(suggestions: optimistic);
 
     try {
@@ -426,7 +427,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         suggestions: freshSuggestions,
       );
     } on DioException catch (e) {
-      print('[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}');
+      print(
+        '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
+      );
       state = state.copyWith(
         suggestions: [...optimistic, suggestion],
         error: 'Could not add "${suggestion.title}". Try again.',
@@ -499,10 +502,10 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
 final playlistListProvider =
     NotifierProvider<PlaylistListNotifier, PlaylistListState>(
-  PlaylistListNotifier.new,
-);
+      PlaylistListNotifier.new,
+    );
 
 final playlistDetailProvider =
     NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
-  PlaylistDetailNotifier.new,
-);
+      PlaylistDetailNotifier.new,
+    );

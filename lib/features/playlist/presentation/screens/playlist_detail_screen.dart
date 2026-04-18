@@ -40,11 +40,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
-      final fullTrack =
-          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
-      await ref
-          .read(playerStateProvider.notifier)
-          .loadAndPlayQueue([fullTrack], initialIndex: 0);
+      final fullTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(pt.id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        fullTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
     }
@@ -57,9 +58,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   }
 
   Future<void> _shuffle() async {
-    final tracks =
-        List<PlaylistTrack>.from(ref.read(playlistDetailProvider).tracks)
-          ..shuffle();
+    final tracks = List<PlaylistTrack>.from(
+      ref.read(playlistDetailProvider).tracks,
+    )..shuffle();
     if (tracks.isEmpty) return;
     await _fetchAndPlay(tracks.first);
   }
@@ -170,7 +171,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                               child: Text(
                                 playlist.type == PlaylistType.station
                                     ? (playlist.seedArtistName ??
-                                        playlist.ownerName)
+                                          playlist.ownerName)
                                     : playlist.ownerName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -199,9 +200,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
-                      playlist.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
+                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
                       color: playlist.isLiked
                           ? const Color(0xFFFF5500)
                           : Colors.white,
@@ -215,10 +214,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   if (!widget.isOwner && playlist.likeCount > 0)
                     Text(
                       _formatCount(playlist.likeCount),
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 13),
                     ),
 
                   // More options

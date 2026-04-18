@@ -202,13 +202,17 @@ class PlaylistRemoteDatasource {
   }) async {
     final body = <String, dynamic>{'track_id': trackId};
     if (position != null) body['position'] = position;
-    _log('→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position');
+    _log(
+      '→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position',
+    );
     try {
       final response = await _dio.post<dynamic>(
         '/playlists/$playlistId/tracks',
         data: body,
       );
-      _log('← ${response.statusCode}  ✅ Track $trackId added to playlist $playlistId');
+      _log(
+        '← ${response.statusCode}  ✅ Track $trackId added to playlist $playlistId',
+      );
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {
         _log('⚠️ Track $trackId already exists in playlist $playlistId (409)');
@@ -248,12 +252,11 @@ class PlaylistRemoteDatasource {
     final items = orderedTrackIds
         .asMap()
         .entries
-        .map((entry) => {
-              'track_id': entry.value,
-              'position': entry.key + 1,
-            })
+        .map((entry) => {'track_id': entry.value, 'position': entry.key + 1})
         .toList();
-    _log('→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks');
+    _log(
+      '→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks',
+    );
     try {
       final response = await _dio.patch<dynamic>(
         '/playlists/$playlistId/tracks/reorder',
@@ -359,9 +362,9 @@ class PlaylistRemoteDatasource {
   }
 
   // ADD this method to PlaylistRemoteDatasource.
-// Place it after fetchStationTracks and before fetchRecommendedTracks.
-// ============================================================
- 
+  // Place it after fetchStationTracks and before fetchRecommendedTracks.
+  // ============================================================
+
   // ============================================================
   // ── RELATED TRACKS: for station generation
   // GET /tracks/{track_id}/related?limit=50
@@ -380,12 +383,12 @@ class PlaylistRemoteDatasource {
         queryParameters: {'limit': limit, 'offset': 0},
       );
       _log('← ${response.statusCode}');
- 
+
       // Response shape from spec:
       // { "reference_track": {...}, "data": [...DiscoveryTrack], "pagination": {...} }
       final data = response.data!['data'] as List<dynamic>;
       _log('← Got ${data.length} related tracks for $trackId');
- 
+
       return _mapDiscoveryTracksToPlaylistTracks(data);
     } on DioException catch (e) {
       _logError('fetchRelatedTracks($trackId) failed', e);
@@ -394,9 +397,9 @@ class PlaylistRemoteDatasource {
   }
 
   // ============================================================
-// ADD these 3 methods to PlaylistRemoteDatasource
-// Place them after fetchRelatedTracks and before fetchRecommendedTracks
-// ============================================================
+  // ADD these 3 methods to PlaylistRemoteDatasource
+  // Place them after fetchRelatedTracks and before fetchRecommendedTracks
+  // ============================================================
 
   // ── MIX TRACKS: GET /home/mixes/{mixId} ──────────────────────────────────
   // Used by MixDetailScreen for mixed_for_you genre mixes
@@ -488,18 +491,20 @@ class PlaylistRemoteDatasource {
       // ── Step 2: Fetch tracks from all genres in parallel ──────────────
       // We fetch from all genres so we get a wide pool of the 39 real tracks
       final responses = await Future.wait(
-        genreIds.map((genreId) => _dio
-            .get<Map<String, dynamic>>(
-              '/genres/$genreId/tracks',
-              queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
-            )
-            .catchError((e) {
-          _log('Genre $genreId fetch failed, skipping: $e');
-          return Response<Map<String, dynamic>>(
-            requestOptions: RequestOptions(path: ''),
-            data: null,
-          );
-        })),
+        genreIds.map(
+          (genreId) => _dio
+              .get<Map<String, dynamic>>(
+                '/genres/$genreId/tracks',
+                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
+              )
+              .catchError((e) {
+                _log('Genre $genreId fetch failed, skipping: $e');
+                return Response<Map<String, dynamic>>(
+                  requestOptions: RequestOptions(path: ''),
+                  data: null,
+                );
+              }),
+        ),
       );
 
       // ── Collect and deduplicate all tracks ────────────────────────────
@@ -541,7 +546,9 @@ class PlaylistRemoteDatasource {
       // Shuffle so refresh shows different tracks
       allTracks.shuffle();
 
-      return _mapDiscoveryTracksToPlaylistTracks(allTracks.take(limit).toList());
+      return _mapDiscoveryTracksToPlaylistTracks(
+        allTracks.take(limit).toList(),
+      );
     } on DioException catch (e) {
       _logError('fetchRecommendedTracks() failed', e);
       return [];
@@ -610,17 +617,21 @@ class PlaylistRemoteDatasource {
         final id = json['id'] as String?;
         if (id == null || id.isEmpty || id.startsWith('c0000')) continue;
 
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration: Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('Error mapping track at index $i: $e');
       }

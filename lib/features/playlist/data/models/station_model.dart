@@ -10,7 +10,8 @@ class StationModel {
 
     final seedArtist = json['seed_artist'] as Map<String, dynamic>? ?? {};
     final artistId = seedArtist['user_id'] as String? ?? '';
-    final artistName = seedArtist['display_name'] as String? ?? 'Unknown Artist';
+    final artistName =
+        seedArtist['display_name'] as String? ?? 'Unknown Artist';
     final stationId = json['id'] as String;
 
     final entity = PlaylistEntity(

@@ -407,14 +407,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-playlists',
                     path: 'playlists',
-                    builder: (context, state) =>
-                        const LibraryPlaylistsScreen(),
+                    builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
                   GoRoute(
                     path: 'playlists/:playlistId',
                     builder: (context, state) {
-                      final playlistId =
-                          state.pathParameters['playlistId']!;
+                      final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -433,8 +431,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'albums/:playlistId',
                     builder: (context, state) {
-                      final playlistId =
-                          state.pathParameters['playlistId']!;
+                      final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -448,14 +445,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-stations',
                     path: 'stations',
-                    builder: (context, state) =>
-                        const LibraryStationsScreen(),
+                    builder: (context, state) => const LibraryStationsScreen(),
                   ),
                   GoRoute(
                     path: 'stations/:playlistId',
                     builder: (context, state) {
-                      final playlistId =
-                          state.pathParameters['playlistId']!;
+                      final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -524,18 +519,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const UploadTrackScreen(),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) {
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             );
           },
@@ -549,10 +544,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final playlistId = state.pathParameters['playlistId']!;
           final isOwner = state.extra as bool? ?? false;
-          return PlaylistDetailScreen(
-            playlistId: playlistId,
-            isOwner: isOwner,
-          );
+          return PlaylistDetailScreen(playlistId: playlistId, isOwner: isOwner);
         },
       ),
 

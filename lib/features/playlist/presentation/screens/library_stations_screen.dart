@@ -19,8 +19,7 @@ class LibraryStationsScreen extends ConsumerStatefulWidget {
       _LibraryStationsScreenState();
 }
 
-class _LibraryStationsScreenState
-    extends ConsumerState<LibraryStationsScreen> {
+class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
   String _searchQuery = '';
 
   @override
@@ -30,8 +29,7 @@ class _LibraryStationsScreenState
         .where((p) => p.type == PlaylistType.station)
         .toList();
     final filtered = allStations
-        .where(
-            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -47,7 +45,10 @@ class _LibraryStationsScreenState
         title: const Text(
           'Stations',
           style: TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
       ),
@@ -68,18 +69,23 @@ class _LibraryStationsScreenState
                     child: TextField(
                       key: const Key('library_stations_search_field'),
                       onChanged: (v) => setState(() => _searchQuery = v),
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
                         hintText:
                             'Search ${allStations.length} station${allStations.length == 1 ? '' : 's'}',
-                        hintStyle:
-                            TextStyle(color: Colors.grey[600], fontSize: 14),
-                        prefixIcon: const Icon(Icons.search,
-                            color: Colors.grey, size: 18),
+                        hintStyle: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   ),
@@ -98,8 +104,7 @@ class _LibraryStationsScreenState
                           ? 'No stations yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Station.'
                           : 'No results for "$_searchQuery"',
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: 14),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
                     ),
                   )
                 : ListView.builder(
@@ -170,13 +175,16 @@ class _StationTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(station.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    station.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(height: 3),
                   Text(
                     station.seedArtistName != null

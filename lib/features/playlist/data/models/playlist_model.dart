@@ -83,11 +83,7 @@ class PlaylistModel {
     required bool isPublic,
     String subtype = 'playlist',
   }) {
-    final body = {
-      'name': name,
-      'is_public': isPublic,
-      'subtype': subtype,
-    };
+    final body = {'name': name, 'is_public': isPublic, 'subtype': subtype};
     debugPrintPlaylist('toCreateJson → $body');
     return body;
   }

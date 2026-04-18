@@ -139,19 +139,20 @@ class PlaylistMockData {
     _updateTrackCount(playlistId);
   }
 
- void _updateTrackCount(String playlistId) {
-  final i = _playlists.indexWhere((p) => p.id == playlistId);
-  if (i == -1) return;
-  final list = _tracks[playlistId] ?? [];
-  Duration total = Duration.zero;
-  for (final t in list) {
-    total += t.duration;
+  void _updateTrackCount(String playlistId) {
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return;
+    final list = _tracks[playlistId] ?? [];
+    Duration total = Duration.zero;
+    for (final t in list) {
+      total += t.duration;
+    }
+    _playlists[i] = _playlists[i].copyWith(
+      trackCount: list.length,
+      totalDuration: total,
+    );
   }
-  _playlists[i] = _playlists[i].copyWith(
-    trackCount: list.length,
-    totalDuration: total,
-  );
-}
+
   // ── CONVERT ───────────────────────────────────────────────────────────────
   PlaylistEntity convertToAlbum(String playlistId) {
     final i = _playlists.indexWhere((p) => p.id == playlistId);
@@ -164,24 +165,20 @@ class PlaylistMockData {
     return updated;
   }
 
-// ============================================================
-// REPLACE convertToStation in PlaylistMockData
-// inside playlist_mock_data.dart
-//
-// Now accepts optional seedArtistName so the station tile
-// shows "Based on [name]" correctly.
-// ============================================================
+  // ============================================================
+  // REPLACE convertToStation in PlaylistMockData
+  // inside playlist_mock_data.dart
+  //
+  // Now accepts optional seedArtistName so the station tile
+  // shows "Based on [name]" correctly.
+  // ============================================================
 
-  PlaylistEntity convertToStation(
-    String playlistId, {
-    String? seedArtistName,
-  }) {
+  PlaylistEntity convertToStation(String playlistId, {String? seedArtistName}) {
     final i = _playlists.indexWhere((p) => p.id == playlistId);
     if (i == -1) return _playlists.first;
     final updated = _playlists[i].copyWith(
       type: PlaylistType.station,
-      seedArtistName:
-          seedArtistName ?? _playlists[i].ownerName,
+      seedArtistName: seedArtistName ?? _playlists[i].ownerName,
     );
     _playlists[i] = updated;
     return updated;

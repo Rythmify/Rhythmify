@@ -32,12 +32,11 @@ class MixDetailState {
     List<PlaylistTrack>? tracks,
     bool? isLoading,
     String? error,
-  }) =>
-      MixDetailState(
-        tracks: tracks ?? this.tracks,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-      );
+  }) => MixDetailState(
+    tracks: tracks ?? this.tracks,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+  );
 }
 
 // ── Notifier ──────────────────────────────────────────────────────────────────
@@ -47,10 +46,7 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
 
   PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
 
-  Future<void> load({
-    required String mixId,
-    required MixType mixType,
-  }) async {
+  Future<void> load({required String mixId, required MixType mixType}) async {
     state = const MixDetailState(isLoading: true);
     try {
       List<PlaylistTrack> tracks;
@@ -72,8 +68,7 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
-final mixDetailProvider =
-    NotifierProvider<MixDetailNotifier, MixDetailState>(
+final mixDetailProvider = NotifierProvider<MixDetailNotifier, MixDetailState>(
   MixDetailNotifier.new,
 );
 
@@ -105,20 +100,20 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(mixDetailProvider.notifier).load(
-            mixId: widget.mixId,
-            mixType: widget.mixType,
-          );
+      ref
+          .read(mixDetailProvider.notifier)
+          .load(mixId: widget.mixId, mixType: widget.mixType);
     });
   }
 
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
-      final fullTrack =
-          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
-      await ref
-          .read(playerStateProvider.notifier)
-          .loadAndPlayQueue([fullTrack], initialIndex: 0);
+      final fullTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(pt.id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        fullTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[MixDetail] Failed to play "${pt.title}": $e');
     }
@@ -131,9 +126,8 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   }
 
   Future<void> _shuffle() async {
-    final tracks =
-        List<PlaylistTrack>.from(ref.read(mixDetailProvider).tracks)
-          ..shuffle();
+    final tracks = List<PlaylistTrack>.from(ref.read(mixDetailProvider).tracks)
+      ..shuffle();
     if (tracks.isEmpty) return;
     await _fetchAndPlay(tracks.first);
   }
@@ -161,16 +155,20 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
       return Scaffold(
         backgroundColor: const Color(0xFF111111),
         body: Center(
-          child: Text(state.error!,
-              style: const TextStyle(color: Colors.white)),
+          child: Text(
+            state.error!,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
       );
     }
 
     final tracks = state.tracks;
     final trackCount = widget.trackCount ?? tracks.length;
-    final totalDuration =
-        tracks.fold(Duration.zero, (sum, t) => sum + t.duration);
+    final totalDuration = tracks.fold(
+      Duration.zero,
+      (sum, t) => sum + t.duration,
+    );
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -189,8 +187,11 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left,
-                        color: Colors.white, size: 28),
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                     onPressed: () => context.pop(),
                   ),
                   ClipRRect(
@@ -227,7 +228,9 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                         Text(
                           'Private · $durationStr · $trackCount tracks',
                           style: TextStyle(
-                              color: Colors.grey[500], fontSize: 12),
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -235,7 +238,9 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                             Text(
                               'Made for ',
                               style: TextStyle(
-                                  color: Colors.grey[500], fontSize: 12),
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                              ),
                             ),
                             Flexible(
                               child: Text(
@@ -264,19 +269,28 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               child: Row(
                 children: [
                   const IconButton(
-                    icon: Icon(Icons.favorite_border,
-                        color: Colors.white, size: 24),
+                    icon: Icon(
+                      Icons.favorite_border,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                     onPressed: null,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.more_horiz,
-                        color: Colors.white, size: 24),
+                    icon: const Icon(
+                      Icons.more_horiz,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                     onPressed: () => _showOptions(context),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.shuffle,
-                        color: Colors.white60, size: 24),
+                    icon: const Icon(
+                      Icons.shuffle,
+                      color: Colors.white60,
+                      size: 24,
+                    ),
                     onPressed: _shuffle,
                   ),
                   GestureDetector(
@@ -288,8 +302,11 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                         color: Color(0xFF3A3A3A),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.play_arrow,
-                          color: Colors.white, size: 28),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ],
@@ -369,7 +386,9 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                         Text(
                           'Made for ${widget.ownerName}',
                           style: TextStyle(
-                              color: Colors.grey[500], fontSize: 13),
+                            color: Colors.grey[500],
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),

@@ -95,8 +95,7 @@ class _LibraryPlaylistsScreenState
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
-                          hintText:
-                              'Search ${allPlaylists.length} playlists',
+                          hintText: 'Search ${allPlaylists.length} playlists',
                           hintStyle: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -107,8 +106,9 @@ class _LibraryPlaylistsScreenState
                             size: 18,
                           ),
                           border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
                         ),
                       ),
                     ),
@@ -204,35 +204,33 @@ class _LibraryPlaylistsScreenState
                       ),
                     )
                   : filtered.isEmpty
-                      ? Center(
-                          child: Text(
-                            _searchQuery.isEmpty
-                                ? 'No playlists yet.\nTap Create to make one!'
-                                : 'No results for "$_searchQuery"',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[500]),
+                  ? Center(
+                      child: Text(
+                        _searchQuery.isEmpty
+                            ? 'No playlists yet.\nTap Create to make one!'
+                            : 'No results for "$_searchQuery"',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[500]),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final playlist = filtered[index];
+                        // Real ownership check using the auth provider
+                        final isOwner = playlist.ownerId == _currentUserId();
+                        return _PlaylistListTile(
+                          key: Key('library_playlist_tile_${playlist.id}'),
+                          playlist: playlist,
+                          onTap: () => context.push(
+                            '/library/playlists/${playlist.id}',
+                            extra: isOwner,
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final playlist = filtered[index];
-                            // Real ownership check using the auth provider
-                            final isOwner =
-                                playlist.ownerId == _currentUserId();
-                            return _PlaylistListTile(
-                              key: Key(
-                                  'library_playlist_tile_${playlist.id}'),
-                              playlist: playlist,
-                              onTap: () => context.push(
-                                '/library/playlists/${playlist.id}',
-                                extra: isOwner,
-                              ),
-                              onMoreTap: () =>
-                                  _showOptions(context, playlist, isOwner),
-                            );
-                          },
-                        ),
+                          onMoreTap: () =>
+                              _showOptions(context, playlist, isOwner),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -246,22 +244,22 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) =>
-            context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
 
   void _showOptions(
-      BuildContext context, PlaylistEntity playlist, bool isOwner) {
+    BuildContext context,
+    PlaylistEntity playlist,
+    bool isOwner,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PlaylistOptionsSheet(
-        playlistId: playlist.id,
-        isOwner: isOwner,
-      ),
+      builder: (_) =>
+          PlaylistOptionsSheet(playlistId: playlist.id, isOwner: isOwner),
     );
   }
 }
@@ -286,8 +284,7 @@ class _PlaylistListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(
-                playlist: playlist, size: 60, borderRadius: 4),
+            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 4),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -306,22 +303,19 @@ class _PlaylistListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     playlist.ownerName,
-                    style:
-                        TextStyle(color: Colors.grey[500], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     playlist.subtitleLine,
-                    style:
-                        TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ),
             IconButton(
               key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(
-                  Icons.more_vert, color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],
