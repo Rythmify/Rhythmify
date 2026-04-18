@@ -1,8 +1,10 @@
 // lib/features/playlist/data/mock/playlist_mock_data.dart
 //
-// In-memory store that now accepts real backend UUIDs via createWithId.
-// All NEW playlists go through createWithId (real UUID from backend).
-// The legacy create() method is kept for anything that doesn't need backend.
+// This is now a LOCAL IN-MEMORY CACHE, not the source of truth.
+// The backend is the source of truth. This cache exists so:
+//   1. The UI doesn't re-fetch on every rebuild
+//   2. The edit sheet can read playlist metadata without an extra call
+//   3. Optimistic UI updates work before the backend confirms
 
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
@@ -11,8 +13,9 @@ class PlaylistMockData {
   PlaylistMockData._();
   static final PlaylistMockData instance = PlaylistMockData._();
 
+  // Starts empty — populated by syncFromBackend() when the list screen loads
   final List<PlaylistEntity> _playlists = [];
-  final Map<String, List<PlaylistTrack>> _playlistTracks = {};
+  final Map<String, List<PlaylistTrack>> _tracks = {};
 
   // ── READ ──────────────────────────────────────────────────────────────────
 
@@ -25,7 +28,7 @@ class PlaylistMockData {
       _playlists.where((p) => p.type == PlaylistType.station).toList();
 
   List<PlaylistTrack> getTracksFor(String playlistId) =>
-      List.from(_playlistTracks[playlistId] ?? []);
+      List.from(_tracks[playlistId] ?? []);
 
   PlaylistEntity? getById(String id) {
     try {
@@ -35,9 +38,24 @@ class PlaylistMockData {
     }
   }
 
-  // ── CREATE with real backend UUID ─────────────────────────────────────────
-  // Call this after createPlaylist() returns from the backend.
-  // The id here is the real UUID the backend assigned.
+  // ── SYNC FROM BACKEND ─────────────────────────────────────────────────────
+  // Called after fetchMyPlaylists() returns. Replaces the entire list
+  // with what the backend says, preserving locally-added track entries.
+  void syncFromBackend(List<PlaylistEntity> backendPlaylists) {
+    // Keep track entries for playlists that are still in the list
+    final keepIds = backendPlaylists.map((p) => p.id).toSet();
+    _tracks.removeWhere((id, _) => !keepIds.contains(id));
+
+    _playlists
+      ..clear()
+      ..addAll(backendPlaylists);
+
+    print('[Cache] Synced ${backendPlaylists.length} playlists from backend');
+  }
+
+  // ── CREATE WITH REAL ID ───────────────────────────────────────────────────
+  // Called after POST /playlists succeeds. Stores the real UUID so
+  // all subsequent API calls use it instead of a fake "pl-..." ID.
   PlaylistEntity createWithId({
     required String id,
     required String name,
@@ -45,7 +63,6 @@ class PlaylistMockData {
     String ownerName = 'Me',
     String ownerId = '',
   }) {
-    // Don't duplicate if already exists (e.g. called twice)
     if (_playlists.any((p) => p.id == id)) {
       return _playlists.firstWhere((p) => p.id == id);
     }
@@ -62,140 +79,117 @@ class PlaylistMockData {
       createdAt: DateTime.now(),
     );
     _playlists.insert(0, playlist);
-    _playlistTracks[id] = [];
-    print('[MockDB] Registered real playlist: $name  id=$id');
+    _tracks[id] = [];
     return playlist;
   }
 
-  // ── Legacy create (mock ID) — kept for non-backend flows ─────────────────
-  PlaylistEntity create({required String name, required bool isPublic}) {
-    final newPlaylist = PlaylistEntity(
-      id: 'pl-${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      ownerName: 'Me',
-      ownerId: 'user-001',
-      isPublic: isPublic,
-      type: PlaylistType.playlist,
-      trackCount: 0,
-      totalDuration: Duration.zero,
-      coverUrl: null,
-      createdAt: DateTime.now(),
-    );
-    _playlists.insert(0, newPlaylist);
-    _playlistTracks[newPlaylist.id] = [];
-    print('[MockDB] Created mock playlist: ${newPlaylist.name}');
-    return newPlaylist;
+  // ── CLEAR TRACKS ─────────────────────────────────────────────────────────
+  // Called before re-syncing tracks from backend to avoid duplicates.
+  void clearTracks(String playlistId) {
+    _tracks[playlistId] = [];
   }
 
+  // ── UPDATE ────────────────────────────────────────────────────────────────
   void update({
     required String playlistId,
     required String name,
     required bool isPublic,
     String? description,
   }) {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index == -1) return;
-    _playlists[index] = _playlists[index].copyWith(
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return;
+    _playlists[i] = _playlists[i].copyWith(
       name: name,
       isPublic: isPublic,
       description: description,
     );
-    print('[MockDB] Updated playlist $playlistId → name=$name');
   }
 
   void updateCoverImage({
     required String playlistId,
     required String localPath,
   }) {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index == -1) return;
-    _playlists[index] = _playlists[index].copyWith(coverUrl: localPath);
-    print('[MockDB] Updated cover for $playlistId');
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return;
+    _playlists[i] = _playlists[i].copyWith(coverUrl: localPath);
   }
 
+  // ── DELETE ────────────────────────────────────────────────────────────────
   void delete(String playlistId) {
     _playlists.removeWhere((p) => p.id == playlistId);
-    _playlistTracks.remove(playlistId);
-    print('[MockDB] Deleted playlist $playlistId');
+    _tracks.remove(playlistId);
   }
 
+  // ── TRACKS ────────────────────────────────────────────────────────────────
   void addTrack({required String playlistId, required PlaylistTrack track}) {
-    final tracks = _playlistTracks[playlistId] ?? [];
-    if (tracks.any((t) => t.id == track.id)) return;
-    tracks.add(track.copyWith(position: tracks.length + 1));
-    _playlistTracks[playlistId] = tracks;
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1) {
-      _playlists[index] = _playlists[index].copyWith(
-        trackCount: tracks.length,
-        totalDuration: _recalcDuration(tracks),
-      );
-    }
-    print('[MockDB] Added track ${track.title} to $playlistId');
+    final list = _tracks[playlistId] ?? [];
+    if (list.any((t) => t.id == track.id)) return;
+    list.add(track.copyWith(position: list.length + 1));
+    _tracks[playlistId] = list;
+    _updateTrackCount(playlistId);
   }
 
   void removeTrack({required String playlistId, required String trackId}) {
-    final tracks = _playlistTracks[playlistId] ?? [];
-    tracks.removeWhere((t) => t.id == trackId);
-    for (int i = 0; i < tracks.length; i++) {
-      tracks[i] = tracks[i].copyWith(position: i + 1);
+    final list = _tracks[playlistId] ?? [];
+    list.removeWhere((t) => t.id == trackId);
+    for (int i = 0; i < list.length; i++) {
+      list[i] = list[i].copyWith(position: i + 1);
     }
-    _playlistTracks[playlistId] = tracks;
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1) {
-      _playlists[index] = _playlists[index].copyWith(
-        trackCount: tracks.length,
-        totalDuration: _recalcDuration(tracks),
-      );
-    }
+    _tracks[playlistId] = list;
+    _updateTrackCount(playlistId);
   }
 
-  Duration _recalcDuration(List<PlaylistTrack> tracks) =>
-      tracks.fold(Duration.zero, (sum, t) => sum + t.duration);
-
+ void _updateTrackCount(String playlistId) {
+  final i = _playlists.indexWhere((p) => p.id == playlistId);
+  if (i == -1) return;
+  final list = _tracks[playlistId] ?? [];
+  Duration total = Duration.zero;
+  for (final t in list) {
+    total += t.duration;
+  }
+  _playlists[i] = _playlists[i].copyWith(
+    trackCount: list.length,
+    totalDuration: total,
+  );
+}
   // ── CONVERT ───────────────────────────────────────────────────────────────
-
   PlaylistEntity convertToAlbum(String playlistId) {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index == -1) return _playlists.first;
-    final updated = _playlists[index].copyWith(
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return _playlists.first;
+    final updated = _playlists[i].copyWith(
       type: PlaylistType.album,
       releaseYear: DateTime.now().year.toString(),
     );
-    _playlists[index] = updated;
-    print('[MockDB] Converted $playlistId to album');
+    _playlists[i] = updated;
     return updated;
   }
 
   PlaylistEntity convertToStation(String playlistId) {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index == -1) return _playlists.first;
-    final updated = _playlists[index].copyWith(
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return _playlists.first;
+    final updated = _playlists[i].copyWith(
       type: PlaylistType.station,
-      seedArtistName: _playlists[index].ownerName,
+      seedArtistName: _playlists[i].ownerName,
     );
-    _playlists[index] = updated;
-    print('[MockDB] Converted $playlistId to station');
+    _playlists[i] = updated;
     return updated;
   }
 
   PlaylistEntity convertToPlaylist(String playlistId) {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index == -1) return _playlists.first;
-    final updated = _playlists[index].copyWith(type: PlaylistType.playlist);
-    _playlists[index] = updated;
-    print('[MockDB] Converted $playlistId to playlist');
+    final i = _playlists.indexWhere((p) => p.id == playlistId);
+    if (i == -1) return _playlists.first;
+    final updated = _playlists[i].copyWith(type: PlaylistType.playlist);
+    _playlists[i] = updated;
     return updated;
   }
 
-  // ── STATION CREATION ──────────────────────────────────────────────────────
-
+  // ── STATION ───────────────────────────────────────────────────────────────
   PlaylistEntity createStation({required PlaylistTrack seedTrack}) {
     final station = PlaylistEntity(
       id: 'st-${DateTime.now().millisecondsSinceEpoch}',
       name: '${seedTrack.artistName} Radio',
       ownerName: 'Me',
-      ownerId: 'user-001',
+      ownerId: '',
       isPublic: false,
       type: PlaylistType.station,
       trackCount: 0,
@@ -205,8 +199,7 @@ class PlaylistMockData {
       seedArtistName: seedTrack.artistName,
     );
     _playlists.insert(0, station);
-    _playlistTracks[station.id] = [];
-    print('[MockDB] Created station: ${station.name}');
+    _tracks[station.id] = [];
     return station;
   }
 }
