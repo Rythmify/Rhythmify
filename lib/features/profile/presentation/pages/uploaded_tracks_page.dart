@@ -25,12 +25,19 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
   void initState() {
     super.initState();
 
-    // Trigger initial load after build phase
-    Future.microtask(
-      () => ref
+    Future.microtask(() async {
+      await ref
           .read(profileProvider.notifier)
-          .loadProfile(userId: widget.userId),
-    );
+          .loadProfile(userId: widget.userId);
+      // Ensure we load full list (limit 20) and force refresh to bypass any limit-3 previews
+      if (mounted) {
+        ref.read(profileProvider.notifier).loadUploadedTracks(
+              userId: widget.userId,
+              refresh: true,
+              limit: 20,
+            );
+      }
+    });
 
     // Attach scroll listener for pagination
     _scrollController.addListener(() {
@@ -39,18 +46,6 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
         ref
             .read(profileProvider.notifier)
             .loadUploadedTracks(userId: widget.userId);
-      }
-    });
-
-    // Ensure we load full list (if only preview was loaded)
-    Future.microtask(() {
-      final s = ref.read(profileProvider);
-      if (s is ProfileLoaded && s.uploadedTracks.length <= 3) {
-        ref.read(profileProvider.notifier).loadUploadedTracks(
-              userId: widget.userId,
-              refresh: true,
-              limit: 20,
-            );
       }
     });
   }

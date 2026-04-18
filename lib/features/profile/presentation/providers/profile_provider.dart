@@ -42,6 +42,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _uploadsPage = 1;
   int _repostsPage = 1;
 
+  // Request Guarding: Track the current request version for each section
+  int _likesRequestVersion = 0;
+  int _uploadsRequestVersion = 0;
+  int _repostsRequestVersion = 0;
+
   @override
   ProfileState build() {
     final datasource = useProfileMockData
@@ -66,16 +71,31 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> loadProfile({required String userId}) async {
-    state = const ProfileLoading();
+    final current = state;
+    final isSameUser = current is ProfileLoaded &&
+        (current.profile.id == userId || userId == 'me');
+
+    // If not the same user, show loading spinner and reset
+    if (!isSameUser) {
+      state = const ProfileLoading();
+    }
+
     final result = await _getProfile(userId: userId);
-    result.fold((failure) => state = ProfileError(failure.message), (profile) {
-      state = ProfileLoaded(profile: profile);
-      // Load previews (first 3) for all sections
-      _loadPreviews(userId);
-    });
+    result.fold(
+      (failure) => state = ProfileError(failure.message),
+      (profile) {
+        if (state is ProfileLoaded && (state as ProfileLoaded).profile.id == profile.id) {
+          // Preserve existing tracks but update profile info
+          state = (state as ProfileLoaded).copyWith(profile: profile);
+        } else {
+          // Brand new profile state
+          state = ProfileLoaded(profile: profile);
+        }
+      },
+    );
   }
 
-  Future<void> _loadPreviews(String userId) async {
+  Future<void> loadPreviews(String userId) async {
     // Load previews (first 3) for all sections sequentially to avoid race conditions
     await loadUploadedTracks(userId: userId, refresh: true, limit: 3);
     await loadLikedTracks(userId: userId, refresh: true, limit: 3);
@@ -93,6 +113,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     // Per-section loading guard
     if (current.isLoadingLikes && !refresh) return;
 
+    // Guard: Increment version for this section
+    final requestVersion = ++_likesRequestVersion;
+
     if (refresh) {
       _likesPage = 1;
       state = current.copyWith(
@@ -109,6 +132,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       page: _likesPage,
       limit: limit,
     );
+
+    // Guard check: Discard if a newer request was started
+    if (requestVersion != _likesRequestVersion) return;
 
     result.fold(
       (failure) {
@@ -141,6 +167,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     if (current is! ProfileLoaded) return;
     if (current.isLoadingUploads && !refresh) return;
 
+    // Guard: Increment version
+    final requestVersion = ++_uploadsRequestVersion;
+
     if (refresh) {
       _uploadsPage = 1;
       state = current.copyWith(
@@ -157,6 +186,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       page: _uploadsPage,
       limit: limit,
     );
+
+    // Guard check
+    if (requestVersion != _uploadsRequestVersion) return;
 
     result.fold(
       (failure) {
@@ -188,6 +220,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     if (current is! ProfileLoaded) return;
     if (current.isLoadingReposts && !refresh) return;
 
+    // Guard: Increment version
+    final requestVersion = ++_repostsRequestVersion;
+
     if (refresh) {
       _repostsPage = 1;
       state = current.copyWith(
@@ -204,6 +239,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       page: _repostsPage,
       limit: limit,
     );
+
+    // Guard check
+    if (requestVersion != _repostsRequestVersion) return;
 
     result.fold(
       (failure) {

@@ -44,11 +44,15 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? 'me'
         : widget.userId;
 
-    Future.microtask(
-      () => ref
+    Future.microtask(() async {
+      await ref
           .read(profileProvider.notifier)
-          .loadProfile(userId: _resolvedUserId),
-    );
+          .loadProfile(userId: _resolvedUserId);
+      // Explicitly load previews (3 tracks each) for the main profile view
+      if (mounted) {
+        ref.read(profileProvider.notifier).loadPreviews(_resolvedUserId);
+      }
+    });
   }
 
   @override
@@ -285,7 +289,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           if (state.uploadedTracks.isNotEmpty)
             SliverToBoxAdapter(
               child: _ProfileSection(
-                title: 'Uploaded tracks',
+                title: 'Uploads',
                 tracks: state.uploadedTracks.take(3).toList(),
                 onSeeAll: () =>
                     context.push('/profile/$_resolvedUserId/uploads'),
@@ -294,7 +298,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           if (state.likedTracks.isNotEmpty)
             SliverToBoxAdapter(
               child: _ProfileSection(
-                title: 'Liked tracks',
+                title: 'Likes',
                 tracks: state.likedTracks.take(3).toList(),
                 onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
               ),
@@ -302,7 +306,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           if (state.repostedTracks.isNotEmpty)
             SliverToBoxAdapter(
               child: _ProfileSection(
-                title: 'Reposted tracks',
+                title: 'Reposts',
                 tracks: state.repostedTracks.take(3).toList(),
                 onSeeAll: () =>
                     context.push('/profile/$_resolvedUserId/reposts'),
@@ -378,13 +382,13 @@ class _ProfileSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
-                style: AppTheme.titleMedium.copyWith(fontSize: 18),
+                style: AppTheme.titleMedium.copyWith(fontSize: 22),
               ),
               TextButton(
                 onPressed: onSeeAll,
@@ -402,7 +406,8 @@ class _ProfileSection extends StatelessWidget {
               key: Key('profile_${title}_${track.id}'),
               track: track,
             )),
-        const Divider(color: AppTheme.surface, height: 1, indent: 16),
+        const SizedBox(height: 12),
+        const Divider(color: AppTheme.surface, height: 1,),
       ],
     );
   }

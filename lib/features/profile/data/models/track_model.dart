@@ -68,7 +68,7 @@ class TrackModel extends Track {
       likeCount: data['like_count'] as int? ?? 0,
       commentCount: data['comment_count'] as int? ?? 0,
       repostCount: data['repost_count'] as int? ?? 0,
-      isLiked: data['is_liked'] as bool? ?? true,
+      isLiked: data['is_liked'] as bool? ?? false,
       isArtistFollowed: data['is_artist_followed'] as bool? ?? false,
       status: data['status'] as String?,
       releaseDate: data['release_date'] as String?,

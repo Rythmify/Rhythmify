@@ -160,7 +160,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       );
 
       final tracks = _extractListPayload(response.data);
-      return tracks.map((t) => TrackModel.fromJson(t)).toList();
+      return tracks
+          .map((t) => TrackModel.fromJson({
+                ...t,
+                'is_liked': true,
+              }))
+          .toList();
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
