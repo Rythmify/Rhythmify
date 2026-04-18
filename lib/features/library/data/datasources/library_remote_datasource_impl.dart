@@ -198,7 +198,7 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
   }) async {
     try {
       final res = await client.dio.get(
-        '/me/listening-history',
+        '/me/history',
         queryParameters: {'page': page, 'limit': limit},
       );
       final List data = res.data['data'] as List? ?? [];

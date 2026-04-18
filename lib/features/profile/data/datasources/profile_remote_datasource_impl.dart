@@ -179,7 +179,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final endpoint = '/tracks/me' ;
+      final endpoint = userId == 'me' ? '/tracks/me' : '/users/$userId/tracks';
 
       final response = await client.dio.get(
         endpoint,
@@ -201,7 +201,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final endpoint = userId == 'me' ? '/me/reposted-tracks' : '/users/$userId/reposts';
+      final endpoint = userId == 'me' ? '/me/reposted-tracks' : '/users/$userId/tracks';
 
       final response = await client.dio.get(
         endpoint,
