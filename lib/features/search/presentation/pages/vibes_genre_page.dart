@@ -26,11 +26,6 @@ class GenrePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // fallback until cover_image is added to /genres endpoint
-    final imagePath = coverImage.isNotEmpty
-        ? coverImage
-        : 'assets/images/placeholder.png';
-
     final tabs = [
       GenreAllTab(genreId: genreId),
       GenreTrendingTab(genreId: genreId),
@@ -47,25 +42,17 @@ class GenrePage extends StatelessWidget {
             Stack(
               key: const Key('genre_header'),
               children: [
-                coverImage.isNotEmpty
-                    ? Image.network(
-                        imagePath,
-                        key: const Key('genre_header_image'),
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            Container(height: 220, color: Colors.grey[900]),
-                      )
-                    : Image.asset(
-                        imagePath,
-                        key: const Key('genre_header_image'),
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            Container(height: 220, color: Colors.grey[900]),
-                      ),
+                Image.asset(
+                  coverImage.isNotEmpty
+                      ? coverImage
+                      : 'assets/images/placeholder.png',
+                  key: const Key('genre_header_image'),
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Container(height: 220, color: Colors.grey[900]),
+                ),
                 Positioned(
                   top: MediaQuery.of(context).padding.top,
                   left: 8,
@@ -73,6 +60,22 @@ class GenrePage extends StatelessWidget {
                     key: const Key('genre_back_button'),
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 Positioned(

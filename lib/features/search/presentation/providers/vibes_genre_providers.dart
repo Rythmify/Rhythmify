@@ -65,7 +65,6 @@ final getGenreAllTracksProvider = Provider(
 /// Fetches the full [GenreContent] bundle for the genre page.
 final genreContentProvider = FutureProvider.autoDispose
     .family<GenreContent, String>((ref, genreId) {
-      print('GENRE CONTENT PROVIDER CALLED with id: $genreId');
       return ref.read(getGenreContentProvider).call(genreId);
     });
 

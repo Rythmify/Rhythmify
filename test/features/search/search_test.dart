@@ -8,7 +8,7 @@ import 'package:rythmify/features/search/domain/repositories/search_repository.d
 import 'package:rythmify/features/search/domain/usecases/get_search_results.dart';
 import 'package:rythmify/features/search/domain/usecases/get_search_suggestions.dart';
 import 'package:rythmify/features/search/presentation/providers/search_providers.dart';
-import '../../../lib/features/search/data/datasources/search_mock_datasource.dart';
+import 'package:rythmify/features/search/data/datasources/search_mock_datasource.dart';
 
 void main() {
   group('Search Feature Tests', () {
