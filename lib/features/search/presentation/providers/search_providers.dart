@@ -5,12 +5,15 @@ import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_results.dart';
 import '../../domain/usecases/get_search_suggestions.dart';
 import '../../domain/usecases/get_search_results.dart';
+import '../../data/datasources/search_mock_datasource.dart'; // now has Impl
+// now has Impl
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
 
-/// Provides the mock data source. Swap to a real HTTP source at integration time.
+const bool _useSearchMock = true;
+
 final searchRemoteSourceProvider = Provider<SearchRemoteSource>(
-  (_) => SearchRemoteSourceMock(),
+  (_) => _useSearchMock ? SearchRemoteSourceMock() : SearchRemoteSourceImpl(),
 );
 
 /// Provides the repository, injecting the remote source.

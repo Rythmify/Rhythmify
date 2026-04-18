@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
-import '../widgets/track_tile.dart';
+import '../../../track/presentation/widgets/track_card.dart';
 
-/// The Trending tab on the genre page.
-/// Watches [genreTracksProvider] for [genreId] and renders a scrollable list of [TrackTile].
-/// Also used as the child of [GenreSeeAllPage] when tapping "See all" on the Trending section.
 class GenreTrendingTab extends ConsumerWidget {
   const GenreTrendingTab({super.key, required this.genreId});
   final String genreId;
@@ -45,12 +42,11 @@ class GenreTrendingTab extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: ListView.separated(
+              child: ListView.builder(
                 key: const Key('genre_trending_list'),
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 100),
                 itemCount: tracks.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (_, i) => TrackTile(
+                itemBuilder: (_, i) => TrackCard(
                   key: Key('genre_trending_track_$i'),
                   track: tracks[i],
                 ),
