@@ -6,16 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../track/presentation/providers/track_dependency_providers.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-// Changed from ConsumerWidget to ConsumerStatefulWidget so we can call
-// init() exactly once in initState — the cleanest way to trigger a load.
 class PlaylistDetailScreen extends ConsumerStatefulWidget {
   const PlaylistDetailScreen({
     super.key,
@@ -35,62 +33,42 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Call init() after the first frame so the provider is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(playlistDetailProvider.notifier)
-          .init(widget.playlistId);
+      ref.read(playlistDetailProvider.notifier).init(widget.playlistId);
     });
   }
 
-  // ── PlaylistTrack → Track conversion ──────────────────────────────────────
-
-  Track _toTrack(PlaylistTrack pt) {
-    return Track(
-      id: pt.id,
-      userId: '',        // not in PlaylistTrack — player fetches real value
-      title: pt.title,
-      artist: pt.artistName,
-      audioUrl: '',      // not in PlaylistTrack — player fetches real value
-      duration: pt.duration,
-      createdAt: DateTime.now(),
-      coverImage: pt.coverUrl,
-      playCount: pt.playCount,
-    );
+  Future<void> _fetchAndPlay(PlaylistTrack pt) async {
+    try {
+      final fullTrack =
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
+      await ref
+          .read(playerStateProvider.notifier)
+          .loadAndPlayQueue([fullTrack], initialIndex: 0);
+    } catch (e) {
+      debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
+    }
   }
 
-  List<Track> _toTracks(List<PlaylistTrack> pts) => pts.map(_toTrack).toList();
-
-  // ── Player helpers ─────────────────────────────────────────────────────────
-
-  void _playAll() {
-    final tracks = _toTracks(ref.read(playlistDetailProvider).tracks);
+  Future<void> _playAll() async {
+    final tracks = ref.read(playlistDetailProvider).tracks;
     if (tracks.isEmpty) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(tracks, initialIndex: 0);
+    await _fetchAndPlay(tracks.first);
   }
 
-  void _shuffle() {
-    final tracks = _toTracks(
-      List<PlaylistTrack>.from(ref.read(playlistDetailProvider).tracks)
-        ..shuffle(),
-    );
+  Future<void> _shuffle() async {
+    final tracks =
+        List<PlaylistTrack>.from(ref.read(playlistDetailProvider).tracks)
+          ..shuffle();
     if (tracks.isEmpty) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(tracks, initialIndex: 0);
+    await _fetchAndPlay(tracks.first);
   }
 
-  void _playFrom(int index) {
-    final tracks = _toTracks(ref.read(playlistDetailProvider).tracks);
+  Future<void> _playFrom(int index) async {
+    final tracks = ref.read(playlistDetailProvider).tracks;
     if (tracks.isEmpty || index >= tracks.length) return;
-    ref
-        .read(playerStateProvider.notifier)
-        .loadAndPlayQueue(tracks, initialIndex: index);
+    await _fetchAndPlay(tracks[index]);
   }
-
-  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +102,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ───────────────────────────────────────────────────────
+            // ── Header ──────────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
               child: Row(
@@ -201,15 +179,16 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
-                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
+                      playlist.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                       color: playlist.isLiked
                           ? const Color(0xFFFF5500)
                           : Colors.white,
                       size: 24,
                     ),
-                    onPressed: () => ref
-                        .read(playlistDetailProvider.notifier)
-                        .toggleLike(),
+                    onPressed: () =>
+                        ref.read(playlistDetailProvider.notifier).toggleLike(),
                   ),
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
@@ -273,7 +252,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
             const Divider(color: Colors.white12, height: 1),
 
-            // ── Track list + suggestions ──────────────────────────────────────
+            // ── Track list + suggestions ─────────────────────────────────────
             Expanded(
               child: ListView(
                 children: [
@@ -303,7 +282,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       (suggestion) => TrackTileInPlaylist(
                         key: Key('suggestion_${suggestion.id}'),
                         track: suggestion,
-                        onTap: () {},
+                        onTap: () => _fetchAndPlay(suggestion),
                         trailingWidget: IconButton(
                           key: Key('add_suggestion_${suggestion.id}'),
                           icon: const Icon(

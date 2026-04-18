@@ -1,5 +1,4 @@
 // lib/features/playlist/presentation/screens/library_stations_screen.dart
-library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,8 @@ import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
+/// Library → Stations.
+/// Filters playlistListProvider to only show type == station.
 class LibraryStationsScreen extends ConsumerStatefulWidget {
   const LibraryStationsScreen({super.key});
 
@@ -23,23 +24,11 @@ class _LibraryStationsScreenState
   String _searchQuery = '';
 
   @override
-  void initState() {
-    super.initState();
-    // Stations come from GET /home/stations — a different endpoint than playlists.
-    // This populates state.stations (not state.playlists).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(playlistListProvider.notifier).loadStations();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
-
-    // Stations are stored in state.stations, not state.playlists.
-    // The old code filtered state.playlists for type==station which
-    // would always be empty since stations never go into that list.
-    final allStations = state.stations;
+    final allStations = state.playlists
+        .where((p) => p.type == PlaylistType.station)
+        .toList();
     final filtered = allStations
         .where(
             (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -58,10 +47,7 @@ class _LibraryStationsScreenState
         title: const Text(
           'Stations',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
       ),
@@ -82,20 +68,15 @@ class _LibraryStationsScreenState
                     child: TextField(
                       key: const Key('library_stations_search_field'),
                       onChanged: (v) => setState(() => _searchQuery = v),
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
                         hintText:
                             'Search ${allStations.length} station${allStations.length == 1 ? '' : 's'}',
-                        hintStyle: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                          size: 18,
-                        ),
+                        hintStyle:
+                            TextStyle(color: Colors.grey[600], fontSize: 14),
+                        prefixIcon: const Icon(Icons.search,
+                            color: Colors.grey, size: 18),
                         border: InputBorder.none,
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 10),
@@ -108,54 +89,43 @@ class _LibraryStationsScreenState
               ],
             ),
           ),
-
           // ── List ────────────────────────────────────────────────────────
           Expanded(
-            child: state.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF5500),
+            child: filtered.isEmpty
+                ? Center(
+                    child: Text(
+                      _searchQuery.isEmpty
+                          ? 'No stations yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Station.'
+                          : 'No results for "$_searchQuery"',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 14),
                     ),
                   )
-                : filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          _searchQuery.isEmpty
-                              ? 'No stations yet.\n\nStations are generated based\non artists you follow.'
-                              : 'No results for "$_searchQuery"',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.grey[500], fontSize: 14),
+                : ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final station = filtered[index];
+                      return _StationTile(
+                        key: Key('library_station_tile_${station.id}'),
+                        station: station,
+                        onTap: () => context.push(
+                          '/library/stations/${station.id}',
+                          extra: true,
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final station = filtered[index];
-                          // Stations are never owned by the user —
-                          // they're auto-generated, so isOwner is always false.
-                          return _StationTile(
-                            key: Key(
-                                'library_station_tile_${station.id}'),
-                            station: station,
-                            onTap: () => context.push(
-                              '/library/stations/${station.id}',
-                              extra: false, // user never owns a station
-                            ),
-                            onMoreTap: () => showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (_) => PlaylistOptionsSheet(
-                                playlistId: station.id,
-                                isOwner: false,
-                                onConverted: (t) =>
-                                    _onConverted(context, t),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                        onMoreTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => PlaylistOptionsSheet(
+                            playlistId: station.id,
+                            isOwner: true,
+                            onConverted: (t) => _onConverted(context, t),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -194,44 +164,37 @@ class _StationTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
-            PlaylistCoverImage(
-                playlist: station, size: 65, borderRadius: 4),
+            PlaylistCoverImage(playlist: station, size: 65, borderRadius: 4),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    station.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  Text(station.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500)),
                   const SizedBox(height: 3),
                   Text(
                     station.seedArtistName != null
                         ? 'Based on ${station.seedArtistName}'
                         : station.ownerName,
-                    style:
-                        TextStyle(color: Colors.grey[500], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     station.detailSubtitle,
-                    style:
-                        TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ),
             IconButton(
               key: Key('station_tile_more_${station.id}'),
-              icon: const Icon(Icons.more_vert,
-                  color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],

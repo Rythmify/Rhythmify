@@ -1,5 +1,4 @@
 // lib/features/playlist/presentation/widgets/create_playlist_sheet.dart
-library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,26 +36,23 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     super.dispose();
   }
 
-  // async because createPlaylist now hits the real API and returns a Future.
-  // We await it to get the real playlist ID assigned by the database.
-  Future<void> _onCreate() async {
+  void _onCreate() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    final playlist = await ref
-        .read(playlistListProvider.notifier)
-        .createPlaylist(name: name, isPublic: _isPublic);
+    // createPlaylist is synchronous — no await needed
+    final playlist = ref.read(playlistListProvider.notifier).createPlaylist(
+          name: name,
+          isPublic: _isPublic,
+        );
 
-    if (!mounted) return;
     Navigator.of(context).pop();
-    // playlist.id is now the real UUID from the database, not a mock ID
     widget.onCreated?.call(playlist.id);
   }
 
   @override
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final isLoading = ref.watch(playlistListProvider).isLoading;
 
     return Container(
       decoration: const BoxDecoration(
@@ -80,11 +76,9 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             ),
             decoration: InputDecoration(
               border: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey),
-              ),
+                  borderSide: BorderSide(color: Colors.grey)),
               focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
+                  borderSide: BorderSide(color: Colors.white)),
               counterStyle: TextStyle(color: Colors.grey[600]),
             ),
             onChanged: (_) => setState(() {}),
@@ -93,10 +87,8 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Make this playlist public',
-                style: TextStyle(color: Colors.grey[400], fontSize: 15),
-              ),
+              Text('Make this playlist public',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 15)),
               Switch(
                 key: const Key('create_playlist_public_switch'),
                 value: _isPublic,
@@ -111,39 +103,23 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             height: 50,
             child: OutlinedButton(
               key: const Key('create_playlist_create_button'),
-              // Disable while loading to prevent double-taps
-              onPressed: (_nameController.text.trim().isEmpty || isLoading)
-                  ? null
-                  : _onCreate,
+              onPressed:
+                  _nameController.text.trim().isEmpty ? null : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
+                    borderRadius: BorderRadius.circular(25)),
               ),
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text(
-                      'Create playlist',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
-                    ),
+              child: const Text('Create playlist',
+                  style: TextStyle(color: Colors.white, fontSize: 15)),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
             key: const Key('create_playlist_cancel_button'),
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey[500], fontSize: 15),
-            ),
+            child: Text('Cancel',
+                style: TextStyle(color: Colors.grey[500], fontSize: 15)),
           ),
         ],
       ),
