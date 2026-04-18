@@ -23,6 +23,10 @@ class ApiEndPoints {
   /// Endpoint to initiate a new conversation.
   static const String newConversation = '/messages/new';
 
+  ///Endpoint to ensure a conversation exists without sending a message
+  static const String ensureConversation = '/messages/conversations/ensure';
+  
+
   /// Endpoint to retrieve the total count of unread messages.
   static const String getUnreadCount = '/messages/unread-count';
 

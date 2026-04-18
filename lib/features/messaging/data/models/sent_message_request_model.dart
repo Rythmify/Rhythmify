@@ -7,12 +7,12 @@ class SentMessageRequestModel {
   final String? body;
 
   /// The optional identifier of a track to be shared.
-  final String? trackId;
+  final String? embedId;
 
   /// The optional identifier of a playlist to be shared.
-  final String? playlistId;
+  final String? embedType;
 
-  SentMessageRequestModel({this.body, this.trackId, this.playlistId});
+  SentMessageRequestModel({this.body, this.embedId, this.embedType});
 
   /// Converts this [SentMessageRequestModel] instance into a JSON object.
   ///
@@ -20,10 +20,13 @@ class SentMessageRequestModel {
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     if (body != null) data['body'] = body;
-    if (trackId != null) data['resource'] = {'type': 'track', 'id': trackId};
-    if (playlistId != null) {
-      data['resource'] = {'type': 'playlist', 'id': playlistId};
+    if (embedId != null) {
+      data['resource'] = {
+        'type': embedType == 'track' ? 'track' : 'playlist',
+        'id': embedId,
+      };
     }
+    print('📤 sendMessage JSON: $data');
     return data;
   }
 }

@@ -45,13 +45,13 @@ class RepositoryImplement implements MessagingRepository {
   Future<Message> sendMessage(
     String conversationId,
     String? body,
-    String? trackId,
-    String? playlistId,
+    String? embedId,
+    String? embedType,
   ) {
     final requestContent = SentMessageRequestModel(
       body: body,
-      trackId: trackId,
-      playlistId: playlistId,
+      embedId: embedId,
+      embedType: embedType,
     );
     return dataSource.sendMessage(
       conversationId: conversationId,
@@ -115,5 +115,10 @@ class RepositoryImplement implements MessagingRepository {
   @override
   Future<SharedEmbed> getPlaylist(String playlistId, String embedType) {
     return dataSource.getPlaylistDetails(playlistId, embedType);
+  }
+
+  @override
+  Future<Conversation> ensureConversation(String participantId){
+    return dataSource.ensureConversation(participantId: participantId);
   }
 }

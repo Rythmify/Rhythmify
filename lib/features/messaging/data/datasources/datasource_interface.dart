@@ -67,4 +67,7 @@ abstract class DatasourceInterface {
     String playlistId,
     String embedType,
   );
+
+   /// Ensures a conversation exists with a participant without sending a message.  
+  Future<ConversationModel> ensureConversation({ required String participantId });
 }

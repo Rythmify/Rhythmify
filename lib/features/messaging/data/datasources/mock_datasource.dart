@@ -165,12 +165,8 @@ class MockDatasourceImplement implements DatasourceInterface {
       conversationId: conversationId,
       senderId: 'current_user',
       body: requestContent.body,
-      embedType: requestContent.trackId != null
-          ? 'track'
-          : requestContent.playlistId != null
-          ? 'playlist'
-          : null,
-      embedId: requestContent.trackId ?? requestContent.playlistId,
+      embedType: requestContent.embedType,
+      embedId: requestContent.embedId,
       isRead: true,
       createdAt: DateTime.now(),
     );
@@ -279,6 +275,32 @@ class MockDatasourceImplement implements DatasourceInterface {
         : [];
 
     return newConv;
+  }
+
+  @override
+  Future<ConversationModel> ensureConversation({
+    required String participantId,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    final existing = _conversations.firstWhere(
+      (c) => c.participantId == participantId,
+      orElse: () {
+        final user = _allUsers[participantId];
+        final newConv = ConversationModel(
+          conversationId: 'c${DateTime.now().millisecondsSinceEpoch}',
+          participantId: participantId,
+          participantName: user?.participantName ?? 'Unknown User',
+          participantAvatar: null,
+          lastMessagePreview: '',
+          lastMessageDate: DateTime.now(),
+          unReadCount: 0,
+        );
+        _conversations.insert(0, newConv);
+        return newConv;
+      },
+    );
+    return existing;
   }
 
   @override

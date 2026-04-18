@@ -28,8 +28,8 @@ abstract class MessagingRepository {
   Future<Message> sendMessage(
     String conversationId,
     String? body,
-    String? trackId,
-    String? playlistId,
+    String? embedId,
+    String? embedType,
   );
 
   /// Blocks a user by their [participantId], preventing further communication.
@@ -67,4 +67,7 @@ abstract class MessagingRepository {
     String playlistId,
     String embedType,
   ); //for both playlists and albums
+
+  /// Ensures a [Conversation] exists with [participantId] without sending a message.  
+  Future<Conversation> ensureConversation(String participantId);
 }

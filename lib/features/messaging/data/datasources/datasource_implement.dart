@@ -96,6 +96,19 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  Future<ConversationModel> ensureConversation({
+    required String participantId,
+  }) async {
+    final response = await dio.post(
+      ApiEndPoints.ensureConversation,
+      data: {'recipient_id': participantId},
+    );
+    return ConversationModel.fromJson(
+      response.data['data']['conversation'] as Map<String, dynamic>,
+    );
+  }
+
+  @override
   Future<int> getUnreadCount() async {
     final response = await dio.get(ApiEndPoints.getUnreadCount);
     return response.data['data']['unread_count'] as int;

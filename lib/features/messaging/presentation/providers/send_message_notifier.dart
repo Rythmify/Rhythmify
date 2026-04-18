@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
+import 'package:rythmify/features/messaging/domain/usecases/ensure_conversation_usecase.dart';
 import 'package:rythmify/features/messaging/domain/usecases/send_message_usecase.dart';
 import 'package:rythmify/features/messaging/domain/usecases/start_conversation_usecase.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
@@ -32,13 +33,13 @@ class SendMessageNotifier extends StateNotifier<bool> {
     String? body,
     String? conversationId,
     String? newParticipantId,
-    String? trackId,
-    String? playlistId,
+    String? embedId,
+    String? embedType,
   }) async {
     state = true;
     if (conversationId != null) {
       final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
-      final message = await (uCase(conversationId, body, trackId, playlistId));
+      final message = await (uCase(conversationId, body, embedId, embedType));
 
       final socket = ref.read(socketProvider);
       socket.sendMessage(conversationId, {'messageId': message.messageId});
@@ -51,16 +52,28 @@ class SendMessageNotifier extends StateNotifier<bool> {
       final uCase = StartConversationUsecase(
         repo: ref.read(repositoryprovider),
       );
-      final newConv = await (uCase(
+      final trackId= embedType=='track'?embedId:null;
+      final playlistId= embedType!='track'?embedId:null;
+      final newConv = await uCase(
         newParticipantId!,
         body: body,
         trackId: trackId,
         playlistId: playlistId,
-      ));
+      );
       ref.invalidate(conversationProvider);
       ref.invalidate(messageProvider(newConv.conversationId));
       state = false;
       return newConv;
     }
+  }
+
+  Future<Conversation> ensureConversation(String participantId)async{
+    state=true;
+    final newConv=await EnsureConversationUsecase(
+      repo: ref.read(repositoryprovider),
+    ).call(participantId);
+    state=false;
+    
+    return newConv;
   }
 }

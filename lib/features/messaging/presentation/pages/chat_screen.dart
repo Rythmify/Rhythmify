@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import 'package:rythmify/features/messaging/presentation/providers/send_message_
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/unread_messages_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/blocked_by_widget.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/blocked_user_widget.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.dart';
@@ -634,7 +637,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return embeds
         .map(
           (e) =>
-              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedName}',
+              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedId}',
         )
         .join('\n');
   }
@@ -662,8 +665,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     while (remaining.isNotEmpty) {
       String? foundUrl;
       int foundIndex = remaining.length;
-      String? extractedTrackId;
-      String? extractedPlaylistId;
+      String? extractedEmbedId;
+      String? extractedEmbedType;
 
       for (final url in permalinkToEmbed.keys) {
         final idx = remaining.indexOf(url);
@@ -671,10 +674,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           foundIndex = idx;
           foundUrl = url;
           final embed = permalinkToEmbed[url]!;
-          extractedTrackId = embed.embedType == 'track' ? embed.embedId : null;
-          extractedPlaylistId = embed.embedType != 'track'
-              ? embed.embedId
-              : null;
+          extractedEmbedId = embed.embedId;
+          extractedEmbedType = embed.embedType;
         }
       }
 
@@ -682,16 +683,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (trackMatch != null && trackMatch.start < foundIndex) {
         foundIndex = trackMatch.start;
         foundUrl = trackMatch.group(0);
-        extractedTrackId = trackMatch.group(1);
-        extractedPlaylistId = null;
+        extractedEmbedId = trackMatch.group(1);
+        extractedEmbedType = 'track';
       }
 
       final playlistMatch = playlistUrlRegex.firstMatch(remaining);
       if (playlistMatch != null && playlistMatch.start < foundIndex) {
         foundIndex = playlistMatch.start;
         foundUrl = playlistMatch.group(0);
-        extractedTrackId = null;
-        extractedPlaylistId = playlistMatch.group(1);
+        extractedEmbedId = playlistMatch.group(1);
+        extractedEmbedType = 'playlist';
       }
 
       if (foundUrl != null) {
@@ -706,8 +707,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             .read(sendMessageProvider.notifier)
             .sendMessage(
               conversationId: conversationId,
-              trackId: extractedTrackId,
-              playlistId: extractedPlaylistId,
+              embedId: extractedEmbedId,
+              embedType: extractedEmbedType,
             );
 
         remaining = remaining.substring(foundIndex + foundUrl.length).trim();
@@ -753,11 +754,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-      Conversation? newConv = await ref
+      final nConv = await ref
           .read(sendMessageProvider.notifier)
-          .sendMessage(newParticipantId: widget.newParticipantId, body: null);
-
-      if (newConv == null) return;
+          .ensureConversation(widget.newParticipantId!);
+      
+      final newConv = nConv.participantName =='Unknown' && widget.newParticipantName != null
+          ? nConv.copyWith(participantName: widget.newParticipantName)
+          :nConv;
 
       _socket.joinConversation(newConv.conversationId);
       _socket.onMessageReceived((data) {
