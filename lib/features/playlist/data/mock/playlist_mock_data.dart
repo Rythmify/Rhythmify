@@ -164,12 +164,24 @@ class PlaylistMockData {
     return updated;
   }
 
-  PlaylistEntity convertToStation(String playlistId) {
+// ============================================================
+// REPLACE convertToStation in PlaylistMockData
+// inside playlist_mock_data.dart
+//
+// Now accepts optional seedArtistName so the station tile
+// shows "Based on [name]" correctly.
+// ============================================================
+
+  PlaylistEntity convertToStation(
+    String playlistId, {
+    String? seedArtistName,
+  }) {
     final i = _playlists.indexWhere((p) => p.id == playlistId);
     if (i == -1) return _playlists.first;
     final updated = _playlists[i].copyWith(
       type: PlaylistType.station,
-      seedArtistName: _playlists[i].ownerName,
+      seedArtistName:
+          seedArtistName ?? _playlists[i].ownerName,
     );
     _playlists[i] = updated;
     return updated;

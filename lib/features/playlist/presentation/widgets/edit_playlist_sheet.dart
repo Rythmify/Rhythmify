@@ -74,17 +74,15 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     setState(() => _isSaving = true);
 
     try {
-      // 1. Remove tracks that were deleted in the edit sheet
+      // 1. Remove tracks deleted in the edit sheet
       final originalTracks = ref.read(playlistDetailProvider).tracks;
       for (final original in originalTracks) {
         if (!_tracks.any((t) => t.id == original.id)) {
-          await ref
-              .read(playlistDetailProvider.notifier)
-              .removeTrack(original.id);
+          await ref.read(playlistDetailProvider.notifier).removeTrack(original.id);
         }
       }
 
-      // 2. Update playlist metadata (and optional cover image) on backend
+      // 2. Update playlist metadata on backend
       await ref.read(playlistListProvider.notifier).updatePlaylist(
             playlistId: widget.playlistId,
             name: name,
@@ -92,21 +90,20 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
             description: _descController.text.trim(),
           );
 
-      // 3. If a new cover was picked, upload it via the datasource directly
+      // 3. Upload cover if picked
       if (_pickedCoverFile != null) {
         final ds = ref.read(playlistDatasourceProvider);
         await ds.updatePlaylist(
           playlistId: widget.playlistId,
           coverImage: _pickedCoverFile,
         );
-        // Keep local display path in cache
         ref.read(playlistListProvider.notifier).updateCoverImage(
               playlistId: widget.playlistId,
               localPath: _pickedCoverFile!.path,
             );
       }
 
-      // 4. Reload detail so the screen reflects changes
+      // 4. Reload detail
       ref.read(playlistDetailProvider.notifier).reload();
 
       if (mounted) Navigator.of(context).pop();
@@ -124,45 +121,62 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-// ============================================================
-// REPLACE the _convert() method in _EditPlaylistSheetState
-// inside edit_playlist_sheet.dart
-//
-// Now async because convertToAlbum/convertToPlaylist are async.
-// convertToStation stays synchronous.
-// ============================================================
-
   Future<void> _convert(PlaylistType targetType) async {
-    Navigator.of(context).pop(); // close confirm dialog
-    Navigator.of(context).pop(); // close edit sheet
+    // Close the confirm dialog
+    Navigator.of(context).pop();
 
-    switch (targetType) {
-      case PlaylistType.album:
+    if (targetType == PlaylistType.station) {
+      // Show loading dialog — station takes ~2-3s (multiple API calls)
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AlertDialog(
+          backgroundColor: Color(0xFF1E1E1E),
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: Color(0xFFFF5500)),
+              SizedBox(width: 20),
+              Text(
+                'Building your station...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await ref
+          .read(playlistListProvider.notifier)
+          .convertToStation(widget.playlistId);
+
+      if (mounted) Navigator.of(context).pop(); // close loading dialog
+      if (mounted) Navigator.of(context).pop(); // close edit sheet
+    } else {
+      // Album/playlist: close sheet immediately, backend runs fast
+      Navigator.of(context).pop();
+
+      if (targetType == PlaylistType.album) {
         await ref
             .read(playlistListProvider.notifier)
             .convertToAlbum(widget.playlistId);
-      case PlaylistType.station:
-        // Station conversion stays local-only for now
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToStation(widget.playlistId);
-      case PlaylistType.playlist:
+      } else {
         await ref
             .read(playlistListProvider.notifier)
             .convertToPlaylist(widget.playlistId);
+      }
     }
 
     ref.read(playlistDetailProvider.notifier).reload();
     widget.onConverted?.call(targetType);
   }
+
   void _removeLocal(String trackId) {
     setState(() => _tracks.removeWhere((t) => t.id == trackId));
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentCoverUrl =
-        ref.watch(playlistDetailProvider).playlist?.coverUrl;
+    final currentCoverUrl = ref.watch(playlistDetailProvider).playlist?.coverUrl;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -188,8 +202,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                       onPressed:
                           _isSaving ? null : () => Navigator.of(context).pop(),
                       child: const Text('Cancel',
-                          style:
-                              TextStyle(color: Colors.white, fontSize: 15)),
+                          style: TextStyle(color: Colors.white, fontSize: 15)),
                     ),
                     const Expanded(
                       child: Text(
@@ -220,7 +233,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                   ],
                 ),
               ),
-              // ── Body ────────────────────────────────────────────────────
+              // ── Body ─────────────────────────────────────────────────────
               Expanded(
                 child: ListView(
                   controller: scrollController,
@@ -247,8 +260,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                               fit: StackFit.expand,
                               children: [
                                 if (_pickedCoverFile != null)
-                                  Image.file(_pickedCoverFile!,
-                                      fit: BoxFit.cover)
+                                  Image.file(_pickedCoverFile!, fit: BoxFit.cover)
                                 else if (currentCoverUrl != null &&
                                     currentCoverUrl.isNotEmpty)
                                   _buildExistingCover(currentCoverUrl)
@@ -309,11 +321,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                 color: Colors.white, fontSize: 16),
                             decoration: const InputDecoration(
                               border: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.white24)),
+                                  borderSide: BorderSide(color: Colors.white24)),
                               focusedBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.white54)),
+                                  borderSide: BorderSide(color: Colors.white54)),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -327,20 +337,16 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                 color: Colors.white, fontSize: 16),
                             decoration: InputDecoration(
                               hintText: 'Describe your playlist',
-                              hintStyle:
-                                  TextStyle(color: Colors.grey[700]),
+                              hintStyle: TextStyle(color: Colors.grey[700]),
                               border: const UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.white24)),
+                                  borderSide: BorderSide(color: Colors.white24)),
                               focusedBorder: const UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.white54)),
+                                  borderSide: BorderSide(color: Colors.white54)),
                             ),
                           ),
                           const SizedBox(height: 6),
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Make public',
                                   style: TextStyle(
@@ -348,8 +354,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.w500)),
                               Switch(
-                                key: const Key(
-                                    'edit_playlist_public_switch'),
+                                key: const Key('edit_playlist_public_switch'),
                                 value: _isPublic,
                                 onChanged: _isSaving
                                     ? null
@@ -394,9 +399,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                             ),
                           if (_currentType == PlaylistType.playlist)
                             const Divider(
-                                color: Colors.white10,
-                                height: 1,
-                                indent: 16),
+                                color: Colors.white10, height: 1, indent: 16),
                           if (_currentType != PlaylistType.station)
                             _ConvertTile(
                               key: const Key('edit_convert_to_station'),
@@ -423,7 +426,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── Track list (edit/reorder/remove) ──────────────────
+                    // ── Track list ────────────────────────────────────────
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -459,13 +462,13 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     if (url.startsWith('/') || url.startsWith('file://')) {
       return Image.file(File(url),
           fit: BoxFit.cover,
-          errorBuilder: (e, s, t) => const Icon(Icons.camera_alt,
-              color: Colors.white54, size: 36));
+          errorBuilder: (e, s, t) =>
+              const Icon(Icons.camera_alt, color: Colors.white54, size: 36));
     }
     return Image.network(url,
         fit: BoxFit.cover,
-        errorBuilder: (e, s, t) => const Icon(Icons.camera_alt,
-            color: Colors.white54, size: 36));
+        errorBuilder: (e, s, t) =>
+            const Icon(Icons.camera_alt, color: Colors.white54, size: 36));
   }
 
   void _showConvertConfirm(
@@ -490,12 +493,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           ),
           TextButton(
             key: Key('convert_confirm_$label'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _convert(targetType);
-            },
-            style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFF5500)),
+            onPressed: () => _convert(targetType),
+            style:
+                TextButton.styleFrom(foregroundColor: const Color(0xFFFF5500)),
             child: Text('Convert to $label'),
           ),
         ],
@@ -515,7 +515,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   }
 }
 
-// ── Sub-widgets ────────────────────────────────────────────────────────────────
+// ── Sub-widgets ───────────────────────────────────────────────────────────────
 
 class _ConvertTile extends StatelessWidget {
   const _ConvertTile({
@@ -547,12 +547,12 @@ class _ConvertTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14)),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 14)),
                   const SizedBox(height: 2),
                   Text(sublabel,
-                      style: TextStyle(
-                          color: Colors.grey[600], fontSize: 12)),
+                      style:
+                          TextStyle(color: Colors.grey[600], fontSize: 12)),
                 ],
               ),
             ),
@@ -614,12 +614,11 @@ class _EditTrackRow extends StatelessWidget {
                         fontSize: 14)),
                 if (track.artistName.isNotEmpty)
                   Text(track.artistName,
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: 12)),
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 12)),
                 if (track.isUnavailable)
                   Row(children: [
-                    Icon(Icons.location_on,
-                        size: 11, color: Colors.grey[600]),
+                    Icon(Icons.location_on, size: 11, color: Colors.grey[600]),
                     Text(' Not available',
                         style: TextStyle(
                             color: Colors.grey[600], fontSize: 11)),
@@ -627,15 +626,14 @@ class _EditTrackRow extends StatelessWidget {
                 else
                   Text(
                       '${track.formattedPlayCount} · ${track.formattedDuration}',
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: 12)),
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 12)),
               ],
             ),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child:
-                Icon(Icons.drag_handle, color: Colors.grey, size: 22),
+            child: Icon(Icons.drag_handle, color: Colors.grey, size: 22),
           ),
         ],
       ),

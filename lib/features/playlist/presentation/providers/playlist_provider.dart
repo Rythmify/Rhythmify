@@ -1,8 +1,4 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
-//
-// Fully backend-integrated. MockData is used only as a local
-// in-memory cache. Every write hits the real backend FIRST,
-// then updates the cache on success.
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +9,6 @@ import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
-
-// ── Datasource provider ───────────────────────────────────────────────────────
 
 final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
   return PlaylistRemoteDatasource(apiClient.dio);
@@ -83,8 +77,7 @@ class PlaylistDetailState {
         tracks: tracks ?? this.tracks,
         suggestions: suggestions ?? this.suggestions,
         isLoading: isLoading ?? this.isLoading,
-        isSuggestionsLoading:
-            isSuggestionsLoading ?? this.isSuggestionsLoading,
+        isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
         isLiked: isLiked ?? this.isLiked,
         error: error,
       );
@@ -96,10 +89,7 @@ class PlaylistDetailState {
 
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
-  PlaylistListState build() {
-    // Start empty — loadPlaylists() called from screen's initState
-    return const PlaylistListState(isLoading: true);
-  }
+  PlaylistListState build() => const PlaylistListState(isLoading: true);
 
   final _cache = PlaylistMockData.instance;
   PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
@@ -172,8 +162,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   }
 
   // ── UPDATE COVER ──────────────────────────────────────────────────────────
-  // Cover is uploaded via updatePlaylist(coverImage: file) in the datasource.
-  // This method just keeps the local display path in sync.
   void updateCoverImage({
     required String playlistId,
     required String localPath,
@@ -194,10 +182,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     }
   }
 
-  // ── CONVERT (local cache only — backend subtype PATCH wired separately) ───
-// ── CONVERT TO ALBUM ──────────────────────────────────────────────────────
-  // Calls PATCH /playlists/{id} with subtype=album on the backend.
-  // On success updates local cache and reloads the list.
+  // ── CONVERT TO ALBUM ──────────────────────────────────────────────────────
   Future<void> convertToAlbum(String playlistId) async {
     try {
       await _ds.updatePlaylist(
@@ -212,9 +197,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       print('[LIST] ❌ convertToAlbum: $e');
     }
   }
- 
+
   // ── CONVERT TO PLAYLIST ───────────────────────────────────────────────────
-  // Calls PATCH /playlists/{id} with subtype=playlist on the backend.
   Future<void> convertToPlaylist(String playlistId) async {
     try {
       await _ds.updatePlaylist(
@@ -228,12 +212,61 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       print('[LIST] ❌ convertToPlaylist: $e');
     }
   }
- 
-  // ── CONVERT TO STATION (local only for now) ───────────────────────────────
-  PlaylistEntity convertToStation(String playlistId) {
-    final updated = _cache.convertToStation(playlistId);
-    state = state.copyWith(playlists: _cache.getMyPlaylists());
-    return updated;
+
+  // ── CONVERT TO STATION ────────────────────────────────────────────────────
+  Future<void> convertToStation(String playlistId) async {
+    try {
+      // Step 1: get current tracks before conversion
+      final existingTracks = _cache.getTracksFor(playlistId);
+      final playlist = _cache.getById(playlistId);
+      print('[LIST] convertToStation: ${existingTracks.length} seed tracks');
+
+      // Step 2: PATCH backend to subtype=station
+      await _ds.updatePlaylist(
+        playlistId: playlistId,
+        subtype: 'station',
+      );
+
+      // Step 3: fetch related tracks for each seed track in parallel
+      final relatedResults = await Future.wait(
+        existingTracks.map((t) => _ds.fetchRelatedTracks(t.id, limit: 50)),
+      );
+
+      // Step 4: merge original + related, deduplicate, shuffle → cap at 58
+      final seenIds = <String>{};
+      final merged = <PlaylistTrack>[];
+
+      for (final t in existingTracks) {
+        if (seenIds.add(t.id)) merged.add(t);
+      }
+      for (final batch in relatedResults) {
+        for (final t in batch) {
+          if (seenIds.add(t.id)) merged.add(t);
+        }
+      }
+
+      final seeds = merged.take(existingTracks.length).toList();
+      final related = merged.skip(existingTracks.length).toList()..shuffle();
+      final station58 = [...seeds, ...related].take(58).toList();
+
+      print('[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)');
+
+      // Step 5: update cache
+      _cache.convertToStation(playlistId, seedArtistName: playlist?.ownerName);
+      _cache.clearTracks(playlistId);
+      for (int i = 0; i < station58.length; i++) {
+        _cache.addTrack(
+          playlistId: playlistId,
+          track: station58[i].copyWith(position: i + 1),
+        );
+      }
+
+      // Step 6: reload list
+      await loadPlaylists();
+      print('[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks');
+    } catch (e) {
+      print('[LIST] ❌ convertToStation: $e');
+    }
   }
 
   // ── STATION ───────────────────────────────────────────────────────────────
@@ -270,7 +303,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     state = const PlaylistDetailState(isLoading: true);
 
     try {
-      // Fetch playlist detail and tracks in parallel
       final results = await Future.wait([
         _ds.fetchPlaylistDetail(playlistId),
         _ds.fetchPlaylistTracks(playlistId),
@@ -279,7 +311,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       final playlist = results[0] as PlaylistEntity;
       final tracks = results[1] as List<PlaylistTrack>;
 
-      // Keep cache in sync
+      // Sync cache
       _cache.createWithId(
         id: playlist.id,
         name: playlist.name,
@@ -294,21 +326,45 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
       print('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
 
-      // ── Station: fetch station tracks instead ──────────────────────────
-      if (playlist.type == PlaylistType.station &&
-          playlist.seedArtistName != null) {
-        final stationTracks =
-            await _fetchStationTracks(playlist.seedArtistName!);
+      // ── Station ────────────────────────────────────────────────────────
+      if (playlist.type == PlaylistType.station) {
+        // User-converted stations: tracks already stored in cache
+        final cachedTracks = _cache.getTracksFor(playlistId);
+        if (cachedTracks.isNotEmpty) {
+          print('[DETAIL] Station: using ${cachedTracks.length} cached tracks');
+          state = PlaylistDetailState(
+            playlist: playlist,
+            tracks: cachedTracks,
+            suggestions: const [],
+            isLoading: false,
+          );
+          return;
+        }
+
+        // Discovery stations: fetch by artist UUID
+        if (playlist.seedArtistName != null) {
+          final stationTracks =
+              await _fetchStationTracks(playlist.seedArtistName!);
+          state = PlaylistDetailState(
+            playlist: playlist,
+            tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
+            suggestions: const [],
+            isLoading: false,
+          );
+          return;
+        }
+
+        // Fallback
         state = PlaylistDetailState(
           playlist: playlist,
-          tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
+          tracks: tracks,
           suggestions: const [],
           isLoading: false,
         );
         return;
       }
 
-      // ── Playlist/Album: show immediately, suggestions in background ────
+      // ── Playlist/Album ─────────────────────────────────────────────────
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: tracks,
@@ -326,7 +382,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       }
     } on DioException catch (e) {
       print('[DETAIL] ❌ init ${e.response?.statusCode}');
-      // Fallback to cache
       final cached = _cache.getById(playlistId);
       if (cached != null) {
         state = PlaylistDetailState(
@@ -359,18 +414,13 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       );
       print('[DETAIL] ✅ Added "${suggestion.title}"');
 
-      // Re-fetch from backend — authoritative
-      final updatedTracks =
-          await _ds.fetchPlaylistTracks(_currentPlaylistId!);
-
+      final updatedTracks = await _ds.fetchPlaylistTracks(_currentPlaylistId!);
       _cache.clearTracks(_currentPlaylistId!);
       for (final t in updatedTracks) {
         _cache.addTrack(playlistId: _currentPlaylistId!, track: t);
       }
 
-      final freshSuggestions =
-          await _fetchSuggestionsExcluding(updatedTracks);
-
+      final freshSuggestions = await _fetchSuggestionsExcluding(updatedTracks);
       state = state.copyWith(
         tracks: updatedTracks,
         suggestions: freshSuggestions,
@@ -388,9 +438,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<void> removeTrack(String trackId) async {
     if (_currentPlaylistId == null) return;
 
-    // Optimistic removal
-    final optimistic =
-        state.tracks.where((t) => t.id != trackId).toList();
+    final optimistic = state.tracks.where((t) => t.id != trackId).toList();
     state = state.copyWith(tracks: optimistic);
 
     try {
@@ -398,14 +446,11 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         playlistId: _currentPlaylistId!,
         trackId: trackId,
       );
-      _cache.removeTrack(
-          playlistId: _currentPlaylistId!, trackId: trackId);
+      _cache.removeTrack(playlistId: _currentPlaylistId!, trackId: trackId);
       print('[DETAIL] ✅ Removed track $trackId');
     } on DioException catch (e) {
       print('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
-      // Restore from cache on failure
-      state = state.copyWith(
-          tracks: _cache.getTracksFor(_currentPlaylistId!));
+      state = state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
     }
   }
 
@@ -413,10 +458,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<void> refreshSuggestions() async {
     state = state.copyWith(isSuggestionsLoading: true);
     final fresh = await _fetchSuggestionsExcluding(state.tracks);
-    state = state.copyWith(
-      suggestions: fresh,
-      isSuggestionsLoading: false,
-    );
+    state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
     print('[DETAIL] Refreshed: ${fresh.length} suggestions');
   }
 
@@ -427,7 +469,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 
   // ── INTERNAL ──────────────────────────────────────────────────────────────
-
   Future<List<PlaylistTrack>> _fetchSuggestionsExcluding(
     List<PlaylistTrack> existing,
   ) async {

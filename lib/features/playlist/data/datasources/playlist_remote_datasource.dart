@@ -358,6 +358,41 @@ class PlaylistRemoteDatasource {
     }
   }
 
+  // ADD this method to PlaylistRemoteDatasource.
+// Place it after fetchStationTracks and before fetchRecommendedTracks.
+// ============================================================
+ 
+  // ============================================================
+  // ── RELATED TRACKS: for station generation
+  // GET /tracks/{track_id}/related?limit=50
+  //
+  // Returns tracks related by same artist and same genre.
+  // Used when converting a playlist to a station.
+  // ============================================================
+  Future<List<PlaylistTrack>> fetchRelatedTracks(
+    String trackId, {
+    int limit = 50,
+  }) async {
+    _log('→ GET /tracks/$trackId/related  limit=$limit');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/tracks/$trackId/related',
+        queryParameters: {'limit': limit, 'offset': 0},
+      );
+      _log('← ${response.statusCode}');
+ 
+      // Response shape from spec:
+      // { "reference_track": {...}, "data": [...DiscoveryTrack], "pagination": {...} }
+      final data = response.data!['data'] as List<dynamic>;
+      _log('← Got ${data.length} related tracks for $trackId');
+ 
+      return _mapDiscoveryTracksToPlaylistTracks(data);
+    } on DioException catch (e) {
+      _logError('fetchRelatedTracks($trackId) failed', e);
+      return []; // Non-fatal — station still works with fewer tracks
+    }
+  }
+
   // ============================================================
   // ── RECOMMENDATIONS: Real tracks for suggestions
   //
