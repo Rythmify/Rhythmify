@@ -7,6 +7,10 @@ import 'track_comments_state.dart';
 import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+/// A Riverpod [StateNotifierProvider] that provides a [CommentRepliesNotifier] for a specific parent comment.
+///
+/// This provider is family-scoped, meaning each parent comment ID gets its own dedicated instance
+/// of [CommentRepliesNotifier] and its own isolated [TrackCommentsState].
 final commentRepliesProvider =
     StateNotifierProvider.family<
       CommentRepliesNotifier,
@@ -16,15 +20,27 @@ final commentRepliesProvider =
       return CommentRepliesNotifier(ref, parentId);
     });
 
+/// Manages the state of replies for a specific parent comment.
+///
+/// This notifier handles fetching, paginating, posting, deleting, and liking replies.
+/// It interacts with the Domain use cases and updates its internal [TrackCommentsState].
+/// Side effects include cascading reply counts to the parent [TrackCommentsNotifier].
 class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
+
+  /// The unique identifier of the parent comment this notifier is managing replies for.
   final String parentId;
 
+  /// Creates a [CommentRepliesNotifier] and triggers an initial fetch of replies.
   CommentRepliesNotifier(this.ref, this.parentId)
     : super(TrackCommentsState.initial()) {
     fetchReplies();
   }
 
+  /// Fetches a paginated list of replies from the backend.
+  ///
+  /// If [refresh] is true, it resets the state to page 1 and clears existing comments.
+  /// Manages `isFetchingNextPage` and `hasReachedMax` loading states.
   Future<void> fetchReplies({bool refresh = false}) async {
     if (state.isFetchingNextPage && !refresh) return;
 
@@ -40,11 +56,11 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
 
     try {
-      final getCommentReplies = ref.read(getCommentRepliesProvider);
-      final replies = await getCommentReplies(
+      final getReplies = ref.read(getRepliesProvider);
+      final replies = await getReplies(
         commentId: parentId,
-        page: state.currentPage,
-        sortType: state.sortType,
+        limit: 20,
+        offset: (state.currentPage - 1) * 20,
       );
 
       if (replies.isEmpty) {
@@ -62,6 +78,10 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Deletes a specific reply belonging to the current user.
+  ///
+  /// Optimistically removes the reply from the local state and cascades the deletion
+  /// to decrement reply counters in [TrackCommentsNotifier]. Reverts state if backend deletion fails.
   Future<void> deleteReply(
     String commentId,
     String trackId,
@@ -93,11 +113,17 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Triggers a fetch for the next page of replies if not currently fetching and not at max.
   Future<void> fetchNextPage() async {
     if (state.hasReachedMax || state.isFetchingNextPage) return;
     await fetchReplies();
   }
 
+  /// Posts a new reply to the parent comment.
+  ///
+  /// Optimistically inserts a temporary comment into the UI state and increments
+  /// corresponding counters. Replaces the temporary comment with the real backend
+  /// response upon success. Reverts all optimistic changes on failure.
   Future<void> postReply(
     String trackId,
     String content,
@@ -136,13 +162,8 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
 
     // Send to Server
     try {
-      final postComment = ref.read(postCommentProvider);
-      final realReply = await postComment(
-        trackId: trackId,
-        content: content,
-        trackTimestamp: trackTimestamp,
-        parentId: parentId,
-      );
+      final postReply = ref.read(postReplyProvider);
+      final realReply = await postReply(commentId: parentId, content: content);
 
       final populatedRealReply = realReply.copyWith(
         userId: user.id,
@@ -167,6 +188,10 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     }
   }
 
+  /// Toggles the like status of a specific reply.
+  ///
+  /// Optimistically updates the like icon and count in the UI before awaiting
+  /// the network request. Reverts the state if the backend request fails.
   Future<void> toggleLike(String commentId) async {
     final targetCommentIndex = state.comments.indexWhere(
       (c) => c.id == commentId,
@@ -190,7 +215,25 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
     );
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
-      await toggleCommentLike(commentId, isCurrentlyLiked: currentLikeState);
+      final newLikeStatus = await toggleCommentLike(
+        commentId,
+        isCurrentlyLiked: currentLikeState,
+      );
+
+      // Synchronize with backend result if it differs from optimistic update
+      if (newLikeStatus != !currentLikeState) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            if (c.id == commentId) {
+              return c.copyWith(
+                isLikedByMe: newLikeStatus,
+                likesCount: newLikeStatus ? c.likesCount + 1 : c.likesCount - 1,
+              );
+            }
+            return c;
+          }).toList(),
+        );
+      }
     } catch (e) {
       state = state.copyWith(comments: originalComments);
     }

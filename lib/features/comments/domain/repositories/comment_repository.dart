@@ -1,7 +1,7 @@
 import '../entities/comment.dart';
 
 /// Defines the available sorting strategies for fetching comments.
-enum CommentSortType { newest, oldest, trackTime }
+enum CommentSortType { newest, oldest, timestamp }
 
 extension CommentSortTypeExtension on CommentSortType {
   /// Converts the enum to the string format expected by the backend API.
@@ -11,8 +11,8 @@ extension CommentSortTypeExtension on CommentSortType {
         return 'newest';
       case CommentSortType.oldest:
         return 'oldest';
-      case CommentSortType.trackTime:
-        return 'trackTime';
+      case CommentSortType.timestamp:
+        return 'timestamp';
     }
   }
 }
@@ -48,6 +48,13 @@ abstract class CommentRepository {
     required CommentSortType sortType,
   });
 
+  /// Returns paginated replies to the specified top-level comment.
+  Future<List<Comment>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  });
+
   /// Fetches a lightweight mapping of floating comments for the audio waveform.
   ///
   /// Returns a Map where the Key is the timestamp in seconds,
@@ -68,6 +75,12 @@ abstract class CommentRepository {
     required String content,
     required int trackTimestamp,
     String? parentId,
+  });
+
+  /// Posts a reply to the specified top-level comment.
+  Future<Comment> postReply({
+    required String commentId,
+    required String content,
   });
 
   /// Toggles the like status of a specific comment for the current user.

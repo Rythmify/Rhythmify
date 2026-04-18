@@ -116,10 +116,15 @@ class DatasourceImplement implements DatasourceInterface {
     required String conversationId,
     required String messageId,
   }) async {
-    await dio.patch(
-      ApiEndPoints.markMessagesAsRead(conversationId, messageId),
-      data: {'is_read': true},
-    );
+    try {
+      await dio.patch(
+        ApiEndPoints.markMessagesAsRead(conversationId, messageId),
+        data: {'is_read': true},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 409) return;
+      rethrow;
+    }
   }
 
   @override
@@ -258,8 +263,8 @@ class DatasourceImplement implements DatasourceInterface {
       embedId: data['id'],
       embedType: 'track',
       embedName: data['title'],
-      artistName: data['artists'],
-      thumbnailUrl: null,
+      artistName: data['artist_name'] ?? data['artist'] ?? data['artists'],
+      thumbnailUrl: data['cover_image'] ?? data['artwork_url'],
     );
   }
 
@@ -272,11 +277,11 @@ class DatasourceImplement implements DatasourceInterface {
     final response = await dio.get(ApiEndPoints.getPlaylistDetails(playlistId));
     final data = response.data['data'];
     return SharedEmbedModel(
-      embedId: data['playlist_id'],
+      embedId: data['playlist_id'] ?? playlistId,
       embedType: embedType,
       embedName: data['name'],
-      artistName: null,
-      thumbnailUrl: null,
+      artistName: data['owner_name'],
+      thumbnailUrl: data['cover_image'],
     );
   }
 }

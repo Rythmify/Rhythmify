@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/profile_entity.dart';
+import '../../domain/entities/profile_user_summary.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -27,6 +28,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -34,6 +38,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final profile = await remoteDatasource.updateProfile(
         displayName: displayName,
+        username: username,
+        firstName: firstName,
+        lastName: lastName,
         city: city,
         country: country,
         bio: bio,
@@ -123,6 +130,42 @@ class ProfileRepositoryImpl implements ProfileRepository {
         limit: limit,
       );
       return Right(tracks);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ProfileUserSummary>>> getFollowers({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final users = await remoteDatasource.getFollowers(
+        userId: userId,
+        page: page,
+        limit: limit,
+      );
+      return Right(users);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ProfileUserSummary>>> getFollowing({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final users = await remoteDatasource.getFollowing(
+        userId: userId,
+        page: page,
+        limit: limit,
+      );
+      return Right(users);
     } catch (e) {
       return Left(_mapError(e.toString()));
     }

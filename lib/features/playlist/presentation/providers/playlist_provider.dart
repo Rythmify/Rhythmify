@@ -1,4 +1,9 @@
-// lib/features/playlist/presentation/providers/playlist_provider.dart
+/// State management for the playlist module using Riverpod 3.x Notifiers.
+/// [PlaylistListNotifier] owns the flat list of all collections and handles all CRUD.
+/// [PlaylistDetailNotifier] owns one playlist's header, tracks, and suggestions.
+/// Detail providers are cached manually in [_detailProviderCache] as a workaround
+/// for FamilyNotifier being removed in Riverpod 3.x.
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +52,6 @@ class PlaylistDetailState {
   final bool isLoading;
   final String? error;
 
-  // Suggestions only show for playlists, not albums or stations
   bool get showSuggestions =>
       suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
 
@@ -73,6 +77,11 @@ class PlaylistDetailState {
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
   PlaylistListState build() {
+    // Re-read playlists whenever the seeder pushes new data so counts update
+    ref.listen<void>(playlistMockSeederProvider, (_, _) {
+      Future.microtask(loadPlaylists);
+    });
+    ref.watch(playlistMockSeederProvider);
     final playlists = PlaylistMockData.instance.getMyPlaylists();
     return PlaylistListState(playlists: playlists);
   }
@@ -80,6 +89,11 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   final _db = PlaylistMockData.instance;
 
   void loadPlaylists() {
+    // Must call getTracksFor first — it updates _playlists[i] with fresh counts.
+    // getMyPlaylists() after this returns the already-updated objects.
+    for (final p in List.from(_db.getMyPlaylists())) {
+      _db.getTracksFor(p.id);
+    }
     state = state.copyWith(playlists: _db.getMyPlaylists());
   }
 
@@ -126,23 +140,18 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     return station;
   }
 
-  // ── Convert operations ─────────────────────────────────────────────────────
-
-  /// Converts a playlist → album. After converting, navigate to albums section.
   PlaylistEntity convertToAlbum(String playlistId) {
     final updated = _db.convertToAlbum(playlistId);
     loadPlaylists();
     return updated;
   }
 
-  /// Converts a playlist → station. After converting, navigate to stations section.
   PlaylistEntity convertToStation(String playlistId) {
     final updated = _db.convertToStation(playlistId);
     loadPlaylists();
     return updated;
   }
 
-  /// Converts album/station → playlist.
   PlaylistEntity convertToPlaylist(String playlistId) {
     final updated = _db.convertToPlaylist(playlistId);
     loadPlaylists();
@@ -167,19 +176,28 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     return PlaylistDetailState(
       playlist: playlist,
       tracks: _db.getTracksFor(_playlistId),
-      suggestions: _db.getSuggestions(),
+      suggestions: _db.getSuggestions(excludePlaylistId: _playlistId),
     );
   }
 
-  void addSuggestion(PlaylistTrack track) {
+  void addSuggestion(PlaylistTrack playlistTrack) {
+    final allSource = [
+      ..._db.getSourceTracksFor('pl-001'),
+      ..._db.getSourceTracksFor('pl-002'),
+    ];
+    final track = allSource.firstWhere(
+      (t) => t.id == playlistTrack.id,
+      orElse: () => throw StateError(
+        'Source Track not found for id: ${playlistTrack.id}',
+      ),
+    );
     _db.addTrack(playlistId: _playlistId, track: track);
-    final updatedSuggestions = state.suggestions
-        .where((s) => s.id != track.id)
-        .toList();
     state = state.copyWith(
       playlist: _db.getById(_playlistId),
       tracks: _db.getTracksFor(_playlistId),
-      suggestions: updatedSuggestions,
+      suggestions: state.suggestions
+          .where((s) => s.id != playlistTrack.id)
+          .toList(),
     );
   }
 
@@ -192,11 +210,21 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 
   void refreshSuggestions() {
-    state = state.copyWith(suggestions: _db.getSuggestions());
+    state = state.copyWith(
+      suggestions: _db.getSuggestions(
+        excludePlaylistId: _playlistId,
+        shuffle: true,
+      ),
+    );
   }
 
   void reload() {
     state = _buildState();
+  }
+
+  void toggleLike() {
+    _db.toggleLike(_playlistId);
+    state = state.copyWith(playlist: _db.getById(_playlistId));
   }
 }
 

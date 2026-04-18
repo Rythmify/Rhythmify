@@ -1,4 +1,8 @@
-// lib/features/playlist/presentation/screens/library_albums_screen.dart
+/// Library tab showing all collections with type == album.
+/// Filters [playlistListProvider] by [PlaylistType.album] and supports live search.
+/// Albums are created via Edit playlist → Convert to Album, not from this screen directly.
+/// [_onConverted] handles post-conversion navigation to the correct Library tab.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

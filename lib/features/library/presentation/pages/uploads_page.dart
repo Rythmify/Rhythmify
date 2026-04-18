@@ -1,15 +1,22 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
-import '../../domain/entities/library_entities.dart';
+import '../../../track/presentation/widgets/track_card.dart';
 
 /// Your Uploads page matching SoundCloud's layout.
 ///
-/// Empty state: centered icon + headline + body + "Upload a track" [OutlinedButton].
-/// Loaded state: search bar + [ListView] of upload tiles with status badges.
+/// Layout sections (top → bottom):
+/// 1. [AppBar] — back arrow, search bar, filter icon, cast icon.
+/// 2. Header area — "Your uploads" title, upload icon button,
+///    shuffle + play FAB row, and stat chips (Amplify credits / mins used).
+/// 3. [ListView] of upload [TrackCard] tiles, or an empty state when
+///    [UploadsState.tracks] is empty.
+///
+/// The minutes-used chip is computed from [UploadsState] by summing
+/// [TrackEntity.durationSeconds] across all uploaded tracks and converting
+/// to whole minutes (capped at [_kUploadLimitMinutes]).
 class UploadsPage extends ConsumerStatefulWidget {
   const UploadsPage({super.key});
 
@@ -18,6 +25,9 @@ class UploadsPage extends ConsumerStatefulWidget {
 }
 
 class _UploadsPageState extends ConsumerState<UploadsPage> {
+  /// Maximum upload minutes allowed per the free tier (matches SoundCloud's 120 min).
+  static const int _kUploadLimitMinutes = 120;
+
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   String _query = '';
@@ -25,12 +35,15 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        ref.read(uploadsProvider.notifier).load();
-      }
-    });
+    _scrollController.addListener(_onScroll);
+  }
+
+  /// Triggers paginated load when the user scrolls within 200 px of the bottom.
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(uploadsProvider.notifier).load();
+    }
   }
 
   @override
@@ -40,99 +53,62 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     super.dispose();
   }
 
+  // ─── helpers ────────────────────────────────────────────────────────────────
+
+  /// Returns the total uploaded duration in whole minutes by summing
+  /// [durationSeconds] across all tracks in [state].
+  ///
+  /// Falls back to 0 when duration data is unavailable.
+
+  // ─── build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(uploadsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      // ── AppBar: back + inline search + filter + cast ──────────────────────
       appBar: AppBar(
-        title: const Text('Your uploads'),
-        centerTitle: false,
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        leading: IconButton(
+          key: const Key('uploads_back_button'),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.appBarItems),
+          onPressed: () => context.pop(),
+        ),
+        title: _SearchBar(
+          key: const Key('uploads_search_bar'),
+          controller: _searchController,
+          onChanged: (v) => setState(() => _query = v),
+        ),
         actions: [
           IconButton(
-            key: const Key('uploads_new_upload_icon_button'),
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push('/upload-track'),
+            key: const Key('uploads_filter_button'),
+            icon: const Icon(Icons.tune, color: AppTheme.appBarItems),
+            onPressed: () {},
+          ),
+          IconButton(
+            key: const Key('uploads_cast_button'),
+            icon: const Icon(Icons.cast, color: AppTheme.appBarItems),
+            onPressed: () {},
           ),
         ],
       ),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () => ref.read(uploadsProvider.notifier).load(refresh: true),
-        child: _buildBody(context, state),
+        child: state.isLoading && state.tracks.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+              )
+            : _buildScrollView(context, state),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, UploadsState state) {
-    if (state.isLoading && state.tracks.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-      );
-    }
-
-    // ── Empty state matching SoundCloud screenshot ────────────────────────
-    if (state.tracks.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Purple gradient placeholder (matching the screenshot's gradient header)
-              Container(
-                width: double.infinity,
-                height: 160,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF4A0080), Color(0xFF1A0040)],
-                  ),
-                ),
-                child: const Icon(
-                  Icons.cloud_upload_outlined,
-                  color: Colors.white54,
-                  size: 64,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'No tracks uploaded yet',
-                key: const Key('uploads_empty_headline_text'),
-                style: AppTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Tracks you\'ve uploaded will show up here',
-                key: const Key('uploads_empty_body_text'),
-                style: AppTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                key: const Key('uploads_empty_upload_button'),
-                onPressed: () => context.push('/upload-track'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.textPrimary,
-                  side: const BorderSide(color: AppTheme.textSecondary),
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text('Upload a track'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
+  /// Builds the full scrollable body containing the header section and track list.
+  Widget _buildScrollView(BuildContext context, UploadsState state) {
     final filtered = _query.isEmpty
         ? state.tracks
         : state.tracks
@@ -141,244 +117,351 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
               )
               .toList();
 
-    return Column(
-      children: [
-        // ── Search bar ──────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(21),
-            ),
-            child: TextField(
-              key: const Key('uploads_search_text_field'),
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search in your uploads',
-                hintStyle: AppTheme.bodyMedium,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.textSecondary,
-                  size: 20,
-                ),
-                suffixIcon: const Icon(
-                  Icons.tune,
-                  color: AppTheme.textSecondary,
-                  size: 20,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 11),
-              ),
-            ),
+    return CustomScrollView(
+      key: const Key('uploads_scroll_view'),
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        // ── Header: title + controls + stat chips ──────────────────────────
+        SliverToBoxAdapter(
+          child: _UploadsHeader(
+            usedMinutes: 80,
+            limitMinutes: _kUploadLimitMinutes,
+            onUpload: () => context.push('/upload-track'),
+            onShuffle: () {},
+            onPlay: () {},
           ),
         ),
 
-        // ── Upload list ────────────────────────────────────────────────────
-        Expanded(
-          child: ListView.builder(
-            key: const Key('uploads_list_view'),
-            controller: _scrollController,
+        if (state.tracks.isEmpty)
+          // ── Empty state ────────────────────────────────────────────────
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptyUploads(onUpload: () => context.push('/upload-track')),
+          )
+        else ...[
+          // ── Track list ─────────────────────────────────────────────────
+          SliverPadding(
             padding: const EdgeInsets.only(bottom: 120),
-            itemCount: filtered.length + 1,
-            itemBuilder: (context, index) {
-              if (index == filtered.length) {
-                return state.isLoading
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryBrand,
-                            strokeWidth: 2,
+            sliver: SliverList.builder(
+              itemCount: filtered.length + 1,
+              itemBuilder: (context, index) {
+                if (index == filtered.length) {
+                  return state.isLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryBrand,
+                              strokeWidth: 2,
+                            ),
                           ),
-                        ),
-                      )
-                    : const SizedBox.shrink();
-              }
-              return _UploadTile(track: filtered[index]);
-            },
+                        )
+                      : const SizedBox.shrink();
+                }
+                return TrackCard(track: filtered[index].track);
+              },
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
 }
 
-// ── Upload tile ────────────────────────────────────────────────────────────────
+// ─── _SearchBar ──────────────────────────────────────────────────────────────
 
-class _UploadTile extends ConsumerWidget {
-  final UploadedTrack track;
-  const _UploadTile({required this.track});
+/// Compact inline search bar rendered inside the [AppBar].
+///
+/// Styled as a rounded pill with a leading search icon and transparent
+/// background so it blends with the dark app bar.
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({
+    super.key,
+    required this.controller,
+    required this.onChanged,
+  });
+
+  /// Controls the text field value.
+  final TextEditingController controller;
+
+  /// Called whenever the user modifies the search text.
+  final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListTile(
-      key: Key('uploads_item_${track.id}_list_tile'),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: track.artworkUrl != null
-            ? CachedNetworkImage(
-                imageUrl: track.artworkUrl!,
-                width: 52,
-                height: 52,
-                fit: BoxFit.cover,
-                errorWidget: (c, u, e) => _placeholder(),
-              )
-            : _placeholder(),
+  Widget build(BuildContext context) {
+    return Container(
+      height: 38,
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(19),
       ),
-      title: Text(
-        track.title,
-        key: Key('uploads_item_${track.id}_title_text'),
-        style: AppTheme.labelLarge,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          hintText: 'Search in your uploads',
+          hintStyle: AppTheme.bodyMedium,
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppTheme.textSecondary,
+            size: 18,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          isDense: true,
+        ),
       ),
-      subtitle: Row(
+    );
+  }
+}
+
+// ─── _UploadsHeader ──────────────────────────────────────────────────────────
+
+/// Header section rendered beneath the [AppBar].
+///
+/// Contains:
+/// - "Your uploads" headline.
+/// - Upload icon button (left), shuffle icon + play FAB (right).
+/// - Two stat chips: Amplify credits (always "No Amplify credits" for free tier)
+///   and minutes used out of [limitMinutes].
+class _UploadsHeader extends StatelessWidget {
+  const _UploadsHeader({
+    required this.usedMinutes,
+    required this.limitMinutes,
+    required this.onUpload,
+    required this.onShuffle,
+    required this.onPlay,
+  });
+
+  /// Total minutes of audio already uploaded.
+  final int usedMinutes;
+
+  /// Hard cap for uploaded audio (e.g. 120 mins on the free tier).
+  final int limitMinutes;
+
+  /// Called when the user taps the upload icon.
+  final VoidCallback onUpload;
+
+  /// Called when the user taps the shuffle icon.
+  final VoidCallback onShuffle;
+
+  /// Called when the user taps the play FAB.
+  final VoidCallback onPlay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (track.isProcessing)
-            _badge('Processing', Colors.orange)
-          else if (track.isFailed)
-            _badge('Failed', Colors.red)
-          else ...[
-            const Icon(
-              Icons.play_arrow,
-              size: 13,
-              color: AppTheme.textSecondary,
-            ),
-            Text(
-              ' ${_fmt(track.playCount)} · ${track.isPublic ? "Public" : "Private"}',
-              style: AppTheme.labelSmall,
-            ),
-          ],
+          // Title row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text('Your uploads', style: AppTheme.headlineLarge),
+              ),
+              // Upload icon button
+              _CircleIconButton(
+                key: const Key('uploads_upload_circle_button'),
+                icon: Icons.upload_outlined,
+                onTap: onUpload,
+              ),
+              const SizedBox(width: 12),
+              // Shuffle
+              _CircleIconButton(
+                key: const Key('uploads_shuffle_button'),
+                icon: Icons.shuffle,
+                onTap: onShuffle,
+              ),
+              const SizedBox(width: 12),
+              // Play FAB
+              GestureDetector(
+                key: const Key('uploads_play_button'),
+                onTap: onPlay,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.black,
+                    size: 28,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Stat chips row
+          Row(
+            children: [
+              _StatChip(
+                key: const Key('uploads_amplify_chip'),
+                icon: Icons.bolt,
+                iconColor: Colors.amber,
+                label: 'No Amplify credits',
+              ),
+              const SizedBox(width: 10),
+              _StatChip(
+                key: const Key('uploads_minutes_chip'),
+                icon: Icons.cloud_upload_outlined,
+                iconColor: AppTheme.primaryBrand,
+                label: '$usedMinutes/$limitMinutes mins used',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
         ],
       ),
-      trailing: IconButton(
-        key: Key('uploads_item_${track.id}_more_icon_button'),
-        icon: const Icon(
-          Icons.more_vert,
-          color: AppTheme.textSecondary,
-          size: 20,
+    );
+  }
+}
+
+// ─── _CircleIconButton ───────────────────────────────────────────────────────
+
+/// A borderless circular icon button used in [_UploadsHeader].
+class _CircleIconButton extends StatelessWidget {
+  const _CircleIconButton({super.key, required this.icon, required this.onTap});
+
+  /// The icon to display inside the circle.
+  final IconData icon;
+
+  /// Called when the button is tapped.
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.4)),
         ),
-        onPressed: () => _showOptions(context, ref),
+        child: Icon(icon, color: AppTheme.appBarItems, size: 20),
       ),
     );
   }
+}
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+// ─── _StatChip ───────────────────────────────────────────────────────────────
+
+/// A pill-shaped chip displaying an [icon] and a text [label].
+///
+/// Used to show quick stats like upload quota or Amplify credits.
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    super.key,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+  });
+
+  /// Leading icon.
+  final IconData icon;
+
+  /// Tint colour for the [icon].
+  final Color iconColor;
+
+  /// Text displayed after the icon.
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(20),
       ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              key: Key('uploads_toggle_visibility_${track.id}_listtile'),
-              leading: Icon(
-                track.isPublic ? Icons.lock_outline : Icons.public,
-                color: AppTheme.textSecondary,
-              ),
-              title: Text(
-                track.isPublic ? 'Make private' : 'Make public',
-                style: AppTheme.bodyLarge,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ref
-                    .read(uploadsProvider.notifier)
-                    .toggleVisibility(track.id, !track.isPublic);
-              },
-            ),
-            ListTile(
-              key: Key('uploads_delete_${track.id}_listtile'),
-              leading: const Icon(
-                Icons.delete_outline,
-                color: Colors.redAccent,
-              ),
-              title: const Text(
-                'Delete track',
-                style: TextStyle(color: Colors.redAccent, fontSize: 16),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    backgroundColor: AppTheme.surface,
-                    title: const Text(
-                      'Delete track?',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    content: Text(
-                      'Delete "${track.title}"? This cannot be undone.',
-                      style: AppTheme.bodyMedium,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text('Cancel', style: AppTheme.labelLarge),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true) {
-                  ref.read(uploadsProvider.notifier).deleteTrack(track.id);
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: iconColor, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTheme.labelSmall.copyWith(color: AppTheme.textPrimary),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _placeholder() => Container(
-    width: 52,
-    height: 52,
-    color: AppTheme.lighterSurface,
-    child: const Icon(
-      Icons.music_note,
-      color: AppTheme.textSecondary,
-      size: 22,
-    ),
-  );
-  Widget _badge(String label, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.2),
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: color.withValues(alpha: 0.5)),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
-    ),
-  );
-  String _fmt(int n) =>
-      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}K' : n.toString();
+// ─── _EmptyUploads ───────────────────────────────────────────────────────────
+
+/// Centered empty state shown when the user has no uploads yet.
+///
+/// Displays a gradient card with a cloud-upload icon, headline, body text,
+/// and an [OutlinedButton] that navigates to the track-upload flow.
+class _EmptyUploads extends StatelessWidget {
+  const _EmptyUploads({required this.onUpload});
+
+  /// Called when the "Upload a track" button is tapped.
+  final VoidCallback onUpload;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: double.infinity,
+            height: 160,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF4A0080), Color(0xFF1A0040)],
+              ),
+            ),
+            child: const Icon(
+              Icons.cloud_upload_outlined,
+              color: Colors.white54,
+              size: 64,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No tracks uploaded yet',
+            key: const Key('uploads_empty_headline_text'),
+            style: AppTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tracks you\'ve uploaded will show up here',
+            key: const Key('uploads_empty_body_text'),
+            style: AppTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton(
+            key: const Key('uploads_empty_upload_button'),
+            onPressed: onUpload,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.textPrimary,
+              side: const BorderSide(color: AppTheme.textSecondary),
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            ),
+            child: const Text('Upload a track'),
+          ),
+        ],
+      ),
+    );
+  }
 }

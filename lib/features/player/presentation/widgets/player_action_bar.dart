@@ -6,6 +6,9 @@ import '../../../track/presentation/providers/track_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
+import '../../../track/presentation/providers/track_interaction_provider.dart';
+import '../../../track/presentation/providers/track_sync_provider.dart';
+
 /// A horizontal bar providing secondary track actions.
 ///
 /// Includes like count, comments, sharing, and playlist management.
@@ -22,6 +25,11 @@ class PlayerActionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trackAsync = ref.watch(trackDetailsProvider(trackId));
 
+    // Get the globally synced track state for instant UI updates
+    final track = trackAsync.value != null
+        ? ref.watch(syncedTrackProvider(trackAsync.value!))
+        : null;
+
     // Changed Container to Material so the InkWell tap effects have a canvas to draw on
     return Material(
       color: AppTheme.background,
@@ -33,7 +41,15 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 1. Like Action ------
             InkWell(
               onTap: () {
-                // Add your like logic here
+                if (track != null) {
+                  ref
+                      .read(trackInteractionProvider)
+                      .handleToggleLike(
+                        track.id,
+                        track.isLiked,
+                        currentTrack: track,
+                      );
+                }
               },
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -47,20 +63,20 @@ class PlayerActionBar extends ConsumerWidget {
                   children: [
                     Icon(
                       key: const Key('player_action_bar_favorite_icon'),
-                      (trackAsync.value?.isLiked ?? false)
+                      (track?.isLiked ?? false)
                           ? Icons.favorite
                           : Icons.favorite_border,
-                      color: (trackAsync.value?.isLiked ?? false)
+                      color: (track?.isLiked ?? false)
                           ? AppTheme.primaryBrand
                           : Colors.white,
                     ),
                     const SizedBox(width: 6),
                     trackAsync.when(
-                      data: (track) => Text(
-                        Formatters.formatCount(track.likeCount),
+                      data: (_) => Text(
+                        Formatters.formatCount(track?.likeCount ?? 0),
                         key: const Key('player_action_bar_like_count_text'),
                         style: AppTheme.bodyNormal.copyWith(
-                          color: track.isLiked
+                          color: (track?.isLiked ?? false)
                               ? AppTheme.primaryBrand
                               : Colors.white,
                         ),

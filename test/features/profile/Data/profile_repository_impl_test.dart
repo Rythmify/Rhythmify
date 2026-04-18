@@ -44,6 +44,9 @@ void main() {
     when(
       () => datasource.updateProfile(
         displayName: 'N',
+        username: 'n_user',
+        firstName: 'N',
+        lastName: 'User',
         city: 'C',
         country: 'EG',
         bio: 'B',
@@ -67,6 +70,9 @@ void main() {
     expect(
       (await repository.updateProfile(
         displayName: 'N',
+        username: 'n_user',
+        firstName: 'N',
+        lastName: 'User',
         city: 'C',
         country: 'EG',
         bio: 'B',
@@ -99,6 +105,9 @@ void main() {
     when(
       () => datasource.updateProfile(
         displayName: 'N',
+        username: 'n_user',
+        firstName: 'N',
+        lastName: 'User',
         city: 'C',
         country: 'EG',
         bio: 'B',
@@ -128,6 +137,9 @@ void main() {
     expect(
       (await repository.updateProfile(
         displayName: 'N',
+        username: 'n_user',
+        firstName: 'N',
+        lastName: 'User',
         city: 'C',
         country: 'EG',
         bio: 'B',

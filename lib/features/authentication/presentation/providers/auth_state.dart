@@ -11,6 +11,7 @@ import '../../domain/entities/user_entity.dart';
 /// The state machine transitions:
 /// ```
 /// AuthInitial → AuthLoading → AuthAuthenticated
+///                           → AuthEmailVerificationRequired
 ///                           → AuthUnauthenticated
 ///                           → AuthError
 /// ```
@@ -38,6 +39,15 @@ class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
+/// Emitted while app startup is validating persisted auth session.
+///
+/// Unlike [AuthLoading], this state is used for silent bootstrap checks
+/// and should not block auth-form buttons in sign-in/create-account flows.
+class AuthChecking extends AuthState {
+  /// Creates an [AuthChecking] state.
+  const AuthChecking();
+}
+
 /// Emitted when the user is successfully authenticated.
 ///
 /// Carries the authenticated [user]'s identity. The router redirects
@@ -52,6 +62,18 @@ class AuthAuthenticated extends AuthState {
   /// Props include [user] so equality is based on user identity.
   @override
   List<Object?> get props => [user];
+}
+
+/// Emitted after successful registration when email verification is required.
+class AuthEmailVerificationRequired extends AuthState {
+  /// The newly registered email address.
+  final String email;
+
+  /// Creates an [AuthEmailVerificationRequired] state with [email].
+  const AuthEmailVerificationRequired(this.email);
+
+  @override
+  List<Object?> get props => [email];
 }
 
 /// Emitted when no valid session exists.

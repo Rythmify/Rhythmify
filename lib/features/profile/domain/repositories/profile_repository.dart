@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
+import '../entities/profile_user_summary.dart';
 import '../../../../core/domain/entities/track.dart';
 
 /// Defines the contract for all profile operations in Rythmify.
@@ -27,11 +28,17 @@ abstract class ProfileRepository {
   /// Returns [Left] with [ValidationFailure] if any field is invalid.
   ///
   /// [displayName] — the new display name (max 50 characters).
+  /// [username] — the unique username (max 30 characters).
+  /// [firstName] — the user's first name.
+  /// [lastName] — the user's last name.
   /// [city] — the city portion of the user's location.
   /// [country] — the ISO alpha-2 country code (e.g. `'EG'`).
   /// [bio] — the user's biography text.
   Future<Either<Failure, ProfileEntity>> updateProfile({
     required String displayName,
+    required String username,
+    required String firstName,
+    required String lastName,
     required String city,
     required String country,
     required String bio,
@@ -98,6 +105,20 @@ abstract class ProfileRepository {
   /// [page] — the page number (1-based).
   /// [limit] — the number of tracks per page (default 20).
   Future<Either<Failure, List<Track>>> getLikedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated list of followers for [userId].
+  Future<Either<Failure, List<ProfileUserSummary>>> getFollowers({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  /// Fetches a paginated list of following users for [userId].
+  Future<Either<Failure, List<ProfileUserSummary>>> getFollowing({
     required String userId,
     required int page,
     required int limit,

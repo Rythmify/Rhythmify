@@ -4,6 +4,12 @@
 // These small widgets are used by multiple screens.
 // Keeping them here means each screen file stays under 400 LOC.
 // ============================================================
+/// Reusable widgets shared across all playlist screens.
+/// Includes [PlaylistCoverImage], [TrackTileInPlaylist], [BottomSheetHandle], and [OptionSheetTile].
+/// [PlaylistCoverImage] handles both local file paths and remote URLs automatically.
+/// [TrackTileInPlaylist] is intentionally separate from the feed's TrackCard — it's
+/// position-aware and carries playlist-specific state like [PlaylistTrack.isUnavailable].
+library;
 
 import 'package:flutter/material.dart';
 import '../../domain/entities/playlist_entity.dart';

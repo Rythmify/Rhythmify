@@ -15,6 +15,8 @@ import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
+import '../../features/authentication/presentation/pages/forgot_password_page.dart';
+import '../../features/authentication/presentation/pages/verify_email_page.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -23,6 +25,8 @@ import '../../features/authentication/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
+import '../../features/profile/presentation/pages/profile_connections_page.dart';
+import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
 
 //  Feed imports
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -102,6 +106,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/create-account');
 
@@ -114,6 +120,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (authState is AuthAuthenticated) {
         if (isAuthRoute) return '/home';
+        return null;
+      }
+
+      if (authState is AuthEmailVerificationRequired) {
+        if (!isAuthRoute) return '/verify-email';
         return null;
       }
 
@@ -146,6 +157,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) {
+          final initialEmail = state.extra as String?;
+          return ForgotPasswordPage(initialEmail: initialEmail);
+        },
+      ),
+      GoRoute(
         path: '/create-account/password',
         builder: (context, state) {
           final email = state.extra as String;
@@ -160,6 +178,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             email: data['email'] as String,
             password: data['password'] as String,
           );
+        },
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyEmailPage(email: email);
         },
       ),
 
@@ -180,6 +205,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
           return LikesPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/followers',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return ProfileConnectionsPage(
+            userId: userId,
+            type: ProfileConnectionsType.followers,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/following',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return ProfileConnectionsPage(
+            userId: userId,
+            type: ProfileConnectionsType.following,
+          );
         },
       ),
 

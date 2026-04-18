@@ -95,8 +95,6 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
   }
 }
 
-// ── SoundCloud tab ─────────────────────────────────────────────────────────────
-
 class _SoundCloudTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -279,8 +277,6 @@ class _SoundCloudDataView extends StatelessWidget {
   }
 }
 
-// ── All Platforms tab ──────────────────────────────────────────────────────────
-
 class _AllPlatformsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -362,8 +358,6 @@ class _AllPlatformsTab extends StatelessWidget {
     );
   }
 }
-
-// ── Shared sub-widgets ─────────────────────────────────────────────────────────
 
 class _StatItem extends StatelessWidget {
   final IconData icon;

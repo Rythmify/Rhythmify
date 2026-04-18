@@ -1,7 +1,11 @@
-// lib/features/playlist/presentation/screens/library_playlists_screen.dart
-//
 // The Library "Playlists" tab — shown when user taps Playlists in Library.
 // Uses GoRouter (context.push) for navigation, matching the rest of the app.
+/// Library tab showing all collections with type == playlist.
+/// Filters [playlistListProvider] by [PlaylistType.playlist] and supports live search.
+/// Create button opens [CreatePlaylistSheet] and navigates to the new playlist on confirm.
+/// The ··· menu opens [PlaylistOptionsSheet] with [isOwner] hardcoded to true
+/// until auth is wired — replace with a real ownership check at that point.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

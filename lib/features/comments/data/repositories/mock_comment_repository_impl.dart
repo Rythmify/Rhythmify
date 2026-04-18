@@ -4,13 +4,15 @@ import '../../domain/repositories/comment_repository.dart';
 import '../datasources/comment_local_datasource.dart';
 import '../../data/models/comment_dto.dart';
 
-/// Concrete implementation of the [CommentRepository].
+/// Concrete mock implementation of the [CommentRepository].
 ///
 /// This implementation relies on the [CommentLocalDataSource] to simulate
-/// network requests. It handles the mapping from Data layer DTOs to Domain layer Entities.
+/// network requests locally without contacting a backend server.
+/// It gracefully maps raw [CommentDto] objects to Domain [Comment] entities.
 class MockCommentRepositoryImpl implements CommentRepository {
   final CommentLocalDataSource _localDataSource;
 
+  /// Creates a [MockCommentRepositoryImpl] with the provided [_localDataSource].
   MockCommentRepositoryImpl(this._localDataSource);
 
   @override
@@ -28,7 +30,6 @@ class MockCommentRepositoryImpl implements CommentRepository {
         sortValue: sortType.apiValue,
       );
 
-      // Map DTOs to Entities
       return dtos.map((dto) => dto.toDomain()).toList();
     } catch (e) {
       throw Exception('Failed to fetch track comments: $e');
@@ -57,21 +58,37 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<List<Comment>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      final dtos = await _localDataSource.getReplies(
+        commentId: commentId,
+        limit: limit,
+        offset: offset,
+      );
+
+      return dtos.map((dto) => dto.toDomain()).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch replies: $e');
+    }
+  }
+
+  @override
   Future<Map<int, ({String? pfp, String text})>> getFloatingComments(
     String trackId,
   ) async {
     try {
-      // Fetch all comments for the track to simulate building the waveform map
       final allTrackComments = await _localDataSource.getAllCommentsForTrack(
         trackId,
       );
 
-      // Update map to hold the Record
       final Map<int, ({String? pfp, String text})> floatingMap = {};
 
       for (var dto in allTrackComments) {
-        // Mock data timestamp was in ms, convert to seconds
-        final second = (dto.timestamp / 1000).floor();
+        final second = (dto.timestamp).floor();
 
         if (!floatingMap.containsKey(second)) {
           floatingMap[second] = (pfp: dto.userPfp, text: dto.content);
@@ -93,9 +110,9 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }) async {
     try {
       final newDto = CommentDto(
-        id: const Uuid().v4(), // Generate a fake UUID
+        id: const Uuid().v4(),
         trackId: trackId,
-        userId: 'current_logged_in_user_id', // Mocked user session
+        userId: 'current_logged_in_user_id',
         userDisplayName: 'Current User',
         userPfp: 'https://fake-url.com/my-pfp.jpg',
         content: content,
@@ -115,16 +132,30 @@ class MockCommentRepositoryImpl implements CommentRepository {
   }
 
   @override
+  Future<Comment> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final insertedDto = await _localDataSource.postReply(
+        commentId: commentId,
+        content: content,
+      );
+      return insertedDto.toDomain();
+    } catch (e) {
+      throw Exception('Failed to post reply: $e');
+    }
+  }
+
+  @override
   Future<bool> toggleCommentLike(
     String commentId, {
     required bool isCurrentlyLiked,
   }) async {
     try {
-      // The local mock data source already handles finding the comment
-      // and flipping its state internally, so we just pass the ID as before.
       return await _localDataSource.toggleLike(commentId);
     } catch (e) {
-      throw Exception('Failed to toggle like: $e');
+      throw Exception('Failed to toggle like status: $e');
     }
   }
 

@@ -7,6 +7,8 @@ class ProfileModel extends ProfileEntity {
     required super.id,
     required super.displayName,
     super.username,
+    super.firstName,
+    super.lastName,
     super.avatarUrl,
     super.coverUrl,
     super.city,
@@ -23,6 +25,8 @@ class ProfileModel extends ProfileEntity {
     final id = json['id'] as String? ?? '';
     final displayName = json['display_name'] as String? ?? '';
     final username = json['username'] as String?;
+    final firstName = json['first_name'] as String?;
+    final lastName = json['last_name'] as String?;
     final avatarUrl =
         json['profile_picture'] as String? ?? json['avatar_url'] as String?;
     final coverUrl =
@@ -41,6 +45,8 @@ class ProfileModel extends ProfileEntity {
       id: id,
       displayName: displayName,
       username: username,
+      firstName: firstName,
+      lastName: lastName,
       avatarUrl: avatarUrl,
       coverUrl: coverUrl,
       city: city,
@@ -59,6 +65,8 @@ class ProfileModel extends ProfileEntity {
       'id': id,
       'display_name': displayName,
       'username': username,
+      'first_name': firstName,
+      'last_name': lastName,
       'profile_picture': avatarUrl,
       'cover_photo': coverUrl,
       'city': city,

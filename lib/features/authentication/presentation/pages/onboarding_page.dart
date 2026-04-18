@@ -49,8 +49,7 @@ class OnboardingPage extends StatelessWidget {
             child: TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 1.0, end: 0.0),
               duration: const Duration(milliseconds: 600),
-              curve:
-                  Curves.easeOutCubic, // Gives it a nice, natural deceleration
+              curve: Curves.easeOutCubic,
               builder: (context, value, child) {
                 return FractionalTranslation(
                   translation: Offset(0, value),

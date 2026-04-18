@@ -1,19 +1,48 @@
 import 'package:equatable/equatable.dart';
 
+/// Represents a user comment or reply on a specific track.
+///
+/// This entity belongs to the Domain layer and encapsulates the core data
+/// associated with a single comment, including its content, author details,
+/// and metadata like timestamps and like counts.
 class Comment extends Equatable {
+  /// The unique identifier for this comment.
   final String id;
+
+  /// The unique identifier of the track this comment belongs to.
   final String trackId;
+
+  /// The unique identifier of the user who authored this comment.
   final String userId;
+
+  /// The display name of the user who authored this comment.
   final String userDisplayName;
+
+  /// The optional profile picture URL of the user who authored this comment.
   final String? userPfp;
+
+  /// The text content of the comment.
   final String content;
+
+  /// The exact millisecond in the track where the comment was made.
   final int trackTimestamp;
+
+  /// The date and time when this comment was originally created.
   final DateTime createdAt;
+
+  /// The total number of likes this comment has received.
   final int likesCount;
+
+  /// Indicates whether the currently authenticated user has liked this comment.
   final bool isLikedByMe;
+
+  /// The total number of replies directed at this comment.
   final int replyCount;
+
+  /// The optional parent comment ID, if this comment is a reply.
   final String? parentId;
 
+  /// Creates a new [Comment] instance.
   const Comment({
     required this.id,
     required this.trackId,
@@ -29,7 +58,7 @@ class Comment extends Equatable {
     this.parentId,
   });
 
-  // Updated copyWith to accept all properties
+  /// Creates a copy of this [Comment] with the given fields replaced by the new values.
   Comment copyWith({
     String? id,
     String? trackId,

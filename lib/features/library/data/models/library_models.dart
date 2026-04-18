@@ -1,3 +1,4 @@
+import '../../../../core/data/models/track_dto.dart';
 import '../../domain/entities/library_entities.dart';
 
 /// Data transfer models for the Library feature.
@@ -67,29 +68,16 @@ class LibraryPlaylistModel extends LibraryPlaylist {
 
 class UploadedTrackModel extends UploadedTrack {
   const UploadedTrackModel({
-    required super.id,
-    required super.title,
-    super.artworkUrl,
-    required super.playCount,
-    required super.likeCount,
+    required super.track,
     required super.isPublic,
     required super.status,
-    required super.createdAt,
   });
 
   factory UploadedTrackModel.fromJson(Map<String, dynamic> json) {
     return UploadedTrackModel(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
-      artworkUrl:
-          json['artwork_url'] as String? ?? json['cover_image'] as String?,
-      playCount: json['play_count'] as int? ?? 0,
-      likeCount: json['like_count'] as int? ?? 0,
+      track: TrackDto.fromJson(json),
       isPublic: json['is_public'] as bool? ?? true,
       status: json['status'] as String? ?? 'ready',
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
-          : DateTime.now(),
     );
   }
 }

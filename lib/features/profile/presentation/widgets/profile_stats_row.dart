@@ -24,11 +24,19 @@ class ProfileStatsRow extends StatelessWidget {
   /// The total number of users this profile is following.
   final int followingCount;
 
+  /// Called when followers counter is tapped.
+  final VoidCallback? onFollowersTap;
+
+  /// Called when following counter is tapped.
+  final VoidCallback? onFollowingTap;
+
   /// Creates a [ProfileStatsRow].
   const ProfileStatsRow({
     super.key,
     required this.followersCount,
     required this.followingCount,
+    this.onFollowersTap,
+    this.onFollowingTap,
   });
 
   /// Formats a count integer with K/M suffix abbreviations.
@@ -49,19 +57,27 @@ class ProfileStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          '${_formatCount(followersCount)} Followers',
-          key: const Key('profile_stats_followers_text'),
-          style: AppTheme.bodyMedium,
+        InkWell(
+          key: const Key('profile_stats_followers_button'),
+          onTap: onFollowersTap,
+          child: Text(
+            '${_formatCount(followersCount)} Followers',
+            key: const Key('profile_stats_followers_text'),
+            style: AppTheme.bodyMedium,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Text('·', style: AppTheme.bodyMedium),
         ),
-        Text(
-          '${_formatCount(followingCount)} Following',
-          key: const Key('profile_stats_following_text'),
-          style: AppTheme.bodyMedium,
+        InkWell(
+          key: const Key('profile_stats_following_button'),
+          onTap: onFollowingTap,
+          child: Text(
+            '${_formatCount(followingCount)} Following',
+            key: const Key('profile_stats_following_text'),
+            style: AppTheme.bodyMedium,
+          ),
         ),
       ],
     );
