@@ -126,6 +126,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Name
                         Text(
                           playlist.name,
                           maxLines: 1,
@@ -137,29 +138,47 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
+
+                        // Subtitle — adapts per type
+                        // Playlist → "Playlist · 3 tracks · 9:25"
+                        // Album    → "2026 · Album"
+                        // Station  → "Artist Station · 2:51:18 · 50 tracks"
                         Text(
-                          playlist.subtitleLine,
+                          playlist.detailSubtitle,
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 12,
                           ),
                         ),
                         const SizedBox(height: 2),
+
+                        // Attribution — adapts per type
+                        // Station  → "Based on [seedArtistName]"
+                        // All else → "By [ownerName]"
                         Row(
                           children: [
                             Text(
-                              'By ',
+                              playlist.type == PlaylistType.station
+                                  ? 'Based on '
+                                  : 'By ',
                               style: TextStyle(
                                 color: Colors.grey[500],
                                 fontSize: 12,
                               ),
                             ),
-                            Text(
-                              playlist.ownerName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                            Flexible(
+                              child: Text(
+                                playlist.type == PlaylistType.station
+                                    ? (playlist.seedArtistName ??
+                                        playlist.ownerName)
+                                    : playlist.ownerName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -176,6 +195,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
+                  // Like button
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
@@ -190,6 +210,18 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     onPressed: () =>
                         ref.read(playlistDetailProvider.notifier).toggleLike(),
                   ),
+
+                  // Like count — visible when not owner and count > 0
+                  if (!widget.isOwner && playlist.likeCount > 0)
+                    Text(
+                      _formatCount(playlist.likeCount),
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 13,
+                      ),
+                    ),
+
+                  // More options
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
                     icon: const Icon(
@@ -256,7 +288,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  // ── Playlist tracks ────────────────────────────────────────
+                  // ── Tracks ─────────────────────────────────────────────────
                   ...state.tracks.asMap().entries.map((entry) {
                     final index = entry.key;
                     final track = entry.value;
@@ -267,11 +299,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     );
                   }),
 
-                  // ── Suggestions section ────────────────────────────────────
-                  // Show if: this is a playlist type AND
-                  //   (a) suggestions are loading, OR
-                  //   (b) suggestions are loaded and non-empty
-                  if (playlist.type == PlaylistType.playlist &&
+                  // ── Suggestions — ONLY for owner's own playlists ────────────
+                  // Not shown for: other users' playlists, albums, stations,
+                  // or any fetched content (isOwner=false)
+                  if (widget.isOwner &&
+                      playlist.type == PlaylistType.playlist &&
                       (state.isSuggestionsLoading ||
                           state.suggestions.isNotEmpty)) ...[
                     const Padding(
@@ -286,7 +318,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       ),
                     ),
 
-                    // Loading skeleton while fetching
                     if (state.isSuggestionsLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
@@ -317,7 +348,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                         ),
                       ),
 
-                    // Refresh button — always visible once suggestions loaded
                     if (!state.isSuggestionsLoading)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -352,5 +382,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         ),
       ),
     );
+  }
+
+  String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return '$count';
   }
 }

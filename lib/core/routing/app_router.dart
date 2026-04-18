@@ -55,6 +55,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 // ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
+import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -406,12 +407,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-playlists',
                     path: 'playlists',
-                    builder: (context, state) => const LibraryPlaylistsScreen(),
+                    builder: (context, state) =>
+                        const LibraryPlaylistsScreen(),
                   ),
                   GoRoute(
                     path: 'playlists/:playlistId',
                     builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
+                      final playlistId =
+                          state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -430,7 +433,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'albums/:playlistId',
                     builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
+                      final playlistId =
+                          state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -444,12 +448,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-stations',
                     path: 'stations',
-                    builder: (context, state) => const LibraryStationsScreen(),
+                    builder: (context, state) =>
+                        const LibraryStationsScreen(),
                   ),
                   GoRoute(
                     path: 'stations/:playlistId',
                     builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
+                      final playlistId =
+                          state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
                       return PlaylistDetailScreen(
                         playlistId: playlistId,
@@ -518,22 +524,60 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const UploadTrackScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  ),
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
               child: child,
             );
           },
         ),
+      ),
+
+      // ── Playlist/Album/Station — accessible from ANY tab ────────────────
+      GoRoute(
+        path: '/playlist/:playlistId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final playlistId = state.pathParameters['playlistId']!;
+          final isOwner = state.extra as bool? ?? false;
+          return PlaylistDetailScreen(
+            playlistId: playlistId,
+            isOwner: isOwner,
+          );
+        },
+      ),
+
+      // ── Mix detail — mixed_for_you and made_for_you ─────────────────────
+      GoRoute(
+        path: '/mix/:mixId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final mixId = state.pathParameters['mixId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final mixTypeStr = extra['mixType'] as String? ?? 'genre';
+          final mixType = switch (mixTypeStr) {
+            'daily' => MixType.daily,
+            'weekly' => MixType.weekly,
+            _ => MixType.genre,
+          };
+          return MixDetailScreen(
+            mixId: mixId,
+            mixTitle: extra['title'] as String? ?? 'Your Mix',
+            ownerName: extra['ownerName'] as String? ?? 'You',
+            mixType: mixType,
+            coverUrl: extra['coverUrl'] as String?,
+            trackCount: extra['trackCount'] as int?,
+          );
+        },
       ),
     ],
   );

@@ -394,6 +394,68 @@ class PlaylistRemoteDatasource {
   }
 
   // ============================================================
+// ADD these 3 methods to PlaylistRemoteDatasource
+// Place them after fetchRelatedTracks and before fetchRecommendedTracks
+// ============================================================
+
+  // ── MIX TRACKS: GET /home/mixes/{mixId} ──────────────────────────────────
+  // Used by MixDetailScreen for mixed_for_you genre mixes
+  Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
+    _log('→ GET /home/mixes/$mixId');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/home/mixes/$mixId',
+      );
+      _log('← ${response.statusCode}');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final tracks = data['tracks'] as List<dynamic>;
+      _log('← Got ${tracks.length} tracks for mix $mixId');
+      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+    } on DioException catch (e) {
+      _logError('fetchMixTracks($mixId) failed', e);
+      return [];
+    }
+  }
+
+  // ── DAILY MIX TRACKS: GET /home/made-for-you/daily ───────────────────────
+  // Used by MixDetailScreen for made_for_you daily mix
+  Future<List<PlaylistTrack>> fetchDailyMixTracks() async {
+    _log('→ GET /home/made-for-you/daily');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/home/made-for-you/daily',
+      );
+      _log('← ${response.statusCode}');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final tracks = data['tracks'] as List<dynamic>;
+      _log('← Got ${tracks.length} daily mix tracks');
+      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+    } on DioException catch (e) {
+      _logError('fetchDailyMixTracks() failed', e);
+      return [];
+    }
+  }
+
+  // ── WEEKLY MIX TRACKS: GET /home/made-for-you/weekly ─────────────────────
+  // Used by MixDetailScreen for made_for_you weekly mix
+  Future<List<PlaylistTrack>> fetchWeeklyMixTracks() async {
+    _log('→ GET /home/made-for-you/weekly');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/home/made-for-you/weekly',
+      );
+      _log('← ${response.statusCode}');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final tracks = data['tracks'] as List<dynamic>;
+      _log('← Got ${tracks.length} weekly mix tracks');
+      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+    } on DioException catch (e) {
+      _logError('fetchWeeklyMixTracks() failed', e);
+      return [];
+    }
+  }
+
+  // ============================================================
   // ── RECOMMENDATIONS: Real tracks for suggestions
   //
   // Strategy:

@@ -221,11 +221,11 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final playlist = _cache.getById(playlistId);
       print('[LIST] convertToStation: ${existingTracks.length} seed tracks');
 
-      // Step 2: PATCH backend to subtype=station
-      await _ds.updatePlaylist(
-        playlistId: playlistId,
-        subtype: 'station',
-      );
+      // // Step 2: PATCH backend to subtype=station
+      // await _ds.updatePlaylist(
+      //   playlistId: playlistId,
+      //   subtype: 'station',
+      // );
 
       // Step 3: fetch related tracks for each seed track in parallel
       final relatedResults = await Future.wait(

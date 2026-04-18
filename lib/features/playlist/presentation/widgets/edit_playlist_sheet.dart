@@ -121,54 +121,52 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-  Future<void> _convert(PlaylistType targetType) async {
-    // Close the confirm dialog
-    Navigator.of(context).pop();
+Future<void> _convert(PlaylistType targetType) async {
+  // Close confirm dialog
+  Navigator.of(context).pop();
 
-    if (targetType == PlaylistType.station) {
-      // Show loading dialog — station takes ~2-3s (multiple API calls)
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const AlertDialog(
-          backgroundColor: Color(0xFF1E1E1E),
-          content: Row(
-            children: [
-              CircularProgressIndicator(color: Color(0xFFFF5500)),
-              SizedBox(width: 20),
-              Text(
-                'Building your station...',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
+  // Capture notifier references BEFORE any async gap
+  final listNotifier = ref.read(playlistListProvider.notifier);
+  final detailNotifier = ref.read(playlistDetailProvider.notifier);
+  final onConverted = widget.onConverted;
+  final playlistId = widget.playlistId;
+
+  if (targetType == PlaylistType.station) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        backgroundColor: Color(0xFF1E1E1E),
+        content: Row(
+          children: [
+            CircularProgressIndicator(color: Color(0xFFFF5500)),
+            SizedBox(width: 20),
+            Text(
+              'Building your station...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
-      );
+      ),
+    );
 
-      await ref
-          .read(playlistListProvider.notifier)
-          .convertToStation(widget.playlistId);
+    await listNotifier.convertToStation(playlistId);
 
-      if (mounted) Navigator.of(context).pop(); // close loading dialog
-      if (mounted) Navigator.of(context).pop(); // close edit sheet
+    if (mounted) Navigator.of(context).pop(); // close loading dialog
+    if (mounted) Navigator.of(context).pop(); // close edit sheet
+  } else {
+    Navigator.of(context).pop(); // close edit sheet
+
+    if (targetType == PlaylistType.album) {
+      await listNotifier.convertToAlbum(playlistId);
     } else {
-      // Album/playlist: close sheet immediately, backend runs fast
-      Navigator.of(context).pop();
-
-      if (targetType == PlaylistType.album) {
-        await ref
-            .read(playlistListProvider.notifier)
-            .convertToAlbum(widget.playlistId);
-      } else {
-        await ref
-            .read(playlistListProvider.notifier)
-            .convertToPlaylist(widget.playlistId);
-      }
+      await listNotifier.convertToPlaylist(playlistId);
     }
-
-    ref.read(playlistDetailProvider.notifier).reload();
-    widget.onConverted?.call(targetType);
   }
+
+  detailNotifier.reload();
+  onConverted?.call(targetType);
+}
 
   void _removeLocal(String trackId) {
     setState(() => _tracks.removeWhere((t) => t.id == trackId));
