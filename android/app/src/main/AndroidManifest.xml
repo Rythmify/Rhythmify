@@ -73,9 +73,22 @@
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/logo" />
 
+        <!-- Default alias so launcher picks up icon reset correctly -->
+        <activity-alias
+            android:name=".MainActivity.default"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
         <!-- Alternate app icons -->
         <activity-alias
-            android:name=".AppIconOG"
+            android:name=".MainActivity.AppIconOG"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_og"
@@ -87,7 +100,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconChrome"
+            android:name=".MainActivity.AppIconChrome"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_chrome"
@@ -99,7 +112,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconRoseGold"
+            android:name=".MainActivity.AppIconRoseGold"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_rose_gold"
@@ -111,7 +124,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconSilver"
+            android:name=".MainActivity.AppIconSilver"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_silver"
@@ -123,7 +136,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconSoftPurple"
+            android:name=".MainActivity.AppIconSoftPurple"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_soft_purple"
@@ -135,7 +148,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconHotPink"
+            android:name=".MainActivity.AppIconHotPink"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_hot_pink"
@@ -147,7 +160,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconTieDye"
+            android:name=".MainActivity.AppIconTieDye"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_tie_dye"
@@ -159,7 +172,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconLeopard"
+            android:name=".MainActivity.AppIconLeopard"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_leopard"
