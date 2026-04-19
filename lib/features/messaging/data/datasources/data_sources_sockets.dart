@@ -20,7 +20,7 @@ class DataSourcesSockets {
     );
 
     _socket.onConnect((_) {
-      print('✅ Socket connected! ID: ${_socket.id}');
+      //print('✅ Socket connected! ID: ${_socket.id}');
       if (_currentConversationId != null) {
         _socket.emit('message:join', {
           'conversationId': _currentConversationId,
@@ -29,11 +29,11 @@ class DataSourcesSockets {
       }
     });
 
-    _socket.onDisconnect((_) => print('❌ Socket disconnected'));
-    _socket.onConnectError((err) => print('🚨 Connection error: $err'));
-    _socket.onError((err) => print('🚨 Socket error: $err'));
-    _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt'));
-    _socket.onReconnectFailed((_) => print('🚨 Reconnect failed'));
+    // _socket.onDisconnect((_) => print('❌ Socket disconnected'));
+    // _socket.onConnectError((err) => print('🚨 Connection error: $err'));
+    // _socket.onError((err) => print('🚨 Socket error: $err'));
+    // _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt'));
+    // _socket.onReconnectFailed((_) => print('🚨 Reconnect failed'));
 
     _socket.connect();
   }
@@ -41,7 +41,7 @@ class DataSourcesSockets {
   void joinConversation(String conversationId) {
     _currentConversationId = conversationId;
     if (_socket.connected) {
-      print('🚪 Joined room: $conversationId');
+      //print('🚪 Joined room: $conversationId');
       _socket.emit('message:join', {'conversationId': conversationId});
     }
     // If not connected yet, onConnect will handle the join

@@ -14,7 +14,7 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
       token,
     );
   } else {
-    print('⚠️ socketProvider: no token, socket not connected');
+    //print('⚠️ socketProvider: no token, socket not connected');
   }
 
   ref.onDispose(() => socket.disconnect());

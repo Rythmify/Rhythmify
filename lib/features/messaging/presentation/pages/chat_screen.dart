@@ -86,7 +86,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _setupSocketListeners(String conversationId) {
     _socket.onMessageReceived((data) {
-      print('🔥 onMessageReceived fired: $data');
+      //print('🔥 onMessageReceived fired: $data');
       if (mounted) {
         ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
         ref.invalidate(conversationProvider);
@@ -762,7 +762,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         setState(() => _selectedEmbeds.clear());
       }
     } catch (e) {
-      print('❌ _sendInExistingConv error: $e');
+      //print('❌ _sendInExistingConv error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
