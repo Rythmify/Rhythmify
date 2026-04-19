@@ -72,9 +72,9 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
   MessagesNotifier({
     required MessagingRepository repo,
     required String conversationId,
-  })  : _usecase = GetMessagesUsecase(repo: repo),
-        _conversationId = conversationId,
-        super(const MessagesState()) {
+  }) : _usecase = GetMessagesUsecase(repo: repo),
+       _conversationId = conversationId,
+       super(const MessagesState()) {
     loadInitial();
   }
 
@@ -97,7 +97,10 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
         );
       } else {
         final latestOffset = total - _limit;
-        final (latestBatch, _) = await _usecase(_conversationId, offset: latestOffset);
+        final (latestBatch, _) = await _usecase(
+          _conversationId,
+          offset: latestOffset,
+        );
         _oldestOffset = latestOffset;
         state = MessagesState(
           messages: latestBatch,
@@ -106,7 +109,11 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
         );
       }
     } catch (e) {
-      state = MessagesState(isLoading: false, error: e.toString(), hasMore: false);
+      state = MessagesState(
+        isLoading: false,
+        error: e.toString(),
+        hasMore: false,
+      );
     }
   }
 
@@ -141,11 +148,12 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
 ///
 /// Depends on [repositoryprovider].
 final messagesNotifierProvider =
-    StateNotifierProvider.family<MessagesNotifier, MessagesState, String>(
-  (ref, conversationId) {
-    return MessagesNotifier(
-      repo: ref.read(repositoryprovider),
-      conversationId: conversationId,
-    );
-  },
-);
+    StateNotifierProvider.family<MessagesNotifier, MessagesState, String>((
+      ref,
+      conversationId,
+    ) {
+      return MessagesNotifier(
+        repo: ref.read(repositoryprovider),
+        conversationId: conversationId,
+      );
+    });

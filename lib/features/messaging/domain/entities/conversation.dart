@@ -34,14 +34,14 @@ class Conversation {
     required this.unReadCount,
   });
 
-  Conversation copyWith({String? participantName}){
+  Conversation copyWith({String? participantName}) {
     return Conversation(
       conversationId: conversationId,
       participantId: participantId,
-      participantName: participantName?? this.participantName,
+      participantName: participantName ?? this.participantName,
       lastMessagePreview: lastMessagePreview,
       lastMessageDate: lastMessageDate,
-      unReadCount: unReadCount
+      unReadCount: unReadCount,
     );
   }
 }

@@ -151,7 +151,9 @@ class MockDatasourceImplement implements DatasourceInterface {
     int offset = 0,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    final all = List<MessageModel>.from(_messagesByConversation[conversationId] ?? []);
+    final all = List<MessageModel>.from(
+      _messagesByConversation[conversationId] ?? [],
+    );
     final page = all.skip(offset).take(100).toList();
     return (page, all.length);
   }

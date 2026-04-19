@@ -15,7 +15,10 @@ abstract class MessagingRepository {
   ///
   /// Returns a tuple of the message list and the total message count, which is
   /// used by [MessagesNotifier] to jump directly to the latest page on first load.
-  Future<(List<Message>, int)> getMessages(String conversationId, {int offset = 0});
+  Future<(List<Message>, int)> getMessages(
+    String conversationId, {
+    int offset = 0,
+  });
 
   /// Initiates a new [Conversation] with a specific participant.
   ///
@@ -71,6 +74,6 @@ abstract class MessagingRepository {
     String embedType,
   ); //for both playlists and albums
 
-  /// Ensures a [Conversation] exists with [participantId] without sending a message.  
+  /// Ensures a [Conversation] exists with [participantId] without sending a message.
   Future<Conversation> ensureConversation(String participantId);
 }

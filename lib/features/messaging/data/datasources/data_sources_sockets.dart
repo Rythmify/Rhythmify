@@ -22,7 +22,9 @@ class DataSourcesSockets {
     _socket.onConnect((_) {
       print('✅ Socket connected! ID: ${_socket.id}');
       if (_currentConversationId != null) {
-        _socket.emit('message:join', {'conversationId': _currentConversationId});
+        _socket.emit('message:join', {
+          'conversationId': _currentConversationId,
+        });
         _onReconnectedToRoom?.call();
       }
     });

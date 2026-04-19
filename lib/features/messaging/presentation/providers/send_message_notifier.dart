@@ -52,8 +52,8 @@ class SendMessageNotifier extends StateNotifier<bool> {
       final uCase = StartConversationUsecase(
         repo: ref.read(repositoryprovider),
       );
-      final trackId= embedType=='track'?embedId:null;
-      final playlistId= embedType!='track'?embedId:null;
+      final trackId = embedType == 'track' ? embedId : null;
+      final playlistId = embedType != 'track' ? embedId : null;
       final newConv = await uCase(
         newParticipantId!,
         body: body,
@@ -67,13 +67,13 @@ class SendMessageNotifier extends StateNotifier<bool> {
     }
   }
 
-  Future<Conversation> ensureConversation(String participantId)async{
-    state=true;
-    final newConv=await EnsureConversationUsecase(
+  Future<Conversation> ensureConversation(String participantId) async {
+    state = true;
+    final newConv = await EnsureConversationUsecase(
       repo: ref.read(repositoryprovider),
     ).call(participantId);
-    state=false;
-    
+    state = false;
+
     return newConv;
   }
 }
