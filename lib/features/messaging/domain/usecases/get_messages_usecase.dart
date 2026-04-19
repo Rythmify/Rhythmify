@@ -10,6 +10,9 @@ class GetMessagesUsecase {
 
   GetMessagesUsecase({required this.repo});
 
+  /// Fetches a page of [Message]s for [conversationId] at [offset].
+  ///
+  /// Returns a tuple of the message list and the total message count.
   Future<(List<Message>, int)> call(String conversationId, {int offset = 0}) {
     return repo.getMessages(conversationId, offset: offset);
   }
