@@ -55,7 +55,10 @@ class TrackRepositoryImpl implements TrackRepository {
   }
 
   @override
-  Future<FanLeaderboard> getFanLeaderboard(String trackId, String period) async {
+  Future<FanLeaderboard> getFanLeaderboard(
+    String trackId,
+    String period,
+  ) async {
     final json = await remoteDataSource.getFanLeaderboard(trackId, period);
     return FanLeaderboardDto.fromJson(json);
   }

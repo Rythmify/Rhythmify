@@ -24,14 +24,17 @@ class HomeDto {
 
   static HomeData fromJson(Map<String, dynamic> json) {
     return HomeData(
-      hotForYou: parseHotForYou(json['hot_for_you'] as Map<String, dynamic>? ?? {}),
+      hotForYou: parseHotForYou(
+        json['hot_for_you'] as Map<String, dynamic>? ?? {},
+      ),
 
       trendingByGenre: parseTrendingByGenre(
         json['trending_by_genre'] as Map<String, dynamic>?,
       ),
 
       moreOfWhatYouLike:
-          ((json['more_of_what_you_like'] as Map<String, dynamic>?)?['tracks'] as List?)
+          ((json['more_of_what_you_like'] as Map<String, dynamic>?)?['tracks']
+                  as List?)
               ?.where((t) => t != null)
               .map((t) => parseTrack(t as Map<String, dynamic>?))
               .toList() ??
@@ -53,7 +56,9 @@ class HomeDto {
     return HotForYou(
       track: parseTrack(json['track'] as Map<String, dynamic>?),
       reason: json['reason'] as String? ?? '',
-      validUntil: DateTime.tryParse(json['valid_until'] as String? ?? '') ?? DateTime.now(),
+      validUntil:
+          DateTime.tryParse(json['valid_until'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 

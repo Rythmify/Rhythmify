@@ -5,13 +5,13 @@ class FanLeaderboardDto {
   static FanLeaderboard fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     final items = (data['items'] as List<dynamic>)
-        .map((item) => FanLeaderboardItemDto.fromJson(item as Map<String, dynamic>))
+        .map(
+          (item) =>
+              FanLeaderboardItemDto.fromJson(item as Map<String, dynamic>),
+        )
         .toList();
 
-    return FanLeaderboard(
-      period: data['period'] as String,
-      items: items,
-    );
+    return FanLeaderboard(period: data['period'] as String, items: items);
   }
 }
 

@@ -11,10 +11,7 @@ import '../providers/fan_leaderboard_provider.dart';
 class FansLeaderboard extends ConsumerWidget {
   final String trackId;
 
-  const FansLeaderboard({
-    super.key,
-    required this.trackId,
-  });
+  const FansLeaderboard({super.key, required this.trackId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,9 +118,13 @@ class FansLeaderboard extends ConsumerWidget {
                   return ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
                     itemCount: leaderboard.items.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final item = leaderboard.items[index];
                       return _buildListenerCard(context, item);
@@ -135,7 +136,10 @@ class FansLeaderboard extends ConsumerWidget {
                   child: CircularProgressIndicator(),
                 ),
                 error: (err, stack) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 40.0,
+                    horizontal: 24,
+                  ),
                   child: Text(
                     "Error loading leaderboard: $err",
                     style: const TextStyle(color: Colors.red),
@@ -152,12 +156,17 @@ class FansLeaderboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSegmentText(WidgetRef ref, LeaderboardPeriod value, String label) {
+  Widget _buildSegmentText(
+    WidgetRef ref,
+    LeaderboardPeriod value,
+    String label,
+  ) {
     return Expanded(
       child: GestureDetector(
         key: Key('fans_leaderboard_${value.value}_segment_gesture_detector'),
         onTap: () {
-          ref.read(fanLeaderboardPeriodProvider(trackId).notifier).state = value;
+          ref.read(fanLeaderboardPeriodProvider(trackId).notifier).state =
+              value;
         },
         behavior: HitTestBehavior.opaque,
         child: Container(
@@ -201,7 +210,11 @@ class FansLeaderboard extends ConsumerWidget {
                   ? NetworkImage(item.profilePicture!)
                   : null,
               child: item.profilePicture == null
-                  ? const Icon(Icons.person, size: 18, color: AppTheme.textSecondary)
+                  ? const Icon(
+                      Icons.person,
+                      size: 18,
+                      color: AppTheme.textSecondary,
+                    )
                   : null,
             ),
             const SizedBox(width: 12),

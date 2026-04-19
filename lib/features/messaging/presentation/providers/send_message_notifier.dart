@@ -72,7 +72,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
 
   Future<Conversation> ensureConversation(String participantId) async {
     if (!mounted) {
-      // This is a bit tricky as we MUST return a Conversation. 
+      // This is a bit tricky as we MUST return a Conversation.
       // But if it's not mounted, the caller should ideally not be calling this or handle it.
     }
     state = true;

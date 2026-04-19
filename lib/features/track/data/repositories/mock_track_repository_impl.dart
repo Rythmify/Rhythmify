@@ -76,12 +76,12 @@ class MockTrackRepositoryImpl implements TrackRepository {
   }
 
   @override
-  Future<FanLeaderboard> getFanLeaderboard(String trackId, String period) async {
+  Future<FanLeaderboard> getFanLeaderboard(
+    String trackId,
+    String period,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    return FanLeaderboard(
-      period: period,
-      items: [],
-    );
+    return FanLeaderboard(period: period, items: []);
   }
 
   // ================================

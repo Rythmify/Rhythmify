@@ -14,14 +14,18 @@ enum LeaderboardPeriod {
 }
 
 /// Provider to manage the selected period for a specific track's leaderboard.
-final fanLeaderboardPeriodProvider = StateProvider.family<LeaderboardPeriod, String>((ref, trackId) {
-  return LeaderboardPeriod.overall;
-});
+final fanLeaderboardPeriodProvider =
+    StateProvider.family<LeaderboardPeriod, String>((ref, trackId) {
+      return LeaderboardPeriod.overall;
+    });
 
 /// FutureProvider to fetch fan leaderboard data based on trackId and period.
-final fanLeaderboardProvider = FutureProvider.family<FanLeaderboard, String>((ref, trackId) async {
+final fanLeaderboardProvider = FutureProvider.family<FanLeaderboard, String>((
+  ref,
+  trackId,
+) async {
   final period = ref.watch(fanLeaderboardPeriodProvider(trackId));
   final useCase = ref.watch(getFanLeaderboardUseCaseProvider);
-  
+
   return useCase(trackId, period.value);
 });
