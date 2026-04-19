@@ -11,8 +11,8 @@ abstract class MessagingRepository {
   /// Retrieves a list of all active [Conversation]s for the current user.
   Future<List<Conversation>> getConversations();
 
-  /// Retrieves the history of [Message]s for a specific [conversationId].
-  Future<List<Message>> getMessages(String conversationId);
+  /// Retrieves messages for [conversationId] at [offset]. Returns messages + total count.
+  Future<(List<Message>, int)> getMessages(String conversationId, {int offset = 0});
 
   /// Initiates a new [Conversation] with a specific participant.
   ///

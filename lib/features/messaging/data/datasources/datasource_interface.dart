@@ -12,8 +12,8 @@ abstract class DatasourceInterface {
   /// Fetches the list of all conversations for the authenticated user.
   Future<List<ConversationModel>> getConversations();
 
-  /// Fetches the list of messages for a given [conversationId].
-  Future<List<MessageModel>> getMessages({required String conversationId});
+  /// Fetches messages for [conversationId] at [offset]. Returns messages + total count.
+  Future<(List<MessageModel>, int)> getMessages({required String conversationId, int offset = 0});
 
   /// Sends a message within a specific [conversationId].
   Future<MessageModel> sendMessage({

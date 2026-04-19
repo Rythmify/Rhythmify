@@ -10,7 +10,7 @@ class GetMessagesUsecase {
 
   GetMessagesUsecase({required this.repo});
 
-  Future<List<Message>> call(String conversationId) {
-    return repo.getMessages(conversationId);
+  Future<(List<Message>, int)> call(String conversationId, {int offset = 0}) {
+    return repo.getMessages(conversationId, offset: offset);
   }
 }

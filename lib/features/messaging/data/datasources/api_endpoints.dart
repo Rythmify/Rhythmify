@@ -12,9 +12,9 @@ class ApiEndPoints {
   static String getConversation(String conversationId) =>
       '/messages/conversations/$conversationId';
 
-  /// Returns the endpoint to retrieve messages for a specific [conversationId].
-  static String getMessages(String conversationId) =>
-      '/messages/conversations/$conversationId/messages';
+  /// Returns the endpoint to retrieve messages for a specific [conversationId] at [offset].
+  static String getMessages(String conversationId, {int offset = 0, int limit = 100}) =>
+      '/messages/conversations/$conversationId?offset=$offset&limit=$limit';
 
   /// Returns the endpoint to send a message within a specific [conversationId].
   static String sendMessage(String conversationId) =>

@@ -10,7 +10,7 @@ import 'package:rythmify/features/messaging/presentation/providers/current_user_
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_by_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
-import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/messages_notifier.dart';
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/unread_messages_provider.dart';
@@ -46,6 +46,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
+  late final ScrollController _scrollController;
   final List<SharedEmbed> _selectedEmbeds = [];
   late DataSourcesSockets _socket;
 
@@ -53,11 +54,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     controller = TextEditingController();
+    _scrollController = ScrollController();
     _socket = ref.read(socketProvider);
     if (widget.conv != null) {
+      _scrollController.addListener(_onScroll);
       Future.microtask(() {
         if (!mounted) return;
-        ref.invalidate(messageProvider(widget.conv!.conversationId));
         ref.invalidate(conversationProvider);
         if(widget.conv!.participantId.isNotEmpty){
           ref.invalidate(isBlockedProvider(widget.conv!.participantId));
@@ -72,17 +74,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  void _onScroll() {
+    if (widget.conv == null) return;
+    final pos = _scrollController.position;
+    // reversed list: maxScrollExtent = visual top (oldest messages)
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      ref.read(messagesNotifierProvider(widget.conv!.conversationId).notifier).loadMore();
+    }
+  }
+
   void _setupSocketListeners(String conversationId) {
     _socket.onMessageReceived((data) {
       print('🔥 onMessageReceived fired: $data');
       if (mounted) {
-        ref.invalidate(messageProvider(conversationId));
+        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
         ref.invalidate(conversationProvider);
       }
     });
     _socket.onMessageReadUpdated((data) {
       if (mounted) {
-        ref.invalidate(messageProvider(conversationId));
+        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
       }
     });
   }
@@ -92,6 +103,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.conv != null) {
       _socket.leaveConversation(widget.conv!.conversationId);
     }
+    _scrollController.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -100,8 +112,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final myId = ref.watch(currentUserIdProvider);
 
-    final msgProvider = widget.conv != null
-        ? ref.watch(messageProvider(widget.conv!.conversationId))
+    final msgState = widget.conv != null
+        ? ref.watch(messagesNotifierProvider(widget.conv!.conversationId))
         : null;
 
     final unreadMsgProvider = widget.conv != null
@@ -154,8 +166,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: widget.conv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
-          : msgProvider?.when(
-                  data: (msg) {
+          : msgState == null
+          ? const Center(child: CircularProgressIndicator())
+          : msgState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : msgState.error != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                  const SizedBox(height: 12),
+                  const Text('Failed to load messages', style: TextStyle(color: Colors.white)),
+                  TextButton(
+                    onPressed: () {
+                      if (mounted && widget.conv != null) {
+                        ref.read(messagesNotifierProvider(widget.conv!.conversationId).notifier).refresh();
+                      }
+                    },
+                    child: const Text('Retry', style: TextStyle(color: Colors.orange)),
+                  ),
+                ],
+              ),
+            )
+          : Builder(builder: (context) {
                     unreadMsgProvider?.whenData((unreads) {
                       if (unreads.isNotEmpty) {
                         Future.microtask(() async {
@@ -180,11 +214,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         });
                       }
                     });
-                    final groups = _groupMessages(msg);
+                    final groups = _groupMessages(msgState.messages);
                     return Column(
                       children: [
+                        if (msgState.isLoadingMore)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
                         Expanded(
                           child: ListView.builder(
+                            controller: _scrollController,
                             reverse: true,
                             padding: const EdgeInsets.only(
                               left: 16,
@@ -370,41 +410,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ),
                       ],
                     );
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stackTrace) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.white54,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Failed to load messages',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            if (mounted && widget.conv != null) {
-                              ref.invalidate(
-                                messageProvider(widget.conv!.conversationId),
-                              );
-                            }
-                          },
-                          child: const Text(
-                            'Retry',
-                            style: TextStyle(color: Colors.orange),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ) ??
-                const Center(child: CircularProgressIndicator()),
+                  }),
     );
   }
 
@@ -737,7 +743,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       if (mounted) {
         ref.invalidate(conversationProvider);
-        ref.invalidate(messageProvider(widget.conv!.conversationId));
+        ref.read(messagesNotifierProvider(widget.conv!.conversationId).notifier).refresh();
         controller.clear();
         setState(() => _selectedEmbeds.clear());
       }
@@ -765,7 +771,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _socket.joinConversation(newConv.conversationId);
       _socket.onMessageReceived((data) {
         if (mounted) {
-          ref.invalidate(messageProvider(newConv.conversationId));
+          ref.read(messagesNotifierProvider(newConv.conversationId).notifier).refresh();
           ref.invalidate(conversationProvider);
         }
       });

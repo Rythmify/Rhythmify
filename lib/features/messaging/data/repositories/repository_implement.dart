@@ -22,8 +22,8 @@ class RepositoryImplement implements MessagingRepository {
   }
 
   @override
-  Future<List<Message>> getMessages(String conversationId) {
-    return dataSource.getMessages(conversationId: conversationId);
+  Future<(List<Message>, int)> getMessages(String conversationId, {int offset = 0}) {
+    return dataSource.getMessages(conversationId: conversationId, offset: offset);
   }
 
   @override

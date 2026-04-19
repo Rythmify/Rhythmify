@@ -5,7 +5,7 @@ import 'package:rythmify/features/messaging/domain/usecases/ensure_conversation_
 import 'package:rythmify/features/messaging/domain/usecases/send_message_usecase.dart';
 import 'package:rythmify/features/messaging/domain/usecases/start_conversation_usecase.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
-import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/messages_notifier.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 
@@ -45,7 +45,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
       socket.sendMessage(conversationId, {'messageId': message.messageId});
 
       ref.invalidate(conversationProvider);
-      ref.invalidate(messageProvider(conversationId));
+      ref.invalidate(messagesNotifierProvider(conversationId));
       state = false;
       return null;
     } else {
@@ -61,7 +61,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
         playlistId: playlistId,
       );
       ref.invalidate(conversationProvider);
-      ref.invalidate(messageProvider(newConv.conversationId));
+      ref.invalidate(messagesNotifierProvider(newConv.conversationId));
       state = false;
       return newConv;
     }

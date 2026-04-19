@@ -34,11 +34,12 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<List<MessageModel>> getMessages({
+  Future<(List<MessageModel>, int)> getMessages({
     required String conversationId,
+    int offset = 0,
   }) async {
     final response = await dio.get(
-      ApiEndPoints.getConversation(conversationId),
+      ApiEndPoints.getMessages(conversationId, offset: offset),
     );
 
     if (response.data is! Map<String, dynamic>) {
@@ -48,11 +49,27 @@ class DatasourceImplement implements DatasourceInterface {
     }
 
     final body = response.data as Map<String, dynamic>;
-    final List data = body['data']['messages'];
+    final dynamic dataField = body['data'];
+    final List rawMessages;
+    final int total;
 
-    return data
+    if (dataField is Map) {
+      rawMessages = (dataField['messages'] as List?) ?? [];
+      final pagination = dataField['pagination'] as Map? ?? body['pagination'] as Map? ?? {};
+      total = (pagination['total'] as int?) ?? rawMessages.length;
+    } else if (dataField is List) {
+      rawMessages = dataField;
+      final pagination = body['pagination'] as Map? ?? {};
+      total = (pagination['total'] as int?) ?? rawMessages.length;
+    } else {
+      rawMessages = [];
+      total = 0;
+    }
+
+    final messages = rawMessages
         .map((e) => MessageModel.fromJson(e as Map<String, dynamic>))
         .toList();
+    return (messages, total);
   }
 
   @override

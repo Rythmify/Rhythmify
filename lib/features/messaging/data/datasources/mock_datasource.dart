@@ -146,11 +146,14 @@ class MockDatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<List<MessageModel>> getMessages({
+  Future<(List<MessageModel>, int)> getMessages({
     required String conversationId,
+    int offset = 0,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    return List.from(_messagesByConversation[conversationId] ?? []);
+    final all = List<MessageModel>.from(_messagesByConversation[conversationId] ?? []);
+    final page = all.skip(offset).take(100).toList();
+    return (page, all.length);
   }
 
   @override
