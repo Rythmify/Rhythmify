@@ -344,11 +344,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                           GoRoute(
                             //2- Account
                             path: 'music-providers',
-                            builder: (context, state) => ImportedMusicProvidersScreen(
-                              appBarTitle: state.extra as String,
-                            ),
+                            builder: (context, state) =>
+                                ImportedMusicProvidersScreen(
+                                  appBarTitle: state.extra as String,
+                                ),
                           ),
-                        ]
+                        ],
                       ),
                       GoRoute(
                         //2- Account
@@ -363,10 +364,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'app-icons',
-                            builder: (context, state) =>
-                                const AppIconScreen(),
+                            builder: (context, state) => const AppIconScreen(),
                           ),
-                        ]
+                        ],
                       ),
                       GoRoute(
                         //5- Social settings
@@ -389,8 +389,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                       GoRoute(
                         //8- Add widgets
                         path: 'add-widget',
-                        builder: (context, state) =>
-                            const AddWidgetScreen(),
+                        builder: (context, state) => const AddWidgetScreen(),
                       ),
                       GoRoute(
                         //9- Analytics

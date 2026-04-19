@@ -26,7 +26,7 @@ class _SwitchStateWidget extends State<SwitchWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        setState(()=> _value = !_value );
+        setState(() => _value = !_value);
         widget.onChanged?.call(_value);
       },
       child: AnimatedContainer(
@@ -35,17 +35,16 @@ class _SwitchStateWidget extends State<SwitchWidget> {
         height: 14,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: _value ? const Color(0xFFFF5500) : Colors.grey
+          color: _value ? const Color(0xFFFF5500) : Colors.grey,
         ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            AnimatedPositioned
-            (
+            AnimatedPositioned(
               duration: const Duration(milliseconds: 200),
               left: _value ? 20 : -4,
               top: -4,
-              child:Container(
+              child: Container(
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
@@ -55,14 +54,14 @@ class _SwitchStateWidget extends State<SwitchWidget> {
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 4,
-                      offset: Offset(0, 2)
-                    )
-                  ]
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
-            )
+            ),
           ],
-        )
+        ),
       ),
     );
   }

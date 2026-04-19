@@ -46,18 +46,10 @@ class IconTileWidget extends StatelessWidget {
           ),
         ),
         trailing: isSelected
-            ? const Icon(
-                Icons.check_circle,
-                color: Colors.white,
-                size: 26,
-              )
+            ? const Icon(Icons.check_circle, color: Colors.white, size: 26)
             : isPremium
-                ? const Icon(
-                    Icons.lock,
-                    color: Colors.white,
-                    size: 22,
-                  )
-                : const SizedBox.shrink(),
+            ? const Icon(Icons.lock, color: Colors.white, size: 22)
+            : const SizedBox.shrink(),
       ),
     );
   }
