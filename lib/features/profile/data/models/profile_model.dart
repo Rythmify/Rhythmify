@@ -35,8 +35,16 @@ class ProfileModel extends ProfileEntity {
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;
 
-    final followersCount = json['followers_count'] as int? ?? 0;
-    final followingCount = json['following_count'] as int? ?? 0;
+    final followersCount = _readCount(
+      json,
+      primaryKey: 'followers_count',
+      fallbackKey: 'follower_count',
+    );
+    final followingCount = _readCount(
+      json,
+      primaryKey: 'following_count',
+      fallbackKey: 'following_count_total',
+    );
     final tracksCount = json['tracks_count'] as int? ?? 0;
     final isFollowing = json['is_following'] as bool? ?? false;
     final isVerified = json['is_verified'] as bool? ?? false;
@@ -78,5 +86,31 @@ class ProfileModel extends ProfileEntity {
       'is_following': isFollowing,
       'is_verified': isVerified,
     };
+  }
+
+  /// Parses a count field from API JSON without accumulating values.
+  ///
+  /// This intentionally reads a single canonical field (with a single fallback)
+  /// and never combines multiple sources, preventing accidental double-counting.
+  static int _readCount(
+    Map<String, dynamic> json, {
+    required String primaryKey,
+    String? fallbackKey,
+  }) {
+    int parse(dynamic value) {
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
+    final primaryValue = parse(json[primaryKey]);
+    if (primaryValue > 0 || json.containsKey(primaryKey)) {
+      return primaryValue;
+    }
+    if (fallbackKey != null) {
+      return parse(json[fallbackKey]);
+    }
+    return 0;
   }
 }

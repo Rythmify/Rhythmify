@@ -99,7 +99,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         if (s is ProfileLoaded) {
           ref
               .read(profileProvider.notifier)
-              .loadLikedTracks(userId: _resolvedUserId);
+              .loadLikedTracks(userId: s.profile.id);
         }
       }
     });
@@ -234,9 +234,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
                   onFollowersTap: () =>
-                      context.push('/profile/$_resolvedUserId/followers'),
+                      context.push('/profile/${state.profile.id}/followers'),
                   onFollowingTap: () =>
-                      context.push('/profile/$_resolvedUserId/following'),
+                      context.push('/profile/${state.profile.id}/following'),
                 ),
                 const SizedBox(height: 16),
                 Row(

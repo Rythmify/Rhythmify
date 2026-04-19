@@ -53,9 +53,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _followUser = FollowUserUseCase(repository);
     _unfollowUser = UnfollowUserUseCase(repository);
     _getLikedTracks = GetLikedTracksUseCase(repository);
-
-    // ── NO auto-load here — initState in each page controls loading ──
-
     return const ProfileInitial();
   }
 
@@ -64,7 +61,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     final result = await _getProfile(userId: userId);
     result.fold((failure) => state = ProfileError(failure.message), (profile) {
       state = ProfileLoaded(profile: profile);
-      loadLikedTracks(userId: userId, refresh: true);
+      loadLikedTracks(userId: profile.id, refresh: true);
     });
   }
 
@@ -222,30 +219,34 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-
-    state = current.copyWith(
-      profile: current.profile.copyWithFollowing(
-        isFollowing: true,
-        followersCount: current.profile.followersCount + 1,
-      ),
-    );
+    if (current.profile.isFollowing) return;
 
     final result = await _followUser(userId: userId);
-    result.fold((failure) => state = current, (_) {});
+    result.fold((failure) => state = current, (_) async {
+      await _refreshProfileSnapshot(previous: current);
+    });
   }
 
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-
-    state = current.copyWith(
-      profile: current.profile.copyWithFollowing(
-        isFollowing: false,
-        followersCount: current.profile.followersCount - 1,
-      ),
-    );
+    if (!current.profile.isFollowing) return;
 
     final result = await _unfollowUser(userId: userId);
-    result.fold((failure) => state = current, (_) {});
+    result.fold((failure) => state = current, (_) async {
+      await _refreshProfileSnapshot(previous: current);
+    });
+  }
+
+  /// Reloads the currently displayed profile from backend and preserves tracks.
+  ///
+  /// This keeps follower/following counters backend-authoritative and avoids
+  /// local accumulation drift from optimistic state updates.
+  Future<void> _refreshProfileSnapshot({required ProfileLoaded previous}) async {
+    final profileResult = await _getProfile(userId: previous.profile.id);
+    profileResult.fold(
+      (_) => state = previous,
+      (profile) => state = previous.copyWith(profile: profile),
+    );
   }
 }
