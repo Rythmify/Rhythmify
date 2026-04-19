@@ -55,6 +55,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 // ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
+import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -534,6 +535,41 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+      ),
+
+      // ── Playlist/Album/Station — accessible from ANY tab ────────────────
+      GoRoute(
+        path: '/playlist/:playlistId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final playlistId = state.pathParameters['playlistId']!;
+          final isOwner = state.extra as bool? ?? false;
+          return PlaylistDetailScreen(playlistId: playlistId, isOwner: isOwner);
+        },
+      ),
+
+      // ── Mix detail — mixed_for_you and made_for_you ─────────────────────
+      GoRoute(
+        path: '/mix/:mixId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final mixId = state.pathParameters['mixId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final mixTypeStr = extra['mixType'] as String? ?? 'genre';
+          final mixType = switch (mixTypeStr) {
+            'daily' => MixType.daily,
+            'weekly' => MixType.weekly,
+            _ => MixType.genre,
+          };
+          return MixDetailScreen(
+            mixId: mixId,
+            mixTitle: extra['title'] as String? ?? 'Your Mix',
+            ownerName: extra['ownerName'] as String? ?? 'You',
+            mixType: mixType,
+            coverUrl: extra['coverUrl'] as String?,
+            trackCount: extra['trackCount'] as int?,
+          );
+        },
       ),
     ],
   );

@@ -59,6 +59,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Fetches the full profile from `/users/me` and merges it with
   /// the token and ID from the basic auth login.
+  ///
+  /// Passes the access token explicitly in the request header instead of
+  /// relying on the [ApiClient] interceptor reading it from storage.
+  /// This avoids a race condition where [FlutterSecureStorage.write] has not
+  /// yet completed by the time the interceptor calls [ApiClient.getToken],
+  /// which caused the `Authorization` header to be missing on the very first
+  /// `/users/me` call after login.
   Future<void> _fetchAndEmitFullProfile(UserEntity basicUser) async {
     if (useMockData) {
       ProfileMockDatasource.setCurrentUser(basicUser.id);
@@ -67,7 +74,14 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     try {
-      final response = await apiClient.dio.get('/users/me');
+      // Pass the token directly — do NOT rely on the interceptor reading
+      // from storage here because the write may not have flushed yet.
+      final response = await apiClient.dio.get(
+        '/users/me',
+        options: Options(
+          headers: {'Authorization': 'Bearer ${basicUser.token}'},
+        ),
+      );
       final data = response.data['data'];
 
       final fullUser = UserModel.fromJson({
@@ -77,14 +91,14 @@ class AuthNotifier extends Notifier<AuthState> {
             data['is_verified'] ??
             data['is_email_verified'] ??
             basicUser.isEmailVerified,
-        // THE FIX: Grabbing profile_picture from the backend
         'avatar_url': data['profile_picture'] ?? data['avatar_url'],
-        'token': basicUser.token, // Keep the JWT token from the login response
+        'token': basicUser.token,
       });
 
       state = AuthAuthenticated(fullUser);
     } catch (e) {
-      // If fetching the profile fails, fallback to the basic user so they aren't blocked from using the app
+      // Profile fetch failed — fall back to basic login user so the
+      // session is not lost over a transient network error.
       state = AuthAuthenticated(basicUser);
     }
   }

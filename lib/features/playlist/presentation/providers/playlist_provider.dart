@@ -1,15 +1,18 @@
-/// State management for the playlist module using Riverpod 3.x Notifiers.
-/// [PlaylistListNotifier] owns the flat list of all collections and handles all CRUD.
-/// [PlaylistDetailNotifier] owns one playlist's header, tracks, and suggestions.
-/// Detail providers are cached manually in [_detailProviderCache] as a workaround
-/// for FamilyNotifier being removed in Riverpod 3.x.
-library;
+// lib/features/playlist/presentation/providers/playlist_provider.dart
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_client.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
+
+final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
+  return PlaylistRemoteDatasource(apiClient.dio);
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATE CLASSES
@@ -43,6 +46,8 @@ class PlaylistDetailState {
     this.tracks = const [],
     this.suggestions = const [],
     this.isLoading = false,
+    this.isSuggestionsLoading = false,
+    this.isLiked = false,
     this.error,
   });
 
@@ -50,6 +55,8 @@ class PlaylistDetailState {
   final List<PlaylistTrack> tracks;
   final List<PlaylistTrack> suggestions;
   final bool isLoading;
+  final bool isSuggestionsLoading;
+  final bool isLiked;
   final String? error;
 
   bool get showSuggestions =>
@@ -60,171 +67,432 @@ class PlaylistDetailState {
     List<PlaylistTrack>? tracks,
     List<PlaylistTrack>? suggestions,
     bool? isLoading,
+    bool? isSuggestionsLoading,
+    bool? isLiked,
     String? error,
   }) => PlaylistDetailState(
     playlist: playlist ?? this.playlist,
     tracks: tracks ?? this.tracks,
     suggestions: suggestions ?? this.suggestions,
     isLoading: isLoading ?? this.isLoading,
+    isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
+    isLiked: isLiked ?? this.isLiked,
     error: error,
   );
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// NOTIFIERS
+// PLAYLIST LIST NOTIFIER
 // ════════════════════════════════════════════════════════════════════════════
 
 class PlaylistListNotifier extends Notifier<PlaylistListState> {
   @override
-  PlaylistListState build() {
-    // Re-read playlists whenever the seeder pushes new data so counts update
-    ref.listen<void>(playlistMockSeederProvider, (_, _) {
-      Future.microtask(loadPlaylists);
-    });
-    ref.watch(playlistMockSeederProvider);
-    final playlists = PlaylistMockData.instance.getMyPlaylists();
-    return PlaylistListState(playlists: playlists);
-  }
+  PlaylistListState build() => const PlaylistListState(isLoading: true);
 
-  final _db = PlaylistMockData.instance;
+  final _cache = PlaylistMockData.instance;
+  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
 
-  void loadPlaylists() {
-    // Must call getTracksFor first — it updates _playlists[i] with fresh counts.
-    // getMyPlaylists() after this returns the already-updated objects.
-    for (final p in List.from(_db.getMyPlaylists())) {
-      _db.getTracksFor(p.id);
+  // ── LOAD ──────────────────────────────────────────────────────────────────
+  Future<void> loadPlaylists() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final playlists = await _ds.fetchMyPlaylists(filter: 'created');
+      _cache.syncFromBackend(playlists);
+      state = PlaylistListState(playlists: playlists);
+      print('[LIST] ✅ Loaded ${playlists.length} playlists');
+    } on DioException catch (e) {
+      print('[LIST] ❌ loadPlaylists ${e.response?.statusCode}');
+      state = PlaylistListState(
+        playlists: _cache.getMyPlaylists(),
+        error: 'Could not refresh playlists',
+      );
     }
-    state = state.copyWith(playlists: _db.getMyPlaylists());
   }
 
-  PlaylistEntity createPlaylist({
+  // ── CREATE ────────────────────────────────────────────────────────────────
+  Future<PlaylistEntity?> createPlaylist({
     required String name,
     required bool isPublic,
-  }) {
-    final playlist = _db.create(name: name, isPublic: isPublic);
-    loadPlaylists();
-    return playlist;
+  }) async {
+    try {
+      final created = await _ds.createPlaylist(name: name, isPublic: isPublic);
+      _cache.createWithId(
+        id: created.id,
+        name: created.name,
+        isPublic: created.isPublic,
+        ownerName: created.ownerName,
+        ownerId: created.ownerId,
+      );
+      await loadPlaylists();
+      print('[LIST] ✅ Created "${created.name}" id=${created.id}');
+      return created;
+    } catch (e) {
+      print('[LIST] ❌ createPlaylist: $e');
+      return null;
+    }
   }
 
-  void updatePlaylist({
+  // ── UPDATE ────────────────────────────────────────────────────────────────
+  Future<void> updatePlaylist({
     required String playlistId,
     required String name,
     required bool isPublic,
     String? description,
-  }) {
-    _db.update(
-      playlistId: playlistId,
-      name: name,
-      isPublic: isPublic,
-      description: description,
-    );
-    loadPlaylists();
+  }) async {
+    try {
+      await _ds.updatePlaylist(
+        playlistId: playlistId,
+        name: name,
+        isPublic: isPublic,
+        description: description,
+      );
+      _cache.update(
+        playlistId: playlistId,
+        name: name,
+        isPublic: isPublic,
+        description: description,
+      );
+      await loadPlaylists();
+      print('[LIST] ✅ Updated $playlistId');
+    } catch (e) {
+      print('[LIST] ❌ updatePlaylist: $e');
+    }
   }
 
+  // ── UPDATE COVER ──────────────────────────────────────────────────────────
   void updateCoverImage({
     required String playlistId,
     required String localPath,
   }) {
-    _db.updateCoverImage(playlistId: playlistId, localPath: localPath);
-    loadPlaylists();
+    _cache.updateCoverImage(playlistId: playlistId, localPath: localPath);
+    state = state.copyWith(playlists: _cache.getMyPlaylists());
   }
 
-  void deletePlaylist(String playlistId) {
-    _db.delete(playlistId);
-    loadPlaylists();
+  // ── DELETE ────────────────────────────────────────────────────────────────
+  Future<void> deletePlaylist(String playlistId) async {
+    try {
+      await _ds.deletePlaylist(playlistId);
+      _cache.delete(playlistId);
+      await loadPlaylists();
+      print('[LIST] ✅ Deleted $playlistId');
+    } catch (e) {
+      print('[LIST] ❌ deletePlaylist: $e');
+    }
   }
 
+  // ── CONVERT TO ALBUM ──────────────────────────────────────────────────────
+  Future<void> convertToAlbum(String playlistId) async {
+    try {
+      await _ds.updatePlaylist(
+        playlistId: playlistId,
+        subtype: 'album',
+        releaseDate: '${DateTime.now().year}-01-01',
+      );
+      _cache.convertToAlbum(playlistId);
+      await loadPlaylists();
+      print('[LIST] ✅ Converted $playlistId to album');
+    } catch (e) {
+      print('[LIST] ❌ convertToAlbum: $e');
+    }
+  }
+
+  // ── CONVERT TO PLAYLIST ───────────────────────────────────────────────────
+  Future<void> convertToPlaylist(String playlistId) async {
+    try {
+      await _ds.updatePlaylist(playlistId: playlistId, subtype: 'playlist');
+      _cache.convertToPlaylist(playlistId);
+      await loadPlaylists();
+      print('[LIST] ✅ Converted $playlistId back to playlist');
+    } catch (e) {
+      print('[LIST] ❌ convertToPlaylist: $e');
+    }
+  }
+
+  // ── CONVERT TO STATION ────────────────────────────────────────────────────
+  Future<void> convertToStation(String playlistId) async {
+    try {
+      // Step 1: get current tracks before conversion
+      final existingTracks = _cache.getTracksFor(playlistId);
+      final playlist = _cache.getById(playlistId);
+      print('[LIST] convertToStation: ${existingTracks.length} seed tracks');
+
+      // // Step 2: PATCH backend to subtype=station
+      // await _ds.updatePlaylist(
+      //   playlistId: playlistId,
+      //   subtype: 'station',
+      // );
+
+      // Step 3: fetch related tracks for each seed track in parallel
+      final relatedResults = await Future.wait(
+        existingTracks.map((t) => _ds.fetchRelatedTracks(t.id, limit: 50)),
+      );
+
+      // Step 4: merge original + related, deduplicate, shuffle → cap at 58
+      final seenIds = <String>{};
+      final merged = <PlaylistTrack>[];
+
+      for (final t in existingTracks) {
+        if (seenIds.add(t.id)) merged.add(t);
+      }
+      for (final batch in relatedResults) {
+        for (final t in batch) {
+          if (seenIds.add(t.id)) merged.add(t);
+        }
+      }
+
+      final seeds = merged.take(existingTracks.length).toList();
+      final related = merged.skip(existingTracks.length).toList()..shuffle();
+      final station58 = [...seeds, ...related].take(58).toList();
+
+      print(
+        '[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)',
+      );
+
+      // Step 5: update cache
+      _cache.convertToStation(playlistId, seedArtistName: playlist?.ownerName);
+      _cache.clearTracks(playlistId);
+      for (int i = 0; i < station58.length; i++) {
+        _cache.addTrack(
+          playlistId: playlistId,
+          track: station58[i].copyWith(position: i + 1),
+        );
+      }
+
+      // Step 6: reload list
+      await loadPlaylists();
+      print(
+        '[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks',
+      );
+    } catch (e) {
+      print('[LIST] ❌ convertToStation: $e');
+    }
+  }
+
+  // ── STATION ───────────────────────────────────────────────────────────────
   PlaylistEntity createStation(PlaylistTrack seedTrack) {
-    final station = _db.createStation(seedTrack: seedTrack);
-    loadPlaylists();
+    final station = _cache.createStation(seedTrack: seedTrack);
+    state = state.copyWith(playlists: _cache.getMyPlaylists());
     return station;
   }
 
-  PlaylistEntity convertToAlbum(String playlistId) {
-    final updated = _db.convertToAlbum(playlistId);
-    loadPlaylists();
-    return updated;
-  }
-
-  PlaylistEntity convertToStation(String playlistId) {
-    final updated = _db.convertToStation(playlistId);
-    loadPlaylists();
-    return updated;
-  }
-
-  PlaylistEntity convertToPlaylist(String playlistId) {
-    final updated = _db.convertToPlaylist(playlistId);
-    loadPlaylists();
-    return updated;
+  PlaylistEntity createStationFromTrack(Track seedTrack) {
+    final pt = PlaylistTrack.fromTrack(seedTrack);
+    final station = _cache.createStation(seedTrack: pt);
+    state = state.copyWith(playlists: _cache.getMyPlaylists());
+    return station;
   }
 }
 
-class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
-  PlaylistDetailNotifier(this._playlistId);
+// ════════════════════════════════════════════════════════════════════════════
+// PLAYLIST DETAIL NOTIFIER
+// ════════════════════════════════════════════════════════════════════════════
 
-  final String _playlistId;
-  final _db = PlaylistMockData.instance;
+class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
+  final _cache = PlaylistMockData.instance;
+  String? _currentPlaylistId;
+
+  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
 
   @override
-  PlaylistDetailState build() => _buildState();
+  PlaylistDetailState build() => const PlaylistDetailState(isLoading: true);
 
-  PlaylistDetailState _buildState() {
-    final playlist = _db.getById(_playlistId);
-    if (playlist == null) {
-      return const PlaylistDetailState(error: 'Playlist not found');
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  Future<void> init(String playlistId) async {
+    _currentPlaylistId = playlistId;
+    state = const PlaylistDetailState(isLoading: true);
+
+    try {
+      final results = await Future.wait([
+        _ds.fetchPlaylistDetail(playlistId),
+        _ds.fetchPlaylistTracks(playlistId),
+      ]);
+
+      final playlist = results[0] as PlaylistEntity;
+      final tracks = results[1] as List<PlaylistTrack>;
+
+      // Sync cache
+      _cache.createWithId(
+        id: playlist.id,
+        name: playlist.name,
+        isPublic: playlist.isPublic,
+        ownerName: playlist.ownerName,
+        ownerId: playlist.ownerId,
+      );
+      _cache.clearTracks(playlistId);
+      for (final t in tracks) {
+        _cache.addTrack(playlistId: playlistId, track: t);
+      }
+
+      print('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
+
+      // ── Station ────────────────────────────────────────────────────────
+      if (playlist.type == PlaylistType.station) {
+        // User-converted stations: tracks already stored in cache
+        final cachedTracks = _cache.getTracksFor(playlistId);
+        if (cachedTracks.isNotEmpty) {
+          print('[DETAIL] Station: using ${cachedTracks.length} cached tracks');
+          state = PlaylistDetailState(
+            playlist: playlist,
+            tracks: cachedTracks,
+            suggestions: const [],
+            isLoading: false,
+          );
+          return;
+        }
+
+        // Discovery stations: fetch by artist UUID
+        if (playlist.seedArtistName != null) {
+          final stationTracks = await _fetchStationTracks(
+            playlist.seedArtistName!,
+          );
+          state = PlaylistDetailState(
+            playlist: playlist,
+            tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
+            suggestions: const [],
+            isLoading: false,
+          );
+          return;
+        }
+
+        // Fallback
+        state = PlaylistDetailState(
+          playlist: playlist,
+          tracks: tracks,
+          suggestions: const [],
+          isLoading: false,
+        );
+        return;
+      }
+
+      // ── Playlist/Album ─────────────────────────────────────────────────
+      state = PlaylistDetailState(
+        playlist: playlist,
+        tracks: tracks,
+        suggestions: const [],
+        isLoading: false,
+        isSuggestionsLoading: playlist.type == PlaylistType.playlist,
+      );
+
+      if (playlist.type == PlaylistType.playlist) {
+        final suggestions = await _fetchSuggestionsExcluding(tracks);
+        state = state.copyWith(
+          suggestions: suggestions,
+          isSuggestionsLoading: false,
+        );
+      }
+    } on DioException catch (e) {
+      print('[DETAIL] ❌ init ${e.response?.statusCode}');
+      final cached = _cache.getById(playlistId);
+      if (cached != null) {
+        state = PlaylistDetailState(
+          playlist: cached,
+          tracks: _cache.getTracksFor(playlistId),
+          isLoading: false,
+          error: 'Showing cached data',
+        );
+      } else {
+        state = const PlaylistDetailState(
+          error: 'Could not load playlist',
+          isLoading: false,
+        );
+      }
     }
-    return PlaylistDetailState(
-      playlist: playlist,
-      tracks: _db.getTracksFor(_playlistId),
-      suggestions: _db.getSuggestions(excludePlaylistId: _playlistId),
-    );
   }
 
-  void addSuggestion(PlaylistTrack playlistTrack) {
-    final allSource = [
-      ..._db.getSourceTracksFor('pl-001'),
-      ..._db.getSourceTracksFor('pl-002'),
-    ];
-    final track = allSource.firstWhere(
-      (t) => t.id == playlistTrack.id,
-      orElse: () => throw StateError(
-        'Source Track not found for id: ${playlistTrack.id}',
-      ),
-    );
-    _db.addTrack(playlistId: _playlistId, track: track);
-    state = state.copyWith(
-      playlist: _db.getById(_playlistId),
-      tracks: _db.getTracksFor(_playlistId),
-      suggestions: state.suggestions
-          .where((s) => s.id != playlistTrack.id)
-          .toList(),
-    );
+  // ── ADD SUGGESTION ────────────────────────────────────────────────────────
+  Future<void> addSuggestion(PlaylistTrack suggestion) async {
+    if (_currentPlaylistId == null) return;
+
+    final optimistic = state.suggestions
+        .where((s) => s.id != suggestion.id)
+        .toList();
+    state = state.copyWith(suggestions: optimistic);
+
+    try {
+      await _ds.addTrackToPlaylist(
+        playlistId: _currentPlaylistId!,
+        trackId: suggestion.id,
+      );
+      print('[DETAIL] ✅ Added "${suggestion.title}"');
+
+      final updatedTracks = await _ds.fetchPlaylistTracks(_currentPlaylistId!);
+      _cache.clearTracks(_currentPlaylistId!);
+      for (final t in updatedTracks) {
+        _cache.addTrack(playlistId: _currentPlaylistId!, track: t);
+      }
+
+      final freshSuggestions = await _fetchSuggestionsExcluding(updatedTracks);
+      state = state.copyWith(
+        tracks: updatedTracks,
+        suggestions: freshSuggestions,
+      );
+    } on DioException catch (e) {
+      print(
+        '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
+      );
+      state = state.copyWith(
+        suggestions: [...optimistic, suggestion],
+        error: 'Could not add "${suggestion.title}". Try again.',
+      );
+    }
   }
 
-  void removeTrack(String trackId) {
-    _db.removeTrack(playlistId: _playlistId, trackId: trackId);
-    state = state.copyWith(
-      playlist: _db.getById(_playlistId),
-      tracks: _db.getTracksFor(_playlistId),
-    );
+  // ── REMOVE TRACK ──────────────────────────────────────────────────────────
+  Future<void> removeTrack(String trackId) async {
+    if (_currentPlaylistId == null) return;
+
+    final optimistic = state.tracks.where((t) => t.id != trackId).toList();
+    state = state.copyWith(tracks: optimistic);
+
+    try {
+      await _ds.removeTrackFromPlaylist(
+        playlistId: _currentPlaylistId!,
+        trackId: trackId,
+      );
+      _cache.removeTrack(playlistId: _currentPlaylistId!, trackId: trackId);
+      print('[DETAIL] ✅ Removed track $trackId');
+    } on DioException catch (e) {
+      print('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
+      state = state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
+    }
   }
 
-  void refreshSuggestions() {
-    state = state.copyWith(
-      suggestions: _db.getSuggestions(
-        excludePlaylistId: _playlistId,
-        shuffle: true,
-      ),
-    );
+  // ── REFRESH SUGGESTIONS ───────────────────────────────────────────────────
+  Future<void> refreshSuggestions() async {
+    state = state.copyWith(isSuggestionsLoading: true);
+    final fresh = await _fetchSuggestionsExcluding(state.tracks);
+    state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
+    print('[DETAIL] Refreshed: ${fresh.length} suggestions');
   }
+
+  void toggleLike() => state = state.copyWith(isLiked: !state.isLiked);
 
   void reload() {
-    state = _buildState();
+    if (_currentPlaylistId != null) init(_currentPlaylistId!);
   }
 
-  void toggleLike() {
-    _db.toggleLike(_playlistId);
-    state = state.copyWith(playlist: _db.getById(_playlistId));
+  // ── INTERNAL ──────────────────────────────────────────────────────────────
+  Future<List<PlaylistTrack>> _fetchSuggestionsExcluding(
+    List<PlaylistTrack> existing,
+  ) async {
+    try {
+      return await _ds.fetchRecommendedTracksExcluding(
+        excludeIds: existing.map((t) => t.id).toList(),
+        limit: 5,
+      );
+    } catch (e) {
+      print('[DETAIL] suggestions failed: $e');
+      return [];
+    }
+  }
+
+  Future<List<PlaylistTrack>> _fetchStationTracks(String artistId) async {
+    try {
+      return await _ds.fetchStationTracks(artistId, limit: 50);
+    } catch (e) {
+      print('[DETAIL] station tracks failed: $e');
+      return [];
+    }
   }
 }
 
@@ -237,15 +505,7 @@ final playlistListProvider =
       PlaylistListNotifier.new,
     );
 
-final _detailProviderCache =
-    <String, NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>>{};
-
-NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>
-playlistDetailProvider(String playlistId) {
-  return _detailProviderCache.putIfAbsent(
-    playlistId,
-    () => NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
-      () => PlaylistDetailNotifier(playlistId),
-    ),
-  );
-}
+final playlistDetailProvider =
+    NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
+      PlaylistDetailNotifier.new,
+    );
