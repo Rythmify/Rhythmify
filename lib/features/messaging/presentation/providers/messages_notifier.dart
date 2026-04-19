@@ -84,9 +84,11 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
   /// If [total] exceeds [_limit], a second fetch loads the tail page
   /// so the chat opens showing the most recent messages.
   Future<void> loadInitial() async {
+    if (!mounted) return;
     state = const MessagesState(isLoading: true);
     try {
       final (firstBatch, total) = await _usecase(_conversationId, offset: 0);
+      if (!mounted) return;
 
       if (total <= _limit) {
         _oldestOffset = 0;
@@ -101,6 +103,7 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
           _conversationId,
           offset: latestOffset,
         );
+        if (!mounted) return;
         _oldestOffset = latestOffset;
         state = MessagesState(
           messages: latestBatch,
@@ -109,6 +112,7 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       state = MessagesState(
         isLoading: false,
         error: e.toString(),
@@ -122,11 +126,13 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
   /// No-op if [MessagesState.isLoadingMore] is true, [MessagesState.hasMore] is
   /// false, or [_oldestOffset] is already at 0.
   Future<void> loadMore() async {
-    if (state.isLoadingMore || !state.hasMore || _oldestOffset <= 0) return;
+    if (!mounted || state.isLoadingMore || !state.hasMore || _oldestOffset <= 0)
+      return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final olderOffset = max(0, _oldestOffset - _limit);
       final (older, _) = await _usecase(_conversationId, offset: olderOffset);
+      if (!mounted) return;
       _oldestOffset = olderOffset;
       state = state.copyWith(
         messages: [...older, ...state.messages],
@@ -134,6 +140,7 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
         hasMore: olderOffset > 0,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
