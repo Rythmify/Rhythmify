@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/settings/presentation/widgets/no_switch_tile_widget.dart';
 
 /// Provides basic app settings including cache clearing and app icon customisation.
@@ -62,7 +63,9 @@ class BasicSettingsScreen extends StatelessWidget {
               key: Key('change_app_icon_tile'),
               title: 'Change app icon',
               subtitle: 'Custom app icons to match your style',
-              onTap: () {},
+              onTap: () {
+                context.push('/library/settings/basic-settings/app-icons');
+              },
             ),
           ],
         ),

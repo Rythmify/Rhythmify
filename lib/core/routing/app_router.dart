@@ -6,6 +6,7 @@ import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_s
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/add_widget_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/app_icon_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
@@ -359,6 +360,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'basic-settings',
                         builder: (context, state) =>
                             const BasicSettingsScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'app-icons',
+                            builder: (context, state) =>
+                                const AppIconScreen(),
+                          ),
+                        ]
                       ),
                       GoRoute(
                         //5- Social settings
