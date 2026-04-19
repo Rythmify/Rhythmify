@@ -124,12 +124,48 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required int limit,
   }) async {
     try {
-      final tracks = await remoteDatasource.getLikedTracks(
+      final result = await remoteDatasource.getLikedTracks(
         userId: userId,
         page: page,
         limit: limit,
       );
-      return Right(tracks);
+      return Right(result);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Track>>> getUploadedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final result = await remoteDatasource.getUploadedTracks(
+        userId: userId,
+        page: page,
+        limit: limit,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Track>>> getRepostedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    try {
+      final result = await remoteDatasource.getRepostedTracks(
+        userId: userId,
+        page: page,
+        limit: limit,
+      );
+      return Right(result);
     } catch (e) {
       return Left(_mapError(e.toString()));
     }

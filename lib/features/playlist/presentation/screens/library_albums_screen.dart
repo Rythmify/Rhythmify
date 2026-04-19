@@ -1,21 +1,17 @@
-/// Library tab showing all collections with type == album.
-/// Filters [playlistListProvider] by [PlaylistType.album] and supports live search.
-/// Albums are created via Edit playlist → Convert to Album, not from this screen directly.
-/// [_onConverted] handles post-conversion navigation to the correct Library tab.
+// lib/features/playlist/presentation/screens/library_albums_screen.dart
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-/// Library → Albums.
-/// Filtered list of all collections with type == album.
-/// Layout matches the screenshot: centered AppBar title, search bar, list.
 class LibraryAlbumsScreen extends ConsumerStatefulWidget {
   const LibraryAlbumsScreen({super.key});
 
@@ -26,6 +22,22 @@ class LibraryAlbumsScreen extends ConsumerStatefulWidget {
 
 class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Albums are in the same playlists list — loadPlaylists() fetches both.
+    // If LibraryPlaylistsScreen already called this, it's a no-op because
+    // the provider is already loaded. Calling it here too is safe.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(playlistListProvider.notifier).loadPlaylists();
+    });
+  }
+
+  String _currentUserId() {
+    final authState = ref.read(authProvider);
+    return authState is AuthAuthenticated ? authState.user.id : '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,9 +112,14 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               ],
             ),
           ),
+
           // ── List ────────────────────────────────────────────────────────
           Expanded(
-            child: filtered.isEmpty
+            child: state.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFFF5500)),
+                  )
+                : filtered.isEmpty
                 ? Center(
                     child: Text(
                       _searchQuery.isEmpty
@@ -116,12 +133,13 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final album = filtered[index];
+                      final isOwner = album.ownerId == _currentUserId();
                       return _AlbumTile(
                         key: Key('library_album_tile_${album.id}'),
                         album: album,
                         onTap: () => context.push(
                           '/library/albums/${album.id}',
-                          extra: true,
+                          extra: isOwner,
                         ),
                         onMoreTap: () => showModalBottomSheet(
                           context: context,
@@ -129,7 +147,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                           backgroundColor: Colors.transparent,
                           builder: (_) => PlaylistOptionsSheet(
                             playlistId: album.id,
-                            isOwner: true,
+                            isOwner: isOwner,
                             onConverted: (t) => _onConverted(context, t),
                           ),
                         ),
@@ -196,7 +214,6 @@ class _AlbumTile extends StatelessWidget {
                     style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 3),
-                  // "2026 · Album" — exactly as in the screenshot
                   Text(
                     '${album.releaseYear ?? album.createdAt.year} · Album',
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),

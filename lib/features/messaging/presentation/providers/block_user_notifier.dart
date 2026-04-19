@@ -19,9 +19,11 @@ class BlockUserNotifier extends StateNotifier<bool> {
   /// - Updates the local state to `true` during the operation.
   /// - Syncs with the [RemoteDataSource] via [BlockUserUsecase].
   Future<void> blockUser({required String participantId}) async {
+    if (!mounted) return;
     state = true;
     final uCase = BlockUserUsecase(repo: ref.read(repositoryprovider));
     await (uCase(participantId));
+    if (!mounted) return;
     state = false;
   }
 }

@@ -1,4 +1,5 @@
 import '../../../../core/domain/entities/track.dart';
+import '../entities/fan_leaderboard.dart';
 
 /// [TrackRepository] defines the contract for track-related data operations.
 ///
@@ -30,6 +31,9 @@ abstract class TrackRepository {
   ///
   /// Returns a mapping of unique tag IDs to their display names.
   Future<Map<String, String>> getTags();
+
+  /// Fetches the fan leaderboard for the given [trackId] and [period].
+  Future<FanLeaderboard> getFanLeaderboard(String trackId, String period);
 
   //=========================
   //   --- Mutations ---

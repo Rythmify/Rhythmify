@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chrome_cast/flutter_chrome_cast.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -47,6 +48,9 @@ Future<void> _initFirebaseIfSupported() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Initialize Local Storage ──────────────────────────
+  await Hive.initFlutter();
 
   // ── Initialize Firebase ───────────────────────────────
   await _initFirebaseIfSupported();

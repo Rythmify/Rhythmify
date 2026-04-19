@@ -27,31 +27,52 @@ class TrackModel extends Track {
     super.isFeatured,
     super.updatedAt,
     super.status,
+    super.artistPfp,
+    super.releaseDate,
   });
 
   factory TrackModel.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> data = json;
+
     return TrackModel(
-      id: json['id'] as String? ?? '',
+      id: data['id'] as String? ?? '',
       userId:
-          json['user']?['id'] as String? ?? json['user_id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
+          data['user_id'] as String? ?? data['user']?['id'] as String? ?? '',
+      title: data['title'] as String? ?? '',
       artist:
-          json['user']?['display_name'] as String? ??
-          json['artist'] as String? ??
+          data['display_name'] as String? ??
+          data['artist_name'] as String? ??
+          data['user']?['display_name'] as String? ??
+          data['artist'] as String? ??
           '',
+      artistPfp:
+          data['profile_picture'] as String? ??
+          data['user']?['profile_picture'] as String? ??
+          data['artist_pfp'] as String?,
       audioUrl:
-          json['stream_url'] as String? ?? json['audio_url'] as String? ?? '',
-      duration: Duration(seconds: json['duration'] as int? ?? 0),
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
-          : DateTime.now(),
+          data['stream_url'] as String? ?? data['audio_url'] as String? ?? '',
+      streamUrl: data['stream_url'] as String?,
+      duration: Duration(
+        seconds:
+            data['duration'] as int? ?? data['duration_seconds'] as int? ?? 0,
+      ),
+      createdAt:
+          DateTime.tryParse(
+            data['liked_at'] as String? ?? data['created_at'] as String? ?? '',
+          ) ??
+          DateTime.now(),
       coverImage:
-          json['artwork_url'] as String? ?? json['cover_image'] as String?,
-      description: json['description'] as String?,
-      playCount: json['play_count'] as int? ?? 0,
-      likeCount: json['like_count'] as int? ?? 0,
-      isLiked: json['is_liked'] as bool? ?? false,
-      isArtistFollowed: json['is_artist_followed'] as bool? ?? false,
+          data['cover_image'] as String? ?? data['artwork_url'] as String?,
+      description: data['description'] as String?,
+      playCount: data['play_count'] as int? ?? 0,
+      likeCount: data['like_count'] as int? ?? 0,
+      commentCount: data['comment_count'] as int? ?? 0,
+      repostCount: data['repost_count'] as int? ?? 0,
+      isLiked: data['is_liked'] as bool? ?? false,
+      isArtistFollowed: data['is_artist_followed'] as bool? ?? false,
+      status: data['status'] as String?,
+      releaseDate: data['release_date'] as String?,
+      genre: data['genre'] as String?,
     );
   }
 

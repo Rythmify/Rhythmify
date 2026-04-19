@@ -27,7 +27,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final detailState = ref.watch(playlistDetailProvider(playlistId));
+    final detailState = ref.watch(playlistDetailProvider);
     final playlist = detailState.playlist;
     if (playlist == null) return const SizedBox.shrink();
 

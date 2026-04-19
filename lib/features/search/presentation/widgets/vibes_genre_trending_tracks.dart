@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/player_provider.dart';
+import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 /// A horizontally scrollable list of trending tracks shown in the All tab.
 /// Tracks are grouped into chunks of 3, each chunk rendered as a vertical column
@@ -39,20 +41,31 @@ class TrendingTracks extends ConsumerWidget {
                     contentPadding: EdgeInsets.zero,
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        track.artworkUrl.isNotEmpty
-                            ? track.artworkUrl
-                            : 'assets/images/placeholder.png',
-                        key: Key('trending_track_artwork_${track.id}'),
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
-                          width: 50,
-                          height: 50,
-                          color: Colors.grey[800],
-                        ),
-                      ),
+                      child: track.artworkUrl.startsWith('http')
+                          ? Image.network(
+                              track.artworkUrl,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[800],
+                              ),
+                            )
+                          : Image.asset(
+                              track.artworkUrl.isNotEmpty
+                                  ? track.artworkUrl
+                                  : 'assets/images/placeholder.png',
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[800],
+                              ),
+                            ),
                     ),
                     title: Text(
                       track.title,
@@ -64,8 +77,42 @@ class TrendingTracks extends ConsumerWidget {
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: const Icon(Icons.more_horiz, color: Colors.white),
-                    onTap: () {},
+                    trailing: InkWell(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useRootNavigator: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => TrackOptionsModal(track: track),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      highlightColor: Colors.white.withValues(alpha: 0.1),
+                      splashColor: Colors.white.withValues(alpha: 0.2),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        child: Icon(Icons.more_vert, color: Colors.white),
+                      ),
+                    ),
+                    onTap: () {
+                      final playerState = ref.read(playerStateProvider);
+                      final isThisTrackLoaded =
+                          playerState.currentTrack?.id == track.id;
+
+                      if (isThisTrackLoaded) {
+                        ref
+                            .read(playerStateProvider.notifier)
+                            .togglePlayPause();
+                      } else {
+                        ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+                          [track],
+                        );
+                      }
+                    },
                   ),
                 );
               }).toList(),

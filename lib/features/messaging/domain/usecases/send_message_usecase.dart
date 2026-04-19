@@ -13,9 +13,9 @@ class SendMessageUsecase {
   Future<Message> call(
     String conversationId,
     String? body,
-    String? trackId,
-    String? playlistId,
+    String? embedId,
+    String? embedType,
   ) {
-    return repo.sendMessage(conversationId, body, trackId, playlistId);
+    return repo.sendMessage(conversationId, body, embedId, embedType);
   }
 }

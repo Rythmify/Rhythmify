@@ -27,6 +27,16 @@ final trackCommentsProvider =
 /// [TrackCommentsState] for immediate UI feedback.
 class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
+  bool _mounted = true;
+
+  @override
+  bool get mounted => _mounted;
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
 
   /// The unique identifier of the track this notifier manages comments for.
   final String trackId;
@@ -39,12 +49,13 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
   /// Increments the total comment count displayed on the track UI.
   void incrementTotalCount() {
-    state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
+    if (mounted)
+      state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
   }
 
   /// Decrements the total comment count displayed on the track UI safely above 0.
   void decrementTotalCount() {
-    if (state.totalCommentCount > 0) {
+    if (mounted && state.totalCommentCount > 0) {
       state = state.copyWith(totalCommentCount: state.totalCommentCount - 1);
     }
   }
@@ -54,17 +65,20 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   /// If [refresh] is true, resets pagination to page 1 and clears existing comments.
   /// Updates `isFetchingNextPage` and `hasReachedMax` loading states accordingly.
   Future<void> fetchComments({bool refresh = false}) async {
+    if (!mounted) return;
     if (state.isFetchingNextPage && !refresh) return;
 
     if (refresh) {
-      state = state.copyWith(
-        comments: [],
-        currentPage: 1,
-        hasReachedMax: false,
-        isFetchingNextPage: true,
-      );
+      if (mounted) {
+        state = state.copyWith(
+          comments: [],
+          currentPage: 1,
+          hasReachedMax: false,
+          isFetchingNextPage: true,
+        );
+      }
     } else {
-      state = state.copyWith(isFetchingNextPage: true);
+      if (mounted) state = state.copyWith(isFetchingNextPage: true);
     }
 
     try {
@@ -74,6 +88,8 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         page: state.currentPage,
         sortType: state.sortType,
       );
+
+      if (!mounted) return;
 
       if (comments.isEmpty) {
         state = state.copyWith(hasReachedMax: true, isFetchingNextPage: false);
@@ -86,37 +102,41 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         );
       }
     } catch (e) {
-      state = state.copyWith(isFetchingNextPage: false);
+      if (mounted) state = state.copyWith(isFetchingNextPage: false);
     }
   }
 
   /// Increments the reply count of a specific root comment in the local state.
   void incrementReplyCount(String commentId) {
-    state = state.copyWith(
-      comments: state.comments.map((c) {
-        if (c.id == commentId) {
-          return c.copyWith(replyCount: c.replyCount + 1);
-        }
-        return c;
-      }).toList(),
-    );
+    if (mounted) {
+      state = state.copyWith(
+        comments: state.comments.map((c) {
+          if (c.id == commentId) {
+            return c.copyWith(replyCount: c.replyCount + 1);
+          }
+          return c;
+        }).toList(),
+      );
+    }
   }
 
   /// Decrements the reply count of a specific root comment in the local state.
   void decrementReplyCount(String commentId) {
-    state = state.copyWith(
-      comments: state.comments.map((c) {
-        if (c.id == commentId && c.replyCount > 0) {
-          return c.copyWith(replyCount: c.replyCount - 1);
-        }
-        return c;
-      }).toList(),
-    );
+    if (mounted) {
+      state = state.copyWith(
+        comments: state.comments.map((c) {
+          if (c.id == commentId && c.replyCount > 0) {
+            return c.copyWith(replyCount: c.replyCount - 1);
+          }
+          return c;
+        }).toList(),
+      );
+    }
   }
 
   /// Sets the initial total comment count from external track metadata.
   void setInitialCount(int initialCount) {
-    if (state.totalCommentCount == 0) {
+    if (mounted && state.totalCommentCount == 0) {
       state = state.copyWith(totalCommentCount: initialCount);
     }
   }
@@ -129,18 +149,22 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     final originalComments = [...state.comments];
     final originalCount = state.totalCommentCount;
 
-    state = state.copyWith(
-      comments: state.comments.where((c) => c.id != commentId).toList(),
-      totalCommentCount: originalCount > 0 ? originalCount - 1 : 0,
-    );
+    if (mounted) {
+      state = state.copyWith(
+        comments: state.comments.where((c) => c.id != commentId).toList(),
+        totalCommentCount: originalCount > 0 ? originalCount - 1 : 0,
+      );
+    }
     try {
       final deleteCommentUseCase = ref.read(deleteCommentProvider);
       await deleteCommentUseCase(commentId);
     } catch (e) {
-      state = state.copyWith(
-        comments: originalComments,
-        totalCommentCount: originalCount,
-      );
+      if (mounted) {
+        state = state.copyWith(
+          comments: originalComments,
+          totalCommentCount: originalCount,
+        );
+      }
       rethrow;
     }
   }
@@ -154,7 +178,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   /// Toggles the comment sorting strategy and refreshes the list from page 1.
   void toggleSort(CommentSortType sortType) {
     if (state.sortType == sortType) return;
-    state = state.copyWith(sortType: sortType);
+    if (mounted) state = state.copyWith(sortType: sortType);
     fetchComments(refresh: true);
   }
 
@@ -184,10 +208,12 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
     final originalCount = state.totalCommentCount;
 
-    state = state.copyWith(
-      comments: [tempComment, ...state.comments],
-      totalCommentCount: originalCount + 1,
-    );
+    if (mounted) {
+      state = state.copyWith(
+        comments: [tempComment, ...state.comments],
+        totalCommentCount: originalCount + 1,
+      );
+    }
 
     try {
       final postComment = ref.read(postCommentProvider);
@@ -196,6 +222,9 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         content: content,
         trackTimestamp: trackTimestamp,
       );
+
+      if (!mounted) return;
+
       final populatedRealComment = realComment.copyWith(
         userId: user.id,
         userDisplayName: user.displayName,
@@ -207,10 +236,14 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
             .toList(),
       );
     } catch (e) {
-      state = state.copyWith(
-        comments: state.comments.where((c) => c.id != tempComment.id).toList(),
-        totalCommentCount: originalCount,
-      );
+      if (mounted) {
+        state = state.copyWith(
+          comments: state.comments
+              .where((c) => c.id != tempComment.id)
+              .toList(),
+          totalCommentCount: originalCount,
+        );
+      }
     }
   }
 
@@ -227,24 +260,28 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     final currentLikeState = state.comments[targetCommentIndex].isLikedByMe;
     final originalComments = [...state.comments];
 
-    state = state.copyWith(
-      comments: state.comments.map((c) {
-        if (c.id == commentId) {
-          final newIsLiked = !c.isLikedByMe;
-          return c.copyWith(
-            isLikedByMe: newIsLiked,
-            likesCount: newIsLiked ? c.likesCount + 1 : c.likesCount - 1,
-          );
-        }
-        return c;
-      }).toList(),
-    );
+    if (mounted) {
+      state = state.copyWith(
+        comments: state.comments.map((c) {
+          if (c.id == commentId) {
+            final newIsLiked = !c.isLikedByMe;
+            return c.copyWith(
+              isLikedByMe: newIsLiked,
+              likesCount: newIsLiked ? c.likesCount + 1 : c.likesCount - 1,
+            );
+          }
+          return c;
+        }).toList(),
+      );
+    }
     try {
       final toggleCommentLike = ref.read(toggleCommentLikeProvider);
       final newLikeStatus = await toggleCommentLike(
         commentId,
         isCurrentlyLiked: currentLikeState,
       );
+
+      if (!mounted) return;
 
       // If the backend returned a different status than our optimistic update, sync it.
       // This is especially important if the user said "make the state to be known".
@@ -262,7 +299,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
         );
       }
     } catch (e) {
-      state = state.copyWith(comments: originalComments);
+      if (mounted) state = state.copyWith(comments: originalComments);
     }
   }
 }
