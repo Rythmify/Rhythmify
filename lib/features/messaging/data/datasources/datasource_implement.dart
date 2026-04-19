@@ -34,11 +34,12 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
-  Future<List<MessageModel>> getMessages({
+  Future<(List<MessageModel>, int)> getMessages({
     required String conversationId,
+    int offset = 0,
   }) async {
     final response = await dio.get(
-      ApiEndPoints.getConversation(conversationId),
+      ApiEndPoints.getMessages(conversationId, offset: offset),
     );
 
     if (response.data is! Map<String, dynamic>) {
@@ -48,11 +49,28 @@ class DatasourceImplement implements DatasourceInterface {
     }
 
     final body = response.data as Map<String, dynamic>;
-    final List data = body['data']['messages'];
+    final dynamic dataField = body['data'];
+    final List rawMessages;
+    final int total;
 
-    return data
+    if (dataField is Map) {
+      rawMessages = (dataField['messages'] as List?) ?? [];
+      final pagination =
+          dataField['pagination'] as Map? ?? body['pagination'] as Map? ?? {};
+      total = (pagination['total'] as int?) ?? rawMessages.length;
+    } else if (dataField is List) {
+      rawMessages = dataField;
+      final pagination = body['pagination'] as Map? ?? {};
+      total = (pagination['total'] as int?) ?? rawMessages.length;
+    } else {
+      rawMessages = [];
+      total = 0;
+    }
+
+    final messages = rawMessages
         .map((e) => MessageModel.fromJson(e as Map<String, dynamic>))
         .toList();
+    return (messages, total);
   }
 
   @override
@@ -93,6 +111,19 @@ class DatasourceImplement implements DatasourceInterface {
         orElse: () => throw Exception('Conversation not found'),
       );
     }
+  }
+
+  @override
+  Future<ConversationModel> ensureConversation({
+    required String participantId,
+  }) async {
+    final response = await dio.post(
+      ApiEndPoints.ensureConversation,
+      data: {'recipient_id': participantId},
+    );
+    return ConversationModel.fromJson(
+      response.data['data']['conversation'] as Map<String, dynamic>,
+    );
   }
 
   @override
@@ -210,11 +241,13 @@ class DatasourceImplement implements DatasourceInterface {
   ) async {
     if (embedType == 'track') {
       final response = await dio.get(ApiEndPoints.getMyLikedTracks());
-      final List data = response.data['data'];
+      final List data = response.data['data']['items'];
+      // if (data.isNotEmpty)
+      //   print('🎵 liked-track item keys: ${(data.first as Map).keys.toList()}');
       return data
           .map(
             (e) => SharedEmbedModel(
-              embedId: e['id'],
+              embedId: e['track_id'] ?? e['id'],
               embedType: 'track',
               embedName: e['title'],
               artistName: null,

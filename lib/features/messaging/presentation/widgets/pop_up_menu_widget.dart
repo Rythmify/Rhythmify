@@ -43,9 +43,6 @@ class PopUpMenuWidget extends ConsumerWidget {
                   context: parentContext,
                   builder: (parentContext) => const ConfirmBlock(),
                 );
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
 
                 if (shouldBlock == true) {
                   try {
@@ -55,6 +52,8 @@ class PopUpMenuWidget extends ConsumerWidget {
 
                     ref.invalidate(isBlockedProvider(participantId));
 
+                    if (context.mounted) Navigator.pop(context);
+
                     if (parentContext.mounted) {
                       ScaffoldMessenger.of(parentContext).showSnackBar(
                         const SnackBar(
@@ -63,16 +62,19 @@ class PopUpMenuWidget extends ConsumerWidget {
                       );
                     }
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    if (context.mounted) Navigator.pop(context);
+                    if (parentContext.mounted) {
+                      ScaffoldMessenger.of(parentContext).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Failed to unblock user. Please try again.',
+                            'Failed to block user. Please try again.',
                           ),
                         ),
                       );
                     }
                   }
+                } else {
+                  if (context.mounted) Navigator.pop(context);
                 }
               },
             ),
