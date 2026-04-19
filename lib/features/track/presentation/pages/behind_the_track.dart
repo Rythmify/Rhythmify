@@ -82,9 +82,9 @@ class BehindTheTrackPage extends ConsumerWidget {
                 TrackDetailsSection(track: track),
 
                 const SizedBox(height: 35),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: FansLeaderboard(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FansLeaderboard(trackId: trackId),
                 ),
                 const SizedBox(height: 155),
               ],

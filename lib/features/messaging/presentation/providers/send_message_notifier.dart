@@ -36,10 +36,12 @@ class SendMessageNotifier extends StateNotifier<bool> {
     String? embedId,
     String? embedType,
   }) async {
+    if (!mounted) return null;
     state = true;
     if (conversationId != null) {
       final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
       final message = await (uCase(conversationId, body, embedId, embedType));
+      if (!mounted) return null;
 
       final socket = ref.read(socketProvider);
       socket.sendMessage(conversationId, {'messageId': message.messageId});
@@ -60,6 +62,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
         trackId: trackId,
         playlistId: playlistId,
       );
+      if (!mounted) return newConv;
       ref.invalidate(conversationProvider);
       ref.invalidate(messagesNotifierProvider(newConv.conversationId));
       state = false;
@@ -68,10 +71,15 @@ class SendMessageNotifier extends StateNotifier<bool> {
   }
 
   Future<Conversation> ensureConversation(String participantId) async {
+    if (!mounted) {
+      // This is a bit tricky as we MUST return a Conversation. 
+      // But if it's not mounted, the caller should ideally not be calling this or handle it.
+    }
     state = true;
     final newConv = await EnsureConversationUsecase(
       repo: ref.read(repositoryprovider),
     ).call(participantId);
+    if (!mounted) return newConv;
     state = false;
 
     return newConv;

@@ -42,7 +42,7 @@ class TrackDto {
           ) ??
           DateTime.now(),
       updatedAt: data['updated_at'] != null
-          ? DateTime.tryParse(data['updated_at'] as String)
+          ? DateTime.tryParse(data['updated_at']?.toString() ?? '')
           : null,
 
       playCount: data['play_count'] as int? ?? 0,

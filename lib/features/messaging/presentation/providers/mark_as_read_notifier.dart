@@ -21,9 +21,11 @@ class MarkAsReadNotifier extends StateNotifier<bool> {
   /// - Invalidates [messageProvider] for the specified conversation upon success.
   /// - Syncs with the [RemoteDataSource] via the repository.
   Future<void> markRead({required String msgId, required String convId}) async {
+    if (!mounted) return;
     state = true;
     final uCase = MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
     await uCase(msgId, convId);
+    if (!mounted) return;
     ref.invalidate(messagesNotifierProvider(convId));
     state = false;
   }

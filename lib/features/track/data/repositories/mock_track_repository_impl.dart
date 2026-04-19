@@ -1,6 +1,7 @@
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/data/models/track_dto.dart';
 import '../../domain/repositories/track_repository.dart';
+import '../../domain/entities/fan_leaderboard.dart';
 import '../datasources/track_local_data_source.dart';
 
 /// [MockTrackRepositoryImpl] provides a simulated implementation of [TrackRepository].
@@ -72,6 +73,15 @@ class MockTrackRepositoryImpl implements TrackRepository {
     return {
       for (var item in items) item['id'] as String: item['name'] as String,
     };
+  }
+
+  @override
+  Future<FanLeaderboard> getFanLeaderboard(String trackId, String period) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return FanLeaderboard(
+      period: period,
+      items: [],
+    );
   }
 
   // ================================
