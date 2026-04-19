@@ -129,8 +129,12 @@ class RecentlyPlayedEntryModel extends RecentlyPlayedEntry {
     required super.title,
     required super.artistName,
     super.artworkUrl,
+    super.streamUrl,
+    super.audioUrl,
     required super.durationSeconds,
     required super.playCount,
+    super.isLiked = false,
+    super.isArtistFollowed = false,
     required super.playedAt,
   });
 
@@ -151,9 +155,17 @@ class RecentlyPlayedEntryModel extends RecentlyPlayedEntry {
           '',
       artworkUrl:
           track['artwork_url'] as String? ?? track['cover_image'] as String?,
+      streamUrl: track['stream_url'] as String?,
+      audioUrl: track['audio_url'] as String?,
       durationSeconds:
           track['duration'] as int? ?? track['duration_seconds'] as int? ?? 0,
       playCount: track['play_count'] as int? ?? 0,
+      isLiked:
+          track['is_liked'] as bool? ?? track['is_liked_by_me'] as bool? ?? false,
+      isArtistFollowed:
+          track['is_artist_followed'] as bool? ??
+          track['is_artist_followed_by_me'] as bool? ??
+          false,
       playedAt: playedAt != null
           ? DateTime.tryParse(playedAt) ?? DateTime.now()
           : DateTime.now(),

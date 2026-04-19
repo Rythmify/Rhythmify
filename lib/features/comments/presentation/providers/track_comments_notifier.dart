@@ -49,8 +49,9 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
   /// Increments the total comment count displayed on the track UI.
   void incrementTotalCount() {
-    if (mounted)
+    if (mounted) {
       state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
+    }
   }
 
   /// Decrements the total comment count displayed on the track UI safely above 0.

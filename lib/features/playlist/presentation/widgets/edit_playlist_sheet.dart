@@ -115,7 +115,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
 
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      print('[EditSheet] ❌ save failed: $e');
+      debugPrint('[EditSheet] ❌ save failed: $e');
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
