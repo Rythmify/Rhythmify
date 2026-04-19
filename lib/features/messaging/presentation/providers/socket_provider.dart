@@ -13,6 +13,8 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
       token,
     );
+  } else {
+    //print('⚠️ socketProvider: no token, socket not connected');
   }
 
   ref.onDispose(() => socket.disconnect());

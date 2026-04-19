@@ -33,4 +33,15 @@ class Conversation {
     required this.lastMessageDate,
     required this.unReadCount,
   });
+
+  Conversation copyWith({String? participantName}) {
+    return Conversation(
+      conversationId: conversationId,
+      participantId: participantId,
+      participantName: participantName ?? this.participantName,
+      lastMessagePreview: lastMessagePreview,
+      lastMessageDate: lastMessageDate,
+      unReadCount: unReadCount,
+    );
+  }
 }

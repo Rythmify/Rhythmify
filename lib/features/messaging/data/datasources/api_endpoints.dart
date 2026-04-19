@@ -12,9 +12,12 @@ class ApiEndPoints {
   static String getConversation(String conversationId) =>
       '/messages/conversations/$conversationId';
 
-  /// Returns the endpoint to retrieve messages for a specific [conversationId].
-  static String getMessages(String conversationId) =>
-      '/messages/conversations/$conversationId/messages';
+  /// Returns the endpoint to retrieve messages for a specific [conversationId] at [offset].
+  static String getMessages(
+    String conversationId, {
+    int offset = 0,
+    int limit = 100,
+  }) => '/messages/conversations/$conversationId?offset=$offset&limit=$limit';
 
   /// Returns the endpoint to send a message within a specific [conversationId].
   static String sendMessage(String conversationId) =>
@@ -22,6 +25,9 @@ class ApiEndPoints {
 
   /// Endpoint to initiate a new conversation.
   static const String newConversation = '/messages/new';
+
+  ///Endpoint to ensure a conversation exists without sending a message
+  static const String ensureConversation = '/messages/conversations/ensure';
 
   /// Endpoint to retrieve the total count of unread messages.
   static const String getUnreadCount = '/messages/unread-count';

@@ -12,8 +12,14 @@ abstract class DatasourceInterface {
   /// Fetches the list of all conversations for the authenticated user.
   Future<List<ConversationModel>> getConversations();
 
-  /// Fetches the list of messages for a given [conversationId].
-  Future<List<MessageModel>> getMessages({required String conversationId});
+  /// Fetches a page of messages for [conversationId] starting at [offset].
+  ///
+  /// Returns a tuple of the message list and the server-reported total message count.
+  /// The total is used by callers to calculate the correct offset for the latest page.
+  Future<(List<MessageModel>, int)> getMessages({
+    required String conversationId,
+    int offset = 0,
+  });
 
   /// Sends a message within a specific [conversationId].
   Future<MessageModel> sendMessage({
@@ -67,4 +73,7 @@ abstract class DatasourceInterface {
     String playlistId,
     String embedType,
   );
+
+  /// Ensures a conversation exists with a participant without sending a message.
+  Future<ConversationModel> ensureConversation({required String participantId});
 }
