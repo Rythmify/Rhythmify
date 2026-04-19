@@ -75,10 +75,10 @@
 
         <!-- Alternate app icons -->
         <activity-alias
-            android:name=".AppIconDark"
+            android:name=".AppIconOG"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_dark"
+            android:icon="@mipmap/ic_launcher_og"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -123,10 +123,46 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".AppIconMidnightBlue"
+            android:name=".AppIconSoftPurple"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_midnight_blue"
+            android:icon="@mipmap/ic_launcher_soft_purple"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".AppIconHotPink"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_hot_pink"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".AppIconTieDye"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_tie_dye"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".AppIconLeopard"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_leopard"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

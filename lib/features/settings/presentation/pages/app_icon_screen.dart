@@ -20,11 +20,15 @@ class _IconOption {
 
 const List<_IconOption> _icons = [
   _IconOption(name: 'Default', assetPath: 'assets/icons/app_icon.png'),
-  _IconOption(name: 'Dark', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconDark'),
+  _IconOption(name: 'OG', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconOG'),
   _IconOption(name: 'Chrome', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconChrome', isPremium: true),
   _IconOption(name: 'Rose Gold', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconRoseGold', isPremium: true),
   _IconOption(name: 'Silver', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconSilver', isPremium: true),
-  _IconOption(name: 'Midnight Blue', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconMidnightBlue', isPremium: true),
+  _IconOption(name: 'Soft Purple', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconSoftPurple', isPremium: true),
+  _IconOption(name: 'Hot Pink', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconHotPink', isPremium: true),
+  _IconOption(name: 'Tie-Dye', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconTieDye', isPremium: true),
+  _IconOption(name: 'Leopard', assetPath: 'assets/icons/app_icon.png', iconKey: 'AppIconLeopard', isPremium: true),
+
 ];
 
 const _prefKey = 'selected_app_icon';
