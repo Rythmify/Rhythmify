@@ -99,9 +99,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final playlists = await _ds.fetchMyPlaylists(filter: 'created');
       _cache.syncFromBackend(playlists);
       state = PlaylistListState(playlists: playlists);
-
     } on DioException catch (e) {
-
       state = PlaylistListState(
         playlists: _cache.getMyPlaylists(),
         error: 'Could not refresh playlists',
@@ -127,7 +125,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
       return created;
     } catch (e) {
-
       return null;
     }
   }
