@@ -1,9 +1,4 @@
-/// Bottom sheet for editing an existing playlist, album, or station.
-/// Handles name, description, visibility, cover image, track removal, and type conversion.
-/// Cover image picker uses [ElevatedButton] instead of [GestureDetector] because
-/// taps are swallowed by [DraggableScrollableSheet] in scroll context.
-/// [onConverted] is passed through to the caller so navigation can move to the right Library tab.
-library;
+// lib/features/playlist/presentation/widgets/edit_playlist_sheet.dart
 
 import 'dart:io';
 
@@ -37,11 +32,12 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   late List<PlaylistTrack> _tracks;
   late PlaylistType _currentType;
   File? _pickedCoverFile;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    final state = ref.read(playlistDetailProvider(widget.playlistId));
+    final state = ref.read(playlistDetailProvider);
     _nameController = TextEditingController(text: state.playlist?.name ?? '');
     _descController = TextEditingController(
       text: state.playlist?.description ?? '',
@@ -58,15 +54,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     super.dispose();
   }
 
-  void _removeLocal(String trackId) {
-    setState(() => _tracks.removeWhere((t) => t.id == trackId));
-  }
-
-  // ── Image picker ─────────────────────────────────────────────────────────────
-  // Uses ElevatedButton.onPressed instead of GestureDetector because
-  // GestureDetector taps get swallowed by DraggableScrollableSheet.
-  // ElevatedButton fires reliably in all scroll contexts.
-
   Future<void> _openImagePicker() async {
     final picker = ImagePicker();
     final XFile? picked = await picker.pickImage(
@@ -80,71 +67,122 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-  // ── Save ──────────────────────────────────────────────────────────────────────
+  Future<void> _onSave() async {
+    if (_isSaving) return;
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
 
-  void _onSave() {
-    ref
-        .read(playlistListProvider.notifier)
-        .updatePlaylist(
-          playlistId: widget.playlistId,
-          name: _nameController.text.trim(),
-          isPublic: _isPublic,
-          description: _descController.text.trim(),
-        );
+    setState(() => _isSaving = true);
 
-    if (_pickedCoverFile != null) {
-      ref
+    try {
+      // 1. Remove tracks deleted in the edit sheet
+      final originalTracks = ref.read(playlistDetailProvider).tracks;
+      for (final original in originalTracks) {
+        if (!_tracks.any((t) => t.id == original.id)) {
+          await ref
+              .read(playlistDetailProvider.notifier)
+              .removeTrack(original.id);
+        }
+      }
+
+      // 2. Update playlist metadata on backend
+      await ref
           .read(playlistListProvider.notifier)
-          .updateCoverImage(
+          .updatePlaylist(
             playlistId: widget.playlistId,
-            localPath: _pickedCoverFile!.path,
+            name: name,
+            isPublic: _isPublic,
+            description: _descController.text.trim(),
           );
-    }
 
-    final originalTracks = ref
-        .read(playlistDetailProvider(widget.playlistId))
-        .tracks;
-    for (final original in originalTracks) {
-      if (!_tracks.any((t) => t.id == original.id)) {
+      // 3. Upload cover if picked
+      if (_pickedCoverFile != null) {
+        final ds = ref.read(playlistDatasourceProvider);
+        await ds.updatePlaylist(
+          playlistId: widget.playlistId,
+          coverImage: _pickedCoverFile,
+        );
         ref
-            .read(playlistDetailProvider(widget.playlistId).notifier)
-            .removeTrack(original.id);
+            .read(playlistListProvider.notifier)
+            .updateCoverImage(
+              playlistId: widget.playlistId,
+              localPath: _pickedCoverFile!.path,
+            );
+      }
+
+      // 4. Reload detail
+      ref.read(playlistDetailProvider.notifier).reload();
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      print('[EditSheet] ❌ save failed: $e');
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save changes. Try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
-    ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
+  }
+
+  Future<void> _convert(PlaylistType targetType) async {
+    // Close confirm dialog
     Navigator.of(context).pop();
-  }
 
-  // ── Convert ───────────────────────────────────────────────────────────────────
+    // Capture notifier references BEFORE any async gap
+    final listNotifier = ref.read(playlistListProvider.notifier);
+    final detailNotifier = ref.read(playlistDetailProvider.notifier);
+    final onConverted = widget.onConverted;
+    final playlistId = widget.playlistId;
 
-  // Separate method that takes the pre-captured navigator
-  void _convertWithNav(PlaylistType targetType, NavigatorState sheetNav) {
-    switch (targetType) {
-      case PlaylistType.album:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToAlbum(widget.playlistId);
-      case PlaylistType.station:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToStation(widget.playlistId);
-      case PlaylistType.playlist:
-        ref
-            .read(playlistListProvider.notifier)
-            .convertToPlaylist(widget.playlistId);
+    if (targetType == PlaylistType.station) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AlertDialog(
+          backgroundColor: Color(0xFF1E1E1E),
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: Color(0xFFFF5500)),
+              SizedBox(width: 20),
+              Text(
+                'Building your station...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await listNotifier.convertToStation(playlistId);
+
+      if (mounted) Navigator.of(context).pop(); // close loading dialog
+      if (mounted) Navigator.of(context).pop(); // close edit sheet
+    } else {
+      Navigator.of(context).pop(); // close edit sheet
+
+      if (targetType == PlaylistType.album) {
+        await listNotifier.convertToAlbum(playlistId);
+      } else {
+        await listNotifier.convertToPlaylist(playlistId);
+      }
     }
-    ref.read(playlistDetailProvider(widget.playlistId).notifier).reload();
-    sheetNav.pop(); // edit sheet
-    sheetNav.pop(); // options sheet
-    widget.onConverted?.call(targetType);
+
+    detailNotifier.reload();
+    onConverted?.call(targetType);
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────────
+  void _removeLocal(String trackId) {
+    setState(() => _tracks.removeWhere((t) => t.id == trackId));
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentCoverUrl = ref
-        .watch(playlistDetailProvider(widget.playlistId))
+        .watch(playlistDetailProvider)
         .playlist
         ?.coverUrl;
 
@@ -169,7 +207,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                   children: [
                     TextButton(
                       key: const Key('edit_playlist_cancel_button'),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _isSaving
+                          ? null
+                          : () => Navigator.of(context).pop(),
                       child: const Text(
                         'Cancel',
                         style: TextStyle(color: Colors.white, fontSize: 15),
@@ -188,25 +228,34 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                     ),
                     TextButton(
                       key: const Key('edit_playlist_save_button'),
-                      onPressed: _onSave,
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      onPressed: _isSaving ? null : _onSave,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Save',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                     ),
                   ],
                 ),
               ),
-              // ── Scrollable body ──────────────────────────────────────────
+              // ── Body ─────────────────────────────────────────────────────
               Expanded(
                 child: ListView(
                   controller: scrollController,
                   children: [
-                    // ── Cover image picker ────────────────────────────────
+                    // ── Cover picker ──────────────────────────────────────
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -228,7 +277,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                // Priority: picked file → existing cover → placeholder
                                 if (_pickedCoverFile != null)
                                   Image.file(
                                     _pickedCoverFile!,
@@ -245,7 +293,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                       size: 36,
                                     ),
                                   ),
-                                // Small photo library icon in corner
                                 Positioned(
                                   bottom: 6,
                                   right: 6,
@@ -358,7 +405,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                               Switch(
                                 key: const Key('edit_playlist_public_switch'),
                                 value: _isPublic,
-                                onChanged: (v) => setState(() => _isPublic = v),
+                                onChanged: _isSaving
+                                    ? null
+                                    : (v) => setState(() => _isPublic = v),
                                 activeThumbColor: const Color(0xFFFF5500),
                               ),
                             ],
@@ -369,7 +418,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── Convert To section ────────────────────────────────
+                    // ── Convert To ────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: Text(
@@ -443,7 +492,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _tracks.length,
-                      onReorder: (oldIndex, newIndex) {
+                      onReorder: (int oldIndex, int newIndex) {
                         setState(() {
                           if (newIndex > oldIndex) newIndex--;
                           final item = _tracks.removeAt(oldIndex);
@@ -459,7 +508,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                         );
                       },
                     ),
-                    const SizedBox(height: 140),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -475,14 +524,14 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
       return Image.file(
         File(url),
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) =>
+        errorBuilder: (e, s, t) =>
             const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
       );
     }
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (_, _, _) =>
+      errorBuilder: (e, s, t) =>
           const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
     );
   }
@@ -492,12 +541,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     required PlaylistType targetType,
     required String label,
   }) {
-    // Capture the sheet navigator before opening the dialog
-    final sheetNav = Navigator.of(context);
-
-    showDialog<bool>(
+    showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         title: Text(
           'Convert to $label?',
@@ -510,7 +556,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
         actions: [
           TextButton(
             key: Key('convert_cancel_$label'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text(
               'Cancel',
               style: TextStyle(color: Colors.white54),
@@ -518,10 +564,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           ),
           TextButton(
             key: Key('convert_confirm_$label'),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // close dialog
-              _convertWithNav(targetType, sheetNav); // close sheets + convert
-            },
+            onPressed: () => _convert(targetType),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFFF5500),
             ),
@@ -535,16 +578,16 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   String _convertDescription(PlaylistType type) {
     switch (type) {
       case PlaylistType.album:
-        return 'Moves this to your Albums section and shows the release year in the header. You can convert it back anytime.';
+        return 'Moves this to your Albums section and shows the release year in the header.';
       case PlaylistType.station:
-        return 'Moves this to your Stations section and shows "Based on [artist]" in the header. You can convert it back anytime.';
+        return 'Moves this to your Stations section and shows "Based on [artist]" in the header.';
       case PlaylistType.playlist:
         return 'Moves this back to your Playlists section and removes the album/station label.';
     }
   }
 }
 
-// ── Sub-widgets ────────────────────────────────────────────────────────────────
+// ── Sub-widgets ───────────────────────────────────────────────────────────────
 
 class _ConvertTile extends StatelessWidget {
   const _ConvertTile({
