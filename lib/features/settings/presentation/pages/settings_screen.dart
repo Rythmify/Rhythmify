@@ -4,6 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
 
+/// The main settings screen displaying all available settings categories as navigable tiles.
+/// Organized into three groups separated by spacing:
+/// - Group 1: Import my music, Account, Upload, Basic settings, Social settings, Inbox, Notifications, Add widgets
+/// - Group 2: Analytics, Communications, Advertising
+/// - Group 3: Support, Legal
+/// Contains [SignOutButtonWidget] and displays app version and troubleshooting ID at the bottom.
+/// Uses [ConsumerWidget] to access Riverpod providers.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -71,9 +78,11 @@ class SettingsScreen extends ConsumerWidget {
             //8- Add widgets
             key: Key('option_Add_widgets'),
             title: 'Add widgets',
-            onTap: () {},
+            onTap: () {
+              context.push('/library/settings/add-widget');
+            },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           SettingsOptionsTileWidget(
             //9- Analytics
             key: Key('option_Analytics'),
@@ -98,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
               context.push('/library/settings/Advesrtising');
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           SettingsOptionsTileWidget(
             //12- Support
             key: Key('option_Support'),
@@ -113,21 +122,32 @@ class SettingsScreen extends ConsumerWidget {
               context.push('/library/settings/Legal');
             },
           ),
-          const SizedBox(height: 24),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SignOutButtonWidget(),
-              const SizedBox(height: 16),
-              Text(
-                key: const Key('settings_App_version'),
-                'App version 1.0.0\nTroubleshooting id\n498cc2f9-65bf-428e-b283-46530272233e',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white60, fontSize: 13),
-              ),
-            ],
+          const SizedBox(height: 14),
+          SignOutButtonWidget(),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                Text(
+                  'App version 2026.04.01 -release (349040)',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                Text(
+                  'Troubleshooting id',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                Text(
+                  '498cc2f9 - 65bf - 428e - b283 - 46530272233\ne',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 130),
+          SizedBox(height: 200),
         ],
       ),
     );
