@@ -103,18 +103,18 @@ class ProfileLoaded extends ProfileState {
 
   @override
   List<Object?> get props => [
-        profile,
-        uploadedTracks,
-        isLoadingUploads,
-        hasMoreUploads,
-        likedTracks,
-        isLoadingLikes,
-        hasMoreLikes,
-        repostedTracks,
-        isLoadingReposts,
-        hasMoreReposts,
-        isSaving,
-      ];
+    profile,
+    uploadedTracks,
+    isLoadingUploads,
+    hasMoreUploads,
+    likedTracks,
+    isLoadingLikes,
+    hasMoreLikes,
+    repostedTracks,
+    isLoadingReposts,
+    hasMoreReposts,
+    isSaving,
+  ];
 }
 
 /// Emitted when loading the profile fails.

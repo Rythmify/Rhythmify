@@ -98,9 +98,7 @@ class UploadedTrack extends Equatable {
 class LikedTrack extends Equatable {
   final Track track;
 
-  const LikedTrack({
-    required this.track,
-  });
+  const LikedTrack({required this.track});
 
   String get id => track.id;
   String get title => track.title;

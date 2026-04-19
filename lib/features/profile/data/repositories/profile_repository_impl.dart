@@ -173,7 +173,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, List<ProfileUserSummary>>> getFollowers({
-
     required String userId,
     required int page,
     required int limit,

@@ -13,6 +13,10 @@ class GetRepostedTracksUseCase {
     int page = 1,
     int limit = 20,
   }) {
-    return repository.getRepostedTracks(userId: userId, page: page, limit: limit);
+    return repository.getRepostedTracks(
+      userId: userId,
+      page: page,
+      limit: limit,
+    );
   }
 }

@@ -26,7 +26,10 @@ class PlaybackLocalDataSourceImpl implements PlaybackLocalDataSource {
   Future<List<HistoryRecordModel>> getPendingHistoryRecords() async {
     final box = await _openBox();
     return box.values
-        .map((e) => HistoryRecordModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map(
+          (e) =>
+              HistoryRecordModel.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
         .toList();
   }
 

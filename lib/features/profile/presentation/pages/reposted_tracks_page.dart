@@ -31,7 +31,9 @@ class _RepostedTracksPageState extends ConsumerState<RepostedTracksPage> {
           .loadProfile(userId: widget.userId);
       // Ensure we load full list (limit 20) and force refresh
       if (mounted) {
-        ref.read(profileProvider.notifier).loadRepostedTracks(
+        ref
+            .read(profileProvider.notifier)
+            .loadRepostedTracks(
               userId: widget.userId,
               refresh: true,
               limit: 20,

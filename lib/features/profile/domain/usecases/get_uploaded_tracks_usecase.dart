@@ -13,6 +13,10 @@ class GetUploadedTracksUseCase {
     int page = 1,
     int limit = 20,
   }) {
-    return repository.getUploadedTracks(userId: userId, page: page, limit: limit);
+    return repository.getUploadedTracks(
+      userId: userId,
+      page: page,
+      limit: limit,
+    );
   }
 }

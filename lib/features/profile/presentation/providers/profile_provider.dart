@@ -72,7 +72,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<void> loadProfile({required String userId}) async {
     final current = state;
-    final isSameUser = current is ProfileLoaded &&
+    final isSameUser =
+        current is ProfileLoaded &&
         (current.profile.id == userId || userId == 'me');
 
     // If not the same user, show loading spinner and reset
@@ -81,18 +82,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
 
     final result = await _getProfile(userId: userId);
-    result.fold(
-      (failure) => state = ProfileError(failure.message),
-      (profile) {
-        if (state is ProfileLoaded && (state as ProfileLoaded).profile.id == profile.id) {
-          // Preserve existing tracks but update profile info
-          state = (state as ProfileLoaded).copyWith(profile: profile);
-        } else {
-          // Brand new profile state
-          state = ProfileLoaded(profile: profile);
-        }
-      },
-    );
+    result.fold((failure) => state = ProfileError(failure.message), (profile) {
+      if (state is ProfileLoaded &&
+          (state as ProfileLoaded).profile.id == profile.id) {
+        // Preserve existing tracks but update profile info
+        state = (state as ProfileLoaded).copyWith(profile: profile);
+      } else {
+        // Brand new profile state
+        state = ProfileLoaded(profile: profile);
+      }
+    });
   }
 
   Future<void> loadPreviews(String userId) async {
@@ -109,7 +108,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-    
+
     // Per-section loading guard
     if (current.isLoadingLikes && !refresh) return;
 
@@ -118,10 +117,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     if (refresh) {
       _likesPage = 1;
-      state = current.copyWith(
-        isLoadingLikes: true,
-        hasMoreLikes: true,
-      );
+      state = current.copyWith(isLoadingLikes: true, hasMoreLikes: true);
     } else {
       if (!current.hasMoreLikes) return;
       state = current.copyWith(isLoadingLikes: true);
@@ -172,10 +168,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     if (refresh) {
       _uploadsPage = 1;
-      state = current.copyWith(
-        isLoadingUploads: true,
-        hasMoreUploads: true,
-      );
+      state = current.copyWith(isLoadingUploads: true, hasMoreUploads: true);
     } else {
       if (!current.hasMoreUploads) return;
       state = current.copyWith(isLoadingUploads: true);
@@ -225,10 +218,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     if (refresh) {
       _repostsPage = 1;
-      state = current.copyWith(
-        isLoadingReposts: true,
-        hasMoreReposts: true,
-      );
+      state = current.copyWith(isLoadingReposts: true, hasMoreReposts: true);
     } else {
       if (!current.hasMoreReposts) return;
       state = current.copyWith(isLoadingReposts: true);

@@ -136,7 +136,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     ProfileLoaded state,
     bool isOwnProfile,
   ) {
-    final hasAnyContent = state.uploadedTracks.isNotEmpty ||
+    final hasAnyContent =
+        state.uploadedTracks.isNotEmpty ||
         state.likedTracks.isNotEmpty ||
         state.repostedTracks.isNotEmpty;
 
@@ -386,10 +387,7 @@ class _ProfileSection extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: AppTheme.titleMedium.copyWith(fontSize: 22),
-              ),
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
                 onPressed: onSeeAll,
                 child: Text(
@@ -402,12 +400,12 @@ class _ProfileSection extends StatelessWidget {
             ],
           ),
         ),
-        ...tracks.map((track) => TrackCard(
-              key: Key('profile_${title}_${track.id}'),
-              track: track,
-            )),
+        ...tracks.map(
+          (track) =>
+              TrackCard(key: Key('profile_${title}_${track.id}'), track: track),
+        ),
         const SizedBox(height: 12),
-        const Divider(color: AppTheme.surface, height: 1,),
+        const Divider(color: AppTheme.surface, height: 1),
       ],
     );
   }

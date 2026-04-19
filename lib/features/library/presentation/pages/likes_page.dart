@@ -102,17 +102,11 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
-          child: _LikesHeader(
-            onShuffle: () {},
-            onPlay: () {},
-          ),
+          child: _LikesHeader(onShuffle: () {}, onPlay: () {}),
         ),
 
         if (state.tracks.isEmpty && !state.isLoading)
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: _EmptyLikes(),
-          )
+          const SliverFillRemaining(hasScrollBody: false, child: _EmptyLikes())
         else ...[
           SliverPadding(
             padding: const EdgeInsets.only(bottom: 120),
@@ -182,10 +176,7 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _LikesHeader extends StatelessWidget {
-  const _LikesHeader({
-    required this.onShuffle,
-    required this.onPlay,
-  });
+  const _LikesHeader({required this.onShuffle, required this.onPlay});
 
   final VoidCallback onShuffle;
   final VoidCallback onPlay;
@@ -197,9 +188,7 @@ class _LikesHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
-            child: Text('Your likes', style: AppTheme.headlineLarge),
-          ),
+          Expanded(child: Text('Your likes', style: AppTheme.headlineLarge)),
           _CircleIconButton(
             key: const Key('library_likes_shuffle_button'),
             icon: Icons.shuffle,

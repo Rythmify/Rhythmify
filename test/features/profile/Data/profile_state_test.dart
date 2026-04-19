@@ -111,33 +111,30 @@ void main() {
       expect(a, isNot(b));
     });
 
-    test(
-      'should include relevant fields in props',
-      () {
-        final tracks = [tTrack];
-        final state = ProfileLoaded(
-          profile: tProfile,
-          likedTracks: tracks,
-          isLoadingLikes: true,
-          hasMoreLikes: false,
-          isSaving: true,
-        );
+    test('should include relevant fields in props', () {
+      final tracks = [tTrack];
+      final state = ProfileLoaded(
+        profile: tProfile,
+        likedTracks: tracks,
+        isLoadingLikes: true,
+        hasMoreLikes: false,
+        isSaving: true,
+      );
 
-        expect(state.props, [
-          tProfile,
-          const [], // uploadedTracks
-          false,   // isLoadingUploads
-          true,    // hasMoreUploads
-          tracks,
-          true,    // isLoadingLikes
-          false,   // hasMoreLikes
-          const [], // repostedTracks
-          false,   // isLoadingReposts
-          true,    // hasMoreReposts
-          true,    // isSaving
-        ]);
-      },
-    );
+      expect(state.props, [
+        tProfile,
+        const [], // uploadedTracks
+        false, // isLoadingUploads
+        true, // hasMoreUploads
+        tracks,
+        true, // isLoadingLikes
+        false, // hasMoreLikes
+        const [], // repostedTracks
+        false, // isLoadingReposts
+        true, // hasMoreReposts
+        true, // isSaving
+      ]);
+    });
 
     group('copyWith', () {
       const base = ProfileLoaded(profile: tProfile);

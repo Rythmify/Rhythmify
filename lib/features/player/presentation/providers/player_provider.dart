@@ -32,7 +32,7 @@ class SeekDragNotifier extends Notifier<Duration?> {
 /// Manages the [AppPlayerState] and coordinates playback actions.
 class PlayerNotifier extends Notifier<AppPlayerState> {
   bool _isDragging = false;
-  
+
   // Tracking for listening history
   final Stopwatch _sessionStopwatch = Stopwatch();
   String? _sessionTrackId;
@@ -115,9 +115,11 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     // 1. Initiate playback for the first track to get the URL and increment count
     final targetTrack = tracks[initialIndex];
     final updatedTracks = List<Track>.from(tracks);
-    
+
     try {
-      final streamUrl = await ref.read(initiatePlaybackUseCaseProvider).call(targetTrack.id);
+      final streamUrl = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(targetTrack.id);
       updatedTracks[initialIndex] = targetTrack.copyWith(streamUrl: streamUrl);
     } catch (e) {
       // Fallback to existing URL if API fails, or let it throw if critical
@@ -134,11 +136,13 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     // For optimistic play, we still want to call initiate playback
     String? streamUrl;
     try {
-      streamUrl = await ref.read(initiatePlaybackUseCaseProvider).call(initialTrack.id);
+      streamUrl = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(initialTrack.id);
     } catch (_) {}
 
-    final trackToPlay = streamUrl != null 
-        ? initialTrack.copyWith(streamUrl: streamUrl) 
+    final trackToPlay = streamUrl != null
+        ? initialTrack.copyWith(streamUrl: streamUrl)
         : initialTrack;
 
     await loadAndPlayQueue([trackToPlay]);

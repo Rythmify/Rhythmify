@@ -14,7 +14,7 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
   @override
   Future<String> initiatePlayback(String trackId) async {
     final response = await _apiClient.dio.post('/tracks/$trackId/play');
-    
+
     // According to API spec: { "data": { "url": "..." } }
     final data = response.data['data'] as Map<String, dynamic>;
     return data['url'] as String;
@@ -22,9 +22,6 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
 
   @override
   Future<void> recordHistory(HistoryRecordModel record) async {
-    await _apiClient.dio.post(
-      '/me/listening-history',
-      data: record.toJson(),
-    );
+    await _apiClient.dio.post('/me/listening-history', data: record.toJson());
   }
 }

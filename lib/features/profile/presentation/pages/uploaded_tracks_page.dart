@@ -31,7 +31,9 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
           .loadProfile(userId: widget.userId);
       // Ensure we load full list (limit 20) and force refresh to bypass any limit-3 previews
       if (mounted) {
-        ref.read(profileProvider.notifier).loadUploadedTracks(
+        ref
+            .read(profileProvider.notifier)
+            .loadUploadedTracks(
               userId: widget.userId,
               refresh: true,
               limit: 20,

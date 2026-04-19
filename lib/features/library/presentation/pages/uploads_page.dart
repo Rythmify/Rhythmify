@@ -262,10 +262,7 @@ class _UploadsHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text('Your uploads',
-                style: AppTheme.headlineLarge
-                ),
-
+                child: Text('Your uploads', style: AppTheme.headlineLarge),
               ),
               // Upload icon button
               _CircleIconButton(

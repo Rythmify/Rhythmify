@@ -34,7 +34,7 @@ abstract class LibraryRemoteDatasource {
   Future<List<TrackInsightModel>> getMyInsights();
 
   Future<List<RecentlyPlayedEntryModel>> getRecentlyPlayed();
-  
+
   Future<List<RecentlyPlayedEntryModel>> getListeningHistory({
     required int page,
     required int limit,

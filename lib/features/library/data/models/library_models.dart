@@ -85,14 +85,10 @@ class UploadedTrackModel extends UploadedTrack {
 // ── LikedTrack ────────────────────────────────────────────────────────────────
 
 class LikedTrackModel extends LikedTrack {
-  const LikedTrackModel({
-    required super.track,
-  });
+  const LikedTrackModel({required super.track});
 
   factory LikedTrackModel.fromJson(Map<String, dynamic> json) {
-    return LikedTrackModel(
-      track: TrackDto.fromJson(json),
-    );
+    return LikedTrackModel(track: TrackDto.fromJson(json));
   }
 }
 
@@ -148,14 +144,15 @@ class RecentlyPlayedEntryModel extends RecentlyPlayedEntry {
       trackId: track['id'] as String? ?? '',
       userId: track['user_id'] as String? ?? '',
       title: track['title'] as String? ?? '',
-      artistName: 
-          track['display_name'] as String? ?? 
-          track['artist_name'] as String? ?? 
-          track['artist'] as String? ?? 
+      artistName:
+          track['display_name'] as String? ??
+          track['artist_name'] as String? ??
+          track['artist'] as String? ??
           '',
       artworkUrl:
           track['artwork_url'] as String? ?? track['cover_image'] as String?,
-      durationSeconds: track['duration'] as int? ?? track['duration_seconds'] as int? ?? 0,
+      durationSeconds:
+          track['duration'] as int? ?? track['duration_seconds'] as int? ?? 0,
       playCount: track['play_count'] as int? ?? 0,
       playedAt: playedAt != null
           ? DateTime.tryParse(playedAt) ?? DateTime.now()

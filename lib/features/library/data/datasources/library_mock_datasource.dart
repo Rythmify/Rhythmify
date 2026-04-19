@@ -419,17 +419,19 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
     // Return a mix of mock liked tracks
     return _history
         .take(limit)
-        .map((h) => LikedTrackModel(
-              track: TrackDto.fromJson({
-                'id': h.trackId,
-                'title': h.title,
-                'artist_name': h.artistName,
-                'cover_image': h.artworkUrl,
-                'duration': h.durationSeconds,
-                'play_count': h.playCount,
-                'like_count': 1,
-              }),
-            ))
+        .map(
+          (h) => LikedTrackModel(
+            track: TrackDto.fromJson({
+              'id': h.trackId,
+              'title': h.title,
+              'artist_name': h.artistName,
+              'cover_image': h.artworkUrl,
+              'duration': h.durationSeconds,
+              'play_count': h.playCount,
+              'like_count': 1,
+            }),
+          ),
+        )
         .toList();
   }
 }

@@ -76,28 +76,25 @@ class ProfileEntity extends Equatable {
     required bool isFollowing,
     required int followersCount,
   }) {
-    return copyWith(
-      isFollowing: isFollowing,
-      followersCount: followersCount,
-    );
+    return copyWith(isFollowing: isFollowing, followersCount: followersCount);
   }
 
   @override
   List<Object?> get props => [
-        id,
-        displayName,
-        username,
-        firstName,
-        lastName,
-        avatarUrl,
-        coverUrl,
-        city,
-        country,
-        bio,
-        followersCount,
-        followingCount,
-        tracksCount,
-        isFollowing,
-        isVerified,
-      ];
+    id,
+    displayName,
+    username,
+    firstName,
+    lastName,
+    avatarUrl,
+    coverUrl,
+    city,
+    country,
+    bio,
+    followersCount,
+    followingCount,
+    tracksCount,
+    isFollowing,
+    isVerified,
+  ];
 }

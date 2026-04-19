@@ -27,7 +27,9 @@ class PlaybackRepositoryImpl implements PlaybackRepository {
     try {
       await _remoteDataSource.recordHistory(model);
     } catch (e) {
-      debugPrint('[PlaybackRepository] Error recording history, caching locally: $e');
+      debugPrint(
+        '[PlaybackRepository] Error recording history, caching locally: $e',
+      );
       await _localDataSource.cacheHistoryRecord(model);
     }
   }
@@ -44,7 +46,9 @@ class PlaybackRepositoryImpl implements PlaybackRepository {
         await _remoteDataSource.recordHistory(record);
         successfullySynced.add(record);
       } catch (e) {
-        debugPrint('[PlaybackRepository] Sync failed for record ${record.trackId}: $e');
+        debugPrint(
+          '[PlaybackRepository] Sync failed for record ${record.trackId}: $e',
+        );
         // Stop sync on first error to avoid spamming the backend if it's down
         break;
       }
@@ -52,7 +56,9 @@ class PlaybackRepositoryImpl implements PlaybackRepository {
 
     if (successfullySynced.isNotEmpty) {
       await _localDataSource.removeHistoryRecords(successfullySynced);
-      debugPrint('[PlaybackRepository] Synced ${successfullySynced.length} records');
+      debugPrint(
+        '[PlaybackRepository] Synced ${successfullySynced.length} records',
+      );
     }
   }
 }

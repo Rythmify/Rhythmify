@@ -416,10 +416,12 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
     return tracks
         .sublist(start, end)
-        .map((t) => TrackModel.fromJson({
-              ...Map<String, dynamic>.from(t),
-              'is_liked': true,
-            }))
+        .map(
+          (t) => TrackModel.fromJson({
+            ...Map<String, dynamic>.from(t),
+            'is_liked': true,
+          }),
+        )
         .toList();
   }
 
@@ -447,10 +449,12 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
     return tracks
         .sublist(start, end)
-        .map((t) => TrackModel.fromJson({
-              ...Map<String, dynamic>.from(t),
-              'is_liked': false,
-            }))
+        .map(
+          (t) => TrackModel.fromJson({
+            ...Map<String, dynamic>.from(t),
+            'is_liked': false,
+          }),
+        )
         .toList();
   }
 

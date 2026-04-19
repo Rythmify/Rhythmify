@@ -53,12 +53,12 @@ class TrackModel extends Track {
           data['stream_url'] as String? ?? data['audio_url'] as String? ?? '',
       streamUrl: data['stream_url'] as String?,
       duration: Duration(
-        seconds: data['duration'] as int? ?? data['duration_seconds'] as int? ?? 0,
+        seconds:
+            data['duration'] as int? ?? data['duration_seconds'] as int? ?? 0,
       ),
-      createdAt: DateTime.tryParse(
-            data['liked_at'] as String? ??
-                data['created_at'] as String? ??
-                '',
+      createdAt:
+          DateTime.tryParse(
+            data['liked_at'] as String? ?? data['created_at'] as String? ?? '',
           ) ??
           DateTime.now(),
       coverImage:

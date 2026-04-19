@@ -19,7 +19,7 @@ class TrackDto {
           data['user']?['display_name'] as String? ??
           '',
 
-      artistPfp: 
+      artistPfp:
           data['profile_picture'] as String? ??
           data['artist_pfp'] as String? ??
           data['user']?['profile_picture'] as String?,
@@ -38,9 +38,7 @@ class TrackDto {
       ),
       createdAt:
           DateTime.tryParse(
-            data['liked_at'] as String? ??
-            data['created_at'] as String? ?? 
-            ''
+            data['liked_at'] as String? ?? data['created_at'] as String? ?? '',
           ) ??
           DateTime.now(),
       updatedAt: data['updated_at'] != null

@@ -152,7 +152,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final endpoint = userId == 'me' ? '/me/liked-tracks' : '/users/$userId/tracks';
+      final endpoint = userId == 'me'
+          ? '/me/liked-tracks'
+          : '/users/$userId/tracks';
 
       final response = await client.dio.get(
         endpoint,
@@ -161,10 +163,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
 
       final tracks = _extractListPayload(response.data);
       return tracks
-          .map((t) => TrackModel.fromJson({
-                ...t,
-                'is_liked': true,
-              }))
+          .map((t) => TrackModel.fromJson({...t, 'is_liked': true}))
           .toList();
     } on DioException catch (e) {
       _handleDioError(e);
@@ -201,7 +200,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final endpoint = userId == 'me' ? '/me/reposted-tracks' : '/users/$userId/tracks';
+      final endpoint = userId == 'me'
+          ? '/me/reposted-tracks'
+          : '/users/$userId/tracks';
 
       final response = await client.dio.get(
         endpoint,

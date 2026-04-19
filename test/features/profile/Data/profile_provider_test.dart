@@ -229,13 +229,16 @@ void main() {
 
   group('ProfileNotifier', () {
     test('should set isLoadingLikes false on failure', () async {
-      when(() => mockRepo.getProfile(userId: any(named: 'userId')))
-          .thenAnswer((_) async => const Right(tProfile));
-      when(() => mockRepo.getLikedTracks(
-            userId: any(named: 'userId'),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockRepo.getProfile(userId: any(named: 'userId')),
+      ).thenAnswer((_) async => const Right(tProfile));
+      when(
+        () => mockRepo.getLikedTracks(
+          userId: any(named: 'userId'),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       await notifier.loadProfile(userId: 'user-001');
 
@@ -253,11 +256,13 @@ void main() {
 
         await notifier.loadLikedTracks(userId: 'user-001');
 
-        verifyNever(() => mockRepo.getLikedTracks(
-              userId: any(named: 'userId'),
-              page: any(named: 'page'),
-              limit: any(named: 'limit'),
-            ));
+        verifyNever(
+          () => mockRepo.getLikedTracks(
+            userId: any(named: 'userId'),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        );
       },
     );
   });

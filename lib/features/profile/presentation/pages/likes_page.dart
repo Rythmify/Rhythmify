@@ -41,11 +41,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
           .loadProfile(userId: widget.userId);
       // Ensure we load full list (limit 20) and force refresh
       if (mounted) {
-        ref.read(profileProvider.notifier).loadLikedTracks(
-              userId: widget.userId,
-              refresh: true,
-              limit: 20,
-            );
+        ref
+            .read(profileProvider.notifier)
+            .loadLikedTracks(userId: widget.userId, refresh: true, limit: 20);
       }
     });
 

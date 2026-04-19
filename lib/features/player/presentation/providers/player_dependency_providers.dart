@@ -37,11 +37,15 @@ final audioRepositoryProvider = Provider<AudioRepository>((ref) {
   return AudioRepositoryImpl(handler);
 });
 
-final playbackRemoteDataSourceProvider = Provider<PlaybackRemoteDataSource>((ref) {
+final playbackRemoteDataSourceProvider = Provider<PlaybackRemoteDataSource>((
+  ref,
+) {
   return PlaybackRemoteDataSourceImpl(apiClient);
 });
 
-final playbackLocalDataSourceProvider = Provider<PlaybackLocalDataSource>((ref) {
+final playbackLocalDataSourceProvider = Provider<PlaybackLocalDataSource>((
+  ref,
+) {
   return PlaybackLocalDataSourceImpl();
 });
 
