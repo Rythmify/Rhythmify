@@ -5,12 +5,12 @@ import '../repositories/profile_repository.dart';
 /// Use case that follows a user by their ID.
 ///
 /// Delegates to [ProfileRepository.followUser].
-class FollowUserUseCase {
+class GetFollowUserUseCase {
   /// The repository used to follow the user.
   final ProfileRepository repository;
 
-  /// Creates a [FollowUserUseCase] with the given [repository].
-  FollowUserUseCase(this.repository);
+  /// Creates a [GetFollowUserUseCase] with the given [repository].
+  GetFollowUserUseCase(this.repository);
 
   /// Follows the user identified by [userId].
   ///

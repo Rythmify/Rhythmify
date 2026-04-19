@@ -11,7 +11,21 @@ import '../../../../core/domain/entities/track.dart';
 /// hardware button support.
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The underlying audio player instance.
-  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _player = AudioPlayer(
+    audioLoadConfiguration: const AudioLoadConfiguration(
+      androidLoadControl: AndroidLoadControl(
+        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
+        maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
+        bufferForPlaybackDuration: Duration(
+          milliseconds: 500,
+        ), // Start playing fast
+        bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
+      ),
+      darwinLoadControl: DarwinLoadControl(
+        automaticallyWaitsToMinimizeStalling: true, // For iOS seamless playback
+      ),
+    ),
+  );
 
   /// The current list of tracks in the playback queue.
   List<Track> _currentQueue = [];
@@ -123,6 +137,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   List<Track> get currentQueue => _currentQueue;
 
   /// Loads a new set of [Track]s into the player and prepares for playback.
+  /// Loads a new set of [Track]s into the player and prepares for playback.
   Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
     _currentQueue = tracks;
 
@@ -141,9 +156,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       } else {
         final resolvedUri = _resolveTrackUri(rawUrl);
         if (resolvedUri != null) {
-          audioSources.add(AudioSource.uri(resolvedUri, tag: track.id));
+          // ignore: experimental_member_use
+          audioSources.add(LockCachingAudioSource(resolvedUri, tag: track.id));
         }
-        // If resolution fails, we skip this track instead of throwing
       }
     }
 
@@ -162,6 +177,13 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       initialPosition: Duration.zero,
     );
   }
+
+  /// Clears the cached audio files from device storage to free up space.
+  /// Call this from your app's settings menu or on startup if cache size gets too large.
+
+  // Future<void> clearAudioCache() async {
+  //   await LockCachingAudioSource.clearCache();
+  // }
 
   @override
   Future<void> play() => _player.play();

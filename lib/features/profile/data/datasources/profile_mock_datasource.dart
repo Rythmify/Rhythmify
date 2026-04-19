@@ -416,8 +416,58 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
     return tracks
         .sublist(start, end)
-        .map((t) => TrackModel.fromJson(Map<String, dynamic>.from(t)))
+        .map(
+          (t) => TrackModel.fromJson({
+            ...Map<String, dynamic>.from(t),
+            'is_liked': true,
+          }),
+        )
         .toList();
+  }
+
+  @override
+  Future<List<TrackModel>> getUploadedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    final resolvedId = userId == 'me'
+        ? (_currentUserProfile?['id'] ?? 'user-001')
+        : userId;
+
+    // Just reuse some likes as "uploads" for mock purposes
+    final tracks = List<Map<String, dynamic>>.from(
+      _likedTracksByUser[resolvedId] ?? [],
+    ).reversed.toList();
+
+    final start = (page - 1) * limit;
+    final end = min(start + limit, tracks.length);
+
+    if (start >= tracks.length) return [];
+
+    return tracks
+        .sublist(start, end)
+        .map(
+          (t) => TrackModel.fromJson({
+            ...Map<String, dynamic>.from(t),
+            'is_liked': false,
+          }),
+        )
+        .toList();
+  }
+
+  @override
+  Future<List<TrackModel>> getRepostedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    // Return empty list if no reposts or use a subset
+    return [];
   }
 
   @override

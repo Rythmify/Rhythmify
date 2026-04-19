@@ -1,8 +1,6 @@
 // coverage:ignore-file
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/domain/entities/track.dart';
-import '../../../../core/data/models/track_dto.dart';
 import '../../domain/entities/library_entities.dart';
 import '../../domain/repositories/library_repository.dart';
 import '../datasources/library_remote_datasource.dart';
@@ -195,7 +193,7 @@ class LibraryRepositoryImpl implements LibraryRepository {
   // ── Liked tracks ───────────────────────────────────────────────────────────
 
   @override
-  Future<Either<Failure, List<Track>>> getLikedTracks({
+  Future<Either<Failure, List<LikedTrack>>> getLikedTracks({
     required int page,
     required int limit,
   }) async {
@@ -204,25 +202,7 @@ class LibraryRepositoryImpl implements LibraryRepository {
         page: page,
         limit: limit,
       );
-      // Convert UploadedTrackModel → Track entity using TrackDto mapping
-      final tracks = result
-          .map(
-            (t) => TrackDto.fromJson({
-              'id': t.id,
-              'title': t.title,
-              'artist': '',
-              'artwork_url': t.artworkUrl,
-              'audio_url': '',
-              'duration': 0,
-              'play_count': t.playCount,
-              'like_count': t.likeCount,
-              'is_liked': true,
-              'status': t.status,
-              'created_at': t.createdAt.toIso8601String(),
-            }),
-          )
-          .toList();
-      return Right(tracks);
+      return Right(result);
     } catch (e) {
       return Left(_map(e.toString()));
     }

@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/domain/entities/track.dart';
 import '../entities/library_entities.dart';
 import '../repositories/library_repository.dart';
 
@@ -168,6 +167,8 @@ class GetLikedTracksLibraryUseCase {
   final LibraryRepository repository;
   GetLikedTracksLibraryUseCase(this.repository);
 
-  Future<Either<Failure, List<Track>>> call({int page = 1, int limit = 20}) =>
-      repository.getLikedTracks(page: page, limit: limit);
+  Future<Either<Failure, List<LikedTrack>>> call({
+    int page = 1,
+    int limit = 20,
+  }) => repository.getLikedTracks(page: page, limit: limit);
 }

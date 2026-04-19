@@ -99,9 +99,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final playlists = await _ds.fetchMyPlaylists(filter: 'created');
       _cache.syncFromBackend(playlists);
       state = PlaylistListState(playlists: playlists);
-      print('[LIST] ✅ Loaded ${playlists.length} playlists');
     } on DioException catch (e) {
-      print('[LIST] ❌ loadPlaylists ${e.response?.statusCode}');
       state = PlaylistListState(
         playlists: _cache.getMyPlaylists(),
         error: 'Could not refresh playlists',
@@ -124,10 +122,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         ownerId: created.ownerId,
       );
       await loadPlaylists();
-      print('[LIST] ✅ Created "${created.name}" id=${created.id}');
+
       return created;
     } catch (e) {
-      print('[LIST] ❌ createPlaylist: $e');
       return null;
     }
   }

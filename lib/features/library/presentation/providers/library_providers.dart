@@ -328,6 +328,79 @@ final uploadsProvider = NotifierProvider<UploadsNotifier, UploadsState>(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Likes state & provider
+// ─────────────────────────────────────────────────────────────────────────────
+
+class LikesState extends Equatable {
+  final List<LikedTrack> tracks;
+  final bool isLoading;
+  final bool hasMore;
+  final String? error;
+
+  const LikesState({
+    this.tracks = const [],
+    this.isLoading = false,
+    this.hasMore = true,
+    this.error,
+  });
+
+  LikesState copyWith({
+    List<LikedTrack>? tracks,
+    bool? isLoading,
+    bool? hasMore,
+    String? error,
+  }) => LikesState(
+    tracks: tracks ?? this.tracks,
+    isLoading: isLoading ?? this.isLoading,
+    hasMore: hasMore ?? this.hasMore,
+    error: error ?? this.error,
+  );
+
+  @override
+  List<Object?> get props => [tracks, isLoading, hasMore, error];
+}
+
+class LikesNotifier extends Notifier<LikesState> {
+  late final GetLikedTracksLibraryUseCase _get;
+  int _page = 1;
+
+  @override
+  LikesState build() {
+    final repo = ref.read(_libraryRepositoryProvider);
+    _get = GetLikedTracksLibraryUseCase(repo);
+    Future.microtask(load);
+    return const LikesState(isLoading: true);
+  }
+
+  Future<void> load({bool refresh = false}) async {
+    if (refresh) {
+      _page = 1;
+      state = state.copyWith(tracks: [], isLoading: true, hasMore: true);
+    } else {
+      if (!state.hasMore || (state.isLoading && _page > 1)) return;
+      state = state.copyWith(isLoading: true);
+    }
+
+    final result = await _get(page: _page, limit: 20);
+    result.fold(
+      (f) => state = state.copyWith(isLoading: false, error: f.message),
+      (t) {
+        _page++;
+        state = state.copyWith(
+          tracks: [...state.tracks, ...t],
+          isLoading: false,
+          hasMore: t.length == 20,
+        );
+      },
+    );
+  }
+}
+
+final likesProvider = NotifierProvider<LikesNotifier, LikesState>(
+  () => LikesNotifier(),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Insights provider (simple FutureProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
