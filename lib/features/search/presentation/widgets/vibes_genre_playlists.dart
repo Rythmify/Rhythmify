@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/vibes_genre_playlist.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:developer' as dev;
 
 /// A card displaying a single genre playlist in the Playlists grid.
 /// Handles both network and local asset cover images, with a grey fallback on error.
@@ -11,7 +12,10 @@ class GenrePlaylistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/playlist/${playlist.id}', extra: false),
+      onTap: () {
+        dev.log('playlist id: ${playlist.id}');
+        context.push('/playlist/${playlist.id}', extra: false);
+      },
       child: Column(
         key: Key('genre_playlist_card_${playlist.id}'),
         crossAxisAlignment: CrossAxisAlignment.start,
