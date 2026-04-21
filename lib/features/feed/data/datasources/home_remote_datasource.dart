@@ -24,7 +24,9 @@ class HomeRemoteDatasource {
 
   Future<GenreTabTracks> getTrendingByGenre(String genreId) async {
     final response = await _dio.get('/home/trending-by-genre/$genreId');
-    debugPrint('DEBUG: /home/trending-by-genre/$genreId response: ${response.data}');
+    debugPrint(
+      'DEBUG: /home/trending-by-genre/$genreId response: ${response.data}',
+    );
     final data = response.data['data'] as Map<String, dynamic>;
     return HomeDto.parseGenreTabTracks(data);
   }

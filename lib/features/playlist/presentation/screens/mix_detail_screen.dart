@@ -60,11 +60,10 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
       }
       state = MixDetailState(tracks: tracks, isLoading: false);
       debugPrint('[MixDetail] ✅ Loaded ${tracks.length} tracks');
-      } catch (e) {
+    } catch (e) {
       debugPrint('[MixDetail] ❌ Failed: $e');
       state = MixDetailState(isLoading: false, error: 'Could not load mix');
-      }
-
+    }
   }
 }
 

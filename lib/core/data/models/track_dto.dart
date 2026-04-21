@@ -50,9 +50,16 @@ class TrackDto {
       commentCount: data['comment_count'] as int? ?? 0,
       repostCount: data['repost_count'] as int? ?? 0,
 
-      isLiked: data['is_liked'] as bool? ?? data['is_liked_by_me'] as bool? ?? false,
-      isReposted: data['is_reposted'] as bool? ?? data['is_reposted_by_me'] as bool? ?? false,
-      isArtistFollowed: data['is_artist_followed'] as bool? ?? data['is_artist_followed_by_me'] as bool? ?? false,
+      isLiked:
+          data['is_liked'] as bool? ?? data['is_liked_by_me'] as bool? ?? false,
+      isReposted:
+          data['is_reposted'] as bool? ??
+          data['is_reposted_by_me'] as bool? ??
+          false,
+      isArtistFollowed:
+          data['is_artist_followed'] as bool? ??
+          data['is_artist_followed_by_me'] as bool? ??
+          false,
 
       tags:
           (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??

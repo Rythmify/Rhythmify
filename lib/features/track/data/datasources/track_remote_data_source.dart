@@ -58,7 +58,9 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getTrackDetails(String id) async {
     final response = await client.dio.get('/tracks/$id');
-    debugPrint('=============================================================DEBUG TRACK JSON: ${response.data}');
+    debugPrint(
+      '=============================================================DEBUG TRACK JSON: ${response.data}',
+    );
     return response.data as Map<String, dynamic>;
   }
 

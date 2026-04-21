@@ -212,7 +212,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       // Step 1: get current tracks before conversion
       final existingTracks = _cache.getTracksFor(playlistId);
       final playlist = _cache.getById(playlistId);
-      debugPrint('[LIST] convertToStation: ${existingTracks.length} seed tracks');
+      debugPrint(
+        '[LIST] convertToStation: ${existingTracks.length} seed tracks',
+      );
 
       // // Step 2: PATCH backend to subtype=station
       // await _ds.updatePlaylist(
@@ -328,7 +330,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         // User-converted stations: tracks already stored in cache
         final cachedTracks = _cache.getTracksFor(playlistId);
         if (cachedTracks.isNotEmpty) {
-          debugPrint('[DETAIL] Station: using ${cachedTracks.length} cached tracks');
+          debugPrint(
+            '[DETAIL] Station: using ${cachedTracks.length} cached tracks',
+          );
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: cachedTracks,

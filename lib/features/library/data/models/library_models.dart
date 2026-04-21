@@ -161,7 +161,9 @@ class RecentlyPlayedEntryModel extends RecentlyPlayedEntry {
           track['duration'] as int? ?? track['duration_seconds'] as int? ?? 0,
       playCount: track['play_count'] as int? ?? 0,
       isLiked:
-          track['is_liked'] as bool? ?? track['is_liked_by_me'] as bool? ?? false,
+          track['is_liked'] as bool? ??
+          track['is_liked_by_me'] as bool? ??
+          false,
       isArtistFollowed:
           track['is_artist_followed'] as bool? ??
           track['is_artist_followed_by_me'] as bool? ??

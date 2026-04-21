@@ -51,7 +51,9 @@ class PlaylistMockData {
       ..clear()
       ..addAll(backendPlaylists);
 
-    debugPrint('[Cache] Synced ${backendPlaylists.length} playlists from backend');
+    debugPrint(
+      '[Cache] Synced ${backendPlaylists.length} playlists from backend',
+    );
   }
 
   // ── CREATE WITH REAL ID ───────────────────────────────────────────────────
