@@ -222,9 +222,12 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 userId: entry.userId,
                 title: entry.title,
                 artist: entry.artistName,
-                audioUrl: '',
+                audioUrl: entry.audioUrl ?? '',
+                streamUrl: entry.streamUrl,
                 duration: Duration(seconds: entry.durationSeconds),
                 playCount: entry.playCount,
+                isLiked: entry.isLiked,
+                isArtistFollowed: entry.isArtistFollowed,
                 createdAt: entry.playedAt,
                 coverImage: entry.artworkUrl,
               );

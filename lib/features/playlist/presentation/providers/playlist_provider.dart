@@ -1,6 +1,7 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -99,7 +100,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final playlists = await _ds.fetchMyPlaylists(filter: 'created');
       _cache.syncFromBackend(playlists);
       state = PlaylistListState(playlists: playlists);
-    } on DioException catch (e) {
+    } on DioException catch (_) {
       state = PlaylistListState(
         playlists: _cache.getMyPlaylists(),
         error: 'Could not refresh playlists',
@@ -150,9 +151,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         description: description,
       );
       await loadPlaylists();
-      print('[LIST] ✅ Updated $playlistId');
+      debugPrint('[LIST] ✅ Updated $playlistId');
     } catch (e) {
-      print('[LIST] ❌ updatePlaylist: $e');
+      debugPrint('[LIST] ❌ updatePlaylist: $e');
     }
   }
 
@@ -171,9 +172,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       await _ds.deletePlaylist(playlistId);
       _cache.delete(playlistId);
       await loadPlaylists();
-      print('[LIST] ✅ Deleted $playlistId');
+      debugPrint('[LIST] ✅ Deleted $playlistId');
     } catch (e) {
-      print('[LIST] ❌ deletePlaylist: $e');
+      debugPrint('[LIST] ❌ deletePlaylist: $e');
     }
   }
 
@@ -187,9 +188,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       );
       _cache.convertToAlbum(playlistId);
       await loadPlaylists();
-      print('[LIST] ✅ Converted $playlistId to album');
+      debugPrint('[LIST] ✅ Converted $playlistId to album');
     } catch (e) {
-      print('[LIST] ❌ convertToAlbum: $e');
+      debugPrint('[LIST] ❌ convertToAlbum: $e');
     }
   }
 
@@ -199,9 +200,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       await _ds.updatePlaylist(playlistId: playlistId, subtype: 'playlist');
       _cache.convertToPlaylist(playlistId);
       await loadPlaylists();
-      print('[LIST] ✅ Converted $playlistId back to playlist');
+      debugPrint('[LIST] ✅ Converted $playlistId back to playlist');
     } catch (e) {
-      print('[LIST] ❌ convertToPlaylist: $e');
+      debugPrint('[LIST] ❌ convertToPlaylist: $e');
     }
   }
 
@@ -211,7 +212,9 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       // Step 1: get current tracks before conversion
       final existingTracks = _cache.getTracksFor(playlistId);
       final playlist = _cache.getById(playlistId);
-      print('[LIST] convertToStation: ${existingTracks.length} seed tracks');
+      debugPrint(
+        '[LIST] convertToStation: ${existingTracks.length} seed tracks',
+      );
 
       // // Step 2: PATCH backend to subtype=station
       // await _ds.updatePlaylist(
@@ -241,7 +244,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final related = merged.skip(existingTracks.length).toList()..shuffle();
       final station58 = [...seeds, ...related].take(58).toList();
 
-      print(
+      debugPrint(
         '[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)',
       );
 
@@ -257,11 +260,11 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
 
       // Step 6: reload list
       await loadPlaylists();
-      print(
+      debugPrint(
         '[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks',
       );
     } catch (e) {
-      print('[LIST] ❌ convertToStation: $e');
+      debugPrint('[LIST] ❌ convertToStation: $e');
     }
   }
 
@@ -320,14 +323,16 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         _cache.addTrack(playlistId: playlistId, track: t);
       }
 
-      print('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
+      debugPrint('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
 
       // ── Station ────────────────────────────────────────────────────────
       if (playlist.type == PlaylistType.station) {
         // User-converted stations: tracks already stored in cache
         final cachedTracks = _cache.getTracksFor(playlistId);
         if (cachedTracks.isNotEmpty) {
-          print('[DETAIL] Station: using ${cachedTracks.length} cached tracks');
+          debugPrint(
+            '[DETAIL] Station: using ${cachedTracks.length} cached tracks',
+          );
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: cachedTracks,
@@ -378,7 +383,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         );
       }
     } on DioException catch (e) {
-      print('[DETAIL] ❌ init ${e.response?.statusCode}');
+      debugPrint('[DETAIL] ❌ init ${e.response?.statusCode}');
       final cached = _cache.getById(playlistId);
       if (cached != null) {
         state = PlaylistDetailState(
@@ -410,7 +415,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         playlistId: _currentPlaylistId!,
         trackId: suggestion.id,
       );
-      print('[DETAIL] ✅ Added "${suggestion.title}"');
+      debugPrint('[DETAIL] ✅ Added "${suggestion.title}"');
 
       final updatedTracks = await _ds.fetchPlaylistTracks(_currentPlaylistId!);
       _cache.clearTracks(_currentPlaylistId!);
@@ -424,7 +429,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         suggestions: freshSuggestions,
       );
     } on DioException catch (e) {
-      print(
+      debugPrint(
         '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
       );
       state = state.copyWith(
@@ -447,9 +452,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         trackId: trackId,
       );
       _cache.removeTrack(playlistId: _currentPlaylistId!, trackId: trackId);
-      print('[DETAIL] ✅ Removed track $trackId');
+      debugPrint('[DETAIL] ✅ Removed track $trackId');
     } on DioException catch (e) {
-      print('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
+      debugPrint('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
       state = state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
     }
   }
@@ -459,7 +464,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     state = state.copyWith(isSuggestionsLoading: true);
     final fresh = await _fetchSuggestionsExcluding(state.tracks);
     state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
-    print('[DETAIL] Refreshed: ${fresh.length} suggestions');
+    debugPrint('[DETAIL] Refreshed: ${fresh.length} suggestions');
   }
 
   void toggleLike() => state = state.copyWith(isLiked: !state.isLiked);
@@ -478,7 +483,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         limit: 5,
       );
     } catch (e) {
-      print('[DETAIL] suggestions failed: $e');
+      debugPrint('[DETAIL] suggestions failed: $e');
       return [];
     }
   }
@@ -487,7 +492,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     try {
       return await _ds.fetchStationTracks(artistId, limit: 50);
     } catch (e) {
-      print('[DETAIL] station tracks failed: $e');
+      debugPrint('[DETAIL] station tracks failed: $e');
       return [];
     }
   }

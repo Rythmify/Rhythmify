@@ -59,9 +59,9 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
           tracks = await _ds.fetchMixTracks(mixId);
       }
       state = MixDetailState(tracks: tracks, isLoading: false);
-      print('[MixDetail] ✅ Loaded ${tracks.length} tracks');
+      debugPrint('[MixDetail] ✅ Loaded ${tracks.length} tracks');
     } catch (e) {
-      print('[MixDetail] ❌ Failed: $e');
+      debugPrint('[MixDetail] ❌ Failed: $e');
       state = MixDetailState(isLoading: false, error: 'Could not load mix');
     }
   }
@@ -203,7 +203,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                           ? Image.network(
                               widget.coverUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (_, _, _) =>
                                   _Placeholder(widget.mixTitle),
                             )
                           : _Placeholder(widget.mixTitle),

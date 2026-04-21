@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/domain/entities/track.dart';
 
@@ -16,28 +17,30 @@ class HomeRemoteDatasource {
 
   Future<HomeData> getHomeData() async {
     final response = await _dio.get('/home');
-    print('DEBUG: /home response: ${response.data}');
+    debugPrint('DEBUG: /home response: ${response.data}');
     final data = response.data['data'] as Map<String, dynamic>;
     return HomeDto.fromJson(data);
   }
 
   Future<GenreTabTracks> getTrendingByGenre(String genreId) async {
     final response = await _dio.get('/home/trending-by-genre/$genreId');
-    print('DEBUG: /home/trending-by-genre/$genreId response: ${response.data}');
+    debugPrint(
+      'DEBUG: /home/trending-by-genre/$genreId response: ${response.data}',
+    );
     final data = response.data['data'] as Map<String, dynamic>;
     return HomeDto.parseGenreTabTracks(data);
   }
 
   Future<HotForYou> getHotForYou() async {
     final response = await _dio.get('/home/hot-for-you');
-    print('DEBUG: /home/hot-for-you response: ${response.data}');
+    debugPrint('DEBUG: /home/hot-for-you response: ${response.data}');
     final data = response.data['data'] as Map<String, dynamic>;
     return HomeDto.parseHotForYou(data);
   }
 
   Future<List<Track>> getMoreOfWhatYouLike() async {
     final response = await _dio.get('/home/more-of-what-you-like');
-    print('DEBUG: /home/more-of-what-you-like response: ${response.data}');
+    debugPrint('DEBUG: /home/more-of-what-you-like response: ${response.data}');
     final data = response.data['data'] as Map<String, dynamic>;
     return (data['tracks'] as List)
         .map((t) => HomeDto.parseTrack(t as Map<String, dynamic>))
@@ -46,7 +49,7 @@ class HomeRemoteDatasource {
 
   Future<List<MixedForYouItem>> getMixedForYou() async {
     final response = await _dio.get('/home/mixed-for-you');
-    print('DEBUG: /home/mixed-for-you response: ${response.data}');
+    debugPrint('DEBUG: /home/mixed-for-you response: ${response.data}');
     return (response.data['data'] as List)
         .map((m) => HomeDto.parseMixedForYouItem(m as Map<String, dynamic>))
         .toList();
@@ -54,7 +57,7 @@ class HomeRemoteDatasource {
 
   Future<List<DiscoverStation>> getDiscoverStations() async {
     final response = await _dio.get('/home/discover-stations');
-    print('DEBUG: /home/discover-stations response: ${response.data}');
+    debugPrint('DEBUG: /home/discover-stations response: ${response.data}');
     return (response.data['data'] as List)
         .map((s) => HomeDto.parseDiscoverStation(s as Map<String, dynamic>))
         .toList();

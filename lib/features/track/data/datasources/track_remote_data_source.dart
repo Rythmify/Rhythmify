@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
@@ -57,6 +58,9 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getTrackDetails(String id) async {
     final response = await client.dio.get('/tracks/$id');
+    debugPrint(
+      '=============================================================DEBUG TRACK JSON: ${response.data}',
+    );
     return response.data as Map<String, dynamic>;
   }
 
