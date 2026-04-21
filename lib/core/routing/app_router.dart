@@ -17,9 +17,11 @@ import '../../features/authentication/presentation/pages/onboarding_page.dart';
 import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+import '../../features/authentication/presentation/pages/register_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
 import '../../features/authentication/presentation/pages/verify_email_page.dart';
+import '../../features/authentication/domain/entities/google_auth_data.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -113,6 +115,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
+          state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password' ||
           state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
@@ -185,6 +188,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             email: data['email'] as String,
             password: data['password'] as String,
           );
+        },
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) {
+          final googleData = state.extra as GoogleAuthData?;
+          return RegisterPage(googleData: googleData);
         },
       ),
       GoRoute(

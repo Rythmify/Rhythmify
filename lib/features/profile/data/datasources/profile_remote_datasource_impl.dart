@@ -208,7 +208,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         endpoint,
         queryParameters: {'page': page, 'limit': limit},
       );
-
       final tracks = _extractListPayload(response.data);
       return tracks.map((t) => TrackModel.fromJson(t)).toList();
     } on DioException catch (e) {
@@ -224,11 +223,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final resolvedUserId = userId == 'me'
-          ? (await getProfile(userId: 'me')).id
-          : userId;
       final response = await client.dio.get(
-        '/users/$resolvedUserId/followers',
+        '/users/$userId/followers',
         queryParameters: {'page': page, 'limit': limit},
       );
       final users = _extractListPayload(response.data);
@@ -252,11 +248,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final resolvedUserId = userId == 'me'
-          ? (await getProfile(userId: 'me')).id
-          : userId;
       final response = await client.dio.get(
-        '/users/$resolvedUserId/following',
+        '/users/$userId/following',
         queryParameters: {'page': page, 'limit': limit},
       );
       final users = _extractListPayload(response.data);

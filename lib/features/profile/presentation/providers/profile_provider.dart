@@ -17,10 +17,38 @@ import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 
 // coverage:ignore-file
-/// Riverpod notifier orchestration for loading and mutating profile state.
+/// Riverpod providers and notifier orchestration for profile state management.
+///
+/// Uses separate providers to prevent state flicker:
+/// - [ownProfileProvider]: For authenticated user's own profile (`GET /users/me`)
+/// - [publicProfileProvider]: Family provider for any user's public profile (`GET /users/{userId}`)
 
 const bool useProfileMockData = false;
 
+/// Provides the authenticated user's own profile.
+///
+/// This provider is **independent** from [publicProfileProvider] to prevent
+/// flicker when navigating between own profile and other users' profiles.
+/// The state is scoped to the authenticated user only.
+final ownProfileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
+  return ProfileNotifier();
+});
+
+/// Provides a specific user's public profile.
+///
+/// Family provider keyed by [userId]. Each user ID gets its own state instance.
+/// Used for viewing other users' profiles without affecting [ownProfileProvider].
+final publicProfileProvider =
+    NotifierProvider.family<ProfileNotifier, ProfileState, String>(
+      (ref, userId) {
+            return ProfileNotifier();
+          }
+          as ProfileNotifier Function(String arg),
+    );
+
+/// Legacy provider for backward compatibility.
+///
+/// **Deprecated**: Use [ownProfileProvider] or [publicProfileProvider] instead.
 final profileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
   return ProfileNotifier();
 });
@@ -359,30 +387,36 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-
-    state = current.copyWith(
-      profile: current.profile.copyWithFollowing(
-        isFollowing: true,
-        followersCount: current.profile.followersCount + 1,
-      ),
-    );
+    if (current.profile.isFollowing) return;
 
     final result = await _followUser(userId: userId);
-    result.fold((failure) => state = current, (_) {});
+    result.fold((failure) => state = current, (_) async {
+      await _refreshProfileSnapshot(previous: current);
+    });
   }
 
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
-
-    state = current.copyWith(
-      profile: current.profile.copyWithFollowing(
-        isFollowing: false,
-        followersCount: current.profile.followersCount - 1,
-      ),
-    );
+    if (!current.profile.isFollowing) return;
 
     final result = await _unfollowUser(userId: userId);
-    result.fold((failure) => state = current, (_) {});
+    result.fold((failure) => state = current, (_) async {
+      await _refreshProfileSnapshot(previous: current);
+    });
+  }
+
+  /// Reloads the currently displayed profile from backend and preserves tracks.
+  ///
+  /// This keeps follower/following counters backend-authoritative and avoids
+  /// local accumulation drift from optimistic state updates.
+  Future<void> _refreshProfileSnapshot({
+    required ProfileLoaded previous,
+  }) async {
+    final profileResult = await _getProfile(userId: previous.profile.id);
+    profileResult.fold(
+      (_) => state = previous,
+      (profile) => state = previous.copyWith(profile: profile),
+    );
   }
 }

@@ -17,6 +17,12 @@ abstract class AuthRemoteDatasource {
 
   Future<UserModel> signInWithGoogle();
 
+  Future<UserModel> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  });
+
   Future<UserModel> signInWithApple();
 
   Future<void> signOut();
