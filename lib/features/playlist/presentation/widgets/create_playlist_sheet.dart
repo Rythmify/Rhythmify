@@ -1,21 +1,4 @@
-// ============================================================
-// CreatePlaylistSheet
-// ============================================================
-// This is the small bottom sheet shown in Image 5.
-// It has:
-//   - A name text field (pre-filled with "Untitled playlist")
-//   - A character counter (17/100)
-//   - A "Make this playlist public" toggle
-//   - A "Create playlist" button
-//   - A "Cancel" text button
-//
-// ============================================================
-/// Bottom sheet for creating a new playlist.
-/// Calls [PlaylistListNotifier.createPlaylist] on confirm and returns the new
-/// playlist ID via [onCreated] so the caller can navigate directly to it.
-/// Pre-fills the name field with "Untitled playlist" and selects all text so
-/// the user can start typing immediately without clearing it manually.
-library;
+// lib/features/playlist/presentation/widgets/create_playlist_sheet.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,8 +9,6 @@ import 'playlist_shared_widgets.dart';
 class CreatePlaylistSheet extends ConsumerStatefulWidget {
   const CreatePlaylistSheet({super.key, this.onCreated});
 
-  /// Called after the playlist is created with the new playlist's ID.
-  /// The caller uses this to navigate to the new playlist's detail page.
   final void Function(String playlistId)? onCreated;
 
   @override
@@ -38,12 +19,12 @@ class CreatePlaylistSheet extends ConsumerStatefulWidget {
 class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
   late final TextEditingController _nameController;
   bool _isPublic = true;
+  bool _isCreating = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: 'Untitled playlist');
-    // Select all text so user can type immediately.
     _nameController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _nameController.text.length,
@@ -56,20 +37,40 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
     super.dispose();
   }
 
-  void _onCreate() {
+  Future<void> _onCreate() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
-    // Create via the provider (which calls the mock store).
-    final playlist = ref
+    if (name.isEmpty || _isCreating) return;
+
+    setState(() => _isCreating = true);
+
+    // createPlaylist is now async and returns null on failure
+    final playlist = await ref
         .read(playlistListProvider.notifier)
         .createPlaylist(name: name, isPublic: _isPublic);
+
+    // Guard against widget being disposed while awaiting
+    if (!mounted) return;
+
+    setState(() => _isCreating = false);
+
+    if (playlist == null) {
+      // Show error — backend call failed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not create playlist. Try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Success — close sheet and navigate into the new playlist
     Navigator.of(context).pop();
     widget.onCreated?.call(playlist.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    // keyboardHeight pushes the sheet up when the keyboard opens.
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -82,7 +83,6 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const BottomSheetHandle(),
-          // ── Name field ──────────────────────────────────────
           TextField(
             key: const Key('create_playlist_name_field'),
             controller: _nameController,
@@ -105,7 +105,6 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 20),
-          // ── Public toggle ────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -116,36 +115,48 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
               Switch(
                 key: const Key('create_playlist_public_switch'),
                 value: _isPublic,
-                onChanged: (v) => setState(() => _isPublic = v),
+                onChanged: _isCreating
+                    ? null
+                    : (v) => setState(() => _isPublic = v),
                 activeThumbColor: const Color(0xFFFF5500),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          // ── Create button ────────────────────────────────────
           SizedBox(
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
               key: const Key('create_playlist_create_button'),
-              onPressed: _nameController.text.trim().isEmpty ? null : _onCreate,
+              // Disable while creating or if name is empty
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
               ),
-              child: const Text(
-                'Create playlist',
-                style: TextStyle(color: Colors.white, fontSize: 15),
-              ),
+              child: _isCreating
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
-          // ── Cancel button ────────────────────────────────────
           TextButton(
             key: const Key('create_playlist_cancel_button'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _isCreating ? null : () => Navigator.of(context).pop(),
             child: Text(
               'Cancel',
               style: TextStyle(color: Colors.grey[500], fontSize: 15),

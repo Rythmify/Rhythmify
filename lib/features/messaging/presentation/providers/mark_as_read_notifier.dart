@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:rythmify/features/messaging/domain/usecases/mark_messages_as_read_usecase.dart';
-import 'package:rythmify/features/messaging/presentation/providers/messages_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/messages_notifier.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
 /// Notifier that manages the state of marking messages as read.
@@ -21,10 +21,12 @@ class MarkAsReadNotifier extends StateNotifier<bool> {
   /// - Invalidates [messageProvider] for the specified conversation upon success.
   /// - Syncs with the [RemoteDataSource] via the repository.
   Future<void> markRead({required String msgId, required String convId}) async {
+    if (!mounted) return;
     state = true;
     final uCase = MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
     await uCase(msgId, convId);
-    ref.invalidate(messageProvider(convId));
+    if (!mounted) return;
+    ref.invalidate(messagesNotifierProvider(convId));
     state = false;
   }
 }

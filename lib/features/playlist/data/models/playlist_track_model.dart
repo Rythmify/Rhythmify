@@ -1,93 +1,65 @@
-// import '../../domain/entities/collection_type.dart';
-// import '../../domain/entities/playlist_entity.dart';
-// import '../../domain/entities/playlist_track.dart';
-// import '../../domain/entities/station_entity.dart';
+// lib/features/playlist/data/models/playlist_track_model.dart
 
-// // ═══════════════════════════════════════════════════════════════════════════
-// // PlaylistTrackItemModel
-// // ═══════════════════════════════════════════════════════════════════════════
+import '../../domain/entities/playlist_track.dart';
 
-// /// Maps the `PlaylistTrackListItem` API schema to [PlaylistTrackItem].
-// ///
-// /// Used when deserialising `GET /playlists/{id}/tracks`.
-// class PlaylistTrackItemModel {
-//   const PlaylistTrackItemModel._();
+class PlaylistTrackModel {
+  static PlaylistTrack fromJson(Map<String, dynamic> json) {
+    _debugPrint('RAW track JSON: $json');
 
-//   static PlaylistTrack fromJson(Map<String, dynamic> json) {
-//     return PlaylistTrack(
-//       trackId: json['track_id'] as String,
-//       position: json['position'] as int,
-//       addedAt: DateTime.parse(json['added_at'] as String),
-//       title: json['title'] as String,
-//       artistName: json['artist_name'] as String,
-//       artistId: json['artist_id'] as String,
-//       isPublic: json['is_public'] as bool? ?? true,
-//       duration: json['duration'] as int?,
-//       coverImageUrl: json['cover_image'] as String?,
-//       deletedAt: json['deleted_at'] != null
-//           ? DateTime.tryParse(json['deleted_at'] as String)
-//           : null,
-//     );
-//   }
+    final durationSeconds = json['duration'] as int? ?? 0;
+    final duration = Duration(seconds: durationSeconds);
 
-//   static List<PlaylistTrackItem> fromJsonList(List<dynamic> jsonList) {
-//     return jsonList
-//         .cast<Map<String, dynamic>>()
-//         .map(fromJson)
-//         .toList();
-//   }
-// }
+    final isUnavailable =
+        json['is_public'] == false || json['deleted_at'] != null;
 
-// // ═══════════════════════════════════════════════════════════════════════════
-// // StationModel
-// // ═══════════════════════════════════════════════════════════════════════════
+    final track = PlaylistTrack(
+      id: json['track_id'] as String,
+      title: json['title'] as String,
+      artistName: json['artist_name'] as String,
+      duration: duration,
+      playCount: 0,
+      position: json['position'] as int,
+      coverUrl: json['cover_image'] as String?,
+      isUnavailable: isUnavailable,
+    );
 
-// /// Maps the `Station` API schema from `GET /home/stations` to [StationEntity].
-// ///
-// /// Also produces a [PlaylistEntity] shell with [CollectionType.station] so
-// /// the shared [PlaylistDetailScreen] can consume it without a type switch.
-// class StationModel {
-//   const StationModel._();
+    final minutes = duration.inMinutes;
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    _debugPrint(
+      'Parsed track #${track.position}: "${track.title}" '
+      'by ${track.artistName} '
+      '($minutes:$seconds) '
+      'unavailable: ${track.isUnavailable}',
+    );
 
-//   static StationEntity fromJson(Map<String, dynamic> json) {
-//     final seedArtist = json['seed_artist'] as Map<String, dynamic>? ?? {};
-//     return StationEntity(
-//       id: json['id'] as String,
-//       name: json['name'] as String,
-//       seedArtistId: seedArtist['user_id'] as String? ?? '',
-//       seedArtistDisplayName: seedArtist['display_name'] as String? ?? '',
-//       seedArtistAvatarUrl: seedArtist['profile_picture'] as String?,
-//       coverImageUrl: json['cover_image'] as String?,
-//       trackCount: json['track_count'] as int? ?? 0,
-//     );
-//   }
+    return track;
+  }
 
-//   /// Converts a [StationEntity] to a [PlaylistEntity] with
-//   /// [CollectionType.station] set. This lets [PlaylistDetailScreen] use a
-//   /// single entity type without a type check in the screen itself.
-//   static PlaylistEntity toPlaylistEntity(StationEntity station) {
-//     return PlaylistEntity(
-//       id: station.id,
-//       ownerUserId: station.seedArtistId,
-//       name: station.name,
-//       slug: station.id,
-//       isPublic: true,
-//       collectionType: CollectionType.station,
-//       trackCount: station.trackCount,
-//       likeCount: 0,
-//       repostCount: 0,
-//       createdAt: DateTime.now(),
-//       coverImageUrl: station.coverImageUrl,
-//       seedArtistId: station.seedArtistId,
-//       seedArtistName: station.seedArtistDisplayName,
-//       seedArtistAvatarUrl: station.seedArtistAvatarUrl,
-//     );
-//   }
+  static List<PlaylistTrack> fromJsonList(List<dynamic> list) {
+    _debugPrint('Parsing ${list.length} tracks from response...');
 
-//   static List<StationEntity> fromJsonList(List<dynamic> jsonList) {
-//     return jsonList
-//         .cast<Map<String, dynamic>>()
-//         .map(fromJson)
-//         .toList();
-//   }
-// }
+    // Handle empty list — new playlists have 0 tracks, this is valid
+    if (list.isEmpty) {
+      _debugPrint('Empty track list — playlist has no tracks yet');
+      return [];
+    }
+
+    final tracks = list.cast<Map<String, dynamic>>().map(fromJson).toList();
+
+    // Sort by position
+    tracks.sort((a, b) => a.position.compareTo(b.position));
+
+    // Safe first-element log — only runs when list is non-empty
+    _debugPrint(
+      'Tracks sorted. First: "${tracks.first.title}"  '
+      'Last: "${tracks.last.title}"',
+    );
+
+    return tracks;
+  }
+
+  static void _debugPrint(String message) {
+    // ignore: avoid_print
+    print('[TRACK MODEL] $message');
+  }
+}

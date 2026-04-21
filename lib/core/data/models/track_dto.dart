@@ -12,20 +12,24 @@ class TrackDto {
       userId: data['user_id'] as String? ?? data['artist_id'] as String? ?? '',
       title: data['title'] as String? ?? '',
       artist:
-          data['artist'] as String? ??
+          data['display_name'] as String? ??
           data['artist_name'] as String? ??
+          data['artist'] as String? ??
           data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',
 
-      artistPfp: data['artist_pfp'] as String?,
+      artistPfp:
+          data['profile_picture'] as String? ??
+          data['artist_pfp'] as String? ??
+          data['user']?['profile_picture'] as String?,
       artistCity: data['artist_city'] as String?,
       artistCountry: data['artist_country'] as String?,
       description: data['description'] as String?,
       coverImage:
           data['cover_image'] as String? ?? data['artwork_url'] as String?,
       audioUrl:
-          data['audio_url'] as String? ?? data['stream_url'] as String? ?? '',
+          data['stream_url'] as String? ?? data['audio_url'] as String? ?? '',
       streamUrl: data['stream_url'] as String?,
       waveformUrl: data['waveform_url'] as String?,
       duration: Duration(
@@ -33,10 +37,12 @@ class TrackDto {
             data['duration'] as int? ?? data['duration_seconds'] as int? ?? 0,
       ),
       createdAt:
-          DateTime.tryParse(data['created_at'] as String? ?? '') ??
+          DateTime.tryParse(
+            data['liked_at'] as String? ?? data['created_at'] as String? ?? '',
+          ) ??
           DateTime.now(),
       updatedAt: data['updated_at'] != null
-          ? DateTime.tryParse(data['updated_at'] as String)
+          ? DateTime.tryParse(data['updated_at']?.toString() ?? '')
           : null,
 
       playCount: data['play_count'] as int? ?? 0,
@@ -44,9 +50,16 @@ class TrackDto {
       commentCount: data['comment_count'] as int? ?? 0,
       repostCount: data['repost_count'] as int? ?? 0,
 
-      isLiked: data['is_liked'] as bool? ?? false,
-      isReposted: data['is_reposted'] as bool? ?? false,
-      isArtistFollowed: data['is_artist_followed'] as bool? ?? false,
+      isLiked:
+          data['is_liked'] as bool? ?? data['is_liked_by_me'] as bool? ?? false,
+      isReposted:
+          data['is_reposted'] as bool? ??
+          data['is_reposted_by_me'] as bool? ??
+          false,
+      isArtistFollowed:
+          data['is_artist_followed'] as bool? ??
+          data['is_artist_followed_by_me'] as bool? ??
+          false,
 
       tags:
           (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??

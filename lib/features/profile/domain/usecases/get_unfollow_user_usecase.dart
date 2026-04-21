@@ -5,12 +5,12 @@ import '../repositories/profile_repository.dart';
 /// Use case that unfollows a user by their ID.
 ///
 /// Delegates to [ProfileRepository.unfollowUser].
-class UnfollowUserUseCase {
+class GetUnfollowUserUseCase {
   /// The repository used to unfollow the user.
   final ProfileRepository repository;
 
-  /// Creates an [UnfollowUserUseCase] with the given [repository].
-  UnfollowUserUseCase(this.repository);
+  /// Creates a [GetUnfollowUserUseCase] with the given [repository].
+  GetUnfollowUserUseCase(this.repository);
 
   /// Unfollows the user identified by [userId].
   ///

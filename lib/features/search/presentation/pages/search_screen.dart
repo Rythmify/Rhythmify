@@ -84,7 +84,12 @@ class SearchScreen extends ConsumerWidget {
                           onVibeTap: (vibe) => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => GenrePage(genre: vibe.id),
+                              builder: (_) => GenrePage(
+                                genreId: vibe.id,
+                                genreName: vibe.title,
+                                coverImage: vibe
+                                    .imagePath, // empty string until endpoint adds it
+                              ),
                             ),
                           ),
                         ),

@@ -129,7 +129,7 @@ void main() {
           ProfileLoaded(
             profile: tProfile,
             likedTracks: tracks,
-            isLoadingTracks: true,
+            isLoadingLikes: true,
           ),
           const LikesPage(userId: 'me'),
         ),
@@ -207,7 +207,7 @@ void main() {
             ProfileLoaded(
               profile: tProfile,
               likedTracks: tracks,
-              isLoadingTracks: false,
+              isLoadingLikes: false,
             ),
             const LikesPage(userId: 'me'),
           ),
@@ -452,7 +452,7 @@ void main() {
             ProfileLoaded(
               profile: tProfile,
               likedTracks: tracks,
-              isLoadingTracks: true,
+              isLoadingLikes: true,
             ),
             const PublicProfilePage(userId: 'user-001'),
           ),

@@ -161,66 +161,82 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
   static final List<RecentlyPlayedEntryModel> _history = [
     RecentlyPlayedEntryModel(
       trackId: 'track-001',
+      userId: 'user-001',
       title: 'Cairo Nights',
       artistName: 'Bassel Alaa',
       artworkUrl: 'https://picsum.photos/seed/t1/300/300',
       durationSeconds: 238,
+      playCount: 1250,
       playedAt: DateTime.now().subtract(const Duration(minutes: 30)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-002',
+      userId: 'user-002',
       title: 'Alexandria Waves',
       artistName: 'Mohammed Al Abasy',
       artworkUrl: 'https://picsum.photos/seed/t2/300/300',
       durationSeconds: 195,
+      playCount: 890,
       playedAt: DateTime.now().subtract(const Duration(hours: 2)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-003',
+      userId: 'user-003',
       title: 'Free Palestine',
       artistName: 'Rana Elgharabawy',
       artworkUrl: 'https://picsum.photos/seed/t3/300/300',
       durationSeconds: 312,
+      playCount: 4500,
       playedAt: DateTime.now().subtract(const Duration(hours: 5)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-004',
+      userId: 'user-004',
       title: 'Midnight Cat',
       artistName: '~H',
       artworkUrl: 'https://picsum.photos/seed/t4/300/300',
       durationSeconds: 174,
+      playCount: 320,
       playedAt: DateTime.now().subtract(const Duration(days: 1)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-005',
+      userId: 'user-005',
       title: 'Coffee at 3am',
       artistName: '~sohaila',
       artworkUrl: 'https://picsum.photos/seed/t5/300/300',
       durationSeconds: 221,
+      playCount: 150,
       playedAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-006',
+      userId: 'user-006',
       title: 'Basslines from Giza',
       artistName: 'KarimWI',
       artworkUrl: 'https://picsum.photos/seed/t6/300/300',
       durationSeconds: 275,
+      playCount: 670,
       playedAt: DateTime.now().subtract(const Duration(days: 2)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-007',
+      userId: 'user-007',
       title: 'Desert Echo',
       artistName: 'KarimWI',
       artworkUrl: 'https://picsum.photos/seed/t7/300/300',
       durationSeconds: 198,
+      playCount: 430,
       playedAt: DateTime.now().subtract(const Duration(days: 2, hours: 6)),
     ),
     RecentlyPlayedEntryModel(
       trackId: 'track-008',
+      userId: 'user-008',
       title: 'Nile Flow',
       artistName: 'Mohammed Al Abasy',
       artworkUrl: 'https://picsum.photos/seed/t8/300/300',
       durationSeconds: 263,
+      playCount: 2100,
       playedAt: DateTime.now().subtract(const Duration(days: 3)),
     ),
   ];
@@ -395,12 +411,27 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
   }
 
   @override
-  Future<List<UploadedTrackModel>> getLikedTracks({
+  Future<List<LikedTrackModel>> getLikedTracks({
     required int page,
     required int limit,
   }) async {
     await Future.delayed(const Duration(milliseconds: 700));
-    // Return a mix of mock liked tracks using uploads as a base
-    return _uploads.take(limit).toList();
+    // Return a mix of mock liked tracks
+    return _history
+        .take(limit)
+        .map(
+          (h) => LikedTrackModel(
+            track: TrackDto.fromJson({
+              'id': h.trackId,
+              'title': h.title,
+              'artist_name': h.artistName,
+              'cover_image': h.artworkUrl,
+              'duration': h.durationSeconds,
+              'play_count': h.playCount,
+              'like_count': 1,
+            }),
+          ),
+        )
+        .toList();
   }
 }

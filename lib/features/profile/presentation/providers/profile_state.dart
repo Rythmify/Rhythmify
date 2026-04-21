@@ -41,65 +41,78 @@ class ProfileLoaded extends ProfileState {
   /// The loaded profile data.
   final ProfileEntity profile;
 
-  /// The accumulated list of liked tracks across all loaded pages.
+  /// Tracks uploaded by the user.
+  final List<Track> uploadedTracks;
+  final bool isLoadingUploads;
+  final bool hasMoreUploads;
+
+  /// Tracks liked by the user.
   final List<Track> likedTracks;
+  final bool isLoadingLikes;
+  final bool hasMoreLikes;
 
-  /// Whether the next page of liked tracks is currently being fetched.
-  ///
-  /// Shows a bottom spinner in [PublicProfilePage] and [LikesPage]
-  /// when `true`.
-  final bool isLoadingTracks;
-
-  /// Whether more pages of liked tracks are available.
-  ///
-  /// Set to `false` when a page returns fewer than the requested limit
-  /// (20), preventing further pagination requests.
-  final bool hasMoreTracks;
+  /// Tracks reposted by the user.
+  final List<Track> repostedTracks;
+  final bool isLoadingReposts;
+  final bool hasMoreReposts;
 
   /// Whether a save operation (update, upload, delete) is in progress.
-  ///
-  /// Disables the Save button and shows a spinner in [EditProfilePage]
-  /// when `true`.
   final bool isSaving;
 
-  /// Creates a [ProfileLoaded] state with the required [profile].
-  ///
-  /// [likedTracks] defaults to an empty list.
-  /// [isLoadingTracks], [hasMoreTracks], and [isSaving] have sensible defaults.
   const ProfileLoaded({
     required this.profile,
+    this.uploadedTracks = const [],
+    this.isLoadingUploads = false,
+    this.hasMoreUploads = true,
     this.likedTracks = const [],
-    this.isLoadingTracks = false,
-    this.hasMoreTracks = true,
+    this.isLoadingLikes = false,
+    this.hasMoreLikes = true,
+    this.repostedTracks = const [],
+    this.isLoadingReposts = false,
+    this.hasMoreReposts = true,
     this.isSaving = false,
   });
 
-  /// Returns a copy of this state with updated fields.
-  ///
-  /// Any field not provided retains its current value.
   ProfileLoaded copyWith({
     ProfileEntity? profile,
+    List<Track>? uploadedTracks,
+    bool? isLoadingUploads,
+    bool? hasMoreUploads,
     List<Track>? likedTracks,
-    bool? isLoadingTracks,
-    bool? hasMoreTracks,
+    bool? isLoadingLikes,
+    bool? hasMoreLikes,
+    List<Track>? repostedTracks,
+    bool? isLoadingReposts,
+    bool? hasMoreReposts,
     bool? isSaving,
   }) {
     return ProfileLoaded(
       profile: profile ?? this.profile,
+      uploadedTracks: uploadedTracks ?? this.uploadedTracks,
+      isLoadingUploads: isLoadingUploads ?? this.isLoadingUploads,
+      hasMoreUploads: hasMoreUploads ?? this.hasMoreUploads,
       likedTracks: likedTracks ?? this.likedTracks,
-      isLoadingTracks: isLoadingTracks ?? this.isLoadingTracks,
-      hasMoreTracks: hasMoreTracks ?? this.hasMoreTracks,
+      isLoadingLikes: isLoadingLikes ?? this.isLoadingLikes,
+      hasMoreLikes: hasMoreLikes ?? this.hasMoreLikes,
+      repostedTracks: repostedTracks ?? this.repostedTracks,
+      isLoadingReposts: isLoadingReposts ?? this.isLoadingReposts,
+      hasMoreReposts: hasMoreReposts ?? this.hasMoreReposts,
       isSaving: isSaving ?? this.isSaving,
     );
   }
 
-  /// Props used by [Equatable] to determine equality between states.
   @override
   List<Object?> get props => [
     profile,
+    uploadedTracks,
+    isLoadingUploads,
+    hasMoreUploads,
     likedTracks,
-    isLoadingTracks,
-    hasMoreTracks,
+    isLoadingLikes,
+    hasMoreLikes,
+    repostedTracks,
+    isLoadingReposts,
+    hasMoreReposts,
     isSaving,
   ];
 }

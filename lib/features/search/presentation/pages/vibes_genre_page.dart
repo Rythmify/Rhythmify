@@ -4,30 +4,6 @@ import '../widgets/vibes_genre_trending_tab.dart';
 import '../widgets/vibes_genre_playlists_tab.dart';
 import '../widgets/vibes_genre_albums_tab.dart';
 
-/// Maps genre IDs to their local asset image paths.
-const _genreImages = {
-  'hiphop': 'assets/images/vibes_hiphop.jpeg',
-  'electronic': 'assets/images/vibes_electronic.jpeg',
-  'pop': 'assets/images/vibes_pop.jpeg',
-  'rnb': 'assets/images/vibes_rb.jpeg',
-  'party': 'assets/images/vibes_party.jpeg',
-  'chill': 'assets/images/vibes_chill.jpeg',
-  'techno': 'assets/images/vibes_techno.jpeg',
-  'workout': 'assets/images/vibes_workout.jpeg',
-};
-
-/// Maps genre IDs to their human-readable display titles.
-const _genreTitles = {
-  'hiphop': 'Hip Hop & Rap',
-  'electronic': 'Electronic',
-  'pop': 'Pop',
-  'rnb': 'R&B',
-  'party': 'Party',
-  'chill': 'Chill',
-  'techno': 'Techno',
-  'workout': 'Workout',
-};
-
 /// The genre/vibes detail page.
 ///
 /// Displays a fixed header image with the genre title overlaid, followed by
@@ -37,19 +13,24 @@ const _genreTitles = {
 /// [genre] is the genre ID (e.g. `'hiphop'`) used to resolve the image, title,
 /// and passed down to each tab widget for its provider family key.
 class GenrePage extends StatelessWidget {
-  const GenrePage({super.key, required this.genre});
-  final String genre;
+  const GenrePage({
+    super.key,
+    required this.genreId,
+    required this.genreName,
+    required this.coverImage,
+  });
+
+  final String genreId;
+  final String genreName;
+  final String coverImage;
 
   @override
   Widget build(BuildContext context) {
-    final imagePath = _genreImages[genre] ?? 'assets/images/placeholder.png';
-    final title = _genreTitles[genre] ?? genre;
-
     final tabs = [
-      GenreAllTab(genreId: genre),
-      GenreTrendingTab(genreId: genre),
-      GenrePlaylistsTab(genreId: genre),
-      GenreAlbumsTab(genreId: genre),
+      GenreAllTab(genreId: genreId),
+      GenreTrendingTab(genreId: genreId),
+      GenrePlaylistsTab(genreId: genreId),
+      GenreAlbumsTab(genreId: genreId),
     ];
 
     return DefaultTabController(
@@ -58,20 +39,20 @@ class GenrePage extends StatelessWidget {
         key: const Key('genre_page'),
         body: Column(
           children: [
-            // ── Header Image ─────────────────────────────
             Stack(
               key: const Key('genre_header'),
               children: [
                 Image.asset(
-                  imagePath,
+                  coverImage.isNotEmpty
+                      ? coverImage
+                      : 'assets/images/placeholder.png',
                   key: const Key('genre_header_image'),
                   width: double.infinity,
-                  height: 220,
+                  height: 200,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) =>
                       Container(height: 220, color: Colors.grey[900]),
                 ),
-                // Back button respects the status bar safe area.
                 Positioned(
                   top: MediaQuery.of(context).padding.top,
                   left: 8,
@@ -81,11 +62,27 @@ class GenrePage extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Positioned(
                   bottom: 16,
                   left: 16,
                   child: Text(
-                    title,
+                    genreName, //  uses passed name directly
                     key: const Key('genre_title'),
                     style: const TextStyle(
                       color: Colors.white,
@@ -97,11 +94,8 @@ class GenrePage extends StatelessWidget {
                 ),
               ],
             ),
-
-            // ── TabBar ───────────────────────────────────
             const TabBar(
               key: Key('genre_tab_bar'),
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               isScrollable: false,
               tabAlignment: TabAlignment.fill,
               dividerColor: Colors.transparent,
@@ -120,8 +114,6 @@ class GenrePage extends StatelessWidget {
                 Tab(key: Key('genre_tab_albums'), text: 'Albums'),
               ],
             ),
-
-            // ── TabBarView ───────────────────────────────
             Expanded(
               child: TabBarView(
                 key: const Key('genre_tab_view'),

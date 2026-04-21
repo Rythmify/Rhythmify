@@ -198,7 +198,7 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
   }) async {
     try {
       final res = await client.dio.get(
-        '/me/listening-history',
+        '/me/history',
         queryParameters: {'page': page, 'limit': limit},
       );
       final List data = res.data['data'] as List? ?? [];
@@ -245,25 +245,33 @@ class LibraryRemoteDatasourceImpl implements LibraryRemoteDatasource {
   // ── Liked tracks ───────────────────────────────────────────────────────────
 
   @override
-  Future<List<UploadedTrackModel>> getLikedTracks({
+  Future<List<LikedTrackModel>> getLikedTracks({
     required int page,
     required int limit,
   }) async {
     try {
-      final meRes = await client.dio.get('/users/me');
-      final myId = meRes.data['data']['id'] as String;
       final res = await client.dio.get(
-        '/users/$myId/tracks',
+        '/me/liked-tracks',
         queryParameters: {'page': page, 'limit': limit},
       );
-      final List data = res.data['data'] as List? ?? [];
+      final List data = _extractListPayload(res.data);
       return data
-          .map((e) => UploadedTrackModel.fromJson(e as Map<String, dynamic>))
+          .map((e) => LikedTrackModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       _handleError(e);
       rethrow;
     }
+  }
+
+  List<dynamic> _extractListPayload(dynamic rawResponse) {
+    if (rawResponse is! Map<String, dynamic>) return [];
+    final data = rawResponse['data'];
+    if (data is List) return data;
+    if (data is Map<String, dynamic>) {
+      return data['items'] as List? ?? data['tracks'] as List? ?? [];
+    }
+    return [];
   }
 
   // ── Error handler ──────────────────────────────────────────────────────────

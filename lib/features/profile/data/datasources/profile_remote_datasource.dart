@@ -34,6 +34,18 @@ abstract class ProfileRemoteDatasource {
     required int limit,
   });
 
+  Future<List<TrackModel>> getUploadedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
+  Future<List<TrackModel>> getRepostedTracks({
+    required String userId,
+    required int page,
+    required int limit,
+  });
+
   /// Fetches a paginated followers list for a profile.
   Future<List<ProfileUserSummaryModel>> getFollowers({
     required String userId,

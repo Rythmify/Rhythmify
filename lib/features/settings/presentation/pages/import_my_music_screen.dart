@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/settings/presentation/widgets/no_switch_tile_widget.dart';
 
+/// Warns the user about permanent account deletion consequences.
+/// Shows a confirmation dialog before proceeding with account deletion.
 class ImportMyMusicScreen extends StatelessWidget {
   const ImportMyMusicScreen({super.key});
 
@@ -17,22 +20,30 @@ class ImportMyMusicScreen extends StatelessWidget {
           centerTitle: false,
         ),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReusableTileWidget(
+            NoSwitchTileWidget(
               key: Key('Import_From_Another_App_tile'),
               title: 'Import from another app',
               subtitle:
                   'Move your playlists and likes from other apps to Rythmify',
-              switchExists: false,
-              onTap: () {},
+              onTap: () {
+                context.push(
+                  '/library/settings/import-my-music/music-providers',
+                  extra: 'Import music (1/3)',
+                );
+              },
             ),
-            const SizedBox(height: 20),
-            ReusableTileWidget(
+            NoSwitchTileWidget(
               key: Key('Manage_imported_likes_tile'),
               title: 'Manage imported likes',
               subtitle: 'Remove imported likes or add them to a playlist',
-              switchExists: false,
-              onTap: () {},
+              onTap: () {
+                context.push(
+                  '/library/settings/import-my-music/music-providers',
+                  extra: 'Manage imported likes',
+                );
+              },
             ),
           ],
         ),

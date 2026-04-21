@@ -5,6 +5,9 @@ import 'package:rythmify/features/messaging/data/repositories/mock_conversations
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/add_widget_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/app_icon_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
@@ -25,6 +28,8 @@ import '../../features/authentication/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
+import '../../features/profile/presentation/pages/uploaded_tracks_page.dart';
+import '../../features/profile/presentation/pages/reposted_tracks_page.dart';
 import '../../features/profile/presentation/pages/profile_connections_page.dart';
 import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
 
@@ -55,6 +60,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 // ── PLAYLIST imports (M14) ──────────────────────────────────────────────────
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
+import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -74,6 +80,7 @@ import '../../features/library/presentation/pages/stations_page.dart';
 import '../../features/library/presentation/pages/albums_page.dart'; // NEW
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
+import '../../features/library/presentation/pages/likes_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -208,6 +215,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/profile/:userId/uploads',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return UploadedTracksPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/reposts',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return RepostedTracksPage(userId: userId);
+        },
+      ),
+      GoRoute(
         path: '/profile/:userId/followers',
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
@@ -337,6 +358,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'import-my-music',
                         builder: (context, state) =>
                             const ImportMyMusicScreen(),
+                        routes: [
+                          GoRoute(
+                            //2- Account
+                            path: 'music-providers',
+                            builder: (context, state) =>
+                                ImportedMusicProvidersScreen(
+                                  appBarTitle: state.extra as String,
+                                ),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         //2- Account
@@ -348,6 +379,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'basic-settings',
                         builder: (context, state) =>
                             const BasicSettingsScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'app-icons',
+                            builder: (context, state) => const AppIconScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         //5- Social settings
@@ -366,6 +403,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'notifications',
                         builder: (context, state) =>
                             const NotificationsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //8- Add widgets
+                        path: 'add-widget',
+                        builder: (context, state) => const AddWidgetScreen(),
                       ),
                       GoRoute(
                         //9- Analytics
@@ -463,6 +505,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const UploadsPage(),
                   ),
                   GoRoute(
+                    path: 'likes',
+                    builder: (context, state) => const LibraryLikesPage(),
+                  ),
+                  GoRoute(
                     path: 'history',
                     builder: (context, state) => const HistoryPage(),
                   ),
@@ -534,6 +580,41 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+      ),
+
+      // ── Playlist/Album/Station — accessible from ANY tab ────────────────
+      GoRoute(
+        path: '/playlist/:playlistId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final playlistId = state.pathParameters['playlistId']!;
+          final isOwner = state.extra as bool? ?? false;
+          return PlaylistDetailScreen(playlistId: playlistId, isOwner: isOwner);
+        },
+      ),
+
+      // ── Mix detail — mixed_for_you and made_for_you ─────────────────────
+      GoRoute(
+        path: '/mix/:mixId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final mixId = state.pathParameters['mixId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final mixTypeStr = extra['mixType'] as String? ?? 'genre';
+          final mixType = switch (mixTypeStr) {
+            'daily' => MixType.daily,
+            'weekly' => MixType.weekly,
+            _ => MixType.genre,
+          };
+          return MixDetailScreen(
+            mixId: mixId,
+            mixTitle: extra['title'] as String? ?? 'Your Mix',
+            ownerName: extra['ownerName'] as String? ?? 'You',
+            mixType: mixType,
+            coverUrl: extra['coverUrl'] as String?,
+            trackCount: extra['trackCount'] as int?,
+          );
+        },
       ),
     ],
   );

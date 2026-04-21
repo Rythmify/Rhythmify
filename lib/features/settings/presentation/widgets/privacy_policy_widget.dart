@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// A tappable text link that navigates to the Rythmify Privacy Policy.
+/// Displayed at the bottom of analytics, advertising, and communication settings screens.
 class PrivacyPolicyWidget extends StatelessWidget {
   const PrivacyPolicyWidget({super.key});
 
