@@ -1,4 +1,3 @@
-// coverage:ignore-file
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/auth_mock_datasource.dart';
@@ -9,6 +8,7 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
+import '../../domain/usecases/sign_up_with_google_usecase.dart';
 import '../../domain/usecases/sign_in_with_apple_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
@@ -27,6 +27,7 @@ class AuthNotifier extends Notifier<AuthState> {
   late final SignInWithEmailUseCase _signInWithEmail;
   late final SignUpWithEmailUseCase _signUpWithEmail;
   late final SignInWithGoogleUseCase _signInWithGoogle;
+  late final SignUpWithGoogleUseCase _signUpWithGoogle;
   late final SignInWithAppleUseCase _signInWithApple;
   late final SignOutUseCase _signOut;
   late final SendVerificationEmailUseCase _sendVerificationEmail;
@@ -43,6 +44,7 @@ class AuthNotifier extends Notifier<AuthState> {
     _signInWithEmail = SignInWithEmailUseCase(repository);
     _signUpWithEmail = SignUpWithEmailUseCase(repository);
     _signInWithGoogle = SignInWithGoogleUseCase(repository);
+    _signUpWithGoogle = SignUpWithGoogleUseCase(repository);
     _signInWithApple = SignInWithAppleUseCase(repository);
     _signOut = SignOutUseCase(repository);
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
@@ -211,6 +213,37 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> signInWithGoogleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
+
+    result.fold((failure) => state = AuthError(failure.message), (
+      basicUser,
+    ) async {
+      await _fetchAndEmitFullProfile(basicUser);
+    });
+  }
+
+  /// Completes registration for a user who signed in via Google OAuth.
+  ///
+  /// Called after the user fills in the registration form (gender, date of birth)
+  /// on the RegisterPage. Sends the Google ID token along with profile data to
+  /// the backend to complete account setup.
+  ///
+  /// On success, the user is authenticated and navigated to home.
+  /// On failure, an [AuthError] state is emitted with the error message.
+  ///
+  /// [idToken] — the Google ID token from the sign-in flow.
+  /// [gender] — lowercase gender string (e.g., 'male', 'female').
+  /// [dateOfBirth] — date in YYYY-MM-DD format.
+  Future<void> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  }) async {
+    state = const AuthLoading();
+    final result = await _signUpWithGoogle(
+      idToken: idToken,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+    );
 
     result.fold((failure) => state = AuthError(failure.message), (
       basicUser,
