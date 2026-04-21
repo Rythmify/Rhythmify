@@ -106,13 +106,15 @@ class TrackInsightModel extends TrackInsight {
     required super.comments,
   });
 
+  // library_models.dart — TrackInsightModel.fromTrack
+
   factory TrackInsightModel.fromTrack(Map<String, dynamic> json) {
     return TrackInsightModel(
       trackId: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      artworkUrl: json['artwork_url'] as String?,
+      artworkUrl: json['cover_image'] as String?, // was: json['artwork_url']
       totalPlays: json['play_count'] as int? ?? 0,
-      uniqueListeners: (json['play_count'] as int? ?? 0) ~/ 2, // approx
+      uniqueListeners: (json['play_count'] as int? ?? 0) ~/ 2,
       likes: json['like_count'] as int? ?? 0,
       reposts: json['repost_count'] as int? ?? 0,
       comments: json['comment_count'] as int? ?? 0,
