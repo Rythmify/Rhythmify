@@ -1,13 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/api_client.dart';
 import '../../data/datasources/audio_handler.dart';
+import '../../data/datasources/playback_local_data_source.dart';
+import '../../data/datasources/playback_remote_data_source.dart';
 import '../../data/repositories/audio_repository_impl.dart';
+import '../../data/repositories/playback_repository_impl.dart';
 import '../../domain/repositories/audio_repository.dart';
+import '../../domain/repositories/playback_repository.dart';
 import '../../domain/usecases/play_pause_usecase.dart';
 import '../../domain/usecases/skip_track_usecase.dart';
 import '../../domain/usecases/seek_position_usecase.dart';
 import '../../domain/usecases/get_player_state_stream_usecase.dart';
 import '../../domain/usecases/load_queue_usecase.dart';
 import '../../domain/usecases/update_track_info_usecase.dart';
+import '../../domain/usecases/initiate_playback_use_case.dart';
+import '../../domain/usecases/record_listening_history_use_case.dart';
+import '../../domain/usecases/sync_history_use_case.dart';
 
 // --- DATA Providers ---
 
@@ -27,6 +35,24 @@ final audioHandlerProvider = Provider<RythmifyAudioHandler>((ref) {
 final audioRepositoryProvider = Provider<AudioRepository>((ref) {
   final handler = ref.read(audioHandlerProvider);
   return AudioRepositoryImpl(handler);
+});
+
+final playbackRemoteDataSourceProvider = Provider<PlaybackRemoteDataSource>((
+  ref,
+) {
+  return PlaybackRemoteDataSourceImpl(apiClient);
+});
+
+final playbackLocalDataSourceProvider = Provider<PlaybackLocalDataSource>((
+  ref,
+) {
+  return PlaybackLocalDataSourceImpl();
+});
+
+final playbackRepositoryProvider = Provider<PlaybackRepository>((ref) {
+  final remote = ref.read(playbackRemoteDataSourceProvider);
+  final local = ref.read(playbackLocalDataSourceProvider);
+  return PlaybackRepositoryImpl(remote, local);
 });
 
 // --- USE CASE Providers ---
@@ -85,4 +111,16 @@ final loadQueueUseCaseProvider = Provider(
 /// Depends on [audioRepositoryProvider].
 final updateTrackInfoUseCaseProvider = Provider(
   (ref) => UpdateTrackInfoUseCase(ref.read(audioRepositoryProvider)),
+);
+
+final initiatePlaybackUseCaseProvider = Provider(
+  (ref) => InitiatePlaybackUseCase(ref.read(playbackRepositoryProvider)),
+);
+
+final recordListeningHistoryUseCaseProvider = Provider(
+  (ref) => RecordListeningHistoryUseCase(ref.read(playbackRepositoryProvider)),
+);
+
+final syncHistoryUseCaseProvider = Provider(
+  (ref) => SyncHistoryUseCase(ref.read(playbackRepositoryProvider)),
 );

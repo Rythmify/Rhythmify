@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
-import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
@@ -15,46 +14,19 @@ import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/player_provider.dart';
+import '../../../../core/domain/entities/track.dart';
 
 /// A full-screen profile page showing a user's public information and tracks.
 ///
-/// Can display both the authenticated user's own profile and any other user's
-/// profile. The [userId] parameter drives which profile is fetched:
-/// - Pass `'me'` or the current user's own ID → renders own profile
-///   (shows an Edit button, no Follow button).
-/// - Pass any other user's ID → renders their profile (shows Follow/Following
-///   button, no Edit button).
+/// Uses [publicProfileProvider] for other users and [ownProfileProvider] for
+/// the authenticated user to prevent state flicker when navigating.
 ///
-/// ### Loading strategy
-///
-/// Profile loading is NOT triggered in [build] of [ProfileNotifier]. Instead,
-/// [initState] calls [ProfileNotifier.loadProfile] via `Future.microtask`
-/// to avoid calling `setState` during the widget build phase.
-///
-/// ### Scroll-based pagination
-///
-/// A [ScrollController] listens to scroll position. When within 200px of the
-/// bottom, [ProfileNotifier.loadLikedTracks] is called to fetch the next page.
-///
-/// ### userId resolution
-///
-/// [_resolvedUserId] is computed once in [initState] by comparing [userId]
-/// against the currently authenticated user's ID. Own profiles always resolve
-/// to `'me'` so the `/users/me` endpoint is hit rather than `/users/{id}`.
-///
-/// ### Navigation
-///
-/// - Edit button → `context.push('/profile/edit')`
-/// - Track tap → [PlayerNotifier.playOptimistic]
-/// - Share (⋮) → shows [ShareBottomSheet] as a modal bottom sheet
+/// Add `key: ValueKey('public_profile_${userId}')` to prevent widget tree reuse
+/// and ensure a fresh state when switching between profiles.
 class PublicProfilePage extends ConsumerStatefulWidget {
-  /// The ID of the user whose profile to display.
-  ///
-  /// Pass `'me'` to explicitly request the authenticated user's own profile.
-  /// Pass any other UUID for another user's profile.
   final String userId;
 
-  /// Creates a [PublicProfilePage] for the user with [userId].
   const PublicProfilePage({super.key, required this.userId});
 
   @override
@@ -64,11 +36,6 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
   bool _showIncompleteBanner = true;
-
-  /// The resolved user ID used for all API calls on this page.
-  ///
-  /// Set to `'me'` when [widget.userId] matches the authenticated user's ID
-  /// or is already `'me'`. Otherwise equals [widget.userId] as-is.
   late String _resolvedUserId;
 
   @override
@@ -84,22 +51,23 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? 'me'
         : widget.userId;
 
-    // Trigger profile load after the build phase completes
-    Future.microtask(
-      () => ref
-          .read(profileProvider.notifier)
-          .loadProfile(userId: _resolvedUserId),
-    );
-
-    // Scroll listener for pagination
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        final s = ref.read(profileProvider);
-        if (s is ProfileLoaded) {
+    Future.microtask(() async {
+      /// Load profile using the appropriate provider based on whether it's own or public profile
+      if (_resolvedUserId == 'me') {
+        await ref
+            .read(ownProfileProvider.notifier)
+            .loadProfile(userId: _resolvedUserId);
+        if (mounted) {
+          ref.read(ownProfileProvider.notifier).loadPreviews(_resolvedUserId);
+        }
+      } else {
+        await ref
+            .read(publicProfileProvider(_resolvedUserId).notifier)
+            .loadProfile(userId: _resolvedUserId);
+        if (mounted) {
           ref
-              .read(profileProvider.notifier)
-              .loadLikedTracks(userId: _resolvedUserId);
+              .read(publicProfileProvider(_resolvedUserId).notifier)
+              .loadPreviews(_resolvedUserId);
         }
       }
     });
@@ -111,7 +79,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     super.dispose();
   }
 
-  /// Opens the [ShareBottomSheet] as a transparent modal bottom sheet.
   void _showShareSheet(BuildContext context, ProfileLoaded state) {
     showModalBottomSheet(
       context: context,
@@ -122,7 +89,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileProvider);
+    /// Read the appropriate provider based on whether it's own or public profile
+    final profileState = _resolvedUserId == 'me'
+        ? ref.watch(ownProfileProvider)
+        : ref.watch(publicProfileProvider(_resolvedUserId));
+
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
@@ -168,9 +139,14 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 key: const Key('public_profile_retry_button'),
-                onPressed: () => ref
-                    .read(profileProvider.notifier)
-                    .loadProfile(userId: _resolvedUserId),
+                onPressed: () {
+                  final notifier = _resolvedUserId == 'me'
+                      ? ref.read(ownProfileProvider.notifier)
+                      : ref.read(
+                          publicProfileProvider(_resolvedUserId).notifier,
+                        );
+                  notifier.loadProfile(userId: _resolvedUserId);
+                },
                 child: const Text('Retry'),
               ),
             ],
@@ -182,16 +158,16 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     );
   }
 
-  /// Builds the main scrollable content when the profile is loaded.
-  ///
-  /// Uses a [CustomScrollView] with a [SliverToBoxAdapter] for the header
-  /// and either [SliverFillRemaining] (empty state) or [SliverList]
-  /// (track list with pagination spinner).
   Widget _buildLoaded(
     BuildContext context,
     ProfileLoaded state,
     bool isOwnProfile,
   ) {
+    final hasAnyContent =
+        state.uploadedTracks.isNotEmpty ||
+        state.likedTracks.isNotEmpty ||
+        state.repostedTracks.isNotEmpty;
+
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
@@ -234,9 +210,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
                   onFollowersTap: () =>
-                      context.push('/profile/$_resolvedUserId/followers'),
+                      context.push('/profile/${state.profile.id}/followers'),
                   onFollowingTap: () =>
-                      context.push('/profile/$_resolvedUserId/following'),
+                      context.push('/profile/${state.profile.id}/following'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -255,14 +231,18 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       GestureDetector(
                         key: const Key('public_profile_follow_gesture'),
                         onTap: () {
+                          final notifier = _resolvedUserId == 'me'
+                              ? ref.read(ownProfileProvider.notifier)
+                              : ref.read(
+                                  publicProfileProvider(
+                                    _resolvedUserId,
+                                  ).notifier,
+                                );
+
                           if (state.profile.isFollowing) {
-                            ref
-                                .read(profileProvider.notifier)
-                                .unfollowUser(userId: widget.userId);
+                            notifier.unfollowUser(userId: widget.userId);
                           } else {
-                            ref
-                                .read(profileProvider.notifier)
-                                .followUser(userId: widget.userId);
+                            notifier.followUser(userId: widget.userId);
                           }
                         },
                         child: Container(
@@ -317,8 +297,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           ),
         ),
 
-        // Empty state
-        if (state.likedTracks.isEmpty && !state.isLoadingTracks)
+        if (!hasAnyContent)
           SliverFillRemaining(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -338,40 +317,39 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               ],
             ),
           )
-        else
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                ...state.likedTracks.map(
-                  (track) => TrackCard(
-                    key: Key('item_${track.id}'),
-                    track: track,
-                    observePlayerState: false,
-                    onTap: () {
-                      ref
-                          .read(playerStateProvider.notifier)
-                          .playOptimistic(track);
-                    },
-                  ),
-                ),
-                if (state.isLoadingTracks)
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.primaryBrand,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  ),
-              ],
+        else ...[
+          if (state.uploadedTracks.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _ProfileSection(
+                title: 'Uploads',
+                tracks: state.uploadedTracks.take(3).toList(),
+                onSeeAll: () =>
+                    context.push('/profile/$_resolvedUserId/uploads'),
+              ),
             ),
-          ),
+          if (state.likedTracks.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _ProfileSection(
+                title: 'Likes',
+                tracks: state.likedTracks.take(3).toList(),
+                onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
+              ),
+            ),
+          if (state.repostedTracks.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _ProfileSection(
+                title: 'Reposts',
+                tracks: state.repostedTracks.take(3).toList(),
+                onSeeAll: () =>
+                    context.push('/profile/$_resolvedUserId/reposts'),
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+        ],
       ],
     );
   }
 
-  /// Builds profile cover media with image fallback and solid surface fallback.
   Widget _buildCoverPhoto(String? coverUrl) {
     final hasCover = coverUrl != null && coverUrl.trim().isNotEmpty;
     if (!hasCover) {
@@ -416,6 +394,77 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         isBlank(profile.city) ||
         isBlank(profile.country) ||
         isBlank(profile.bio);
+  }
+}
+
+/// Displays a section of tracks (e.g., "Uploads", "Likes", "Reposts").
+///
+/// When a track is tapped, triggers playback via [playerStateProvider.notifier].
+/// The mini player is a persistent overlay and appears automatically when
+/// playback starts.
+class _ProfileSection extends ConsumerWidget {
+  /// The title of this section (e.g., "Uploads").
+  final String title;
+
+  /// The list of [Track]s to display.
+  final List<Track> tracks;
+
+  /// Callback when "See All" is tapped.
+  final VoidCallback onSeeAll;
+
+  const _ProfileSection({
+    required this.title,
+    required this.tracks,
+    required this.onSeeAll,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
+              TextButton(
+                onPressed: onSeeAll,
+                child: Text(
+                  'See All',
+                  style: AppTheme.labelLarge.copyWith(
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...tracks.asMap().entries.map((entry) {
+          final int index = entry.key;
+          final Track track = entry.value;
+
+          return GestureDetector(
+            key: Key('profile_${title}_${track.id}_gesture'),
+            onTap: () {
+              /// Trigger playback for this track and all subsequent tracks in the list
+              ref
+                  .read(playerStateProvider.notifier)
+                  .loadAndPlayQueue(tracks, initialIndex: index);
+
+              /// The mini player is a persistent overlay and appears automatically
+            },
+            child: TrackCard(
+              key: Key('profile_${title}_${track.id}'),
+              track: track,
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
+        const Divider(color: AppTheme.surface, height: 1),
+      ],
+    );
   }
 }
 

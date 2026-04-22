@@ -113,6 +113,34 @@ class AuthMockDatasource implements AuthRemoteDatasource {
   }
 
   @override
+  Future<UserModel> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    const newId = 'user-google-${1}';
+
+    // Add to mock profiles
+    ProfileMockDatasource.addDynamicProfile(
+      id: newId,
+      displayName: 'Google User',
+      email: 'google-user@gmail.com',
+      gender: gender,
+      dateOfBirth: dateOfBirth,
+    );
+
+    return const UserModel(
+      id: newId,
+      email: 'google-user@gmail.com',
+      displayName: 'Google User',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
+      isEmailVerified: true,
+      token: 'mock-google-token-xyz',
+    );
+  }
+
+  @override
   Future<UserModel> signInWithApple() async {
     await Future.delayed(const Duration(seconds: 1));
     return const UserModel(

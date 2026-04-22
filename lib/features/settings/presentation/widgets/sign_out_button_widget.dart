@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
 
+/// A full-width sign out button that shows a confirmation dialog before signing out.
+/// On confirmation, stops playback via [playerStateProvider], calls [AuthNotifier.signOutUser],
+/// and navigates to '/onboarding'.
+/// Uses [ConsumerWidget] to access Riverpod providers.
 class SignOutButtonWidget extends ConsumerWidget {
   const SignOutButtonWidget({super.key});
 
@@ -69,7 +73,7 @@ class SignOutButtonWidget extends ConsumerWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2A2A2A),
           foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 52),
+          minimumSize: const Size(double.infinity, 38),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),

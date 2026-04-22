@@ -11,8 +11,8 @@ import 'package:rythmify/features/profile/domain/usecases/upload_avatar_usecase.
 import 'package:rythmify/features/profile/domain/usecases/delete_avatar_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/upload_cover_photo_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/delete_cover_photo_usecase.dart';
-import 'package:rythmify/features/profile/domain/usecases/follow_user_usecase.dart';
-import 'package:rythmify/features/profile/domain/usecases/unfollow_user_usecase.dart';
+import 'package:rythmify/features/profile/domain/usecases/get_follow_user_usecase.dart';
+import 'package:rythmify/features/profile/domain/usecases/get_unfollow_user_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/get_liked_tracks_usecase.dart';
 
 // ---------------------------------------------------------------------------
@@ -421,13 +421,13 @@ void main() {
   });
 
   // =========================================================================
-  // FollowUserUseCase
+  // GetFollowUserUseCase
   // =========================================================================
 
-  group('FollowUserUseCase', () {
-    late FollowUserUseCase useCase;
+  group('GetFollowUserUseCase', () {
+    late GetFollowUserUseCase useCase;
 
-    setUp(() => useCase = FollowUserUseCase(mockRepository));
+    setUp(() => useCase = GetFollowUserUseCase(mockRepository));
 
     test('should return Right(void) when follow succeeds', () async {
       when(
@@ -478,13 +478,13 @@ void main() {
   });
 
   // =========================================================================
-  // UnfollowUserUseCase
+  // GetUnfollowUserUseCase
   // =========================================================================
 
-  group('UnfollowUserUseCase', () {
-    late UnfollowUserUseCase useCase;
+  group('GetUnfollowUserUseCase', () {
+    late GetUnfollowUserUseCase useCase;
 
-    setUp(() => useCase = UnfollowUserUseCase(mockRepository));
+    setUp(() => useCase = GetUnfollowUserUseCase(mockRepository));
 
     test('should return Right(void) when unfollow succeeds', () async {
       when(
@@ -642,5 +642,3 @@ void main() {
     });
   });
 }
-
-extension on Either<Failure, void> {}

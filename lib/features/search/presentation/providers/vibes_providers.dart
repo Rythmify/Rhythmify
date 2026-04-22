@@ -3,12 +3,18 @@ import '../../data/datasources/vibes_remote_datasource.dart';
 import '../../data/repositories/vibes_repository_impl.dart';
 import '../../domain/usecases/get_vibes.dart';
 import '../../domain/entities/vibes_category.dart';
+import '../../data/datasources/vibes_mock_datasource.dart';
+import '../../../../core/network/api_client.dart';
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
 
 /// Provides the mock data source. Swap to a real HTTP source at integration time.
+const bool _useVibesMock = false;
+
 final vibesRemoteSourceProvider = Provider<VibesRemoteSource>(
-  (_) => VibesRemoteSourceMock(),
+  (_) => _useVibesMock
+      ? VibesRemoteSourceMock()
+      : VibesRemoteSourceImpl(dio: apiClient.dio),
 );
 
 /// Provides the repository, injecting the remote source.

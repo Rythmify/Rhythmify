@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/privacy_policy_widget.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 
+/// Allows the user to toggle personalised advertising.
+/// Includes a restart warning and a link to the Privacy Policy.
 class AdvertisingSettingsScreen extends StatelessWidget {
   const AdvertisingSettingsScreen({super.key});
 
@@ -17,12 +19,11 @@ class AdvertisingSettingsScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: Key('Advesrtising_tile'),
               title: 'Personalise the adverts you receive',
               subtitle:
                   'If you turn this setting off, you\'ll receive the same number of adverts but may be less relevant',
-              switchExists: true,
               initSwitchValue: true,
               onSwitchChanged: (val) {},
               onTap: () {},

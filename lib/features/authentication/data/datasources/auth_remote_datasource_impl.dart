@@ -58,11 +58,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final data = responseData['data'];
       final token = data['access_token'] as String;
-      final refreshToken = data['refresh_token'] as String?;
-      await client.saveAuthTokens(
-        accessToken: token,
-        refreshToken: refreshToken,
-      );
+      await client.saveToken(token);
+
+      /// refresh token is captured automatically by ApiClient._onResponse
+      /// from the Set-Cookie header — no manual handling needed here;
 
       final user = data['user'];
       return UserModel.fromJson({
@@ -152,11 +151,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// 2. Obtains Firebase credential from [GoogleSignInAuthentication].
   /// 3. Signs into Firebase with the credential.
   /// 4. Gets the Firebase ID token.
-  /// 5. Sends the ID token to `POST /auth/google`.
+  /// 5. Sends the ID token to `POST /auth/google` with `platform: 'mobile'`.
   /// 6. Saves the returned JWT and returns a [UserModel].
   ///
-  /// Throws an [Exception] with the cancellation or error message if
-  /// any step fails.
+  /// **Error handling:**
+  /// - On [PlatformException]: Handles user cancellation gracefully (returns
+  ///   a non-throwing exception rather than crashing).
+  /// - On [FirebaseAuthException]: Maps to a descriptive exception.
+  /// - If `id_token` is null: Throws with a clear message instead of crashing.
+  /// - On DioException: Delegates to [_handleDioError].
+  ///
+  /// Throws an [Exception] with descriptive error messages on any failure.
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
@@ -171,7 +176,15 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       // Sign out first to ensure account picker shows
       await googleSignIn.signOut();
 
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      late GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await googleSignIn.signIn();
+      } on PlatformException catch (e) {
+        // User cancelled or platform error (e.g., permissions denied)
+        // Return gracefully without rethrowing
+        debugPrint('Google sign in cancelled or platform error: ${e.message}');
+        throw Exception(e.message ?? 'Google sign in cancelled');
+      }
 
       if (googleUser == null) {
         throw Exception('Google sign in cancelled');
@@ -182,21 +195,28 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       final idToken = googleAuth.idToken;
       if (idToken == null || idToken.isEmpty) {
-        throw Exception('Failed to get Google ID token');
+        throw Exception(
+          'Failed to get Google ID token. Device may not support Google Sign-In.',
+        );
       }
 
       // For Firebase integration (optional - can remove if not needed)
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      try {
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: idToken,
+        );
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      } on FirebaseAuthException catch (e) {
+        debugPrint('Firebase auth exception: $e');
+        throw Exception('Firebase authentication failed: ${e.message}');
+      }
 
       // Send the Google OAuth ID token to backend
       // This is what the backend validates with google-auth-library
       final response = await client.dio.post(
         '/auth/google',
-        data: {'id_token': idToken},
+        data: {'id_token': idToken, 'platform': 'mobile'},
       );
 
       final data = response.data['data'];
@@ -215,19 +235,74 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
             user['is_verified'] ?? user['is_email_verified'] ?? true,
         'token': token,
       });
-    } on PlatformException catch (e, stackTrace) {
-      debugPrint('Google sign in platform exception: $e');
-      debugPrintStack(stackTrace: stackTrace);
-      throw Exception(e.message ?? 'Google sign in failed');
     } on DioException catch (e, stackTrace) {
       debugPrint('Google sign in backend exception: $e');
       debugPrintStack(stackTrace: stackTrace);
       _handleDioError(e);
       rethrow;
     } catch (e, stackTrace) {
-      debugPrint('Google sign in unexpected exception: $e');
+      debugPrint('Google sign in exception: $e');
       debugPrintStack(stackTrace: stackTrace);
-      throw Exception(e.toString());
+      rethrow;
+    }
+  }
+
+  /// Completes registration for a user who signed in via Google OAuth.
+  ///
+  /// Called after the user authenticates with Google and fills in the
+  /// registration form (gender, date of birth). Sends the Google ID token
+  /// along with profile data to `POST /auth/google` to complete account setup.
+  ///
+  /// The backend responds with:
+  /// - `is_new_user: true` — Account created; client should call `/users/me/onboarding`
+  /// - `is_new_user: false` — Account already existed; skip onboarding, go to home
+  ///
+  /// Throws [DioException] on network failure.
+  /// Throws generic [Exception] on credential problems.
+  ///
+  /// [idToken] — the Google ID token from [GoogleSignInAuthentication.idToken].
+  /// [gender] — lowercase gender string (e.g. `'male'`, `'female'`).
+  /// [dateOfBirth] — date in `YYYY-MM-DD` format.
+  @override
+  Future<UserModel> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  }) async {
+    try {
+      final response = await client.dio.post(
+        '/auth/google',
+        data: {
+          'id_token': idToken,
+          'gender': gender,
+          'date_of_birth': dateOfBirth,
+          'platform': 'mobile',
+        },
+      );
+
+      final data = response.data['data'];
+      final token = data['access_token'] as String;
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: token,
+        refreshToken: refreshToken,
+      );
+
+      final user = data['user'];
+      return UserModel.fromJson({
+        ...user,
+        'id': user['id']?.toString() ?? user['user_id']?.toString(),
+        'is_email_verified':
+            user['is_verified'] ?? user['is_email_verified'] ?? true,
+        'avatar_url': user['profile_picture'] ?? user['avatar_url'],
+        'token': token,
+      });
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    } catch (e) {
+      debugPrint('Google signup exception: $e');
+      rethrow;
     }
   }
 

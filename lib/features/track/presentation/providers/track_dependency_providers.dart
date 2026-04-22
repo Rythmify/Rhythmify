@@ -9,6 +9,7 @@ import '../../domain/usecases/get_track_details.dart';
 import '../../domain/usecases/get_tracks.dart';
 import '../../domain/usecases/get_waveform.dart';
 import '../../domain/usecases/get_tags.dart';
+import '../../domain/usecases/get_fan_leaderboard.dart';
 import '../../domain/usecases/toggle_like.dart';
 import '../../domain/usecases/toggle_repost.dart';
 import '../../domain/usecases/record_play.dart';
@@ -90,6 +91,11 @@ final getWaveformUseCaseProvider = Provider<GetWaveform>((ref) {
 /// Depends on [trackRepositoryProvider].
 final getTagsUseCaseProvider = Provider<GetTags>((ref) {
   return GetTags(ref.watch(trackRepositoryProvider));
+});
+
+/// Provides the [GetFanLeaderboard] use case.
+final getFanLeaderboardUseCaseProvider = Provider<GetFanLeaderboard>((ref) {
+  return GetFanLeaderboard(ref.watch(trackRepositoryProvider));
 });
 
 // ========================================

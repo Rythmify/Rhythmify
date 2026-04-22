@@ -11,8 +11,14 @@ abstract class MessagingRepository {
   /// Retrieves a list of all active [Conversation]s for the current user.
   Future<List<Conversation>> getConversations();
 
-  /// Retrieves the history of [Message]s for a specific [conversationId].
-  Future<List<Message>> getMessages(String conversationId);
+  /// Retrieves a page of [Message]s for [conversationId] starting at [offset].
+  ///
+  /// Returns a tuple of the message list and the total message count, which is
+  /// used by [MessagesNotifier] to jump directly to the latest page on first load.
+  Future<(List<Message>, int)> getMessages(
+    String conversationId, {
+    int offset = 0,
+  });
 
   /// Initiates a new [Conversation] with a specific participant.
   ///
@@ -28,8 +34,8 @@ abstract class MessagingRepository {
   Future<Message> sendMessage(
     String conversationId,
     String? body,
-    String? trackId,
-    String? playlistId,
+    String? embedId,
+    String? embedType,
   );
 
   /// Blocks a user by their [participantId], preventing further communication.
@@ -67,4 +73,7 @@ abstract class MessagingRepository {
     String playlistId,
     String embedType,
   ); //for both playlists and albums
+
+  /// Ensures a [Conversation] exists with [participantId] without sending a message.
+  Future<Conversation> ensureConversation(String participantId);
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/privacy_policy_widget.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 
+/// Allows the user to toggle personalised news, tips, and offers.
+/// Includes a restart warning and a link to the Privacy Policy.
 class CommunicationSettingsScreen extends StatelessWidget {
   const CommunicationSettingsScreen({super.key});
 
@@ -17,13 +19,12 @@ class CommunicationSettingsScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: Key('Communications_tile'),
               title:
                   'Personalise news, tips, and offers for SoundCloud products',
               subtitle:
                   'If you turn this setting off, the communications you\'ll see may be less relevant',
-              switchExists: true,
               initSwitchValue: true,
               onSwitchChanged: (val) {},
               onTap: () {},
