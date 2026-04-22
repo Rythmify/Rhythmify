@@ -96,7 +96,7 @@ class _AppIconScreenState extends State<AppIconScreen> {
 
   Future<void> _selectIcon(_IconOption option) async {
     if (option.isPremium) {
-      context.push('/upgrade');
+      context.push('/library/settings/basic-settings/app-icons/premium-apps');
       return;
     }
     if (_selectedKey == option.iconKey) return;

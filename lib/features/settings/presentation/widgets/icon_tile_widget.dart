@@ -29,11 +29,11 @@ class IconTileWidget extends StatelessWidget {
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           child: Image.asset(
             assetPath,
-            width: 72,
-            height: 72,
+            width: 59,
+            height: 56,
             fit: BoxFit.cover,
           ),
         ),
