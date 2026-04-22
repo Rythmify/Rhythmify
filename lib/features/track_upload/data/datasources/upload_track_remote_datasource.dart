@@ -80,6 +80,10 @@ class UploadTrackRemoteDataSource {
           contentType: DioMediaType.parse(audioMime),
         ),
       };
+      // Only send genre if user actually selected one
+      if (genre.isNotEmpty) {
+        fields['genre'] = genre;
+      }
 
       if (description != null && description.isNotEmpty) {
         fields['description'] = description;
@@ -138,13 +142,30 @@ class UploadTrackRemoteDataSource {
     try {
       final response = await _dio.get('/genres');
       final data = response.data;
-      final rawList = data['data']?['items'] ?? data['data'] ?? [];
 
-      return (rawList as List<dynamic>)
+      debugPrint('=== GENRES RAW RESPONSE: $data ===');
+
+      // New API spec: data.data is a direct array of Genre objects
+      // { "data": [ { "id": "...", "name": "Pop" }, ... ], "pagination": {...} }
+      List<dynamic> rawList = [];
+
+      if (data['data'] is List) {
+        // Shape: { "data": [...] }
+        rawList = data['data'] as List<dynamic>;
+      } else if (data['data'] is Map) {
+        // Shape: { "data": { "items": [...] } }
+        rawList = data['data']?['items'] ?? [];
+      }
+
+      final genres = rawList
           .map((g) => g['name'] as String? ?? '')
           .where((g) => g.isNotEmpty)
           .toList();
+
+      debugPrint('=== GENRES PARSED: $genres ===');
+      return genres;
     } on DioException catch (e) {
+      debugPrint('=== GENRES ERROR: ${e.response?.data} ===');
       throw _handleError(e);
     }
   }
