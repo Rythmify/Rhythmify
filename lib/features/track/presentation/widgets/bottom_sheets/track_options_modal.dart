@@ -233,7 +233,7 @@ class TrackOptionsModal extends ConsumerWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                UploadTrackScreen(track: syncedTrack),
+                                const UploadTrackScreen(),
                           ),
                         );
                       },
