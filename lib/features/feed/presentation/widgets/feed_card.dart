@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/feed_item.dart';
 import 'feed_card_bottom_info.dart';
 import 'feed_card_side_actions.dart';
-import 'feed_card_play_button.dart';
 import 'feed_card_cover.dart';
 import 'feed_list.dart';
+import 'feed_card_tap_preview.dart';
 
 class FeedCard extends StatelessWidget {
   final FeedItemEntity item;
@@ -35,6 +35,7 @@ class FeedCard extends StatelessWidget {
             ),
           ),
         ),
+        Center(child: TapToPreview(item: item)),
         Positioned(
           right: 12,
           bottom: 170,
