@@ -63,6 +63,10 @@ class FollowingState extends Equatable {
   List<Object?> get props => [users, isLoading, hasMore, error];
 }
 
+/// Manages paginated list of users the authenticated user follows.
+///
+/// Handles loading, pagination, error states, and unfollow actions.
+/// Pagination triggers when scrolling near the bottom of the list.
 class FollowingNotifier extends Notifier<FollowingState> {
   late final GetFollowingUseCase _getFollowing;
   late final UnfollowUserLibraryUseCase _unfollow;
@@ -73,10 +77,14 @@ class FollowingNotifier extends Notifier<FollowingState> {
     final repo = ref.read(_libraryRepositoryProvider);
     _getFollowing = GetFollowingUseCase(repo);
     _unfollow = UnfollowUserLibraryUseCase(repo);
-    Future.microtask(load);
-    return const FollowingState(isLoading: true);
+    return const FollowingState(isLoading: false);
   }
 
+  /// Loads the following list with pagination support.
+  ///
+  /// When [refresh] is true, resets pagination to page 1 and clears existing users.
+  /// Otherwise, appends the next page to the existing list.
+  /// Returns early if already loading and not refreshing.
   Future<void> load({bool refresh = false}) async {
     if (state.isLoading && !refresh) return;
     if (refresh) {
@@ -106,6 +114,9 @@ class FollowingNotifier extends Notifier<FollowingState> {
     );
   }
 
+  /// Unfollows a user and removes them from the list optimistically.
+  ///
+  /// Updates the list immediately (optimistic update) and reverts on failure.
   Future<void> unfollow(String userId) async {
     final prev = state.users;
     state = state.copyWith(users: prev.where((u) => u.id != userId).toList());
@@ -404,6 +415,16 @@ final likesProvider = NotifierProvider<LikesNotifier, LikesState>(
 // Insights provider (simple FutureProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// Provides track insights analytics for the authenticated user's uploads.
+///
+/// Fetches per-track statistics (plays, listeners, likes, reposts) for all
+/// tracks uploaded by the current user. Returns a [FutureProvider] that handles
+/// loading, error, and data states.
+///
+/// The widget observing this provider must handle all three [AsyncValue] states:
+/// - loading: Shows a spinner
+/// - error: Shows error message with retry button
+/// - data: Shows insights data or empty state if no uploads exist
 final insightsProvider = FutureProvider<List<TrackInsight>>((ref) async {
   final repo = ref.read(_libraryRepositoryProvider);
   final result = await GetMyInsightsUseCase(repo).call();

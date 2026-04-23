@@ -38,13 +38,12 @@ final ownProfileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
 ///
 /// Family provider keyed by [userId]. Each user ID gets its own state instance.
 /// Used for viewing other users' profiles without affecting [ownProfileProvider].
-final publicProfileProvider =
-    NotifierProvider.family<ProfileNotifier, ProfileState, String>(
-      (ref, userId) {
-            return ProfileNotifier();
-          }
-          as ProfileNotifier Function(String arg),
-    );
+final publicProfileProvider = NotifierProvider.family<
+    ProfileNotifier,
+    ProfileState,
+    String>((_) {
+  return ProfileNotifier();
+});
 
 /// Legacy provider for backward compatibility.
 ///
@@ -384,32 +383,47 @@ class ProfileNotifier extends Notifier<ProfileState> {
     });
   }
 
+  /// Starts following a user.
+  ///
+  /// Calls the follow API and then refreshes the profile state to get
+  /// the updated followers count from the backend. Returns early if already
+  /// following or if state is not loaded.
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
     if (current.profile.isFollowing) return;
 
     final result = await _followUser(userId: userId);
-    result.fold((failure) => state = current, (_) async {
+    if (result.isRight()) {
       await _refreshProfileSnapshot(previous: current);
-    });
+    } else {
+      state = current;
+    }
   }
 
+  /// Stops following a user.
+  ///
+  /// Calls the unfollow API and then refreshes the profile state to get
+  /// the updated followers count from the backend. Returns early if not
+  /// following or if state is not loaded.
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
     if (!current.profile.isFollowing) return;
 
     final result = await _unfollowUser(userId: userId);
-    result.fold((failure) => state = current, (_) async {
+    if (result.isRight()) {
       await _refreshProfileSnapshot(previous: current);
-    });
+    } else {
+      state = current;
+    }
   }
 
   /// Reloads the currently displayed profile from backend and preserves tracks.
   ///
   /// This keeps follower/following counters backend-authoritative and avoids
-  /// local accumulation drift from optimistic state updates.
+  /// local accumulation drift from optimistic state updates. Preserves all
+  /// cached track lists (liked, uploaded, reposted).
   Future<void> _refreshProfileSnapshot({
     required ProfileLoaded previous,
   }) async {

@@ -7,17 +7,21 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 
+/// Displays analytics insights for the current user's uploaded tracks.
+///
 /// - "SoundCloud" tab: if user has uploads, shows per-track stats.
 ///   If empty, shows marketing screen with "Upload" CTA button.
 /// - "All Platforms" tab: premium upsell marketing screen
 ///   with "Goes to premium 'Pro'" CTA button.
 class InsightsPage extends ConsumerStatefulWidget {
+  /// Creates an [InsightsPage].
   const InsightsPage({super.key});
 
   @override
   ConsumerState<InsightsPage> createState() => _InsightsPageState();
 }
 
+/// State for [InsightsPage] managing tab selection.
 class _InsightsPageState extends ConsumerState<InsightsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -95,8 +99,15 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
   }
 }
 
+/// Builds the SoundCloud insights tab with loading/error/data states.
+///
+/// Watches [insightsProvider] and handles all three [AsyncValue] states:
+/// - loading: Shows centered spinner
+/// - error: Shows error message with retry button
+/// - data: Shows empty state or insights data view
 class _SoundCloudTab extends ConsumerWidget {
-  @override
+  /// Creates a [_SoundCloudTab].
+  const _SoundCloudTab();
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(insightsProvider);
 
