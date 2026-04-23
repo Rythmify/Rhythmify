@@ -30,12 +30,21 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
 
   @override
   Future<List<FeedItemModel>> getDiscoverFeed() async {
-    final response = await _client.dio.get('/feed/discover');
-    final List<dynamic> data = response.data['data'] as List<dynamic>;
-    return data
-        .map((e) => _parseItem(e as Map<String, dynamic>))
-        .whereType<FeedItemModel>()
-        .toList();
+    try {
+      final token = await _client.getToken();
+      final response = await _client.dio.get(
+        '/feed/discovery',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      log('Discover feed response: ${response.data}', name: 'FeedDatasource');
+      final List<dynamic> data = response.data['data'] as List<dynamic>;
+      return data
+          .map((e) => _parseDiscoverItem(e as Map<String, dynamic>))
+          .whereType<FeedItemModel>()
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   FeedItemModel? _parseItem(Map<String, dynamic> json) {
@@ -60,6 +69,31 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
       playlist: playlistJson != null
           ? FeedPlaylistModel.fromJson(playlistJson)
           : null,
+    );
+  }
+
+  FeedItemModel? _parseDiscoverItem(Map<String, dynamic> json) {
+    final trackJson = json['track'] as Map<String, dynamic>?;
+    if (trackJson == null) return null;
+
+    final reasonJson = json['reason'] as Map<String, dynamic>? ?? {};
+    final label = reasonJson['label'] as String? ?? 'Discovered for you';
+    final artistJson = trackJson['artist'] as Map<String, dynamic>? ?? {};
+
+    return FeedItemModel(
+      id: json['id'] as String,
+      type: 'discover',
+      contentType: 'track',
+      createdAt: DateTime.now(),
+      user: FeedUserModel(
+        id: artistJson['id'] as String? ?? '',
+        username: artistJson['username'] as String? ?? '',
+        displayName: artistJson['username'] as String? ?? '',
+        followers: 0,
+        isVerified: false,
+      ),
+      track: FeedTrackModel.fromJson(trackJson),
+      discoverLabel: label,
     );
   }
 }

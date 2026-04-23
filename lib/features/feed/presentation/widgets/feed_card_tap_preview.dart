@@ -3,67 +3,69 @@ import '../../domain/entities/feed_item.dart';
 import '../../../../core/domain/entities/track.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/domain/entities/player_state.dart';
 
 class TapToPreview extends ConsumerStatefulWidget {
   final FeedItemEntity item;
 
-  const TapToPreview({required this.item});
+  const TapToPreview({super.key, required this.item});
 
   @override
-  ConsumerState<TapToPreview> createState() => _TapToPreviewState();
+  ConsumerState<TapToPreview> createState() => TapToPreviewState();
 }
 
-class _TapToPreviewState extends ConsumerState<TapToPreview> {
-  bool _visible = true;
-
+class TapToPreviewState extends ConsumerState<TapToPreview> {
   @override
   Widget build(BuildContext context) {
-    if (!_visible) return const SizedBox.shrink();
+    final playerState = ref.watch(playerStateProvider);
+    final isThisTrackPlaying =
+        playerState.currentTrack?.id == widget.item.track.id &&
+        playerState.status == PlayerStatus.playing;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() => _visible = false);
+    return isThisTrackPlaying ? const SizedBox.shrink() : _buildPrompt();
+  }
 
-        final track = Track(
-          id: widget.item.track.id,
-          userId: widget.item.user.id,
-          title: widget.item.track.title,
-          artist: widget.item.user.displayName,
-          artistPfp: widget.item.user.avatar,
-          audioUrl: widget.item.track.audioUrl,
-          coverImage: widget.item.track.coverUrl,
-          duration: Duration(seconds: widget.item.track.duration),
-          createdAt: widget.item.createdAt,
-          playCount: widget.item.track.playCount,
-          likeCount: widget.item.track.likeCount,
-        );
+  void toggle() {
+    final playerState = ref.read(playerStateProvider);
+    final isThisTrackLoaded =
+        playerState.currentTrack?.id == widget.item.track.id;
 
-        ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.35),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white24),
+    if (isThisTrackLoaded) {
+      ref.read(playerStateProvider.notifier).togglePlayPause();
+    } else {
+      final track = Track(
+        id: widget.item.track.id,
+        userId: widget.item.user.id,
+        title: widget.item.track.title,
+        artist: widget.item.user.displayName,
+        artistPfp: widget.item.user.avatar,
+        audioUrl: widget.item.track.audioUrl,
+        coverImage: widget.item.track.coverUrl,
+        duration: Duration(seconds: widget.item.track.duration),
+        createdAt: widget.item.createdAt,
+        playCount: widget.item.track.playCount,
+        likeCount: widget.item.track.likeCount,
+      );
+      ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+    }
+  }
+
+  Widget _buildPrompt() {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Tap to preview',
+          style: TextStyle(
+            color: Color.fromARGB(255, 255, 255, 255),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.play_circle_outline, color: Colors.white, size: 18),
-            SizedBox(width: 6),
-            Text(
-              'Tap to preview',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
-      ),
+        Icon(Icons.volume_off, color: Colors.white54, size: 36),
+        SizedBox(height: 10),
+      ],
     );
   }
 }

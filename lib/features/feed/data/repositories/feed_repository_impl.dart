@@ -12,6 +12,8 @@ class FeedRepositoryImpl implements FeedRepository {
       _datasource.getFollowingFeed();
 
   @override
-  Future<List<FeedItemEntity>> getDiscoverFeed() =>
-      _datasource.getDiscoverFeed();
+  Future<List<FeedItemEntity>> getDiscoverFeed() async {
+    final items = await _datasource.getDiscoverFeed();
+    return items;
+  }
 }

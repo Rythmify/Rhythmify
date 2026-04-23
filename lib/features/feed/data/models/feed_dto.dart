@@ -9,6 +9,7 @@ class FeedItemModel extends FeedItemEntity {
     required super.user,
     required super.track,
     super.playlist,
+    super.discoverLabel,
   });
 
   static FeedItemModel? fromJson(Map<String, dynamic> json) {
@@ -73,16 +74,18 @@ class FeedTrackModel extends FeedTrackEntity {
   });
 
   factory FeedTrackModel.fromJson(Map<String, dynamic> json) {
-    final userJson = json['user'] as Map<String, dynamic>? ?? {};
+    final artistJson =
+        (json['artist'] ?? json['user']) as Map<String, dynamic>? ?? {};
     return FeedTrackModel(
       id: json['id'] as String,
       title: json['title'] as String,
       duration: json['duration'] as int? ?? 0,
       playCount: json['play_count'] as int? ?? 0,
       likeCount: json['like_count'] as int? ?? 0,
-      coverUrl: json['coverUrl'] as String?,
-      audioUrl: json['audioUrl'] as String,
-      uploaderUsername: userJson['username'] as String? ?? '',
+      coverUrl: json['cover_image'] as String? ?? json['coverUrl'] as String?,
+      audioUrl:
+          json['audio_url'] as String? ?? json['audioUrl'] as String? ?? '',
+      uploaderUsername: artistJson['username'] as String? ?? '',
     );
   }
 }

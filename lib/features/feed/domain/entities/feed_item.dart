@@ -1,21 +1,12 @@
-/// Represents a single item in the feed (post or repost of a track or playlist).
 class FeedItemEntity {
   final String id;
-
-  /// Either 'post' or 'repost'.
   final String type;
-
-  /// Either 'track' or 'playlist'.
   final String contentType;
-
   final DateTime createdAt;
   final FeedUserEntity user;
-
-  /// Always non-null — for playlist posts this is the featured track.
   final FeedTrackEntity track;
-
-  /// Only present when contentType == 'playlist'.
   final FeedPlaylistEntity? playlist;
+  final String? discoverLabel;
 
   const FeedItemEntity({
     required this.id,
@@ -25,6 +16,7 @@ class FeedItemEntity {
     required this.user,
     required this.track,
     this.playlist,
+    this.discoverLabel,
   });
 }
 

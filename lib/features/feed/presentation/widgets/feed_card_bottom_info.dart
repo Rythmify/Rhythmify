@@ -5,13 +5,20 @@ import '../../domain/entities/feed_item.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
-import 'package:go_router/go_router.dart';
+import '../providers/feed_providers.dart';
 
 class FeedCardBottomInfo extends ConsumerWidget {
   // Changed to ConsumerWidget
   final FeedItemEntity item;
+  final VoidCallback? onPlay;
+  final bool showProgress;
 
-  const FeedCardBottomInfo({super.key, required this.item});
+  const FeedCardBottomInfo({
+    super.key,
+    required this.item,
+    this.onPlay,
+    this.showProgress = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,9 +45,17 @@ class FeedCardBottomInfo extends ConsumerWidget {
             likeCount: item.track.likeCount,
           );
           ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
-        }
 
-        context.push('/player');
+          // Wait for sheet to mount before expanding
+          Future.delayed(const Duration(milliseconds: 300), () {
+            playerSheetNotifier.value?.call();
+          });
+          onPlay?.call();
+          return;
+        }
+        onPlay?.call();
+
+        playerSheetNotifier.value?.call();
       },
       child: ClipRect(
         child: BackdropFilter(
@@ -116,7 +131,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                FeedCardPlayButton(audioUrl: item.track.audioUrl),
+                FeedCardPlayCircle(showProgress: showProgress, size: 50),
               ],
             ),
           ),
