@@ -27,13 +27,13 @@ class IconTileWidget extends StatelessWidget {
       data: Theme.of(context).copyWith(splashFactory: InkRipple.splashFactory),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           child: Image.asset(
             assetPath,
-            width: 59,
-            height: 56,
+            width: 72,
+            height: 72,
             fit: BoxFit.cover,
           ),
         ),

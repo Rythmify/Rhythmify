@@ -11,7 +11,7 @@ class IconCarousalWidget extends StatefulWidget{
 
 class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProviderStateMixin{
   final PageController _controller=PageController(
-    viewportFraction: 0.5,
+    viewportFraction: 0.65,
     initialPage: 1000
   );
   Ticker? _ticker;
