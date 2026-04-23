@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../features/player/presentation/widgets/mini_player.dart';
 import '../../../../features/player/presentation/pages/full_player_page.dart';
 import '../../../../features/player/presentation/providers/player_provider.dart';
+import '../../../features/feed/presentation/providers/feed_providers.dart';
 
 class MainAppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -57,12 +58,14 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerStateProvider);
+    playerSheetNotifier.value = _expandPlayer;
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
 
     final routerState = GoRouterState.of(context);
     final location = routerState.uri.path;
     final isChatRoute = location.contains('/chat');
+    final isFeedRoute = location == '/feed';
     final isVisible = !isChatRoute;
     final currentMinSize = _minSize;
     final double displacement = isVisible ? 0 : screenHeight;
@@ -124,7 +127,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                                   ),
                                 ),
 
-                                if (t < 0.5)
+                                if (t < 0.5 && !isFeedRoute)
                                   Positioned(
                                     top: 0,
                                     left: 0,
