@@ -15,6 +15,7 @@ import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
+import '../../.././playlist/data/datasources/playlist_remote_datasource.dart';
 
 // coverage:ignore-file
 /// Riverpod providers and notifier orchestration for profile state management.
@@ -24,6 +25,10 @@ import '../../data/datasources/profile_remote_datasource_impl.dart';
 /// - [publicProfileProvider]: Family provider for any user's public profile (`GET /users/{userId}`)
 
 const bool useProfileMockData = false;
+
+final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
+  return PlaylistRemoteDatasource(apiClient.dio);
+});
 
 /// Provides the authenticated user's own profile.
 ///
@@ -73,6 +78,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _likesRequestVersion = 0;
   int _uploadsRequestVersion = 0;
   int _repostsRequestVersion = 0;
+
+  PlaylistRemoteDatasource get _playlistDs => ref.read(playlistDatasourceProvider);
 
   @override
   ProfileState build() {
@@ -126,6 +133,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     await loadUploadedTracks(userId: userId, refresh: true, limit: 3);
     await loadLikedTracks(userId: userId, refresh: true, limit: 3);
     await loadRepostedTracks(userId: userId, refresh: true, limit: 3);
+    await loadPlaylists(userId: userId, refresh: true, limit: 3);
   }
 
   Future<void> loadLikedTracks({
@@ -279,6 +287,40 @@ class ProfileNotifier extends Notifier<ProfileState> {
         }
       },
     );
+  }
+
+  Future<void> loadPlaylists({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {
+    final current = state;
+    if (current is! ProfileLoaded) return;
+
+    if (current.isLoadingPlaylists && !refresh) return;
+
+    if (refresh) {
+      state = current.copyWith(isLoadingPlaylists: true, playlists: const []);
+    } else {
+      state = current.copyWith(isLoadingPlaylists: true);
+    }
+
+    try {
+      final playlists = await _playlistDs.fetchUserPlaylists(
+        userId: userId,
+        limit: limit,
+      );
+      if (state is ProfileLoaded) {
+        state = (state as ProfileLoaded).copyWith(
+          playlists: playlists,
+          isLoadingPlaylists: false,
+        );
+      }
+    } catch (e) {
+      if (state is ProfileLoaded) {
+        state = (state as ProfileLoaded).copyWith(isLoadingPlaylists: false);
+      }
+    }
   }
 
   Future<void> updateProfile({

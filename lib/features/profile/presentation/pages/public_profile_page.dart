@@ -16,6 +16,7 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../playlist/domain/entities/playlist_entity.dart';
 
 /// A full-screen profile page showing a user's public information and tracks.
 ///
@@ -166,7 +167,13 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     final hasAnyContent =
         state.uploadedTracks.isNotEmpty ||
         state.likedTracks.isNotEmpty ||
-        state.repostedTracks.isNotEmpty;
+        state.repostedTracks.isNotEmpty ||
+        state.playlists.isNotEmpty;
+
+    // Watch player state to add bottom padding for mini player
+    final playerState = ref.watch(playerStateProvider);
+    final hasTrack = playerState.currentTrack != null;
+    final bottomPadding = hasTrack ? 80.0 : 0.0;
 
     return CustomScrollView(
       controller: _scrollController,
@@ -335,16 +342,24 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
               ),
             ),
-          if (state.repostedTracks.isNotEmpty)
-            SliverToBoxAdapter(
-              child: _ProfileSection(
-                title: 'Reposts',
-                tracks: state.repostedTracks.take(3).toList(),
-                onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/reposts'),
-              ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+           if (state.repostedTracks.isNotEmpty)
+             SliverToBoxAdapter(
+               child: _ProfileSection(
+                 title: 'Reposts',
+                 tracks: state.repostedTracks.take(3).toList(),
+                 onSeeAll: () =>
+                     context.push('/profile/$_resolvedUserId/reposts'),
+               ),
+             ),
+           if (state.playlists.isNotEmpty)
+             SliverToBoxAdapter(
+               child: _PlaylistsSection(
+                 title: 'Playlists',
+                 playlists: state.playlists.take(3).toList(),
+                 userId: _resolvedUserId,
+               ),
+             ),
+           SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
         ],
       ],
     );
@@ -461,9 +476,150 @@ class _ProfileSection extends ConsumerWidget {
             ),
           );
         }),
+         const SizedBox(height: 12),
+        const Divider(color: AppTheme.surface, height: 1),
+      ],
+    );
+  }
+}
+
+/// Displays a section of playlists.
+class _PlaylistsSection extends ConsumerWidget {
+  /// The title of this section (e.g., "Playlists").
+  final String title;
+
+  /// The list of [PlaylistEntity]s to display.
+  final List<PlaylistEntity> playlists;
+
+  /// User ID for navigation.
+  final String userId;
+
+  const _PlaylistsSection({
+    required this.title,
+    required this.playlists,
+    required this.userId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
+              TextButton(
+                onPressed: () => context.push('/library/playlists'),
+                child: Text(
+                  'See All',
+                  style: AppTheme.labelLarge.copyWith(
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...playlists.asMap().entries.map((entry) {
+          final playlist = entry.value;
+          return GestureDetector(
+            onTap: () => context.push('/library/playlists/${playlist.id}'),
+            child: _PlaylistCard(
+              key: Key('playlist_card_${playlist.id}'),
+              playlist: playlist,
+            ),
+          );
+        }),
         const SizedBox(height: 12),
         const Divider(color: AppTheme.surface, height: 1),
       ],
+    );
+  }
+}
+
+/// A card widget for displaying a single playlist.
+class _PlaylistCard extends StatelessWidget {
+  final PlaylistEntity playlist;
+
+  const _PlaylistCard({
+    super.key,
+    required this.playlist,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          // Playlist image
+          if (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: playlist.coverUrl!,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  width: 56,
+                  height: 56,
+                  color: Colors.grey[800],
+                  child: const Center(
+                    child: Icon(Icons.music_note, color: Colors.grey),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  width: 56,
+                  height: 56,
+                  color: Colors.grey[800],
+                  child: const Center(
+                    child: Icon(Icons.music_note, color: Colors.grey),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Icon(Icons.music_note, color: Colors.grey),
+              ),
+            ),
+          const SizedBox(width: 12),
+          // Playlist info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  playlist.name,
+                  style: AppTheme.labelLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${playlist.trackCount} tracks',
+                  style: AppTheme.labelSmall.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
