@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+
+class FeedTabBar extends StatelessWidget {
+  final TabController controller;
+
+  const FeedTabBar({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      height: 45,
+      child: TabBar(
+        controller: controller,
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        indicator: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(25),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white60,
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        tabs: const [
+          Tab(text: 'Discover'),
+          Tab(text: 'Following'),
+        ],
+      ),
+    );
+  }
+}

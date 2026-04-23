@@ -44,4 +44,12 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<List<DiscoverStation>> getDiscoverStations() =>
       _mock?.getDiscoverStations() ?? _remote!.getDiscoverStations();
+
+  @override
+  Future<List<Track>> getMixTracks(String mixId) =>
+      _remote!.getMixTracks(mixId);
+
+  @override
+  Future<List<Track>> getRelatedTracks(String trackId) =>
+      _remote!.getRelatedTracks(trackId);
 }
