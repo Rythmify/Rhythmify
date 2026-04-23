@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../data/models/comment_dto.dart';
 import '../../../../core/network/api_client.dart';
 
@@ -141,10 +142,25 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
 
   @override
   Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
-    final response = await _apiClient.dio.get(
-      '/tracks/$trackId/comments',
-      queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
-    );
+    Response<dynamic> response;
+    try {
+      response = await _apiClient.dio.get(
+        '/tracks/$trackId/comments',
+        queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
+      );
+    } on DioException catch (error) {
+      final backendCode = error.response?.data is Map<String, dynamic>
+          ? (error.response!.data['error']?['code'] as String?)
+          : null;
+      final shouldFallback =
+          error.response?.statusCode == 500 && backendCode == '42P18';
+      if (!shouldFallback) rethrow;
+
+      response = await _apiClient.dio.get(
+        '/tracks/$trackId/comments',
+        queryParameters: {'limit': 100, 'offset': 0, 'sort': 'newest'},
+      );
+    }
 
     final items = response.data['data']['items'] as List;
     return items.map((json) => CommentDto.fromJson(json)).toList();

@@ -15,9 +15,14 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
   Future<String> initiatePlayback(String trackId) async {
     final response = await _apiClient.dio.post('/tracks/$trackId/play');
 
-    // According to API spec: { "data": { "url": "..." } }
     final data = response.data['data'] as Map<String, dynamic>;
-    return data['url'] as String;
+    // The API returns 'stream_url', but we'll check both for robustness
+    final url = data['stream_url'] as String? ?? data['url'] as String?;
+
+    if (url == null) {
+      throw Exception('Playback URL not found in API response');
+    }
+    return url;
   }
 
   @override

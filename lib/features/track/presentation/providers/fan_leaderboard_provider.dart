@@ -6,7 +6,7 @@ import 'track_dependency_providers.dart';
 /// Period options for the fan leaderboard.
 enum LeaderboardPeriod {
   overall('overall', 'All Time'),
-  sevenDays('last_7_days', 'Last 7 Days');
+  sevenDays('first_7_days', 'First 7 Days');
 
   final String value;
   final String label;

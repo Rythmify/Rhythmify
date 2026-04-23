@@ -59,6 +59,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  }) async {
+    try {
+      final user = await remoteDatasource.signUpWithGoogle(
+        idToken: idToken,
+        gender: gender,
+        dateOfBirth: dateOfBirth,
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, UserEntity>> signInWithApple() async {
     try {
       final user = await remoteDatasource.signInWithApple();

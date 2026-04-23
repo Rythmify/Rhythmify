@@ -50,6 +50,24 @@ abstract class AuthRepository {
   /// is cancelled or fails.
   Future<Either<Failure, UserEntity>> signInWithGoogle();
 
+  /// Completes registration for a user who signed in via Google OAuth.
+  ///
+  /// Called after [signInWithGoogle] when the user submits the registration form
+  /// with profile data (gender and date of birth). Sends the Google ID token along
+  /// with these fields to `POST /auth/google` to complete account setup.
+  ///
+  /// Returns [Right] with a [UserEntity] on success.
+  /// Returns [Left] with an appropriate [Failure] if registration fails.
+  ///
+  /// [idToken] — the Google ID token obtained during sign-in.
+  /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
+  /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
+  Future<Either<Failure, UserEntity>> signUpWithGoogle({
+    required String idToken,
+    required String gender,
+    required String dateOfBirth,
+  });
+
   /// Signs in using an Apple ID via Firebase OAuth.
   ///
   /// Returns [Right] with a [UserEntity] on success.

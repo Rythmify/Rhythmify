@@ -126,8 +126,12 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
   /// No-op if [MessagesState.isLoadingMore] is true, [MessagesState.hasMore] is
   /// false, or [_oldestOffset] is already at 0.
   Future<void> loadMore() async {
-    if (!mounted || state.isLoadingMore || !state.hasMore || _oldestOffset <= 0)
+    if (!mounted ||
+        state.isLoadingMore ||
+        !state.hasMore ||
+        _oldestOffset <= 0) {
       return;
+    }
     state = state.copyWith(isLoadingMore: true);
     try {
       final olderOffset = max(0, _oldestOffset - _limit);

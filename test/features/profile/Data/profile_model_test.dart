@@ -33,4 +33,21 @@ void main() {
     expect(json['is_following'], true);
     expect(json['is_verified'], true);
   });
+
+  test('fromJson does not accumulate follower/following counts', () {
+    final model = ProfileModel.fromJson({
+      'id': 'u1',
+      'display_name': 'User',
+      'followers_count': 3,
+      'following_count': 2,
+      // Extra payload keys that must not be added to counters.
+      'followers': [1, 2, 3],
+      'following': [1, 2],
+      'follower_count': 99,
+      'following_count_total': 99,
+    });
+
+    expect(model.followersCount, 3);
+    expect(model.followingCount, 2);
+  });
 }

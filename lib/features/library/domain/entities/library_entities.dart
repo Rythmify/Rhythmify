@@ -148,8 +148,12 @@ class RecentlyPlayedEntry extends Equatable {
   final String title;
   final String artistName;
   final String? artworkUrl;
+  final String? streamUrl;
+  final String? audioUrl;
   final int durationSeconds;
   final int playCount;
+  final bool isLiked;
+  final bool isArtistFollowed;
   final DateTime playedAt;
 
   const RecentlyPlayedEntry({
@@ -158,8 +162,12 @@ class RecentlyPlayedEntry extends Equatable {
     required this.title,
     required this.artistName,
     this.artworkUrl,
+    this.streamUrl,
+    this.audioUrl,
     required this.durationSeconds,
     required this.playCount,
+    this.isLiked = false,
+    this.isArtistFollowed = false,
     required this.playedAt,
   });
 
