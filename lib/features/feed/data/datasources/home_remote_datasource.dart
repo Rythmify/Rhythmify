@@ -9,6 +9,7 @@ import '../../domain/entities/hot_for_you.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 import '../models/home_dto.dart';
+import 'dart:developer' as dev;
 
 class HomeRemoteDatasource {
   final Dio _dio;
@@ -60,6 +61,24 @@ class HomeRemoteDatasource {
     debugPrint('DEBUG: /home/discover-stations response: ${response.data}');
     return (response.data['data'] as List)
         .map((s) => HomeDto.parseDiscoverStation(s as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<Track>> getMixTracks(String mixId) async {
+    dev.log('getMixTracks called with mixId: $mixId');
+    final response = await _dio.get('/home/mixes/$mixId');
+    dev.log('getMixTracks response: ${response.data}');
+    final data = response.data['data'] as Map<String, dynamic>;
+    return (data['tracks'] as List)
+        .map((t) => HomeDto.parseTrack(t as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<Track>> getRelatedTracks(String trackId) async {
+    final response = await _dio.get('/tracks/$trackId/related');
+    final data = response.data['data'] as Map<String, dynamic>;
+    return (data['tracks'] as List)
+        .map((t) => HomeDto.parseTrack(t as Map<String, dynamic>))
         .toList();
   }
 }
