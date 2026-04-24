@@ -34,26 +34,15 @@ class SearchSuggestionsList extends ConsumerWidget {
           key: const Key('suggestions_list'),
           itemCount: suggestions.length,
           itemBuilder: (_, i) {
-            final suggestion = suggestions[i];
-            final isUser = suggestion.type == 'user';
-
             return ListTile(
               key: Key('suggestion_tile_$i'),
-              leading: isUser
-                  ? CircleAvatar(
-                      radius: 20,
-                      backgroundImage: suggestion.avatarUrl != null
-                          ? NetworkImage(suggestion.avatarUrl!)
-                          : null,
-                      child: suggestion.avatarUrl == null
-                          ? const Icon(Icons.person, size: 20)
-                          : null,
-                    )
-                  : null,
-              title: Text(suggestion.text),
+              title: Text(suggestions[i].text),
+              // Arrow icon hints the suggestion will populate the search bar.
               trailing: const Icon(Icons.north_west, size: 16),
               onTap: () {
-                ref.read(searchQueryProvider.notifier).update(suggestion.text);
+                ref
+                    .read(searchQueryProvider.notifier)
+                    .update(suggestions[i].text);
                 ref.read(searchSubmittedProvider.notifier).submit();
               },
             );

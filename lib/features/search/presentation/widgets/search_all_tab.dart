@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import '../widgets/track_tile.dart';
 import '../widgets/search_profiles_tab.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
-import '../pages/search_seeall_page.dart';
-import '../widgets/search_tracks_tab.dart';
-import '../widgets/search_playlists_tab.dart';
-import 'package:go_router/go_router.dart';
 
 /// The "All" tab in search results. Shows a mixed-content summary page with:
 /// Top Result, Tracks (first 3), Profiles (first 3), Playlists (first 3),
@@ -43,16 +38,7 @@ class AllTab extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── Tracks ──────────────────────────────────────────
-          _SectionHeader(
-            title: 'Tracks',
-            onSeeAll: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    const SearchSeeAllPage(title: 'Tracks', child: TracksTab()),
-              ),
-            ),
-          ),
+          const _SectionTitle('Tracks'),
           const SizedBox(height: 12),
           if (data.tracks.isNotEmpty)
             _TracksSection(tracks: data.tracks)
@@ -63,21 +49,10 @@ class AllTab extends ConsumerWidget {
 
           // ── Profiles ────────────────────────────────────────
           if (data.profiles.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Profiles',
-              onSeeAll: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SearchSeeAllPage(
-                    title: 'Profiles',
-                    child: ProfilesTab(),
-                  ),
-                ),
-              ),
-            ),
+            const _SectionTitle('Profiles'),
             const SizedBox(height: 12),
             ...data.profiles
-                .take(1)
+                .take(3)
                 .toList()
                 .asMap()
                 .entries
@@ -93,18 +68,7 @@ class AllTab extends ConsumerWidget {
 
           // ── Playlists ───────────────────────────────────────
           if (data.playlists.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Playlists',
-              onSeeAll: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SearchSeeAllPage(
-                    title: 'Playlists',
-                    child: PlaylistsTab(),
-                  ),
-                ),
-              ),
-            ),
+            const _SectionTitle('Playlists'),
             const SizedBox(height: 12),
             ...data.playlists
                 .take(3)
@@ -152,7 +116,7 @@ class AllTab extends ConsumerWidget {
                   (e) => Padding(
                     key: Key('all_tab_more_track_${e.key}'),
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: TrackCard(track: e.value),
+                    child: TrackTile(track: e.value),
                   ),
                 ),
           ],
@@ -174,9 +138,6 @@ class _PlaylistRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${playlist['id']}', extra: false);
-      },
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.asset(
@@ -218,9 +179,6 @@ class _AlbumRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${album['id']}', extra: false);
-      },
       isThreeLine: true,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
@@ -325,7 +283,7 @@ class _TracksSection extends StatelessWidget {
         return Padding(
           key: Key('all_tab_track_${e.key}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: TrackCard(track: e.value),
+          child: TrackTile(track: e.value),
         );
       }).toList(),
     );
@@ -356,36 +314,6 @@ class _EmptySection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Text(label, style: TextStyle(color: Colors.grey[500])),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.onSeeAll});
-  final String title;
-  final VoidCallback onSeeAll;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 23,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        TextButton(
-          onPressed: onSeeAll,
-          child: const Text('See all'),
-          style: TextButton.styleFrom(
-            foregroundColor: const Color.fromARGB(255, 255, 255, 255),
-          ),
-        ),
-      ],
     );
   }
 }
