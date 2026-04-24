@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 // lib/features/playlist/presentation/screens/mix_detail_screen.dart
 
 library;
@@ -48,6 +49,7 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
 
   Future<void> load({required String mixId, required MixType mixType}) async {
     state = const MixDetailState(isLoading: true);
+    print('[MixDetail] load() — mixId="$mixId" mixType=$mixType');
     try {
       List<PlaylistTrack> tracks;
       switch (mixType) {
@@ -58,8 +60,8 @@ class MixDetailNotifier extends Notifier<MixDetailState> {
         case MixType.genre:
           tracks = await _ds.fetchMixTracks(mixId);
       }
+      print('[MixDetail] ✅ Got ${tracks.length} tracks');
       state = MixDetailState(tracks: tracks, isLoading: false);
-      print('[MixDetail] ✅ Loaded ${tracks.length} tracks');
     } catch (e) {
       print('[MixDetail] ❌ Failed: $e');
       state = MixDetailState(isLoading: false, error: 'Could not load mix');
@@ -99,6 +101,15 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Log exactly what the partner passes so we can diagnose
+    print('[MixDetail] ─────────────────────────────────────');
+    print('[MixDetail] mixId     = "${widget.mixId}"');
+    print('[MixDetail] mixTitle  = "${widget.mixTitle}"');
+    print('[MixDetail] ownerName = "${widget.ownerName}"');
+    print('[MixDetail] mixType   = ${widget.mixType}');
+    print('[MixDetail] coverUrl  = "${widget.coverUrl}"');
+    print('[MixDetail] trackCount= ${widget.trackCount}');
+    print('[MixDetail] ─────────────────────────────────────');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(mixDetailProvider.notifier)
@@ -164,7 +175,10 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
     }
 
     final tracks = state.tracks;
-    final trackCount = widget.trackCount ?? tracks.length;
+    // Use loaded track count over passed-in trackCount when available
+    final trackCount = tracks.isNotEmpty
+        ? tracks.length
+        : (widget.trackCount ?? 0);
     final totalDuration = tracks.fold(
       Duration.zero,
       (sum, t) => sum + t.duration,
@@ -199,11 +213,12 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                     child: SizedBox(
                       width: 56,
                       height: 56,
-                      child: widget.coverUrl != null
+                      child:
+                          widget.coverUrl != null && widget.coverUrl!.isNotEmpty
                           ? Image.network(
                               widget.coverUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (_, _, _) =>
                                   _Placeholder(widget.mixTitle),
                             )
                           : _Placeholder(widget.mixTitle),
@@ -365,7 +380,8 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                     child: SizedBox(
                       width: 56,
                       height: 56,
-                      child: widget.coverUrl != null
+                      child:
+                          widget.coverUrl != null && widget.coverUrl!.isNotEmpty
                           ? Image.network(widget.coverUrl!, fit: BoxFit.cover)
                           : _Placeholder(widget.mixTitle),
                     ),
@@ -420,7 +436,6 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   }
 }
 
-// ── Cover placeholder ─────────────────────────────────────────────────────────
 class _Placeholder extends StatelessWidget {
   const _Placeholder(this.title);
   final String title;

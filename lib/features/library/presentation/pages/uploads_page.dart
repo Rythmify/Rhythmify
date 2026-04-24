@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../track_upload/presentation/providers/upload_track_provider.dart';
 
 /// Your Uploads page matching SoundCloud's layout.
 ///
@@ -51,6 +54,48 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Handles audio file selection and prepares it for upload.
+  ///
+  /// This follows the same flow as the home page upload button:
+  /// 1. Opens file picker restricted to audio files
+  /// 2. Extracts selected file path and metadata
+  /// 3. Determines audio duration using local player
+  /// 4. Initializes upload draft via Riverpod provider
+  /// 5. Navigates to upload screen if successful
+  Future<void> _handleUploadButtonPress() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null) return;
+
+    Duration duration = Duration.zero;
+    try {
+      final player = AudioPlayer();
+      final detected = await player.setFilePath(picked.path!);
+      duration = detected ?? Duration.zero;
+      await player.dispose();
+    } catch (_) {}
+
+    ref
+        .read(uploadFormProvider.notifier)
+        .initDraft(
+          artistId: 'dev_user_001',
+          localAudioPath: picked.path!,
+          duration: duration,
+          fileName: picked.name,
+        );
+
+    if (mounted) {
+      context.push('/upload-track');
+      // Start audio upload right after navigating
+      ref.read(uploadFormProvider.notifier).startAudioUpload();
+    }
   }
 
   // ─── helpers ────────────────────────────────────────────────────────────────
@@ -127,7 +172,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
           child: _UploadsHeader(
             usedMinutes: 80,
             limitMinutes: _kUploadLimitMinutes,
-            onUpload: () => context.push('/upload-track'),
+            onUpload: _handleUploadButtonPress,
             onShuffle: () {},
             onPlay: () {},
           ),
@@ -137,7 +182,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
           // ── Empty state ────────────────────────────────────────────────
           SliverFillRemaining(
             hasScrollBody: false,
-            child: _EmptyUploads(onUpload: () => context.push('/upload-track')),
+            child: _EmptyUploads(onUpload: _handleUploadButtonPress),
           )
         else ...[
           // ── Track list ─────────────────────────────────────────────────
@@ -345,7 +390,9 @@ class _CircleIconButton extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.4)),
+          border: Border.all(
+            color: AppTheme.textSecondary.withValues(alpha: 0.4),
+          ),
         ),
         child: Icon(icon, color: AppTheme.appBarItems, size: 20),
       ),

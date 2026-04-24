@@ -96,7 +96,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             context,
             label: 'Your likes',
             key: const Key('library_likes_item'),
-            onTap: () => context.push('/profile/me/likes'),
+            onTap: () => context.push('/library/likes'),
           ),
           _menuItem(
             context,
@@ -120,7 +120,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             context,
             label: 'Stations',
             key: const Key('library_stations_item'),
-            onTap: () => context.push('/library/stations'),
+            onTap: () => context.pushNamed('library-stations'),
           ),
           _menuItem(
             context,

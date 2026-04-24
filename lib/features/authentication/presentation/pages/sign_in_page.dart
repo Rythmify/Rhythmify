@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../domain/entities/google_auth_data.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -9,13 +11,17 @@ import '../widgets/social_login_button.dart';
 
 /// The sign-in / register entry screen.
 ///
-/// Displays social login buttons (Google, Apple, Facebook) and an
+/// Displays social login buttons (Google, Apple, Facebook, GitHub) and an
 /// email input field. The [mode] parameter controls whether the
-/// "Continue" button leads to the login password page or the
-/// account creation password page.
+/// "Continue" button and social buttons lead to login or account creation.
 ///
-/// - `mode = 'login'` → navigates to `/login/password`
-/// - `mode = 'register'` → navigates to `/create-account/password`
+/// **Email/Password Flow:**
+/// - `mode = 'login'` → "Continue" button navigates to `/login/password`
+/// - `mode = 'register'` → "Continue" button navigates to `/create-account/password`
+///
+/// **Google OAuth Flow:**
+/// - `mode = 'login'` → Google button logs in directly to existing account → home
+/// - `mode = 'register'` → Google button navigates to `/register` with pre-filled data
 class SignInPage extends ConsumerStatefulWidget {
   /// Controls whether this page is in login or register mode.
   ///
@@ -54,6 +60,88 @@ class _SignInPageState extends ConsumerState<SignInPage> {
         );
       } else {
         context.push('/login/password', extra: _emailController.text.trim());
+      }
+    }
+  }
+
+  /// Initiates Google Sign-In flow with mode-dependent behavior.
+  ///
+  /// **In login mode (`mode = 'login'`):**
+  /// 1. Launches Google Sign-In UI
+  /// 2. Gets id_token from Google
+  /// 3. Calls `signInWithGoogleAccount()` to log in directly
+  /// 4. On success, navigates to home
+  ///
+  /// **In register mode (`mode = 'register'`):**
+  /// 1. Launches Google Sign-In UI
+  /// 2. Extracts email, displayName, photoUrl, and id_token
+  /// 3. Navigates to RegisterPage with [GoogleAuthData] for profile completion
+  /// 4. Registration completes the account creation
+  ///
+  /// If user cancels Google Sign-In (returns null), this method does nothing.
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: const ['email', 'profile'],
+        serverClientId:
+            '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
+      );
+
+      // Sign out first to ensure account picker shows
+      await googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled—do nothing
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to get Google ID token. Device may not support Google Sign-In.',
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Mode-dependent behavior
+      if (widget.mode == 'login') {
+        // Login mode: sign in directly using the notifier
+        if (mounted) {
+          ref.read(authProvider.notifier).signInWithGoogleAccount();
+        }
+      } else {
+        // Register mode: navigate to registration page with pre-filled data
+        if (mounted) {
+          context.push(
+            '/register',
+            extra: GoogleAuthData(
+              idToken: idToken,
+              email: googleUser.email,
+              displayName: googleUser.displayName,
+              photoUrl: googleUser.photoUrl,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In error: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
@@ -133,15 +221,15 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 SocialLoginButton(
                   key: const Key('auth_social_google_button'),
                   provider: SocialProvider.google,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithGoogleAccount(),
+                  onTap: _handleGoogleSignIn,
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
-                  key: const Key('auth_social_apple_button'),
-                  provider: SocialProvider.apple,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithAppleAccount(),
+                  key: const Key('auth_social_github_button'),
+                  provider: SocialProvider.github,
+                  onTap: () => widget.mode == 'register'
+                      ? ref.read(authProvider.notifier).signUpWithGitHub()
+                      : ref.read(authProvider.notifier).signInWithGitHub(),
                 ),
                 const SizedBox(height: 28),
                 Text(

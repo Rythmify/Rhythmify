@@ -5,6 +5,9 @@ import 'package:rythmify/features/messaging/data/repositories/mock_conversations
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/add_widget_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/app_icon_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
@@ -14,9 +17,11 @@ import '../../features/authentication/presentation/pages/onboarding_page.dart';
 import '../../features/authentication/presentation/pages/sign_in_page.dart';
 import '../../features/authentication/presentation/pages/create_account_password_page.dart';
 import '../../features/authentication/presentation/pages/create_account_profile_page.dart';
+import '../../features/authentication/presentation/pages/register_page.dart';
 import '../../features/authentication/presentation/pages/login_password_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
 import '../../features/authentication/presentation/pages/verify_email_page.dart';
+import '../../features/authentication/domain/entities/google_auth_data.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/authentication/presentation/pages/splash_screen.dart';
@@ -25,6 +30,8 @@ import '../../features/authentication/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/public_profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/likes_page.dart';
+import '../../features/profile/presentation/pages/uploaded_tracks_page.dart';
+import '../../features/profile/presentation/pages/reposted_tracks_page.dart';
 import '../../features/profile/presentation/pages/profile_connections_page.dart';
 import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
 
@@ -56,6 +63,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
+import '../../features/playlist/presentation/screens/related_tracks_screen.dart'; // NEW
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -75,6 +83,7 @@ import '../../features/library/presentation/pages/stations_page.dart';
 import '../../features/library/presentation/pages/albums_page.dart'; // NEW
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
+import '../../features/library/presentation/pages/likes_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -107,6 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/sign-in' ||
+          state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password' ||
           state.matchedLocation == '/verify-email' ||
           state.matchedLocation.startsWith('/login') ||
@@ -182,6 +192,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/register',
+        builder: (context, state) {
+          final googleData = state.extra as GoogleAuthData?;
+          return RegisterPage(googleData: googleData);
+        },
+      ),
+      GoRoute(
         path: '/verify-email',
         builder: (context, state) {
           final email = state.extra as String? ?? '';
@@ -206,6 +223,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final userId = state.pathParameters['userId']!;
           return LikesPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/uploads',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return UploadedTracksPage(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:userId/reposts',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return RepostedTracksPage(userId: userId);
         },
       ),
       GoRoute(
@@ -338,6 +369,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'import-my-music',
                         builder: (context, state) =>
                             const ImportMyMusicScreen(),
+                        routes: [
+                          GoRoute(
+                            //2- Account
+                            path: 'music-providers',
+                            builder: (context, state) =>
+                                ImportedMusicProvidersScreen(
+                                  appBarTitle: state.extra as String,
+                                ),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         //2- Account
@@ -349,6 +390,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'basic-settings',
                         builder: (context, state) =>
                             const BasicSettingsScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'app-icons',
+                            builder: (context, state) => const AppIconScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         //5- Social settings
@@ -367,6 +414,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'notifications',
                         builder: (context, state) =>
                             const NotificationsSettingsScreen(),
+                      ),
+                      GoRoute(
+                        //8- Add widgets
+                        path: 'add-widget',
+                        builder: (context, state) => const AddWidgetScreen(),
                       ),
                       GoRoute(
                         //9- Analytics
@@ -409,17 +461,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-                  GoRoute(
-                    path: 'playlists/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
-                  ),
 
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
@@ -427,17 +468,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'albums/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
                   ),
 
                   // ── Stations ───────────────────────────────────────────
@@ -447,14 +477,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
+
+                  // ── Detail route for playlists/albums/stations ────────
                   GoRoute(
-                    path: 'stations/:playlistId',
-                    builder: (context, state) {
+                    name: 'library-detail',
+                    path: ':type/:playlistId',
+                    pageBuilder: (context, state) {
+                      final type = state.pathParameters['type']!;
                       final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
+                      return MaterialPage(
+                        key: ValueKey('library-detail-$type-$playlistId'),
+                        child: PlaylistDetailScreen(
+                          playlistId: playlistId,
+                          isOwner: isOwner,
+                        ),
                       );
                     },
                   ),
@@ -462,6 +499,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
+                  ),
+                  GoRoute(
+                    path: 'likes',
+                    builder: (context, state) => const LibraryLikesPage(),
                   ),
                   GoRoute(
                     path: 'history',
@@ -568,6 +609,51 @@ final routerProvider = Provider<GoRouter>((ref) {
             mixType: mixType,
             coverUrl: extra['coverUrl'] as String?,
             trackCount: extra['trackCount'] as int?,
+          );
+        },
+      ),
+
+      // ── More of what you like — track-based related tracks ──────────────
+      // Partner calls: context.push('/related-tracks/$trackId', extra: {
+      //   'basedOnName': artistName,
+      //   'title': trackTitle,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/related-tracks/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.track,
+            basedOnName: extra['basedOnName'] as String? ?? '',
+            title: extra['title'] as String? ?? 'Related Tracks',
+            coverUrl: extra['coverUrl'] as String?,
+          );
+        },
+      ),
+
+      // ── Discover with stations — artist-based station tracks ────────────
+      // Partner calls: context.push('/station/$artistId', extra: {
+      //   'artistName': artistName,
+      //   'stationName': stationName,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/station/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final artistName = extra['artistName'] as String? ?? '';
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.station,
+            basedOnName: artistName,
+            title: extra['stationName'] as String? ?? artistName,
+            coverUrl: extra['coverUrl'] as String?,
           );
         },
       ),

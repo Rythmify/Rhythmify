@@ -93,6 +93,25 @@ class UploadedTrack extends Equatable {
 }
 
 // ─────────────────────────────────────────────
+// LikedTrack — used in Your Likes page
+// ─────────────────────────────────────────────
+class LikedTrack extends Equatable {
+  final Track track;
+
+  const LikedTrack({required this.track});
+
+  String get id => track.id;
+  String get title => track.title;
+  String? get artworkUrl => track.coverImage;
+  int get playCount => track.playCount;
+  int get likeCount => track.likeCount;
+  DateTime get createdAt => track.createdAt;
+
+  @override
+  List<Object?> get props => [id, title];
+}
+
+// ─────────────────────────────────────────────
 // TrackInsight — used in Your Insights page
 // ─────────────────────────────────────────────
 class TrackInsight extends Equatable {
@@ -125,23 +144,35 @@ class TrackInsight extends Equatable {
 // ─────────────────────────────────────────────
 class RecentlyPlayedEntry extends Equatable {
   final String trackId;
+  final String userId;
   final String title;
   final String artistName;
   final String? artworkUrl;
+  final String? streamUrl;
+  final String? audioUrl;
   final int durationSeconds;
+  final int playCount;
+  final bool isLiked;
+  final bool isArtistFollowed;
   final DateTime playedAt;
 
   const RecentlyPlayedEntry({
     required this.trackId,
+    required this.userId,
     required this.title,
     required this.artistName,
     this.artworkUrl,
+    this.streamUrl,
+    this.audioUrl,
     required this.durationSeconds,
+    required this.playCount,
+    this.isLiked = false,
+    this.isArtistFollowed = false,
     required this.playedAt,
   });
 
   @override
-  List<Object?> get props => [trackId, playedAt];
+  List<Object?> get props => [trackId, playedAt, userId, playCount];
 }
 
 // ─────────────────────────────────────────────

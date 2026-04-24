@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 
+/// Displays legal information tiles including copyright, terms of use,
+/// privacy policy, and imprint. Each tile navigates to the respective page.
 class LegalSettingsScreen extends StatelessWidget {
   const LegalSettingsScreen({super.key});
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import '../../../../core/network/api_client.dart';
@@ -19,6 +20,9 @@ abstract class TrackRemoteDataSource {
 
   /// Fetches the full list of available tags from the remote API.
   Future<Map<String, dynamic>> getTags();
+
+  /// Fetches the fan leaderboard for the given [trackId] and [period].
+  Future<Map<String, dynamic>> getFanLeaderboard(String trackId, String period);
 
   /// Likes the provided track on behalf of the current user.
   Future<void> likeTrack(String trackId);
@@ -54,6 +58,9 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getTrackDetails(String id) async {
     final response = await client.dio.get('/tracks/$id');
+    debugPrint(
+      '=============================================================DEBUG TRACK JSON: ${response.data}',
+    );
     return response.data as Map<String, dynamic>;
   }
 
@@ -75,6 +82,18 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getTags() async {
     final response = await client.dio.get('/tags');
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getFanLeaderboard(
+    String trackId,
+    String period,
+  ) async {
+    final response = await client.dio.get(
+      '/tracks/$trackId/fan-leaderboard',
+      queryParameters: {'period': period},
+    );
     return response.data as Map<String, dynamic>;
   }
 

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
 
+/// Displays the user's account information including email address.
+/// Provides options to sign out or navigate to account deletion.
+/// Uses [ConsumerWidget] to access [AuthNotifier] via Riverpod.
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
@@ -42,7 +46,9 @@ class AccountScreen extends ConsumerWidget {
               SettingsOptionsTileWidget(
                 key: Key('delete_account_button'),
                 title: 'Delete account',
-                onTap: () {},
+                onTap: () {
+                  context.push('/library/settings/account/delete-account');
+                },
               ),
             ],
           ),

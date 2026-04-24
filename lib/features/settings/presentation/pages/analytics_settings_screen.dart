@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/privacy_policy_widget.dart';
-import 'package:rythmify/features/settings/presentation/widgets/reusable_tile_widget.dart';
+import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 
+/// Allows the user to toggle sending usage and device data to Rythmify.
+/// Includes a restart warning and a link to the Privacy Policy.
 class AnalyticsSettingsScreen extends StatelessWidget {
   const AnalyticsSettingsScreen({super.key});
 
@@ -17,11 +19,10 @@ class AnalyticsSettingsScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReusableTileWidget(
+            SwitchTileWidget(
               key: Key('Analytics_tile'),
               title:
                   'Help improve Rythmify by sending us regular usage and device data',
-              switchExists: true,
               initSwitchValue: true,
               onTap: () {},
             ),

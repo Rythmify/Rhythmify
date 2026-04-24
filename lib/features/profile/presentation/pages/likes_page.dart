@@ -7,7 +7,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
-import '../../../player/presentation/providers/player_provider.dart';
 
 /// Likes page matching SoundCloud's layout.
 ///
@@ -35,6 +34,18 @@ class _LikesPageState extends ConsumerState<LikesPage> {
   @override
   void initState() {
     super.initState();
+
+    Future.microtask(() async {
+      await ref
+          .read(profileProvider.notifier)
+          .loadProfile(userId: widget.userId);
+      // Ensure we load full list (limit 20) and force refresh
+      if (mounted) {
+        ref
+            .read(profileProvider.notifier)
+            .loadLikedTracks(userId: widget.userId, refresh: true, limit: 20);
+      }
+    });
 
     // Attach scroll listener for pagination
     _scrollController.addListener(() {
@@ -87,7 +98,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
   }
 
   Widget _buildList(ProfileLoaded state) {
-    if (state.likedTracks.isEmpty && !state.isLoadingTracks) {
+    if (state.likedTracks.isEmpty && !state.isLoadingLikes) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -199,7 +210,7 @@ class _LikesPageState extends ConsumerState<LikesPage> {
             itemBuilder: (context, index) {
               // Pagination footer
               if (index == filtered.length) {
-                return state.isLoadingTracks
+                return state.isLoadingLikes
                     ? const Padding(
                         padding: EdgeInsets.all(16),
                         child: Center(
@@ -215,12 +226,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               return TrackCard(
                 key: Key('item_${filtered[index].id}'),
                 track: filtered[index],
-                observePlayerState: false,
-                onTap: () {
-                  ref
-                      .read(playerStateProvider.notifier)
-                      .playOptimistic(filtered[index]);
-                },
               );
             },
           ),

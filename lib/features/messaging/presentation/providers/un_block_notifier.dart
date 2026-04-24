@@ -14,9 +14,11 @@ class UnblockNotifier extends StateNotifier<bool> {
   UnblockNotifier({required this.ref}) : super(false);
 
   Future<void> unBlockUser({required String participantId}) async {
+    if (!mounted) return;
     state = true;
     final uCase = UnblockUserUsecase(repo: ref.read(repositoryprovider));
     await (uCase(participantId));
+    if (!mounted) return;
     state = false;
   }
 }
