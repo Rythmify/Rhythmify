@@ -524,7 +524,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/upgrade',
-                builder: (context, state) => const UpgradeScreen(),
+                builder: (context, state) => const UpgradeLandingScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'plans',
+                    builder: (context, state) => const UpgradeScreen(),
+                  ),
+                ],
               ),
             ],
           ),
