@@ -1,0 +1,20 @@
+Analyzing cross...                                              
+
+warning - Unused import: 'feed_card_play_button.dart' - lib\features\feed\presentation\widgets\feed_card.dart:8:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_card_bottom_info.dart:73:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_card_bottom_info.dart:76:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_card_cover.dart:18:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_card_cover.dart:39:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_card_cover.dart:53:45 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\features\feed\presentation\widgets\feed_card_cover.dart:66:47 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\feed\presentation\widgets\feed_card_cover.dart:66:51 - unnecessary_underscores
+warning - The value of the local variable 'isPlaying' isn't used - lib\features\feed\presentation\widgets\feed_card_play_button.dart:23:11 - unused_local_variable
+warning - A value for optional parameter 'key' isn't ever given - lib\features\feed\presentation\widgets\feed_card_side_actions.dart:41:11 - unused_element_parameter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\feed\presentation\widgets\feed_tab_bar.dart:18:31 - deprecated_member_use
+   info - The member 'build' overrides an inherited member but isn't annotated with '@override' - lib\features\library\presentation\pages\insights_page.dart:111:10 - annotate_overrides
+   info - Unnecessary use of multiple underscores - lib\features\profile\presentation\pages\public_profile_page.dart:561:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\presentation\pages\public_profile_page.dart:569:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\presentation\pages\public_profile_page.dart:569:38 - unnecessary_underscores
+   info - Dangling library doc comment - lib\features\track_upload\presentation\screens\upload_track_screen.dart:1:1 - dangling_library_doc_comments
+
+16 issues found. (ran in 12.0s)

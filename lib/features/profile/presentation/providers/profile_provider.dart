@@ -15,6 +15,7 @@ import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
+import '../../.././playlist/data/datasources/playlist_remote_datasource.dart';
 
 // coverage:ignore-file
 /// Riverpod providers and notifier orchestration for profile state management.
@@ -24,6 +25,10 @@ import '../../data/datasources/profile_remote_datasource_impl.dart';
 /// - [publicProfileProvider]: Family provider for any user's public profile (`GET /users/{userId}`)
 
 const bool useProfileMockData = false;
+
+final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
+  return PlaylistRemoteDatasource(apiClient.dio);
+});
 
 /// Provides the authenticated user's own profile.
 ///
@@ -39,12 +44,9 @@ final ownProfileProvider = NotifierProvider<ProfileNotifier, ProfileState>(() {
 /// Family provider keyed by [userId]. Each user ID gets its own state instance.
 /// Used for viewing other users' profiles without affecting [ownProfileProvider].
 final publicProfileProvider =
-    NotifierProvider.family<ProfileNotifier, ProfileState, String>(
-      (ref, userId) {
-            return ProfileNotifier();
-          }
-          as ProfileNotifier Function(String arg),
-    );
+    NotifierProvider.family<ProfileNotifier, ProfileState, String>((_) {
+      return ProfileNotifier();
+    });
 
 /// Legacy provider for backward compatibility.
 ///
@@ -75,6 +77,17 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _uploadsRequestVersion = 0;
   int _repostsRequestVersion = 0;
 
+  /// Tracks whether this notifier was ever loaded with userId = 'me'.
+  ///
+  /// Used in [followUser] / [unfollowUser] to decide whether to call
+  /// `GET /users/me` or `GET /users/{id}` when refreshing the profile.
+  /// `GET /users/me` is authoritative for follower/following counts on
+  /// the own profile; using the UUID endpoint can return stale values.
+  bool _loadedAsMe = false;
+
+  PlaylistRemoteDatasource get _playlistDs =>
+      ref.read(playlistDatasourceProvider);
+
   @override
   ProfileState build() {
     final datasource = useProfileMockData
@@ -99,6 +112,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> loadProfile({required String userId}) async {
+    // ── Track whether this notifier is being used for the own profile ────
+    if (userId == 'me') _loadedAsMe = true;
+
     final current = state;
     final isSameUser =
         current is ProfileLoaded &&
@@ -127,6 +143,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     await loadUploadedTracks(userId: userId, refresh: true, limit: 3);
     await loadLikedTracks(userId: userId, refresh: true, limit: 3);
     await loadRepostedTracks(userId: userId, refresh: true, limit: 3);
+    await loadPlaylists(userId: userId, refresh: true, limit: 3);
   }
 
   Future<void> loadLikedTracks({
@@ -282,6 +299,40 @@ class ProfileNotifier extends Notifier<ProfileState> {
     );
   }
 
+  Future<void> loadPlaylists({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {
+    final current = state;
+    if (current is! ProfileLoaded) return;
+
+    if (current.isLoadingPlaylists && !refresh) return;
+
+    if (refresh) {
+      state = current.copyWith(isLoadingPlaylists: true, playlists: const []);
+    } else {
+      state = current.copyWith(isLoadingPlaylists: true);
+    }
+
+    try {
+      final playlists = await _playlistDs.fetchUserPlaylists(
+        userId: userId,
+        limit: limit,
+      );
+      if (state is ProfileLoaded) {
+        state = (state as ProfileLoaded).copyWith(
+          playlists: playlists,
+          isLoadingPlaylists: false,
+        );
+      }
+    } catch (e) {
+      if (state is ProfileLoaded) {
+        state = (state as ProfileLoaded).copyWith(isLoadingPlaylists: false);
+      }
+    }
+  }
+
   Future<void> updateProfile({
     required String displayName,
     required String username,
@@ -324,7 +375,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
         state = current.copyWith(isSaving: false);
       },
       (profile) {
-        // Update state with new profile containing updated avatar
         state = current.copyWith(profile: profile, isSaving: false);
       },
     );
@@ -342,7 +392,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
         state = current.copyWith(isSaving: false);
       },
       (_) async {
-        // Reload profile to get updated avatar URL (null)
         final profileResult = await _getProfile(userId: 'me');
         profileResult.fold(
           (failure) => state = current.copyWith(isSaving: false),
@@ -365,7 +414,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
         state = current.copyWith(isSaving: false);
       },
       (profile) {
-        // Update state with new profile containing updated cover
         state = current.copyWith(profile: profile, isSaving: false);
       },
     );
@@ -384,36 +432,58 @@ class ProfileNotifier extends Notifier<ProfileState> {
     });
   }
 
+  /// Starts following a user.
+  ///
+  /// Calls the follow API and then refreshes the profile state to get
+  /// the updated followers count from the backend. Returns early if already
+  /// following or if state is not loaded.
   Future<void> followUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
     if (current.profile.isFollowing) return;
 
     final result = await _followUser(userId: userId);
-    result.fold((failure) => state = current, (_) async {
-      await _refreshProfileSnapshot(previous: current);
-    });
+    if (result.isRight()) {
+      // Use 'me' endpoint for own profile — GET /users/me returns authoritative
+      // follower counts, whereas GET /users/{uuid} can return a stale value
+      // which makes the count appear doubled after navigating back.
+      final refreshId = _loadedAsMe ? 'me' : current.profile.id;
+      await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
+    } else {
+      state = current;
+    }
   }
 
+  /// Stops following a user.
+  ///
+  /// Calls the unfollow API and then refreshes the profile state to get
+  /// the updated followers count from the backend. Returns early if not
+  /// following or if state is not loaded.
   Future<void> unfollowUser({required String userId}) async {
     final current = state;
     if (current is! ProfileLoaded) return;
     if (!current.profile.isFollowing) return;
 
     final result = await _unfollowUser(userId: userId);
-    result.fold((failure) => state = current, (_) async {
-      await _refreshProfileSnapshot(previous: current);
-    });
+    if (result.isRight()) {
+      // Same fix as followUser — always use 'me' for own profile refreshes.
+      final refreshId = _loadedAsMe ? 'me' : current.profile.id;
+      await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
+    } else {
+      state = current;
+    }
   }
 
   /// Reloads the currently displayed profile from backend and preserves tracks.
   ///
-  /// This keeps follower/following counters backend-authoritative and avoids
-  /// local accumulation drift from optimistic state updates.
+  /// [refreshId] must be `'me'` for the authenticated user's own profile, or
+  /// the user's UUID for a public profile. Using the correct ID ensures the
+  /// right endpoint is called (`GET /users/me` vs `GET /users/{id}`).
   Future<void> _refreshProfileSnapshot({
     required ProfileLoaded previous,
+    required String refreshId,
   }) async {
-    final profileResult = await _getProfile(userId: previous.profile.id);
+    final profileResult = await _getProfile(userId: refreshId);
     profileResult.fold(
       (_) => state = previous,
       (profile) => state = previous.copyWith(profile: profile),

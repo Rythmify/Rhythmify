@@ -92,7 +92,8 @@ import '../../features/search/presentation/pages/search_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 
 //  Premium imports
-import '../../features/premium/presentation/pages/upgrade_screen.dart';
+import '../../features/premium/presentation/screens/upgrade_screen.dart';
+import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -461,17 +462,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-                  GoRoute(
-                    path: 'playlists/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
-                  ),
 
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
@@ -479,17 +469,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'albums/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
                   ),
 
                   // ── Stations ───────────────────────────────────────────
@@ -499,14 +478,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
+
+                  // ── Detail route for playlists/albums/stations ────────
                   GoRoute(
-                    path: 'stations/:playlistId',
-                    builder: (context, state) {
+                    name: 'library-detail',
+                    path: ':type/:playlistId',
+                    pageBuilder: (context, state) {
+                      final type = state.pathParameters['type']!;
                       final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
+                      return MaterialPage(
+                        key: ValueKey('library-detail-$type-$playlistId'),
+                        child: PlaylistDetailScreen(
+                          playlistId: playlistId,
+                          isOwner: isOwner,
+                        ),
                       );
                     },
                   ),
@@ -538,7 +524,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/upgrade',
-                builder: (context, state) => const UpgradeScreen(),
+                builder: (context, state) => const UpgradeLandingScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'plans',
+                    builder: (context, state) => const UpgradeScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -3,20 +3,22 @@ import '../../../../core/errors/failures.dart';
 import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
-/// Use case that signs in a user using their Apple ID via Firebase OAuth.
-/// Delegates to [AuthRepository.signInWithApple].
+/// Use case for signing in with Apple ID.
+///
+/// Orchestrates the Apple Sign-In flow via [AuthRepository.signInWithApple].
+/// Returns [Either] to handle both success and failure cases.
 class SignInWithAppleUseCase {
-  /// The repository used to perform Apple sign-in.
+  /// The [AuthRepository] providing sign-in functionality.
   final AuthRepository repository;
 
   /// Creates a [SignInWithAppleUseCase] with the given [repository].
   SignInWithAppleUseCase(this.repository);
 
-  /// Executes the Apple sign-in flow.
+  /// Executes the Apple sign-in use case.
   ///
-  /// Returns [Right] with a [UserEntity] on success, or [Left] with
-  /// a [Failure] if the flow is cancelled or fails.
-  Future<Either<Failure, UserEntity>> call() {
+  /// Returns [Right] with a [UserEntity] on success.
+  /// Returns [Left] with a [Failure] on error.
+  Future<Either<Failure, UserEntity>> call() async {
     return repository.signInWithApple();
   }
 }
