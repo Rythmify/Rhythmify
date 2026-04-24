@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../domain/entities/playlist_entity.dart';
@@ -26,9 +27,6 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   @override
   void initState() {
     super.initState();
-    // Albums are in the same playlists list — loadPlaylists() fetches both.
-    // If LibraryPlaylistsScreen already called this, it's a no-op because
-    // the provider is already loaded. Calling it here too is safe.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(playlistListProvider.notifier).loadPlaylists();
     });
@@ -50,9 +48,9 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.background, // ✅ changed
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppTheme.background, // ✅ changed
         elevation: 0,
         leading: IconButton(
           key: const Key('library_albums_back_button'),
@@ -192,7 +190,11 @@ class _AlbumTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
-            PlaylistCoverImage(playlist: album, size: 65, borderRadius: 4),
+            PlaylistCoverImage(
+              playlist: album,
+              size: 65,
+              borderRadius: 0, // ✅ sharp edges
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
