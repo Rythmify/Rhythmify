@@ -449,7 +449,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       // which makes the count appear doubled after navigating back.
       final refreshId = _loadedAsMe ? 'me' : current.profile.id;
       await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
-      
+
       // Also refresh the authenticated user's own profile if viewing someone else's profile
       // This ensures our own following count is updated
       if (_loadedAsMe == false && refreshId != 'me') {
@@ -475,7 +475,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       // Same fix as followUser — always use 'me' for own profile refreshes.
       final refreshId = _loadedAsMe ? 'me' : current.profile.id;
       await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
-      
+
       // Also refresh the authenticated user's own profile if viewing someone else's profile
       // This ensures our own following count is updated
       if (_loadedAsMe == false && refreshId != 'me') {

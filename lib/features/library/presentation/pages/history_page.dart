@@ -250,18 +250,24 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 createdAt: entry.playedAt,
                 coverImage: entry.artworkUrl,
               );
-              
+
               final trackIndex = allTracks.indexWhere((t) => t.id == track.id);
-              
+
               return TrackCard(
                 key: Key(
                   'history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}',
                 ),
                 track: track,
-                onTap: trackIndex >= 0 ? () {
-                  ref.read(playerStateProvider.notifier)
-                      .loadAndPlayQueue(allTracks, initialIndex: trackIndex);
-                } : null,
+                onTap: trackIndex >= 0
+                    ? () {
+                        ref
+                            .read(playerStateProvider.notifier)
+                            .loadAndPlayQueue(
+                              allTracks,
+                              initialIndex: trackIndex,
+                            );
+                      }
+                    : null,
               );
             },
           ),

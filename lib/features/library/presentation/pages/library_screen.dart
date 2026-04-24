@@ -328,7 +328,11 @@ class _RecentlyPlayedSection extends StatelessWidget {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final entry = entries[index];
-              return _RecentlyPlayedItem(entry: entry, allEntries: entries, index: index);
+              return _RecentlyPlayedItem(
+                entry: entry,
+                allEntries: entries,
+                index: index,
+              );
             },
           ),
         ),

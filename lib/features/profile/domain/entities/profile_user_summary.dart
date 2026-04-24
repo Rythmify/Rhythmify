@@ -31,5 +31,11 @@ class ProfileUserSummary extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, displayName, username, avatarUrl, isFollowing];
+  List<Object?> get props => [
+    id,
+    displayName,
+    username,
+    avatarUrl,
+    isFollowing,
+  ];
 }

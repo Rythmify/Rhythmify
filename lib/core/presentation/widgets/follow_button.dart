@@ -34,9 +34,10 @@ final followStatusProvider = Provider.family<bool, String>((ref, targetUserId) {
   // Fallback: check connections list for initial value without loading full profile
   final connectionsState = ref.watch(profileConnectionsProvider);
   if (connectionsState is ProfileConnectionsLoaded) {
-    final match = connectionsState.users
-        .cast<ProfileUserSummary?>()
-        .firstWhere((u) => u?.id == targetUserId, orElse: () => null);
+    final match = connectionsState.users.cast<ProfileUserSummary?>().firstWhere(
+      (u) => u?.id == targetUserId,
+      orElse: () => null,
+    );
     if (match != null) return match.isFollowing;
   }
   return false;
