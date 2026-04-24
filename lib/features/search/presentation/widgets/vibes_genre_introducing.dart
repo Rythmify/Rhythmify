@@ -47,10 +47,8 @@ class IntroducingSectionWidget extends ConsumerWidget {
     const double coverSize = 110.0;
 
     return GestureDetector(
-      onTap: () => context.push(
-        '/library/playlists/${playlist.playlistId}',
-        extra: false,
-      ),
+      onTap: () =>
+          context.push('/playlist/${playlist.playlistId}', extra: false),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(

@@ -222,8 +222,12 @@ class _LibraryPlaylistsScreenState
                         return _PlaylistListTile(
                           key: Key('library_playlist_tile_${playlist.id}'),
                           playlist: playlist,
-                          onTap: () => context.push(
-                            '/library/playlists/${playlist.id}',
+                          onTap: () => context.pushNamed(
+                            'library-detail',
+                            pathParameters: {
+                              'type': 'playlists',
+                              'playlistId': playlist.id,
+                            },
                             extra: isOwner,
                           ),
                           onMoreTap: () =>
@@ -244,7 +248,11 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) => context.pushNamed(
+          'library-detail',
+          pathParameters: {'type': 'playlists', 'playlistId': id},
+          extra: true,
+        ),
       ),
     );
   }

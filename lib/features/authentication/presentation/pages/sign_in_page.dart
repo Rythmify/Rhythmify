@@ -11,7 +11,7 @@ import '../widgets/social_login_button.dart';
 
 /// The sign-in / register entry screen.
 ///
-/// Displays social login buttons (Google, Apple, Facebook) and an
+/// Displays social login buttons (Google, Apple, Facebook, GitHub) and an
 /// email input field. The [mode] parameter controls whether the
 /// "Continue" button and social buttons lead to login or account creation.
 ///
@@ -225,10 +225,11 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 ),
                 const SizedBox(height: 12),
                 SocialLoginButton(
-                  key: const Key('auth_social_apple_button'),
-                  provider: SocialProvider.apple,
-                  onTap: () =>
-                      ref.read(authProvider.notifier).signInWithAppleAccount(),
+                  key: const Key('auth_social_github_button'),
+                  provider: SocialProvider.github,
+                  onTap: () => widget.mode == 'register'
+                      ? ref.read(authProvider.notifier).signUpWithGitHub()
+                      : ref.read(authProvider.notifier).signInWithGitHub(),
                 ),
                 const SizedBox(height: 28),
                 Text(
