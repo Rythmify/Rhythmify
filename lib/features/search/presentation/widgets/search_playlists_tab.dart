@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../../../../core/utils/formatters.dart';
+import 'package:go_router/go_router.dart';
 
 /// Search results tab displaying the playlists list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [_PlaylistTile].
@@ -57,6 +58,9 @@ class _PlaylistTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
+        onTap: () {
+          context.push('/playlist/${playlist['id']}', extra: false);
+        },
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: artworkUrl.isNotEmpty && artworkUrl.startsWith('http')

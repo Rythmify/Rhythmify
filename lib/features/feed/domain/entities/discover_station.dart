@@ -1,3 +1,11 @@
+class StationImages {
+  final String? left;
+  final String? center;
+  final String? right;
+
+  const StationImages({this.left, this.center, this.right});
+}
+
 class DiscoverStation {
   final String id;
   final String name;
@@ -6,6 +14,7 @@ class DiscoverStation {
   final String coverImage;
   final int trackCount;
   final int followerCount;
+  final StationImages images;
 
   const DiscoverStation({
     required this.id,
@@ -15,5 +24,6 @@ class DiscoverStation {
     required this.coverImage,
     required this.trackCount,
     required this.followerCount,
+    this.images = const StationImages(), // ← default empty
   });
 }

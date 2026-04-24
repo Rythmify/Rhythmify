@@ -9,6 +9,7 @@ import '../../../../core/utils/formatters.dart';
 import '../pages/search_seeall_page.dart';
 import '../widgets/search_tracks_tab.dart';
 import '../widgets/search_playlists_tab.dart';
+import 'package:go_router/go_router.dart';
 
 /// The "All" tab in search results. Shows a mixed-content summary page with:
 /// Top Result, Tracks (first 3), Profiles (first 3), Playlists (first 3),
@@ -173,6 +174,9 @@ class _PlaylistRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      onTap: () {
+        context.push('/playlist/${playlist['id']}', extra: false);
+      },
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.asset(
@@ -214,6 +218,9 @@ class _AlbumRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      onTap: () {
+        context.push('/playlist/${album['id']}', extra: false);
+      },
       isThreeLine: true,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),

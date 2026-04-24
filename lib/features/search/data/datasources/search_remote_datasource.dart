@@ -100,11 +100,34 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
         'artworkUrl': firstTrackCover,
       };
     }).toList();
+
+    final albums = (data['albums'] as List? ?? []).map((a) {
+      final map = a as Map<String, dynamic>;
+      final releaseDate = map['release_date'] as String? ?? '';
+      final year = releaseDate.length >= 4 ? releaseDate.substring(0, 4) : '';
+      final previewTracks = map['preview_tracks'] as List? ?? [];
+      final firstTrackCover = previewTracks.isNotEmpty
+          ? (previewTracks.first as Map<String, dynamic>)['cover_image']
+                    as String? ??
+                ''
+          : '';
+      return <String, String>{
+        'id': map['id'] as String? ?? '',
+        'title': map['title'] as String? ?? '',
+        'artist':
+            (map['owner'] as Map<String, dynamic>?)?['display_name']
+                as String? ??
+            '',
+        'artworkUrl': map['cover_image'] as String? ?? firstTrackCover,
+        'year': year,
+        'type': map['subtype'] as String? ?? 'Album',
+      };
+    }).toList();
     return SearchResults(
       tracks: tracks,
       profiles: profiles,
       playlists: playlists,
-      albums: const [],
+      albums: albums,
     );
   }
 }
