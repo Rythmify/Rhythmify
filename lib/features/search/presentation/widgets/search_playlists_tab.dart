@@ -52,21 +52,23 @@ class _PlaylistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final artworkUrl = playlist['artworkUrl'] ?? '';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: Image.asset(
-            playlist['artworkUrl']!,
-            key: Key('playlist_artwork_${playlist['id']}'),
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(width: 50, height: 50, color: Colors.grey[800]),
-          ),
+          child: artworkUrl.isNotEmpty && artworkUrl.startsWith('http')
+              ? Image.network(
+                  artworkUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      Container(width: 50, height: 50, color: Colors.grey[800]),
+                )
+              : Container(width: 50, height: 50, color: Colors.grey[800]),
         ),
         title: Text(
           playlist['title']!,

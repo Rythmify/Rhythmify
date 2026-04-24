@@ -306,12 +306,16 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey[800],
+                            ),
                           )
-                        : Image.asset(
-                            track.coverImage!,
+                        : Container(
                             width: 50,
                             height: 50,
-                            fit: BoxFit.cover,
+                            color: Colors.grey[800],
                           ),
                   ),
                   title: Text(
