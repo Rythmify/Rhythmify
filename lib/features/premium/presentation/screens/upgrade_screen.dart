@@ -237,8 +237,14 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               // When user scrolls to bottom, this strip is visible behind player.
               AnimatedContainer(
                 duration: const Duration(milliseconds: 400),
-                height: 90 + botPad,
-                color: _stripColor,
+                height: 160 + botPad,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: _gradient,
+                  ),
+                ),
               ),
             ],
           ),
@@ -350,7 +356,7 @@ class _PlanCard extends StatelessWidget {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   elevation: 0,
-                  shape: const RoundedRectangleBorder(), // sharp button
+                  shape: const StadiumBorder(), // rounded pill — only rounded element
                 ),
                 onPressed: onSubscribe,
                 child: Text('Subscribe now',
@@ -484,7 +490,14 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                   )
                 ],
               ),
-              child: const Icon(Icons.person, color: Colors.white24, size: 52),
+              child: ClipOval(
+  child: Image.asset(
+    'assets/images/premiumartist.jpg',
+    width: 150,
+    height: 150,
+    fit: BoxFit.cover,
+  ),
+),
             ),
           ),
           const SizedBox(height: 36),
