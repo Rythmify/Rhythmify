@@ -96,8 +96,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle,
-                              color: Color(0xFFFF5500), size: 20),
+                          const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFFFF5500),
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             f,
@@ -118,8 +121,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
             Text(
               'Billed monthly. Cancel anytime.',
-              style: GoogleFonts.inter(
-                  fontSize: 13, color: Colors.white54),
+              style: GoogleFonts.inter(fontSize: 13, color: Colors.white54),
             ),
             const SizedBox(height: 6),
             BlueLink(
@@ -135,7 +137,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 child: Text(
                   state.error!,
                   style: GoogleFonts.inter(
-                      fontSize: 13, color: Colors.redAccent),
+                    fontSize: 13,
+                    color: Colors.redAccent,
+                  ),
                 ),
               ),
 
@@ -147,25 +151,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32)),
+                    borderRadius: BorderRadius.circular(32),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: state.isCheckingOut
                     ? null
                     : () => ref
-                        .read(premiumProvider.notifier)
-                        .checkout(widget.planId),
+                          .read(premiumProvider.notifier)
+                          .checkout(widget.planId),
                 child: state.isCheckingOut
                     ? const SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : Text(
                         'Confirm Payment',
                         style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700, fontSize: 16),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
               ),
             ),
@@ -231,7 +240,10 @@ class _SuccessSheet extends StatelessWidget {
             'Your subscription is active.\nEnjoy unlimited uploads and more.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-                fontSize: 14, color: Colors.white60, height: 1.5),
+              fontSize: 14,
+              color: Colors.white60,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 36),
           SizedBox(
@@ -242,7 +254,8 @@ class _SuccessSheet extends StatelessWidget {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32)),
+                  borderRadius: BorderRadius.circular(32),
+                ),
                 elevation: 0,
               ),
               onPressed: () {
@@ -252,7 +265,9 @@ class _SuccessSheet extends StatelessWidget {
               child: Text(
                 'Start exploring',
                 style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, fontSize: 16),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),

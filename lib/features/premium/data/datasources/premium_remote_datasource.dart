@@ -7,7 +7,8 @@ import '../../domain/entities/checkout_session.dart';
 // Replace with your actual ApiClient provider import:
 // import 'package:rythmify/core/network/api_client.dart';
 
-const _base = 'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
+const _base =
+    'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
 
 class PremiumRemoteDatasource {
   final Dio _dio;
@@ -25,8 +26,7 @@ class PremiumRemoteDatasource {
   // GET /subscriptions/me
   Future<UserSubscription> fetchMySubscription() async {
     final res = await _dio.get('$_base/subscriptions/me');
-    return UserSubscription.fromJson(
-        res.data['data'] as Map<String, dynamic>);
+    return UserSubscription.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
   // POST /subscriptions/checkout
@@ -35,8 +35,7 @@ class PremiumRemoteDatasource {
       '$_base/subscriptions/checkout',
       data: {'subscription_plan_id': planId},
     );
-    return CheckoutSession.fromJson(
-        res.data['data'] as Map<String, dynamic>);
+    return CheckoutSession.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
   // POST /subscriptions/mock-confirm/{transactionId}

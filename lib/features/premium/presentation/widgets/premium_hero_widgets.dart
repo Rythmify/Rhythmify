@@ -47,11 +47,19 @@ class HeroSection extends StatelessWidget {
                       colors: [Color(0xFF5C3A10), Color(0xFF1A1000)],
                     ),
                     boxShadow: const [
-                      BoxShadow(color: Colors.black54, blurRadius: 40, offset: Offset(0, 20)),
+                      BoxShadow(
+                        color: Colors.black54,
+                        blurRadius: 40,
+                        offset: Offset(0, 20),
+                      ),
                     ],
                   ),
                   child: const Center(
-                    child: Icon(Icons.music_note, color: Color(0xFFFF5500), size: 64),
+                    child: Icon(
+                      Icons.music_note,
+                      color: Color(0xFFFF5500),
+                      size: 64,
+                    ),
                   ),
                 ),
               ),
@@ -59,23 +67,35 @@ class HeroSection extends StatelessWidget {
           ),
           // Bottom gradient fade
           Positioned(
-            bottom: 0, left: 0, right: 0, height: 360,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 360,
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0xD9121212), Color(0xFF121212)],
+                  colors: [
+                    Colors.transparent,
+                    Color(0xD9121212),
+                    Color(0xFF121212),
+                  ],
                 ),
               ),
             ),
           ),
           // CTA overlay
           Positioned(
-            bottom: 100, left: 20, right: 20,
+            bottom: 100,
+            left: 20,
+            right: 20,
             child: isPremium
                 ? ActivePremiumInfo(endDate: endDate, onCancel: onCancel)
-                : UpsellContent(onContinue: onContinue, onSeeAllPlans: onSeeAllPlans),
+                : UpsellContent(
+                    onContinue: onContinue,
+                    onSeeAllPlans: onSeeAllPlans,
+                  ),
           ),
         ],
       ),
@@ -90,29 +110,48 @@ class HeroSection extends StatelessWidget {
 class UpsellContent extends StatelessWidget {
   final VoidCallback onContinue;
   final VoidCallback onSeeAllPlans;
-  const UpsellContent({super.key, required this.onContinue, required this.onSeeAllPlans});
+  const UpsellContent({
+    super.key,
+    required this.onContinue,
+    required this.onSeeAllPlans,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          PremiumTag(label: '★ PREMIUM', bg: const Color(0xFF1E1E1E), textColor: Colors.white),
-          const SizedBox(width: 8),
-          PremiumTag(label: 'FOR YOU', bg: const Color(0xFF2F80ED), textColor: Colors.white),
-        ]),
+        Row(
+          children: [
+            PremiumTag(
+              label: '★ PREMIUM',
+              bg: const Color(0xFF1E1E1E),
+              textColor: Colors.white,
+            ),
+            const SizedBox(width: 8),
+            PremiumTag(
+              label: 'FOR YOU',
+              bg: const Color(0xFF2F80ED),
+              textColor: Colors.white,
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Text(
           'Unlock unlimited\nuploads &\nmore.',
           style: GoogleFonts.inter(
-            fontSize: 38, fontWeight: FontWeight.w900,
-            color: Colors.white, height: 1.1, letterSpacing: -1,
+            fontSize: 38,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            height: 1.1,
+            letterSpacing: -1,
           ),
         ),
         const SizedBox(height: 12),
-        Text('\$4.99/month. Cancel anytime.',
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
+        Text(
+          '\$4.99/month. Cancel anytime.',
+          style: GoogleFonts.inter(fontSize: 14, color: Colors.white70),
+        ),
         BlueLink(
           label: 'Restrictions apply.',
           onTap: () => showRestrictionsSheet(context),
@@ -122,22 +161,37 @@ class UpsellContent extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white, foregroundColor: Colors.black,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
               elevation: 0,
             ),
             onPressed: onContinue,
-            child: Text('Continue',
-                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black)),
+            child: Text(
+              'Continue',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 16),
         Center(
           child: GestureDetector(
             onTap: onSeeAllPlans,
-            child: Text('See all plans',
-                style: GoogleFonts.inter(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w500)),
+            child: Text(
+              'See all plans',
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ],
@@ -159,16 +213,26 @@ class ActivePremiumInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PremiumTag(label: '★ PREMIUM ACTIVE', bg: const Color(0xFFFF5500), textColor: Colors.white),
+        PremiumTag(
+          label: '★ PREMIUM ACTIVE',
+          bg: const Color(0xFFFF5500),
+          textColor: Colors.white,
+        ),
         const SizedBox(height: 16),
         Text(
           "You're Premium!",
-          style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
+          style: GoogleFonts.inter(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),
         ),
         if (endDate != null) ...[
           const SizedBox(height: 8),
-          Text('Active until $endDate',
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
+          Text(
+            'Active until $endDate',
+            style: GoogleFonts.inter(fontSize: 14, color: Colors.white70),
+          ),
         ],
         const SizedBox(height: 28),
         GestureDetector(
@@ -176,7 +240,8 @@ class ActivePremiumInfo extends StatelessWidget {
           child: Text(
             'Cancel subscription',
             style: GoogleFonts.inter(
-              fontSize: 15, color: Colors.white54,
+              fontSize: 15,
+              color: Colors.white54,
               decoration: TextDecoration.underline,
               decorationColor: Colors.white54,
             ),

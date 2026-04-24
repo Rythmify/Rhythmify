@@ -36,7 +36,9 @@ class PremiumState {
     bool clearSubscription = false,
   }) {
     return PremiumState(
-      subscription: clearSubscription ? null : (subscription ?? this.subscription),
+      subscription: clearSubscription
+          ? null
+          : (subscription ?? this.subscription),
       plans: plans ?? this.plans,
       isLoading: isLoading ?? this.isLoading,
       isCheckingOut: isCheckingOut ?? this.isCheckingOut,
@@ -80,15 +82,16 @@ class PremiumNotifier extends Notifier<PremiumState> {
       state = state.copyWith(subscription: sub, isLoading: false);
     } catch (e) {
       // 404 means no active subscription – that's fine
-      state = state.copyWith(
-        isLoading: false,
-        clearSubscription: true,
-      );
+      state = state.copyWith(isLoading: false, clearSubscription: true);
     }
   }
 
   Future<void> checkout(int planId) async {
-    state = state.copyWith(isCheckingOut: true, clearError: true, checkoutSuccess: false);
+    state = state.copyWith(
+      isCheckingOut: true,
+      clearError: true,
+      checkoutSuccess: false,
+    );
     try {
       final session = await _ds.startCheckout(planId);
       await _ds.confirmMockPayment(session.transactionId);

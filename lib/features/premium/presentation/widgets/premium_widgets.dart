@@ -11,17 +11,29 @@ class PremiumTag extends StatelessWidget {
   final Color bg;
   final Color textColor;
 
-  const PremiumTag({super.key, required this.label, required this.bg, required this.textColor});
+  const PremiumTag({
+    super.key,
+    required this.label,
+    required this.bg,
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Text(
         label,
         style: GoogleFonts.inter(
-            fontSize: 11, fontWeight: FontWeight.w700, color: textColor, letterSpacing: 0.4),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
@@ -43,7 +55,11 @@ class BlueLink extends StatelessWidget {
       onTap: onTap,
       child: Text(
         label,
-        style: GoogleFonts.inter(fontSize: 15, color: const Color(0xFF2F80ED), fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(
+          fontSize: 15,
+          color: const Color(0xFF2F80ED),
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -76,50 +92,99 @@ class PlanCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            PremiumTag(label: 'FOR YOU', bg: const Color(0xFF2F80ED), textColor: Colors.white),
-            const SizedBox(width: 8),
-            PremiumTag(label: periodLabel, bg: periodColor, textColor: Colors.white),
-          ]),
+          Row(
+            children: [
+              PremiumTag(
+                label: 'FOR YOU',
+                bg: const Color(0xFF2F80ED),
+                textColor: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              PremiumTag(
+                label: periodLabel,
+                bg: periodColor,
+                textColor: Colors.white,
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
-          Text(planName,
-              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
-          Text(priceDisplay,
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+          Text(
+            planName,
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            priceDisplay,
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 16),
-          ...features.map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.check, color: Colors.white70, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(f, style: GoogleFonts.inter(fontSize: 14, color: Colors.white))),
-                  ],
-                ),
-              )),
+          ...features.map(
+            (f) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.check, color: Colors.white70, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      f,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white, foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
                 elevation: 0,
               ),
               onPressed: onSubscribe,
-              child: Text('Subscribe now',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: Text(
+                'Subscribe now',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          Text('Cancel anytime.', style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
-          BlueLink(label: 'Restrictions apply', onTap: () => showRestrictionsSheet(context)),
+          Text(
+            'Cancel anytime.',
+            style: GoogleFonts.inter(fontSize: 13, color: Colors.white54),
+          ),
+          BlueLink(
+            label: 'Restrictions apply',
+            onTap: () => showRestrictionsSheet(context),
+          ),
         ],
       ),
     );
@@ -174,17 +239,33 @@ class _RestrictionsSheet extends StatelessWidget {
                 controller: ctrl,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
                 children: [
-                  Text('Restrictions apply',
-                      style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                  Text(
+                    'Restrictions apply',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Subscription may be managed and cancelled at any time in your Account Settings. '
                     'All prices include applicable local taxes. Rythmify Premium Terms of Use & Privacy Policy.',
-                    style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, height: 1.6),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.white70,
+                      height: 1.6,
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Premium',
-                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                  Text(
+                    'Premium',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   BlueLink(
                     label: 'Terms of Use',
@@ -239,8 +320,14 @@ class _TextDocSheet extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(title,
-                        style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white54),
@@ -253,8 +340,14 @@ class _TextDocSheet extends StatelessWidget {
               child: SingleChildScrollView(
                 controller: ctrl,
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-                child: Text(body,
-                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white70, height: 1.8)),
+                child: Text(
+                  body,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    height: 1.8,
+                  ),
+                ),
               ),
             ),
           ],
@@ -278,7 +371,10 @@ class _SheetHandle extends StatelessWidget {
         margin: const EdgeInsets.only(top: 12, bottom: 8),
         width: 40,
         height: 4,
-        decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+        decoration: BoxDecoration(
+          color: Colors.white24,
+          borderRadius: BorderRadius.circular(2),
+        ),
       ),
     );
   }
@@ -304,12 +400,14 @@ class _PremiumDarkInfoSectionState extends State<PremiumDarkInfoSection> {
   static const _faqs = [
     {
       'q': "What's the difference between fan and artist plans?",
-      'a': 'Our fan-oriented plans are designed for those who primarily visit the site to listen to music. '
+      'a':
+          'Our fan-oriented plans are designed for those who primarily visit the site to listen to music. '
           'Artist plans offer unique features designed to help artists create and distribute their music and content.',
     },
     {
       'q': 'Can I purchase an annual plan and/or family plan?',
-      'a': 'Unfortunately we do not currently offer an annual or family plan option for purchase in the app.',
+      'a':
+          'Unfortunately we do not currently offer an annual or family plan option for purchase in the app.',
     },
   ];
 
@@ -332,87 +430,122 @@ class _PremiumDarkInfoSectionState extends State<PremiumDarkInfoSection> {
             Text(
               'Rythmify supports\nindependent artists',
               style: GoogleFonts.inter(
-                fontSize: 22, fontWeight: FontWeight.w800,
-                color: Colors.white, height: 1.2,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1.2,
               ),
             ),
             const SizedBox(height: 14),
             Text(
               'From fan-powered royalties to our audience-building artist plans, '
               'your subscription helps support the Rythmify global community.',
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, height: 1.6),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Colors.white70,
+                height: 1.6,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               '"It\'s such a simple idea. Your monthly fees get split up between the songs"',
               style: GoogleFonts.inter(
-                fontSize: 14, fontWeight: FontWeight.w600,
-                color: Colors.white, fontStyle: FontStyle.italic, height: 1.5,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                fontStyle: FontStyle.italic,
+                height: 1.5,
               ),
             ),
             const SizedBox(height: 6),
-            Text('– Rythmify artist',
-                style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
+            Text(
+              '– Rythmify artist',
+              style: GoogleFonts.inter(fontSize: 13, color: Colors.white54),
+            ),
             const SizedBox(height: 28),
             Center(
               child: Container(
-                width: 160, height: 160,
+                width: 160,
+                height: 160,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF2E2E2E),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 24, offset: const Offset(0, 8),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: const Icon(Icons.person, color: Colors.white24, size: 56),
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.white24,
+                  size: 56,
+                ),
               ),
             ),
             const SizedBox(height: 36),
             Text(
               'Frequently asked questions',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 20),
-            ...List.generate(_faqs.length, (i) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () => setState(() => _faqOpen[i] = !_faqOpen[i]),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(_faqs[i]['q']!,
-                            style: GoogleFonts.inter(
-                              fontSize: 15, fontWeight: FontWeight.w600,
-                              color: Colors.white, height: 1.3,
-                            )),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          _faqOpen[i] ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: Colors.white, size: 22,
-                        ),
-                      ],
+            ...List.generate(
+              _faqs.length,
+              (i) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () => setState(() => _faqOpen[i] = !_faqOpen[i]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _faqs[i]['q']!,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            _faqOpen[i]
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                if (_faqOpen[i])
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: Text(_faqs[i]['a']!,
+                  if (_faqOpen[i])
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Text(
+                        _faqs[i]['a']!,
                         style: GoogleFonts.inter(
-                            fontSize: 14, color: Colors.white70, height: 1.6)),
-                  ),
-                const Divider(color: Colors.white12, height: 1),
-              ],
-            )),
+                          fontSize: 14,
+                          color: Colors.white70,
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+                  const Divider(color: Colors.white12, height: 1),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -441,8 +574,10 @@ class PremiumSharpTag extends StatelessWidget {
       child: Text(
         label,
         style: GoogleFonts.inter(
-          fontSize: 11, fontWeight: FontWeight.w700,
-          color: Colors.white, letterSpacing: 0.3,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+          letterSpacing: 0.3,
         ),
       ),
     );
