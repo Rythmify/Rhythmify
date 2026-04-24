@@ -87,6 +87,7 @@ const String trendingByGenreSection         = 'trending_by_genre_section';
 const String genreTabBar                    = 'genre_tab_bar';
 const String genreTabView                   = 'genre_tab_view';
 const String discoverWithStationsSection    = 'discover_stations_section';
+const String discoverListView                = 'discover_stations_list_view';
 const String discoverWithStationsErrorText  = 'discover_with_stations_error_text';
 const String hotForYouLoading               = 'hot_for_you_loading';
 const String frostedGlassRepaintBoundary    = 'frosted_glass_repaint_boundary';

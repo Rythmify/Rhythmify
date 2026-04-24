@@ -38,6 +38,7 @@ class DiscoverWithStationsSection extends ConsumerWidget {
             return SizedBox(
               height: 200,
               child: ListView.separated(
+                key: const Key('discover_stations_list_view'),
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
