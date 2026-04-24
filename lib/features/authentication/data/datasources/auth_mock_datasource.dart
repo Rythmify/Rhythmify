@@ -171,4 +171,16 @@ class AuthMockDatasource implements AuthRemoteDatasource {
     );
     if (!exists) throw Exception('AUTH_INVALID_CREDENTIALS');
   }
+
+  @override
+  Future<Map<String, dynamic>> loginWithGitHub() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return {
+      'id': 'user-001',
+      'email': 'karim@github.com',
+      'display_name': 'KarimWI',
+      'avatar_url': 'https://avatars.githubusercontent.com/u/1?v=4',
+      'token': 'mock-github-token-xyz',
+    };
+  }
 }

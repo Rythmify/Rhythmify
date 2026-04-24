@@ -1,5 +1,13 @@
-// ignore_for_file: avoid_print
-// lib/features/playlist/presentation/screens/mix_detail_screen.dart
+// lib/features/playlist/presentation/screens/related_tracks_screen.dart
+//
+// Shared screen for two entry points:
+//   1. "More of what you like" → partner passes track.id
+//      → calls GET /tracks/{id}/related?limit=50
+//   2. "Discover with Stations" → partner passes artist_id
+//      → calls GET /home/stations/{artist_id}/tracks
+//
+// UI: station-style — "Artist Station · duration · N tracks" / "Based on [name]"
+// No suggestions, no edit, no delete.
 
 library;
 
@@ -14,12 +22,15 @@ import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-// ── Mix type ──────────────────────────────────────────────────────────────────
-enum MixType { genre, daily, weekly }
+// ── Source type ───────────────────────────────────────────────────────────────
+enum RelatedTracksSource {
+  track, // GET /tracks/{id}/related  — "more of what you like"
+  station, // GET /home/stations/{artist_id}/tracks — "discover with stations"
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
-class MixDetailState {
-  const MixDetailState({
+class RelatedTracksState {
+  const RelatedTracksState({
     this.tracks = const [],
     this.isLoading = true,
     this.error,
@@ -29,11 +40,11 @@ class MixDetailState {
   final bool isLoading;
   final String? error;
 
-  MixDetailState copyWith({
+  RelatedTracksState copyWith({
     List<PlaylistTrack>? tracks,
     bool? isLoading,
     String? error,
-  }) => MixDetailState(
+  }) => RelatedTracksState(
     tracks: tracks ?? this.tracks,
     isLoading: isLoading ?? this.isLoading,
     error: error,
@@ -41,79 +52,74 @@ class MixDetailState {
 }
 
 // ── Notifier ──────────────────────────────────────────────────────────────────
-class MixDetailNotifier extends Notifier<MixDetailState> {
+class RelatedTracksNotifier extends Notifier<RelatedTracksState> {
   @override
-  MixDetailState build() => const MixDetailState(isLoading: true);
+  RelatedTracksState build() => const RelatedTracksState(isLoading: true);
 
   PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
 
-  Future<void> load({required String mixId, required MixType mixType}) async {
-    state = const MixDetailState(isLoading: true);
-    print('[MixDetail] load() — mixId="$mixId" mixType=$mixType');
+  Future<void> load({
+    required String sourceId,
+    required RelatedTracksSource source,
+  }) async {
+    state = const RelatedTracksState(isLoading: true);
+    print('[RelatedTracks] load() sourceId="$sourceId" source=$source');
     try {
-      List<PlaylistTrack> tracks;
-      switch (mixType) {
-        case MixType.daily:
-          tracks = await _ds.fetchDailyMixTracks();
-        case MixType.weekly:
-          tracks = await _ds.fetchWeeklyMixTracks();
-        case MixType.genre:
-          tracks = await _ds.fetchMixTracks(mixId);
+      final List<PlaylistTrack> tracks;
+      switch (source) {
+        case RelatedTracksSource.track:
+          tracks = await _ds.fetchRelatedTracks(sourceId, limit: 50);
+        case RelatedTracksSource.station:
+          tracks = await _ds.fetchStationTracks(sourceId, limit: 50);
       }
-      print('[MixDetail] ✅ Got ${tracks.length} tracks');
-      state = MixDetailState(tracks: tracks, isLoading: false);
+      print('[RelatedTracks] ✅ Got ${tracks.length} tracks');
+      state = RelatedTracksState(tracks: tracks, isLoading: false);
     } catch (e) {
-      print('[MixDetail] ❌ Failed: $e');
-      state = MixDetailState(isLoading: false, error: 'Could not load mix');
+      print('[RelatedTracks] ❌ Failed: $e');
+      state = RelatedTracksState(
+        isLoading: false,
+        error: 'Could not load tracks',
+      );
     }
   }
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
-final mixDetailProvider = NotifierProvider<MixDetailNotifier, MixDetailState>(
-  MixDetailNotifier.new,
-);
+final relatedTracksProvider =
+    NotifierProvider<RelatedTracksNotifier, RelatedTracksState>(
+      RelatedTracksNotifier.new,
+    );
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-class MixDetailScreen extends ConsumerStatefulWidget {
-  const MixDetailScreen({
+class RelatedTracksScreen extends ConsumerStatefulWidget {
+  const RelatedTracksScreen({
     super.key,
-    required this.mixId,
-    required this.mixTitle,
-    required this.ownerName,
-    this.mixType = MixType.genre,
+    required this.sourceId,
+    required this.source,
+    required this.basedOnName,
+    required this.title,
     this.coverUrl,
-    this.trackCount,
   });
 
-  final String mixId;
-  final String mixTitle;
-  final String ownerName;
-  final MixType mixType;
+  final String sourceId;
+  final RelatedTracksSource source;
+  final String basedOnName; // shown as "Based on [basedOnName]"
+  final String title; // shown as the header name
   final String? coverUrl;
-  final int? trackCount;
 
   @override
-  ConsumerState<MixDetailScreen> createState() => _MixDetailScreenState();
+  ConsumerState<RelatedTracksScreen> createState() =>
+      _RelatedTracksScreenState();
 }
 
-class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
+class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
   @override
   void initState() {
     super.initState();
-    // Log exactly what the partner passes so we can diagnose
-    print('[MixDetail] ─────────────────────────────────────');
-    print('[MixDetail] mixId     = "${widget.mixId}"');
-    print('[MixDetail] mixTitle  = "${widget.mixTitle}"');
-    print('[MixDetail] ownerName = "${widget.ownerName}"');
-    print('[MixDetail] mixType   = ${widget.mixType}');
-    print('[MixDetail] coverUrl  = "${widget.coverUrl}"');
-    print('[MixDetail] trackCount= ${widget.trackCount}');
-    print('[MixDetail] ─────────────────────────────────────');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
-          .read(mixDetailProvider.notifier)
-          .load(mixId: widget.mixId, mixType: widget.mixType);
+          .read(relatedTracksProvider.notifier)
+          .load(sourceId: widget.sourceId, source: widget.source);
     });
   }
 
@@ -126,32 +132,33 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
         fullTrack,
       ], initialIndex: 0);
     } catch (e) {
-      debugPrint('[MixDetail] Failed to play "${pt.title}": $e');
+      debugPrint('[RelatedTracks] Failed to play "${pt.title}": $e');
     }
   }
 
   Future<void> _playAll() async {
-    final tracks = ref.read(mixDetailProvider).tracks;
+    final tracks = ref.read(relatedTracksProvider).tracks;
     if (tracks.isEmpty) return;
     await _fetchAndPlay(tracks.first);
   }
 
   Future<void> _shuffle() async {
-    final tracks = List<PlaylistTrack>.from(ref.read(mixDetailProvider).tracks)
-      ..shuffle();
+    final tracks = List<PlaylistTrack>.from(
+      ref.read(relatedTracksProvider).tracks,
+    )..shuffle();
     if (tracks.isEmpty) return;
     await _fetchAndPlay(tracks.first);
   }
 
   Future<void> _playFrom(int index) async {
-    final tracks = ref.read(mixDetailProvider).tracks;
+    final tracks = ref.read(relatedTracksProvider).tracks;
     if (tracks.isEmpty || index >= tracks.length) return;
     await _fetchAndPlay(tracks[index]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(mixDetailProvider);
+    final state = ref.watch(relatedTracksProvider);
 
     if (state.isLoading) {
       return const Scaffold(
@@ -175,10 +182,6 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
     }
 
     final tracks = state.tracks;
-    // Use loaded track count over passed-in trackCount when available
-    final trackCount = tracks.isNotEmpty
-        ? tracks.length
-        : (widget.trackCount ?? 0);
     final totalDuration = tracks.fold(
       Duration.zero,
       (sum, t) => sum + t.duration,
@@ -214,14 +217,16 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                       width: 56,
                       height: 56,
                       child:
-                          widget.coverUrl != null && widget.coverUrl!.isNotEmpty
+                          widget.coverUrl != null &&
+                              widget.coverUrl!.isNotEmpty &&
+                              widget.coverUrl!.startsWith('http')
                           ? Image.network(
                               widget.coverUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) =>
-                                  _Placeholder(widget.mixTitle),
+                              errorBuilder: (_, __, ___) =>
+                                  _CoverPlaceholder(widget.title),
                             )
-                          : _Placeholder(widget.mixTitle),
+                          : _CoverPlaceholder(widget.title),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -230,18 +235,18 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.mixTitle,
-                          maxLines: 1,
+                          widget.title,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Private · $durationStr · $trackCount tracks',
+                          'Artist Station · $durationStr · ${tracks.length} tracks',
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 12,
@@ -251,7 +256,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                         Row(
                           children: [
                             Text(
-                              'Made for ',
+                              'Based on ',
                               style: TextStyle(
                                 color: Colors.grey[500],
                                 fontSize: 12,
@@ -259,7 +264,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                             ),
                             Flexible(
                               child: Text(
-                                widget.ownerName,
+                                widget.basedOnName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -335,14 +340,14 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               child: tracks.isEmpty
                   ? Center(
                       child: Text(
-                        'No tracks in this mix yet',
+                        'No tracks found',
                         style: TextStyle(color: Colors.grey[500]),
                       ),
                     )
                   : ListView.builder(
                       itemCount: tracks.length,
                       itemBuilder: (context, index) => TrackTileInPlaylist(
-                        key: Key('mix_track_${tracks[index].id}'),
+                        key: Key('related_track_${tracks[index].id}'),
                         track: tracks[index],
                         onTap: () => _playFrom(index),
                       ),
@@ -383,7 +388,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                       child:
                           widget.coverUrl != null && widget.coverUrl!.isNotEmpty
                           ? Image.network(widget.coverUrl!, fit: BoxFit.cover)
-                          : _Placeholder(widget.mixTitle),
+                          : _CoverPlaceholder(widget.title),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -392,7 +397,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.mixTitle,
+                          widget.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -400,7 +405,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                           ),
                         ),
                         Text(
-                          'Made for ${widget.ownerName}',
+                          'Based on ${widget.basedOnName}',
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 13,
@@ -423,11 +428,6 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               label: 'Play last',
               onTap: () => Navigator.of(context).pop(),
             ),
-            OptionSheetTile(
-              icon: Icons.copy_all,
-              label: 'Copy mix',
-              onTap: () => Navigator.of(context).pop(),
-            ),
             const SizedBox(height: 40),
           ],
         ),
@@ -436,8 +436,9 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   }
 }
 
-class _Placeholder extends StatelessWidget {
-  const _Placeholder(this.title);
+// ── Cover placeholder ─────────────────────────────────────────────────────────
+class _CoverPlaceholder extends StatelessWidget {
+  const _CoverPlaceholder(this.title);
   final String title;
 
   @override
@@ -446,7 +447,7 @@ class _Placeholder extends StatelessWidget {
       color: const Color(0xFF2A2A2A),
       child: Center(
         child: Text(
-          title.isNotEmpty ? title[0].toUpperCase() : 'M',
+          title.isNotEmpty ? title[0].toUpperCase() : 'S',
           style: const TextStyle(
             color: Colors.white54,
             fontSize: 22,

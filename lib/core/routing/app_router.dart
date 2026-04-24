@@ -63,6 +63,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
+import '../../features/playlist/presentation/screens/related_tracks_screen.dart'; // NEW
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -460,17 +461,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-                  GoRoute(
-                    path: 'playlists/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
-                  ),
 
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
@@ -478,17 +468,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'albums/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
                   ),
 
                   // ── Stations ───────────────────────────────────────────
@@ -498,14 +477,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
+
+                  // ── Detail route for playlists/albums/stations ────────
                   GoRoute(
-                    path: 'stations/:playlistId',
-                    builder: (context, state) {
+                    name: 'library-detail',
+                    path: ':type/:playlistId',
+                    pageBuilder: (context, state) {
+                      final type = state.pathParameters['type']!;
                       final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
+                      return MaterialPage(
+                        key: ValueKey('library-detail-$type-$playlistId'),
+                        child: PlaylistDetailScreen(
+                          playlistId: playlistId,
+                          isOwner: isOwner,
+                        ),
                       );
                     },
                   ),
@@ -623,6 +609,51 @@ final routerProvider = Provider<GoRouter>((ref) {
             mixType: mixType,
             coverUrl: extra['coverUrl'] as String?,
             trackCount: extra['trackCount'] as int?,
+          );
+        },
+      ),
+
+      // ── More of what you like — track-based related tracks ──────────────
+      // Partner calls: context.push('/related-tracks/$trackId', extra: {
+      //   'basedOnName': artistName,
+      //   'title': trackTitle,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/related-tracks/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.track,
+            basedOnName: extra['basedOnName'] as String? ?? '',
+            title: extra['title'] as String? ?? 'Related Tracks',
+            coverUrl: extra['coverUrl'] as String?,
+          );
+        },
+      ),
+
+      // ── Discover with stations — artist-based station tracks ────────────
+      // Partner calls: context.push('/station/$artistId', extra: {
+      //   'artistName': artistName,
+      //   'stationName': stationName,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/station/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final artistName = extra['artistName'] as String? ?? '';
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.station,
+            basedOnName: artistName,
+            title: extra['stationName'] as String? ?? artistName,
+            coverUrl: extra['coverUrl'] as String?,
           );
         },
       ),
