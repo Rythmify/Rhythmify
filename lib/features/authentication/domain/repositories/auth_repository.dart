@@ -45,6 +45,11 @@ abstract class AuthRepository {
     required String dateOfBirth,
   });
 
+  /// Signs in using Apple ID.
+  ///
+  /// Returns [Right] with a [UserEntity] on success.
+  Future<Either<Failure, UserEntity>> signInWithApple();
+
   /// Authenticates the user via GitHub OAuth.
   ///
   /// Opens the GitHub consent screen in the system browser, waits for the

@@ -81,6 +81,16 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, UserEntity>> signInWithApple() async {
+    try {
+      final user = await remoteDatasource.signInWithApple();
+      return Right(user);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
   /// Opens the GitHub OAuth browser, exchanges the code, and persists
   /// the returned access token via the datasource layer.
   ///

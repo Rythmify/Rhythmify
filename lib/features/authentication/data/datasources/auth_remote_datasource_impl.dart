@@ -337,6 +337,36 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   ///
   /// Saves the returned JWT and returns a [UserModel].
   @override
+  Future<UserModel> signInWithApple() async {
+    try {
+      // Placeholder implementation — real Apple Sign-In flow should be wired up
+      final response = await client.dio.post(
+        '/auth/apple',
+        data: {'id_token': 'placeholder-apple-token'},
+      );
+
+      final data = response.data['data'];
+      final token = data['access_token'] as String;
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: token,
+        refreshToken: refreshToken,
+      );
+
+      final user = data['user'];
+      return UserModel.fromJson({
+        ...user,
+        'id': user['id']?.toString() ?? user['user_id']?.toString(),
+        'is_email_verified':
+            user['is_verified'] ?? user['is_email_verified'] ?? true,
+        'token': token,
+      });
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
   /// Opens the GitHub OAuth consent screen via the system browser,
   /// waits for the deep-link callback (`rythmify://oauth`), then
   /// exchanges the authorization code with the Rythmify backend.
