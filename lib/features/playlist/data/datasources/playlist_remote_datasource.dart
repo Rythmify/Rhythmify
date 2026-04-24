@@ -396,15 +396,15 @@ class PlaylistRemoteDatasource {
     }
   }
 
-// ============================================================
-// REPLACE fetchMixTracks, fetchDailyMixTracks, fetchWeeklyMixTracks
-// in playlist_remote_datasource.dart
-//
-// Key fixes:
-// 1. No c0000 filtering — mixes contain real tracks, filter was wrong here
-// 2. Full debug logging so you can see what mixId arrives and what response comes back
-// 3. Handles both { data: { tracks: [] } } and { data: [] } response shapes
-// ============================================================
+  // ============================================================
+  // REPLACE fetchMixTracks, fetchDailyMixTracks, fetchWeeklyMixTracks
+  // in playlist_remote_datasource.dart
+  //
+  // Key fixes:
+  // 1. No c0000 filtering — mixes contain real tracks, filter was wrong here
+  // 2. Full debug logging so you can see what mixId arrives and what response comes back
+  // 3. Handles both { data: { tracks: [] } } and { data: [] } response shapes
+  // ============================================================
 
   // ── MIX TRACKS: GET /home/mixes/{mixId} ──────────────────────────────────
   Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
@@ -514,22 +514,27 @@ class PlaylistRemoteDatasource {
         // Try both 'id' and 'track_id' field names
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) {
-          _log('  Skipping track at index $i — no id field. Keys: ${json.keys}');
+          _log(
+            '  Skipping track at index $i — no id field. Keys: ${json.keys}',
+          );
           continue;
         }
 
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration:
-              Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('  Error mapping mix track at index $i: $e');
       }
@@ -686,6 +691,15 @@ class PlaylistRemoteDatasource {
   //   "stream_url": "url"       ← nullable
   // }
   // ============================================================
+  // ============================================================
+  // REPLACE _mapDiscoveryTracksToPlaylistTracks in playlist_remote_datasource.dart
+  //
+  // Removed: id.startsWith('c0000') filter
+  // Reason: backend now blocks c0000 IDs on CREATE (adding to playlist)
+  // but still returns them on FETCH (display only).
+  // Filtering on fetch caused empty screens for mixes/stations/related tracks.
+  // ============================================================
+
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -694,8 +708,13 @@ class PlaylistRemoteDatasource {
     for (int i = 0; i < rawList.length; i++) {
       try {
         final json = rawList[i] as Map<String, dynamic>;
-        final id = json['id'] as String?;
-        if (id == null || id.isEmpty || id.startsWith('c0000')) continue;
+
+        // Try both 'id' and 'track_id' field names
+        final id = (json['id'] ?? json['track_id']) as String?;
+        if (id == null || id.isEmpty) continue;
+        // NOTE: c0000 tracks are allowed through here — they are display-only.
+        // The backend blocks them on POST /playlists/{id}/tracks (add track).
+        // Filtering here was causing empty screens for mixes/stations/related.
 
         result.add(
           PlaylistTrack(
