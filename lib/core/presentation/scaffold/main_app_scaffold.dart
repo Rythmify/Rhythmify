@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../features/player/presentation/widgets/mini_player.dart';
 import '../../../../features/player/presentation/pages/full_player_page.dart';
 import '../../../../features/player/presentation/providers/player_provider.dart';
+import '../../../../features/messaging/presentation/providers/socket_provider.dart';   
 
 class MainAppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -56,6 +57,8 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(socketProvider);
+
     final playerState = ref.watch(playerStateProvider);
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;

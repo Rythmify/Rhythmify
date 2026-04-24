@@ -88,13 +88,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.onMessageReceived((data) {
       print('🔥 onMessageReceived fired: $data');
       if (mounted) {
-        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
+        ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(data);
         ref.invalidate(conversationProvider);
+        if(_scrollController.hasClients){
+          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        }
+        _socket.markRead(conversationId, data.messageId, true, 0);
+        ref.read(markAsRead.notifier).markRead(msgId: data.messageId, convId: conversationId);
       }
     });
     _socket.onMessageReadUpdated((data) {
       if (mounted) {
-        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
+        final messageId = data['messageId']as String?;
+        if(messageId!=null){
+          ref.read(messagesNotifierProvider(conversationId).notifier).updateMessageRead(messageId);
+        }
+        ref.invalidate(conversationProvider);
       }
     });
   }
@@ -313,6 +322,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? BlockedUserWidget(
                             key: const Key('chat_screen_blocked_user_widget'),
                             participantId: participantId,
+                            onUnblocked: widget.conv!=null
+                              ?(){
+                                _socket.joinConversation(widget.conv!.conversationId);
+                                _setupSocketListeners(widget.conv!.conversationId);
+                              }
+                              :null,
                           )
                         : isBlockedBy
                         ? const BlockedByWidget(
@@ -752,12 +767,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
       if (mounted) {
-        ref.invalidate(conversationProvider);
-        ref
-            .read(
-              messagesNotifierProvider(widget.conv!.conversationId).notifier,
-            )
-            .refresh();
         controller.clear();
         setState(() => _selectedEmbeds.clear());
       }
@@ -789,7 +798,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (mounted) {
           ref
               .read(messagesNotifierProvider(newConv.conversationId).notifier)
-              .refresh();
+              .appendMessage(data);
           ref.invalidate(conversationProvider);
         }
       });

@@ -39,13 +39,22 @@ class SendMessageNotifier extends StateNotifier<bool> {
     state = true;
     if (conversationId != null) {
       final uCase = SendMessageUsecase(repo: ref.read(repositoryprovider));
-      final message = await (uCase(conversationId, body, embedId, embedType));
+      final message = await uCase(conversationId, body, embedId, embedType);
 
       final socket = ref.read(socketProvider);
-      socket.sendMessage(conversationId, {'messageId': message.messageId});
+      ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(message);
 
+      socket.sendMessage(conversationId, {
+        'id': message.messageId,
+        'conversation_id':message.conversationId,
+        'sender_id':message.senderId,
+        'body':message.body,
+        'embed_id':message.embedId,
+        'embed_type':message.embedType,
+        'is_read':message.isRead,
+        'created_at':message.createdAt.toIso8601String()
+      });
       ref.invalidate(conversationProvider);
-      ref.invalidate(messagesNotifierProvider(conversationId));
       state = false;
       return null;
     } else {
@@ -61,7 +70,7 @@ class SendMessageNotifier extends StateNotifier<bool> {
         playlistId: playlistId,
       );
       ref.invalidate(conversationProvider);
-      ref.invalidate(messagesNotifierProvider(newConv.conversationId));
+      //ref.invalidate(messagesNotifierProvider(newConv.conversationId));
       state = false;
       return newConv;
     }

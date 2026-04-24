@@ -1,3 +1,5 @@
+import 'package:rythmify/features/messaging/data/models/message_model.dart';
+import 'package:rythmify/features/messaging/domain/entities/message.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class DataSourcesSockets {
@@ -15,6 +17,8 @@ class DataSourcesSockets {
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': 'Bearer $token'})
+          .enableReconnection()
+          .setReconnectionAttempts(5)
           .disableAutoConnect()
           .build(),
     );
@@ -34,6 +38,10 @@ class DataSourcesSockets {
     _socket.onError((err) => print('🚨 Socket error: $err'));
     _socket.onReconnectAttempt((_) => print('🔁 Reconnect attempt'));
     _socket.onReconnectFailed((_) => print('🚨 Reconnect failed'));
+    _socket.on('message:received', (data) {
+      print('📨 RAW message:received: $data');
+    });
+
 
     _socket.connect();
   }
@@ -43,6 +51,9 @@ class DataSourcesSockets {
     if (_socket.connected) {
       print('🚪 Joined room: $conversationId');
       _socket.emit('message:join', {'conversationId': conversationId});
+    }
+    else{
+      print('⚠️  joinConversation called but socket not connected');
     }
     // If not connected yet, onConnect will handle the join
   }
@@ -81,9 +92,15 @@ class DataSourcesSockets {
     _socket.emit('message:stop_typing', {'conversationId': conversationId});
   }
 
-  void onMessageReceived(Function(Map<String, dynamic>) callback) {
+  void onMessageReceived(Function(Message) callback) {
     _socket.off('message:received');
-    _socket.on('message:received', (data) => callback(data));
+    _socket.on('message:received', (data) {
+      final msgData=data['message'];
+      if(msgData!=null){
+        final message=MessageModel.fromJson(Map<String,dynamic>.from(msgData));
+        callback(message);
+      }
+    });
   }
 
   void onMessageReadUpdated(Function(Map<String, dynamic>) callback) {
