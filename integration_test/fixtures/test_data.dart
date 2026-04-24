@@ -38,24 +38,24 @@ const String validPassword = 'Password123!';
 
 // New user for registration
 final TestUser newUser = TestUser(
-  email: 'newuser@rythmify.com',
+  email: 'testinguser@gmail.com',
   password: 'NewUser1234',
-  username: 'newuser',
-  month: 'March',
-  day: '3',
-  year: '2013',
+  username: 'testing_user',
+  month: 'June',
+  day: '30',
+  year: '1999',
   gender: 'Female',
 );
 
 // Existing user 
 final TestUser existingUser = TestUser(
-  email: 'bassel@rythmify.com',
-  password: 'Biso1234',
-  username: 'user-002',
-  month: 'December',
-  day: '28',
-  year: '2005',
-  gender: 'Male',
+  email: 'yoeweida@gmail.com',
+  password: 'Yomna1234',
+  username: 'yoeweidalll',
+  month: 'March',
+  day: '3',
+  year: '2006',
+  gender: 'Female',
 );
 
 // User with restricted age (below 13)

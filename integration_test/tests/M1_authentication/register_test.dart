@@ -239,6 +239,6 @@ void main() {
     );
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
-    expect(registerPage.isOnHomePage(), true);
+    expect(registerPage.isOnValidEmailPage(), true);
   });
 }
