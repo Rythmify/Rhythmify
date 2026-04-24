@@ -115,34 +115,37 @@ class _LibraryPlaylistsScreenState
       backgroundColor: AppTheme.background,
       body: Stack(
         children: [
-          // 🔶 TOP BACKGROUND (aligned behind search/title)
+          // 🔶 TOP BACKGROUND (Refined positioning to match small tilted layers)
           Positioned(
-            top: -40,
-            right: -30,
-            child: Transform.rotate(
-              angle: 0.35,
+            top: -60,
+            right: -80,
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..rotateZ(0.45) // Steeper angle
+                ..setEntry(0, 1, 0.2), // Skew to match the perspective
               child: Column(
-                children: List.generate(4, (i) {
+                children: List.generate(12, (i) {
                   return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    width: 240,
-                    height: 110,
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    width: 320, // Reduced width so it doesn't cross the whole screen
+                    height: 80, // More compact height
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4),
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primaryBrand.withOpacity(0.6),
-                          AppTheme.primaryBrand.withOpacity(0.1),
+                          const Color(0xFFFF7700).withOpacity(0.8),
+                          const Color(0xFFFF7700).withOpacity(0.0),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     child: Container(
-                      margin: const EdgeInsets.all(2),
+                      margin: const EdgeInsets.all(1.2), // Thin border
                       decoration: BoxDecoration(
                         color: AppTheme.background,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                   );
@@ -166,9 +169,9 @@ class _LibraryPlaylistsScreenState
                       ),
                       Expanded(
                         child: Container(
-                          height: 38,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: AppTheme.surface,
+                            color: AppTheme.surface.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(
