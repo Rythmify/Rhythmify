@@ -381,14 +381,33 @@ class PlaylistRemoteDatasource {
         '/home/stations/$artistId/tracks',
         queryParameters: {'limit': limit},
       );
-      _log('← ${response.statusCode}');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final trackList = data['tracks'] as List<dynamic>;
+      _log('← ${response.statusCode}  keys: ${response.data?.keys}');
+ 
+      // StationTracksResponse: { "station": {...}, "data": [...], "pagination": {...} }
+      // Tracks are directly in response.data['data'] as a List — NOT nested under ['tracks']
+      final rawData = response.data!['data'];
+      _log('← data type: ${rawData.runtimeType}');
+ 
+      List<dynamic> trackList;
+      if (rawData is List) {
+        trackList = rawData;
+      } else if (rawData is Map<String, dynamic> && rawData.containsKey('tracks')) {
+        // Fallback: in case server wraps them
+        trackList = rawData['tracks'] as List<dynamic>? ?? [];
+      } else {
+        _log('← Unexpected station data shape, returning empty');
+        return [];
+      }
+ 
       _log('← Got ${trackList.length} station tracks');
+      if (trackList.isNotEmpty) {
+        _log('← First track keys: ${(trackList.first as Map<String, dynamic>).keys}');
+      }
+ 
       return _mapDiscoveryTracksToPlaylistTracks(trackList);
     } on DioException catch (e) {
       _logError('fetchStationTracks($artistId) failed', e);
-      rethrow;
+      return [];
     }
   }
 

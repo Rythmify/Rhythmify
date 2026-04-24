@@ -10,6 +10,7 @@ import '../../../../core/utils/time_ago.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 import 'dart:io';
+import '../../../../core/domain/entities/track.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // PlaylistCoverImage
@@ -235,6 +236,187 @@ class TrackTileInPlaylist extends StatelessWidget {
   }
 }
 
+//ADDED IN HOME AND SEARCH WIRING 
+class TrackTileFromTrack extends StatelessWidget {
+  const TrackTileFromTrack({
+    super.key,
+    required this.track,
+    required this.onTap,
+  });
+ 
+  final Track track;
+  final VoidCallback onTap;
+ 
+  @override
+  Widget build(BuildContext context) {
+    final minutes = track.duration.inMinutes;
+    final seconds = (track.duration.inSeconds % 60).toString().padLeft(2, '0');
+    final durationStr = '$minutes:$seconds';
+ 
+    final playStr = track.playCount >= 1000000
+        ? '${(track.playCount / 1000000).toStringAsFixed(1)}M'
+        : track.playCount >= 1000
+            ? '${(track.playCount / 1000).toStringAsFixed(1)}K'
+            : '${track.playCount}';
+ 
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            // Cover art
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: track.coverImage != null && track.coverImage!.isNotEmpty
+                    ? Image.network(
+                        track.coverImage!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholder(),
+                      )
+                    : _placeholder(),
+              ),
+            ),
+            const SizedBox(width: 12),
+ 
+            // Title + artist + meta
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    track.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    track.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.play_arrow,
+                          size: 12, color: Colors.grey[600]),
+                      const SizedBox(width: 2),
+                      Text(
+                        '$playStr · $durationStr',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      ),
+                      if (track.isLiked) ...[
+                        const SizedBox(width: 6),
+                        const Icon(Icons.favorite,
+                            size: 11, color: Color(0xFFFF5500)),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+ 
+            // Options menu
+            IconButton(
+              icon: Icon(Icons.more_horiz, color: Colors.grey[600], size: 20),
+              onPressed: () => _showTrackOptions(context, track),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+ 
+  Widget _placeholder() => Container(
+        color: const Color(0xFF2A2A2A),
+        child: const Icon(Icons.music_note, color: Colors.white38, size: 20),
+      );
+ 
+  void _showTrackOptions(BuildContext context, Track track) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1C1C1C),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+        ),
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom + 90),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const BottomSheetHandle(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: track.coverImage != null
+                          ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                          : Container(color: const Color(0xFF2A2A2A)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(track.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600)),
+                        Text(track.artist,
+                            style: TextStyle(
+                                color: Colors.grey[500], fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white12, height: 1),
+            OptionSheetTile(
+              icon: Icons.queue_play_next,
+              label: 'Play next',
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            OptionSheetTile(
+              icon: Icons.add_to_queue,
+              label: 'Play last',
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            OptionSheetTile(
+              icon: Icons.favorite_border,
+              label: 'Like',
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+}
 // ════════════════════════════════════════════════════════════════════════════
 // BottomSheetHandle
 // ════════════════════════════════════════════════════════════════════════════

@@ -38,37 +38,58 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     });
   }
 
+  // Used only for suggestion tiles (they don't have an index in the main list)
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
       final fullTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        fullTrack,
-      ], initialIndex: 0);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [fullTrack],
+        initialIndex: 0,
+      );
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
+    }
+  }
+
+  Future<void> _playFrom(int index) async {
+    final tracks = ref.read(playlistDetailProvider).tracks;
+    if (tracks.isEmpty || index >= tracks.length) return;
+    try {
+      final clickedTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(tracks[index].id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [clickedTrack],
+        initialIndex: 0,
+      );
+    } catch (e) {
+      debugPrint('[PlaylistDetail] Failed to play: $e');
     }
   }
 
   Future<void> _playAll() async {
     final tracks = ref.read(playlistDetailProvider).tracks;
     if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
+    await _playFrom(0);
   }
 
   Future<void> _shuffle() async {
-    final tracks = List<PlaylistTrack>.from(
-      ref.read(playlistDetailProvider).tracks,
-    )..shuffle();
-    if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
-  }
-
-  Future<void> _playFrom(int index) async {
     final tracks = ref.read(playlistDetailProvider).tracks;
-    if (tracks.isEmpty || index >= tracks.length) return;
-    await _fetchAndPlay(tracks[index]);
+    if (tracks.isEmpty) return;
+    final shuffled = List.of(tracks)..shuffle();
+    try {
+      final clickedTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(shuffled.first.id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [clickedTrack],
+        initialIndex: 0,
+      );
+    } catch (e) {
+      debugPrint('[PlaylistDetail] shuffle failed: $e');
+    }
   }
 
   @override
@@ -127,7 +148,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Name
                         Text(
                           playlist.name,
                           maxLines: 1,
@@ -139,11 +159,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-
-                        // Subtitle — adapts per type
-                        // Playlist → "Playlist · 3 tracks · 9:25"
-                        // Album    → "2026 · Album"
-                        // Station  → "Artist Station · 2:51:18 · 50 tracks"
                         Text(
                           playlist.detailSubtitle,
                           style: TextStyle(
@@ -152,10 +167,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-
-                        // Attribution — adapts per type
-                        // Station  → "Based on [seedArtistName]"
-                        // All else → "By [ownerName]"
                         Row(
                           children: [
                             Text(
@@ -196,7 +207,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  // Like button
                   IconButton(
                     key: const Key('playlist_detail_like_button'),
                     icon: Icon(
@@ -209,15 +219,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     onPressed: () =>
                         ref.read(playlistDetailProvider.notifier).toggleLike(),
                   ),
-
-                  // Like count — visible when not owner and count > 0
                   if (!widget.isOwner && playlist.likeCount > 0)
                     Text(
                       _formatCount(playlist.likeCount),
                       style: TextStyle(color: Colors.grey[400], fontSize: 13),
                     ),
-
-                  // More options
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
                     icon: const Icon(
@@ -284,7 +290,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  // ── Tracks ─────────────────────────────────────────────────
                   ...state.tracks.asMap().entries.map((entry) {
                     final index = entry.key;
                     final track = entry.value;
@@ -295,9 +300,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     );
                   }),
 
-                  // ── Suggestions — ONLY for owner's own playlists ────────────
-                  // Not shown for: other users' playlists, albums, stations,
-                  // or any fetched content (isOwner=false)
                   if (widget.isOwner &&
                       playlist.type == PlaylistType.playlist &&
                       (state.isSuggestionsLoading ||
@@ -313,7 +315,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                         ),
                       ),
                     ),
-
                     if (state.isSuggestionsLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
@@ -343,7 +344,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           ),
                         ),
                       ),
-
                     if (!state.isSuggestionsLoading)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
