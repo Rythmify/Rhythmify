@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
-import 'package:go_router/go_router.dart';
 
 /// Search results tab displaying the albums list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [_AlbumTile].
@@ -50,30 +49,24 @@ class _AlbumTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final artworkUrl = album['artworkUrl'] ?? '';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        onTap: () {
-          context.push('/playlist/${album['id']}', extra: false);
-        },
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: artworkUrl.isNotEmpty && artworkUrl.startsWith('http')
-              ? Image.network(
-                  artworkUrl,
-                  key: Key('album_artwork_${album['id']}'),
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      Container(width: 50, height: 50, color: Colors.grey[800]),
-                )
-              : Container(width: 50, height: 50, color: Colors.grey[800]),
+          child: Image.asset(
+            album['artworkUrl']!,
+            key: Key('album_artwork_${album['id']}'),
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                Container(width: 50, height: 50, color: Colors.grey[800]),
+          ),
         ),
         title: Text(
-          album['title'] ?? '',
+          album['title']!,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -81,11 +74,12 @@ class _AlbumTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              album['artist'] ?? '',
+              album['artist']!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
+            // Shows release year and album type (e.g. "2020 · Album").
             Text(
               '${album['year']} · ${album['type']}',
               maxLines: 1,

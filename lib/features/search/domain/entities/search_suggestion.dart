@@ -8,12 +8,10 @@ class SearchSuggestion {
 
   /// The content type this suggestion refers to (e.g. `'track'`, `'user'`, `'playlist'`).
   final String type;
-  final String? avatarUrl;
 
   const SearchSuggestion({
     required this.id,
     required this.text,
     required this.type,
-    this.avatarUrl,
   });
 }
