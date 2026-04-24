@@ -4,7 +4,7 @@ import 'package:rythmify/features/authentication/presentation/providers/auth_sta
 import 'package:rythmify/features/messaging/data/datasources/data_sources_sockets.dart';
 
 final socketProvider = Provider<DataSourcesSockets>((ref) {
-  final authState = ref.watch(authProvider);
+  final authState = ref.read(authProvider);
   final token = authState is AuthAuthenticated ? authState.user.token : null;
   final socket = DataSourcesSockets();
 

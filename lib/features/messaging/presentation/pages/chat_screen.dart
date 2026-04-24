@@ -94,7 +94,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
         }
         _socket.markRead(conversationId, data.messageId, true, 0);
-        ref.read(markAsRead.notifier).markRead(msgId: data.messageId, convId: conversationId);
+        //ref.read(markAsRead.notifier).markRead(msgId: data.messageId, convId: conversationId);
       }
     });
     _socket.onMessageReadUpdated((data) {
