@@ -92,7 +92,8 @@ import '../../features/search/presentation/pages/search_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 
 //  Premium imports
-import '../../features/premium/presentation/pages/upgrade_screen.dart';
+import '../../features/premium/presentation/screens/upgrade_screen.dart';
+import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 

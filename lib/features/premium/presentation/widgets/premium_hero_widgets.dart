@@ -10,6 +10,7 @@ class HeroSection extends StatelessWidget {
   final bool isPremium;
   final String? endDate;
   final VoidCallback onContinue;
+  final VoidCallback onSeeAllPlans;
   final VoidCallback onCancel;
 
   const HeroSection({
@@ -17,6 +18,7 @@ class HeroSection extends StatelessWidget {
     required this.isPremium,
     required this.endDate,
     required this.onContinue,
+    required this.onSeeAllPlans,
     required this.onCancel,
   });
 
@@ -73,7 +75,7 @@ class HeroSection extends StatelessWidget {
             bottom: 100, left: 20, right: 20,
             child: isPremium
                 ? ActivePremiumInfo(endDate: endDate, onCancel: onCancel)
-                : UpsellContent(onContinue: onContinue),
+                : UpsellContent(onContinue: onContinue, onSeeAllPlans: onSeeAllPlans),
           ),
         ],
       ),
@@ -87,7 +89,8 @@ class HeroSection extends StatelessWidget {
 
 class UpsellContent extends StatelessWidget {
   final VoidCallback onContinue;
-  const UpsellContent({super.key, required this.onContinue});
+  final VoidCallback onSeeAllPlans;
+  const UpsellContent({super.key, required this.onContinue, required this.onSeeAllPlans});
 
   @override
   Widget build(BuildContext context) {
@@ -131,8 +134,11 @@ class UpsellContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Center(
-          child: Text('See all plans',
-              style: GoogleFonts.inter(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w500)),
+          child: GestureDetector(
+            onTap: onSeeAllPlans,
+            child: Text('See all plans',
+                style: GoogleFonts.inter(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w500)),
+          ),
         ),
       ],
     );
