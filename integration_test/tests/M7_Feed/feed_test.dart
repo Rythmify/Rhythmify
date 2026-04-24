@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:rythmify/main.dart' as app;
 import '../../pages/M1_Authentication/login_page.dart';
+import '../../pages/M7_Feed/home_page.dart';
 import '../../pages/M7_Feed/feed_page.dart';
 import '../../fixtures/test_data.dart';
 import '../../selectors/selectors.dart';
@@ -10,7 +11,6 @@ import '../../selectors/selectors.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
   testWidgets('M7 - Home Page - all scenarios', (tester) async {
     app.main();
     await tester.pumpAndSettle(const Duration(seconds: 5));
@@ -95,5 +95,27 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 3));
     await tester.pageBack();   //need to change this to tap back button key once implemented
     await homePage.scrollHorizontallyInSection(moreListView);
+
+    // ── Feed Page test Case ──  
+    // debugPrint('M7 - Feed Page - all scenarios');
+    // await FeedPage.tapFeedButton();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.tapFollowingButton();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.tapDiscoverButton();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.tapTrack();
+    // await FeedPage.taplikeButton();
+    // await FeedPage.tapCommentButton();
+    // await FeedPage.CloseCommentSection();
+    // await FeedPage.DragTrackCard();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.tapDragtButton();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.scrollDown();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.scrollUp();
+    // await tester.pumpAndSettle(const Duration(seconds: 3));
+    // await FeedPage.tapTrack();
   });
 }

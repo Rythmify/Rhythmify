@@ -64,6 +64,7 @@ const String registerSubmitButton           = 'register_submit_button';
 
 // --- Home / Feed ---
 const String homeScaffold                   = 'home_scaffold';
+const String feedNavButton                  = 'feed_nav_button'; //until implemented by cross team
 const String homeAppBar                     = 'home_app_bar';
 const String homeUploadTrackButton          = 'home_upload_track_icon_button';
 const String homeInboxButton                = 'home_inbox_icon_button';
