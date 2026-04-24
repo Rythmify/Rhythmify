@@ -19,7 +19,6 @@ import '../../../player/presentation/pages/full_player_page.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
-
 /// A full-screen profile page showing a user's public information and tracks.
 ///
 /// Rendered as a root-level route (outside [StatefulShellRoute]), so
@@ -90,10 +89,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? authState.user.id
         : null;
 
-    _resolvedUserId =
-        widget.userId == currentUserId || widget.userId == 'me'
-            ? 'me'
-            : widget.userId;
+    _resolvedUserId = widget.userId == currentUserId || widget.userId == 'me'
+        ? 'me'
+        : widget.userId;
 
     Future.microtask(() async {
       // ── Guard: skip reload if this profile is already loaded ────────────
@@ -113,9 +111,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
             .read(ownProfileProvider.notifier)
             .loadProfile(userId: _resolvedUserId);
         if (mounted) {
-          ref
-              .read(ownProfileProvider.notifier)
-              .loadPreviews(_resolvedUserId);
+          ref.read(ownProfileProvider.notifier).loadPreviews(_resolvedUserId);
         }
       } else {
         await ref
@@ -249,9 +245,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           final extent = _draggableController.isAttached
                               ? _draggableController.size
                               : currentMinSize;
-                          final t = ((extent - currentMinSize) /
-                                  (_maxSize - currentMinSize))
-                              .clamp(0.0, 1.0);
+                          final t =
+                              ((extent - currentMinSize) /
+                                      (_maxSize - currentMinSize))
+                                  .clamp(0.0, 1.0);
 
                           return Stack(
                             children: [
@@ -328,18 +325,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               children: [
                 _buildCoverPhoto(state.profile.coverUrl),
                 const SizedBox(height: 12),
-                ProfileAvatar(
-                  avatarUrl: state.profile.avatarUrl,
-                  radius: 60,
-                ),
+                ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
                 const SizedBox(height: 12),
-                Text(
-                  state.profile.displayName,
-                  style: AppTheme.headlineLarge,
-                ),
+                Text(state.profile.displayName, style: AppTheme.headlineLarge),
                 const SizedBox(height: 4),
-                if (state.profile.city != null ||
-                    state.profile.country != null)
+                if (state.profile.city != null || state.profile.country != null)
                   Text(
                     [
                       state.profile.city,
@@ -352,9 +342,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     _isProfileIncomplete(state.profile)) ...[
                   const SizedBox(height: 12),
                   Dismissible(
-                    key: const Key(
-                      'public_profile_complete_data_dismissible',
-                    ),
+                    key: const Key('public_profile_complete_data_dismissible'),
                     direction: DismissDirection.horizontal,
                     onDismissed: (_) =>
                         setState(() => _showIncompleteBanner = false),
@@ -367,12 +355,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 ProfileStatsRow(
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
-                  onFollowersTap: () => context.push(
-                    '/profile/${state.profile.id}/followers',
-                  ),
-                  onFollowingTap: () => context.push(
-                    '/profile/${state.profile.id}/following',
-                  ),
+                  onFollowersTap: () =>
+                      context.push('/profile/${state.profile.id}/followers'),
+                  onFollowingTap: () =>
+                      context.push('/profile/${state.profile.id}/following'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -418,9 +404,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            state.profile.isFollowing
-                                ? 'Following'
-                                : 'Follow',
+                            state.profile.isFollowing ? 'Following' : 'Follow',
                             style: AppTheme.labelLarge,
                           ),
                         ),
@@ -493,8 +477,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               child: _ProfileSection(
                 title: 'Likes',
                 tracks: state.likedTracks.take(3).toList(),
-                onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/likes'),
+                onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
               ),
             ),
           if (state.repostedTracks.isNotEmpty)
@@ -514,9 +497,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 userId: _resolvedUserId,
               ),
             ),
-          SliverToBoxAdapter(
-            child: SizedBox(height: 120 + bottomPadding),
-          ),
+          SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
         ],
       ],
     );
@@ -600,10 +581,7 @@ class _ProfileSection extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: AppTheme.titleMedium.copyWith(fontSize: 22),
-              ),
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
                 onPressed: onSeeAll,
                 child: Text(
@@ -671,10 +649,7 @@ class _PlaylistsSection extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: AppTheme.titleMedium.copyWith(fontSize: 22),
-              ),
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
                 onPressed: () => context.push('/library/playlists'),
                 child: Text(
@@ -706,10 +681,8 @@ class _PlaylistsSection extends ConsumerWidget {
               final playlist = playlists[index];
               return GestureDetector(
                 key: Key('profile_playlist_${playlist.id}_gesture'),
-                onTap: () => context.push(
-                  '/playlist/${playlist.id}',
-                  extra: false,
-                ),
+                onTap: () =>
+                    context.push('/playlist/${playlist.id}', extra: false),
                 child: _PlaylistGridCard(
                   key: Key('playlist_grid_card_${playlist.id}'),
                   playlist: playlist,
@@ -746,8 +719,7 @@ class _PlaylistGridCard extends StatelessWidget {
           aspectRatio: 1,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: (playlist.coverUrl != null &&
-                    playlist.coverUrl!.isNotEmpty)
+            child: (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
                 ? CachedNetworkImage(
                     imageUrl: playlist.coverUrl!,
                     fit: BoxFit.cover,
@@ -774,9 +746,7 @@ class _PlaylistGridCard extends StatelessWidget {
         if (playlist.ownerName != null && playlist.ownerName!.isNotEmpty)
           Text(
             playlist.ownerName!,
-            style: AppTheme.labelSmall.copyWith(
-              color: AppTheme.textSecondary,
-            ),
+            style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -835,10 +805,7 @@ class _IncompleteProfileBanner extends StatelessWidget {
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
               shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               elevation: 0,
             ),
             child: const Text(

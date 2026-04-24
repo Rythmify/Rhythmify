@@ -27,6 +27,9 @@ abstract class AuthRemoteDatasource {
     required String dateOfBirth,
   });
 
+  /// Signs in using Apple Sign-in.
+  Future<UserModel> signInWithApple();
+
   /// Opens the GitHub OAuth browser flow and exchanges the resulting
   /// code with the Rythmify backend.
   ///
