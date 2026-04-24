@@ -33,8 +33,8 @@ class InvalidPassword {
 }
 
 // Valid test user for login
-const String validEmail = 'nour_sound@rythmify.com';
-const String validPassword = 'Password123!';
+const String validEmail = 'yoeweida@gmail.com';
+const String validPassword = 'Yomna1234';
 
 // New user for registration
 final TestUser newUser = TestUser(
@@ -95,6 +95,9 @@ final List<InvalidPassword> invalidPasswords = [
 
 // Profile edit test data
 const String profileEditNewName        = 'User Test';
+const String profileEditUserName       = 'yoeweida';
+const String profileEditFirstName      = 'YOMNA';
+const String profileEditLastName       = 'Mahmoud';
 const String profileEditNewCity        = 'Giza';
 const String profileEditNewCountry     = 'EG';      
 const String profileEditNewCountryName = 'Egypt';   

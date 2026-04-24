@@ -20,7 +20,6 @@ class ProfilePage extends BasePage {
   }
 
   // ── Public Profile Page ──
-
   /// True when the public profile page is active (back button in AppBar visible).
   bool isOnProfilePage() => isVisible(publicProfileBackButton);
 
@@ -48,6 +47,18 @@ class ProfilePage extends BasePage {
   /// Replaces the display name field content with [name].
   Future<void> enterName(String name) async {
     await enterTextByKey(editProfileNameTextField, name);
+  }
+
+  Future<void> enterUsername(String name) async {
+    await enterTextByKey(editProfileUsernameTextField , name);
+  }
+
+  Future<void> enterFirstname(String name) async {
+    await enterTextByKey(editProfileFirstNameTextField , name);
+  }
+
+  Future<void> enterLastname(String name) async {
+    await enterTextByKey(editProfileLastNameTextField , name);
   }
 
   /// Replaces the city field content with [city].
@@ -127,4 +138,14 @@ class ProfilePage extends BasePage {
   Future<void> tapDiscardChanges() async {
     await tapByKey(profileUnsavedChangesDiscard);
   }
+
+  Future<void> scrollUpUntilVisible(String key) async {
+  await tester.dragUntilVisible(
+    find.byKey(Key(key)),
+    find.byKey(const Key(homeScrollView)),
+    const Offset(0, 500), 
+    maxIteration: 50,
+  );
+  await tester.pumpAndSettle(); 
+}
 }
