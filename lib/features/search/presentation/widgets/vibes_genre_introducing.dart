@@ -108,7 +108,7 @@ class IntroducingSectionWidget extends ConsumerWidget {
 
               // ── Hero text + buttons ──────────────────────────
               Positioned(
-                top: 20,
+                top: 17,
                 left: 16 + coverSize + 16,
                 right: 16,
                 height: topHalfHeight - 20,
@@ -140,11 +140,11 @@ class IntroducingSectionWidget extends ConsumerWidget {
                         fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 22,
+                          radius: 20,
                           backgroundColor: Colors.black.withValues(alpha: 0.55),
                           child: const Icon(
                             Icons.favorite_border,
@@ -168,7 +168,7 @@ class IntroducingSectionWidget extends ConsumerWidget {
                             }
                           },
                           child: CircleAvatar(
-                            radius: 22,
+                            radius: 20,
                             backgroundColor: Colors.white,
                             child: Icon(
                               isPlaying ? Icons.pause : Icons.play_arrow,

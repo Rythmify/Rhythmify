@@ -23,4 +23,6 @@ abstract class HomeRepository {
   Future<List<Track>> getMoreOfWhatYouLike();
   Future<List<MixedForYouItem>> getMixedForYou();
   Future<List<DiscoverStation>> getDiscoverStations();
+  Future<List<Track>> getMixTracks(String mixId);
+  Future<List<Track>> getRelatedTracks(String trackId);
 }

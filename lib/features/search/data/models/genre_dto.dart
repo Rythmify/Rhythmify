@@ -84,14 +84,39 @@ class GenreDto {
   // ── IntroducingSection ────────────────────────────────────────────────────
   static IntroducingSection parseIntroducingSection(Map<String, dynamic> json) {
     return IntroducingSection(
-      playlist: parseIntroducingPlaylist(
-        json['playlist'] as Map<String, dynamic>,
+      playlist: IntroducingPlaylist(
+        playlistId: json['id'] as String,
+        ownerUserId: json['owner_id'] as String,
+        name: json['name'] as String,
+        description: '',
+        isPublic: true,
+        createdAt: DateTime.parse(json['created_at'] as String),
+        trackCount: json['track_count'] as int? ?? 0,
+        likeCount: json['like_count'] as int? ?? 0,
+        coverImage: json['cover_image'] as String? ?? '',
+        previewTrack: (json['tracks_preview'] as List?)?.isNotEmpty == true
+            ? parseTrack(
+                (json['tracks_preview'] as List).first as Map<String, dynamic>,
+              )
+            : _emptyTrack(),
       ),
       tracksPreview: (json['tracks_preview'] as List? ?? [])
           .map((t) => parseTrack(t as Map<String, dynamic>))
           .toList(),
     );
   }
+
+  static Track _emptyTrack() => TrackDto.fromJson({
+    'id': '',
+    'title': '',
+    'artist': '',
+    'audio_url': '',
+    'cover_image': '',
+    'duration': 0,
+    'genre': '',
+    'created_at': '2026-01-01T00:00:00Z',
+    'user_id': '',
+  });
 
   static IntroducingPlaylist parseIntroducingPlaylist(
     Map<String, dynamic> json,

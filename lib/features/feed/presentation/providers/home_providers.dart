@@ -5,6 +5,8 @@ import '../../data/datasources/home_mock_datasource.dart';
 import '../../data/datasources/home_remote_datasource.dart';
 import '../../data/repositories/home_repository_impl.dart';
 import '../../domain/usecases/get_home_data.dart';
+import '../../domain/usecases/get_mix_tracks.dart';
+import '../../domain/usecases/get_related_tracks.dart';
 import '../../domain/usecases/get_trending_tracks.dart';
 import '../../domain/usecases/get_hot_tracks.dart';
 import '../../domain/usecases/get_more__you_like.dart';
@@ -91,3 +93,21 @@ final discoverStationsProvider = Provider<AsyncValue<List<DiscoverStation>>>((
 ) {
   return ref.watch(homeDataProvider).whenData((h) => h.discoverWithStations);
 });
+
+final getMixTracksUseCaseProvider = Provider(
+  (ref) => GetMixTracks(ref.read(repositoryProvider)),
+);
+
+final mixTracksProvider = FutureProvider.autoDispose
+    .family<List<Track>, String>(
+      (ref, mixId) => ref.read(getMixTracksUseCaseProvider).call(mixId),
+    );
+
+final getRelatedTracksUseCaseProvider = Provider(
+  (ref) => GetRelatedTracks(ref.read(repositoryProvider)),
+);
+
+final relatedTracksProvider = FutureProvider.autoDispose
+    .family<List<Track>, String>(
+      (ref, trackId) => ref.read(getRelatedTracksUseCaseProvider).call(trackId),
+    );
