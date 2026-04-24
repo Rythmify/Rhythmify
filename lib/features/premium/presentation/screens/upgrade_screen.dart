@@ -1,30 +1,76 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/premium_provider.dart';
 import '../widgets/premium_widgets.dart';
-import '../widgets/premium_hero_widgets.dart';
-import '../widgets/premium_legal.dart';
-import 'checkout_screen.dart';
 
-// ── Ombre bg stops matching PDF pages ────────────────────────────────────────
-const _kBgStops = [
-  Color(0xFF121212),
-  Color(0xFF6B2D8B),
-  Color(0xFF8B2D8B),
-  Color(0xFFB03060),
-  Color(0xFF8B2D8B),
-  Color(0xFF8B1A8B),
-  Color(0xFF9B2080),
-  Color(0xFF121212),
+// ── 4 plans — PDF pages 2-5 ──────────────────────────────────────────────────
+
+const _kPlans = [
+  (
+    period: 'Monthly',
+    periodBg: Color(0xFF9B4DCA),
+    name: 'Artist Pro ★',
+    price: 'EGP 164.99/month',
+    planId: 2,
+    features: [
+      'Unlimited track uploads',
+      'Get paid directly and more fairly',
+      'Discover and connect with your biggest fans',
+      'Unlimited distribution to all major streaming and social platforms',
+    ],
+  ),
+  (
+    period: 'Yearly',
+    periodBg: Color(0xFFFF5500),
+    name: 'Artist Pro ★',
+    price: 'EGP 1,149.99/year',
+    planId: 2,
+    features: [
+      'Unlimited track uploads',
+      'Get paid directly and more fairly',
+      'Discover and connect with your biggest fans',
+      'Unlimited distribution to all major streaming and social platforms',
+    ],
+  ),
+  (
+    period: 'Monthly',
+    periodBg: Color(0xFFCC2200),
+    name: 'Artist ★',
+    price: 'EGP 65.00/month',
+    planId: 2,
+    features: [
+      '3 hours of uploads',
+      '2 distributed and monetized tracks per month',
+      'Discover and connect with your biggest fans',
+      '3 replaceable tracks without losing stats per month',
+    ],
+  ),
+  (
+    period: 'Yearly',
+    periodBg: Color(0xFFFF5500),
+    name: 'Artist ★',
+    price: 'EGP 479.99/year',
+    planId: 2,
+    features: [
+      '3 hours of uploads',
+      '2 distributed and monetized tracks per month',
+      'Discover and connect with your biggest fans',
+      '3 replaceable tracks without losing stats per month',
+    ],
+  ),
 ];
 
-Color _interpolateBg(double fraction) {
-  final t = fraction * (_kBgStops.length - 1);
-  final lo = t.floor().clamp(0, _kBgStops.length - 2);
-  final hi = (lo + 1).clamp(0, _kBgStops.length - 1);
-  return Color.lerp(_kBgStops[lo], _kBgStops[hi], t - lo)!;
-}
+// ── Ombre palettes — random per session ──────────────────────────────────────
+const _kPalettes = [
+  [Color(0xFF6B1FBE), Color(0xFF3D0F8A)],
+  [Color(0xFFCC1F88), Color(0xFF8A0F55)],
+  [Color(0xFFCC3D1F), Color(0xFF8A2000)],
+  [Color(0xFFE86B00), Color(0xFFBE4400)],
+  [Color(0xFFDBAA00), Color(0xFF996600)],
+  [Color(0xFFBE1F55), Color(0xFF8A0F35)],
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UPGRADE SCREEN
@@ -32,332 +78,465 @@ Color _interpolateBg(double fraction) {
 
 class UpgradeScreen extends ConsumerStatefulWidget {
   const UpgradeScreen({super.key});
-
   @override
   ConsumerState<UpgradeScreen> createState() => _UpgradeScreenState();
 }
 
 class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
-  final _scroll = ScrollController();
-  double _scrollFraction = 0.0;
-  final List<bool> _faqOpen = [false, false];
-
-  static const _faqs = [
-    {
-      'q': "What's included in Premium?",
-      'a': 'Premium unlocks unlimited uploads, unlimited playlists, offline listening, and removes all ads.',
-    },
-    {
-      'q': 'Can I cancel anytime?',
-      'a': 'Yes. Cancel at any time from Account Settings. Your access stays active until the end of your billing period.',
-    },
-  ];
+  final _pageCtrl = PageController(viewportFraction: 0.92);
+  int _activePlan = 0;
+  late final int _paletteOffset;
 
   @override
   void initState() {
     super.initState();
-    _scroll.addListener(() {
-      final max = _scroll.position.maxScrollExtent;
-      if (max > 0) {
-        setState(() => _scrollFraction = (_scroll.offset / max).clamp(0.0, 1.0));
-      }
-    });
+    _paletteOffset = math.Random().nextInt(_kPalettes.length);
   }
 
   @override
   void dispose() {
-    _scroll.dispose();
+    _pageCtrl.dispose();
     super.dispose();
   }
 
-  void _scrollToPlans() {
-    final screenH = MediaQuery.of(context).size.height;
-    _scroll.animateTo(
-      screenH * 0.85,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
+  List<Color> get _gradient {
+    final idx = (_activePlan + _paletteOffset) % _kPalettes.length;
+    return _kPalettes[idx];
   }
 
-  void _goToCheckout() {
-    final plans = ref.read(premiumProvider).plans;
-    final premiumPlan = plans.firstWhere((p) => p.isPremium, orElse: () => plans.first);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CheckoutScreen(planId: premiumPlan.planId)),
-    );
-  }
+  // The bottom colored strip color = top color of current gradient
+  Color get _stripColor => _gradient[0];
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(premiumProvider);
-    final bgColor = _interpolateBg(_scrollFraction);
+    final mq = MediaQuery.of(context);
+    final topPad = mq.padding.top;
+    final botPad = mq.padding.bottom;
 
     return Scaffold(
-      backgroundColor: bgColor,
-      body: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            color: bgColor,
-            width: double.infinity,
-            height: double.infinity,
+      // Scaffold bg = current gradient top color so colored strip behind player is visible
+      backgroundColor: _stripColor,
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: _gradient,
           ),
-          CustomScrollView(
-            controller: _scroll,
-            physics: const ClampingScrollPhysics(),
-            slivers: [
-              // Hero — HeroSection, UpsellContent, ActivePremiumInfo in premium_hero_widgets.dart
-              SliverToBoxAdapter(
-                child: HeroSection(
-                  isPremium: state.isPremium,
-                  endDate: state.subscription?.endDate,
-                  onContinue: _goToCheckout,
-                  onSeeAllPlans: _scrollToPlans,
-                  onCancel: () => ref.read(premiumProvider.notifier).cancel(),
+        ),
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: topPad),
+
+              // ── Back button ─────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(left: 4, top: 4),
+                child: IconButton(
+                  icon: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: const BoxDecoration(
+                      color: Colors.black26,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_back_ios_new,
+                        color: Colors.white, size: 15),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
-              SliverToBoxAdapter(child: _PlansSection(onSubscribe: _goToCheckout)),
-              const SliverToBoxAdapter(child: _SupportSection()),
-              SliverToBoxAdapter(
-                child: _FaqSection(
-                  faqs: _faqs,
-                  open: _faqOpen,
-                  onToggle: (i) => setState(() => _faqOpen[i] = !_faqOpen[i]),
+
+              // ── Headline ────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                child: Text(
+                  "What's next in music is first\non Rythmify",
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1.15,
+                  ),
                 ),
               ),
-              // Clearance for mini-player bar
-              const SliverToBoxAdapter(child: SizedBox(height: 80)),
+
+              // ── Plan cards ─────────────────────────────────────────────
+              // LayoutBuilder gives us the screen width so PageView knows
+              // exactly how tall its children are — zero overflow.
+              LayoutBuilder(builder: (context, constraints) {
+                final cardWidth = constraints.maxWidth * 0.92;
+                return SizedBox(
+                  // Height measured from a representative card at this width.
+                  // We use an off-screen key measurement approach: just set a
+                  // tall enough value and let the cards' intrinsic sizes live
+                  // inside. Because the parent is a SingleChildScrollView
+                  // Column, PageView MUST have a bounded height — we give it
+                  // one based on the content we know fits.
+                  height: _cardHeight(cardWidth),
+                  child: PageView.builder(
+                    controller: _pageCtrl,
+                    itemCount: _kPlans.length,
+                    onPageChanged: (p) => setState(() => _activePlan = p),
+                    itemBuilder: (_, i) {
+                      final p = _kPlans[i];
+                      return _PlanCard(
+                        periodTag: p.period,
+                        periodBg: p.periodBg,
+                        name: p.name,
+                        price: p.price,
+                        features: p.features,
+                        onSubscribe: () => ref
+                            .read(premiumProvider.notifier)
+                            .checkout(p.planId),
+                      );
+                    },
+                  ),
+                );
+              }),
+
+              // ── Dots ───────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_kPlans.length, (i) {
+                    final active = _activePlan == i;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 18 : 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: active ? Colors.white : Colors.white38,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+              // ── Down chevron ────────────────────────────────────────────
+              const Center(
+                child: Icon(Icons.keyboard_arrow_down,
+                    color: Colors.white70, size: 28),
+              ),
+              const SizedBox(height: 10),
+
+              // ── Dark info section (PDF pages 6-8) ───────────────────────
+              // Sharp top edge (no border radius) — colored strip above it
+              // is whatever the gradient shows through the gap.
+              _DarkInfoSection(botPad: botPad),
+
+              // ── Colored bottom strip — same color as card background ────
+              // Sits below dark section, fills the space above the mini-player.
+              // When user scrolls to bottom, this strip is visible behind player.
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                height: 90 + botPad,
+                color: _stripColor,
+              ),
             ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  // Compute card height from known content:
+  // tags(20) + gap(8) + name(26) + price(22) + gap(12)
+  // + 4 features × (lineH≈40 + bottom12) = 4×52=208
+  // + gap(12) + button(46) + gap(8) + cancel(18) + gap(3) + restrictions(18)
+  // + card padding top+bottom(28) = total ≈ 489 — use 500 for safety
+  double _cardHeight(double cardWidth) {
+    // Wider cards = less text wrapping = slightly shorter, but 500 is safe
+    // for all screen widths >= 320px
+    return 500;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAN CARD — sharp corners (radius 0), features spaced, cancel+restrictions
+//             on separate lines
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PlanCard extends StatelessWidget {
+  final String periodTag;
+  final Color periodBg;
+  final String name;
+  final String price;
+  final List<String> features;
+  final VoidCallback onSubscribe;
+
+  const _PlanCard({
+    required this.periodTag,
+    required this.periodBg,
+    required this.name,
+    required this.price,
+    required this.features,
+    required this.onSubscribe,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.zero, // SHARP edges, no curve
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Tags
+            Row(children: [
+              _SharpTag(label: 'FOR ARTISTS', bg: const Color(0xFF2F80ED)),
+              const SizedBox(width: 6),
+              _SharpTag(label: periodTag, bg: periodBg),
+            ]),
+            const SizedBox(height: 10),
+
+            // Name + price
+            Text(name,
+                style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white)),
+            const SizedBox(height: 2),
+            Text(price,
+                style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
+            const SizedBox(height: 14),
+
+            // Features — generous spacing
+            ...features.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(Icons.check,
+                            color: Colors.white, size: 15),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(f,
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: Colors.white,
+                                height: 1.45)),
+                      ),
+                    ],
+                  ),
+                )),
+
+            const SizedBox(height: 8),
+
+            // Subscribe now
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  elevation: 0,
+                  shape: const RoundedRectangleBorder(), // sharp button
+                ),
+                onPressed: onSubscribe,
+                child: Text('Subscribe now',
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Cancel anytime — own line
+            Text('Cancel anytime.',
+                style: GoogleFonts.inter(
+                    fontSize: 13, color: Colors.white60)),
+            const SizedBox(height: 4),
+
+            // Restrictions apply — own line, blue
+            GestureDetector(
+              onTap: () => showRestrictionsSheet(context),
+              child: Text('Restrictions apply',
+                  style: GoogleFonts.inter(
+                      fontSize: 13, color: const Color(0xFF2F80ED))),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PLANS SECTION  (PDF pages 2-5, horizontal PageView)
+// SHARP TAG — radius 0
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _PlansSection extends StatefulWidget {
-  final VoidCallback onSubscribe;
-  const _PlansSection({required this.onSubscribe});
+class _SharpTag extends StatelessWidget {
+  final String label;
+  final Color bg;
+  const _SharpTag({required this.label, required this.bg});
 
   @override
-  State<_PlansSection> createState() => _PlansSectionState();
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: bg, // no border radius at all
+      child: Text(label,
+          style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.2)),
+    );
+  }
 }
 
-class _PlansSectionState extends State<_PlansSection> {
-  final _pc = PageController(viewportFraction: 0.88);
-  int _page = 0;
+// ─────────────────────────────────────────────────────────────────────────────
+// DARK INFO SECTION — PDF pages 6-8
+// Sharp top edge (no border radius). Colored strip peeks above via the gap
+// between the PageView section and this container.
+// ─────────────────────────────────────────────────────────────────────────────
 
-  static const _cards = [
+class _DarkInfoSection extends StatefulWidget {
+  final double botPad;
+  const _DarkInfoSection({required this.botPad});
+  @override
+  State<_DarkInfoSection> createState() => _DarkInfoSectionState();
+}
+
+class _DarkInfoSectionState extends State<_DarkInfoSection> {
+  final _faqOpen = [false, false];
+
+  static const _faqs = [
     {
-      'period': 'Monthly',
-      'periodColor': Color(0xFF8B2D8B),
-      'name': 'Premium ★',
-      'price': '\$4.99/month',
-      'features': ['Unlimited track uploads', 'Unlimited playlists', 'Offline listening', 'No ads', 'Priority support'],
+      'q': "What's the difference between fan and artist plans?",
+      'a': 'Our fan-oriented plans are designed for those who primarily visit '
+          'the site to listen to music. Artist plans offer unique features '
+          'designed to help artists create and distribute their music and content.',
     },
     {
-      'period': 'Free',
-      'periodColor': Color(0xFF444444),
-      'name': 'Free',
-      'price': '\$0',
-      'features': ['Up to 10 track uploads', 'Up to 5 playlists', 'Basic playback'],
+      'q': 'Can I purchase an annual plan and/or family plan?',
+      'a': 'Unfortunately we do not currently offer an annual or family plan '
+          'option for purchase in the app.',
     },
   ];
 
   @override
-  void dispose() {
-    _pc.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
-          child: Text(
-            "What's next in music\nis first on Rythmify",
-            style: GoogleFonts.inter(
-              fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1.2),
-          ),
-        ),
-        SizedBox(
-          height: 400,
-          child: PageView.builder(
-            controller: _pc,
-            itemCount: _cards.length,
-            onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (_, i) {
-              final c = _cards[i];
-              return PlanCard(
-                periodLabel: c['period'] as String,
-                periodColor: c['periodColor'] as Color,
-                planName: c['name'] as String,
-                priceDisplay: c['price'] as String,
-                features: List<String>.from(c['features'] as List),
-                onSubscribe: widget.onSubscribe,
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_cards.length, (i) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: _page == i ? 20 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: _page == i ? Colors.white : Colors.white30,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 20),
-        const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 32),
-        const SizedBox(height: 40),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUPPORT SECTION  (PDF pages 6-7)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _SupportSection extends StatelessWidget {
-  const _SupportSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+    return Container(
+      color: const Color(0xFF121212), // sharp top — no border radius
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text('Rythmify supports\nindependent artists',
+              style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.2)),
+          const SizedBox(height: 14),
           Text(
-            'Rythmify supports\nindependent artists',
-            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white, height: 1.25),
+            'From fan-powered royalties to our audience-building artist plans, '
+            'your subscription helps support the Rythmify global community.',
+            style: GoogleFonts.inter(
+                fontSize: 14, color: Colors.white70, height: 1.65),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
           Text(
-            'From fan-powered plays to artist tools, your subscription helps support the Rythmify global community.',
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, height: 1.6),
+            '"It\'s such a simple idea. Your monthly fees get split up between the songs"',
+            style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                fontStyle: FontStyle.italic,
+                height: 1.5),
           ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              border: Border(left: BorderSide(color: Color(0xFFFF5500), width: 3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '"Your monthly fees go directly to the artists you love most."',
-                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600,
-                      color: Colors.white, fontStyle: FontStyle.italic),
-                ),
-                const SizedBox(height: 8),
-                Text('– Rythmify Team',
-                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 6),
+          Text('– Rythmify artist',
+              style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
+          const SizedBox(height: 30),
           Center(
             child: Container(
-              width: 180,
-              height: 180,
+              width: 150,
+              height: 150,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF2E2E2E),
-                boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 30, offset: const Offset(0, 10))],
+                color: const Color(0xFF2A2A2A),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  )
+                ],
               ),
-              child: const Icon(Icons.person, color: Colors.white30, size: 60),
+              child: const Icon(Icons.person, color: Colors.white24, size: 52),
             ),
           ),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FAQ SECTION  (PDF pages 7-8 + 3 blue links → PDF pages 7, 8, 11)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _FaqSection extends StatelessWidget {
-  final List<Map<String, String>> faqs;
-  final List<bool> open;
-  final void Function(int) onToggle;
-
-  const _FaqSection({required this.faqs, required this.open, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          const SizedBox(height: 36),
           Text('Frequently asked questions',
-              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-          const SizedBox(height: 24),
-          ...List.generate(faqs.length, (i) => Column(
-            children: [
-              InkWell(
-                onTap: () => onToggle(i),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(faqs[i]['q']!,
-                            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+              style: GoogleFonts.inter(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white)),
+          const SizedBox(height: 16),
+          ...List.generate(_faqs.length, (i) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () =>
+                        setState(() => _faqOpen[i] = !_faqOpen[i]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(_faqs[i]['q']!,
+                                style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    height: 1.3)),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            _faqOpen[i]
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ],
                       ),
-                      Icon(open[i] ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: Colors.white),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              if (open[i])
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(faqs[i]['a']!,
-                      style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, height: 1.6)),
-                ),
-              const Divider(color: Colors.white12),
-            ],
-          )),
-          const SizedBox(height: 32),
-          // 3 blue links (PDF pages 7, 8, 11)
-          BlueLink(
-            label: 'Terms of Use',
-            onTap: () => showTextDocSheet(context, 'Terms of Use', kTermsText),
-          ),
-          const SizedBox(height: 12),
-          BlueLink(
-            label: 'Privacy Policy',
-            onTap: () => showTextDocSheet(context, 'Privacy Policy', kPrivacyText),
-          ),
-          const SizedBox(height: 12),
-          BlueLink(
-            label: 'Restrictions apply',
-            onTap: () => showRestrictionsSheet(context),
-          ),
+                  if (_faqOpen[i])
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(_faqs[i]['a']!,
+                          style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.white70,
+                              height: 1.6)),
+                    ),
+                  const Divider(color: Colors.white12, height: 1),
+                ],
+              )),
         ],
       ),
     );

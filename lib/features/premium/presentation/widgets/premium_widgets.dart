@@ -283,3 +283,168 @@ class _SheetHandle extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DARK INFO SECTION  (PDF pages 6-8)
+// Solid dark bg sitting on top of the ombre colored background.
+// A tiny strip of the colored bg peeks above the rounded top edge.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class PremiumDarkInfoSection extends StatefulWidget {
+  final double bottomPad;
+  const PremiumDarkInfoSection({super.key, required this.bottomPad});
+
+  @override
+  State<PremiumDarkInfoSection> createState() => _PremiumDarkInfoSectionState();
+}
+
+class _PremiumDarkInfoSectionState extends State<PremiumDarkInfoSection> {
+  final List<bool> _faqOpen = [false, false];
+
+  static const _faqs = [
+    {
+      'q': "What's the difference between fan and artist plans?",
+      'a': 'Our fan-oriented plans are designed for those who primarily visit the site to listen to music. '
+          'Artist plans offer unique features designed to help artists create and distribute their music and content.',
+    },
+    {
+      'q': 'Can I purchase an annual plan and/or family plan?',
+      'a': 'Unfortunately we do not currently offer an annual or family plan option for purchase in the app.',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.52,
+      ),
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(20, 28, 20, 80 + widget.bottomPad),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Rythmify supports\nindependent artists',
+              style: GoogleFonts.inter(
+                fontSize: 22, fontWeight: FontWeight.w800,
+                color: Colors.white, height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'From fan-powered royalties to our audience-building artist plans, '
+              'your subscription helps support the Rythmify global community.',
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.white70, height: 1.6),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '"It\'s such a simple idea. Your monthly fees get split up between the songs"',
+              style: GoogleFonts.inter(
+                fontSize: 14, fontWeight: FontWeight.w600,
+                color: Colors.white, fontStyle: FontStyle.italic, height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text('– Rythmify artist',
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
+            const SizedBox(height: 28),
+            Center(
+              child: Container(
+                width: 160, height: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF2E2E2E),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 24, offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.person, color: Colors.white24, size: 56),
+              ),
+            ),
+            const SizedBox(height: 36),
+            Text(
+              'Frequently asked questions',
+              style: GoogleFonts.inter(
+                  fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
+            ),
+            const SizedBox(height: 20),
+            ...List.generate(_faqs.length, (i) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () => setState(() => _faqOpen[i] = !_faqOpen[i]),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(_faqs[i]['q']!,
+                            style: GoogleFonts.inter(
+                              fontSize: 15, fontWeight: FontWeight.w600,
+                              color: Colors.white, height: 1.3,
+                            )),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          _faqOpen[i] ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: Colors.white, size: 22,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (_faqOpen[i])
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Text(_faqs[i]['a']!,
+                        style: GoogleFonts.inter(
+                            fontSize: 14, color: Colors.white70, height: 1.6)),
+                  ),
+                const Divider(color: Colors.white12, height: 1),
+              ],
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHARP TAG  (borderRadius 4 — matches PDF exactly, not a pill)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class PremiumSharpTag extends StatelessWidget {
+  final String label;
+  final Color bg;
+
+  const PremiumSharpTag({super.key, required this.label, required this.bg});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11, fontWeight: FontWeight.w700,
+          color: Colors.white, letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+}
