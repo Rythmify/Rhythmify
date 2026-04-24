@@ -22,6 +22,7 @@ class PlaylistTrack {
     this.coverUrl,
     this.isLiked = false,
     this.isUnavailable = false,
+    this.addedAt, // ← NEW: mapped from added_at in backend response
   });
 
   final String id;
@@ -45,17 +46,16 @@ class PlaylistTrack {
   /// True when the track is geo-restricted or removed from the platform.
   /// Shows a pin icon + "Not available" in the UI.
   final bool isUnavailable;
+  final DateTime? addedAt; // ← NEW
 
-  // ── Formatters ──────────────────────────────────────────────────────────────
-
-  /// "3:31", "1:10", etc.
+  // ── Formatted helpers ──────────────────────────────────────────────────────
+ 
   String get formattedDuration {
     final m = duration.inMinutes;
     final s = (duration.inSeconds % 60).toString().padLeft(2, '0');
     return '$m:$s';
   }
-
-  /// "99K", "1.9M", "41", etc.
+ 
   String get formattedPlayCount {
     if (playCount >= 1000000) {
       return '${(playCount / 1000000).toStringAsFixed(1)}M';
@@ -65,7 +65,6 @@ class PlaylistTrack {
     }
     return '$playCount';
   }
-
   // ── copyWith ────────────────────────────────────────────────────────────────
 
   PlaylistTrack copyWith({int? position, bool? isLiked}) {
@@ -80,6 +79,7 @@ class PlaylistTrack {
       coverUrl: coverUrl,
       isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
+      addedAt: addedAt ?? this.addedAt
     );
   }
 
@@ -99,6 +99,7 @@ class PlaylistTrack {
       coverUrl: track.artworkUrl,
       isLiked: track.isLiked,
       isUnavailable: false,
+      addedAt: null,
     );
   }
 }

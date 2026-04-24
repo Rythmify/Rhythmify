@@ -1,4 +1,10 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
+//
+// CHANGES vs original:
+//   + toggleLike() — now calls backend POST/DELETE /playlists/{id}/like
+//                    with optimistic update + rollback on failure
+//   + copyPlaylist() — creates "Copy of [name]" and copies all tracks
+//   + loadLikedPlaylists() — for the library filter
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -63,6 +69,12 @@ class PlaylistDetailState {
   bool get showSuggestions =>
       suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
 
+  /// Sum of all track durations — shown in header and library tile
+  Duration get totalDuration => tracks.fold(
+    Duration.zero,
+    (acc, t) => acc + t.duration,
+  );
+
   PlaylistDetailState copyWith({
     PlaylistEntity? playlist,
     List<PlaylistTrack>? tracks,
@@ -108,6 +120,20 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     }
   }
 
+  /// Loads liked playlists from backend — used by library filter
+  Future<void> loadLikedPlaylists() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final playlists = await _ds.fetchMyPlaylists(filter: 'liked');
+      state = PlaylistListState(playlists: playlists);
+    } on DioException catch (_) {
+      state = PlaylistListState(
+        playlists: [],
+        error: 'Could not load liked playlists',
+      );
+    }
+  }
+
   // ── CREATE ────────────────────────────────────────────────────────────────
   Future<PlaylistEntity?> createPlaylist({
     required String name,
@@ -123,9 +149,57 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         ownerId: created.ownerId,
       );
       await loadPlaylists();
-
       return created;
     } catch (e) {
+      return null;
+    }
+  }
+
+  // ── COPY PLAYLIST ─────────────────────────────────────────────────────────
+  /// Creates a new playlist named "Copy of [originalName]" and copies all
+  /// tracks from the original into it. Returns the new playlist ID on success.
+  Future<String?> copyPlaylist(String playlistId) async {
+    final original = _cache.getById(playlistId);
+    if (original == null) return null;
+
+    final copyName = 'Copy of ${original.name}';
+
+    try {
+      // 1. Create the new playlist
+      final created = await _ds.createPlaylist(
+        name: copyName,
+        isPublic: original.isPublic,
+      );
+
+      // 2. Fetch current tracks of original
+      final tracks = await _ds.fetchPlaylistTracks(playlistId);
+
+      // 3. Add each track to the copy in order
+      for (final track in tracks) {
+        try {
+          await _ds.addTrackToPlaylist(
+            playlistId: created.id,
+            trackId: track.id,
+          );
+        } catch (_) {
+          // skip tracks that fail (e.g. c0000 seed IDs)
+        }
+      }
+
+      // 4. Update local cache and reload list
+      _cache.createWithId(
+        id: created.id,
+        name: created.name,
+        isPublic: created.isPublic,
+        ownerName: created.ownerName,
+        ownerId: created.ownerId,
+      );
+      await loadPlaylists();
+
+      debugPrint('[LIST] ✅ Copied "$playlistId" → "${created.id}"');
+      return created.id;
+    } catch (e) {
+      debugPrint('[LIST] ❌ copyPlaylist: $e');
       return null;
     }
   }
@@ -188,7 +262,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       );
       _cache.convertToAlbum(playlistId);
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Converted $playlistId to album');
     } catch (e) {
       debugPrint('[LIST] ❌ convertToAlbum: $e');
     }
@@ -200,7 +273,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       await _ds.updatePlaylist(playlistId: playlistId, subtype: 'playlist');
       _cache.convertToPlaylist(playlistId);
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Converted $playlistId back to playlist');
     } catch (e) {
       debugPrint('[LIST] ❌ convertToPlaylist: $e');
     }
@@ -209,25 +281,13 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   // ── CONVERT TO STATION ────────────────────────────────────────────────────
   Future<void> convertToStation(String playlistId) async {
     try {
-      // Step 1: get current tracks before conversion
       final existingTracks = _cache.getTracksFor(playlistId);
       final playlist = _cache.getById(playlistId);
-      debugPrint(
-        '[LIST] convertToStation: ${existingTracks.length} seed tracks',
-      );
 
-      // // Step 2: PATCH backend to subtype=station
-      // await _ds.updatePlaylist(
-      //   playlistId: playlistId,
-      //   subtype: 'station',
-      // );
-
-      // Step 3: fetch related tracks for each seed track in parallel
       final relatedResults = await Future.wait(
         existingTracks.map((t) => _ds.fetchRelatedTracks(t.id, limit: 50)),
       );
 
-      // Step 4: merge original + related, deduplicate, shuffle → cap at 58
       final seenIds = <String>{};
       final merged = <PlaylistTrack>[];
 
@@ -244,11 +304,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final related = merged.skip(existingTracks.length).toList()..shuffle();
       final station58 = [...seeds, ...related].take(58).toList();
 
-      debugPrint(
-        '[LIST] Station: ${station58.length} tracks (${existingTracks.length} seeds + ${station58.length - existingTracks.length} related)',
-      );
-
-      // Step 5: update cache
       _cache.convertToStation(playlistId, seedArtistName: playlist?.ownerName);
       _cache.clearTracks(playlistId);
       for (int i = 0; i < station58.length; i++) {
@@ -258,11 +313,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         );
       }
 
-      // Step 6: reload list
       await loadPlaylists();
-      debugPrint(
-        '[LIST] ✅ Converted $playlistId to station with ${station58.length} tracks',
-      );
     } catch (e) {
       debugPrint('[LIST] ❌ convertToStation: $e');
     }
@@ -310,7 +361,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       final playlist = results[0] as PlaylistEntity;
       final tracks = results[1] as List<PlaylistTrack>;
 
-      // Sync cache
       _cache.createWithId(
         id: playlist.id,
         name: playlist.name,
@@ -325,52 +375,42 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
       debugPrint('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
 
-      // ── Station ────────────────────────────────────────────────────────
       if (playlist.type == PlaylistType.station) {
-        // User-converted stations: tracks already stored in cache
         final cachedTracks = _cache.getTracksFor(playlistId);
         if (cachedTracks.isNotEmpty) {
-          debugPrint(
-            '[DETAIL] Station: using ${cachedTracks.length} cached tracks',
-          );
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: cachedTracks,
-            suggestions: const [],
+            isLiked: playlist.isLiked,
             isLoading: false,
           );
           return;
         }
 
-        // Discovery stations: fetch by artist UUID
         if (playlist.seedArtistName != null) {
-          final stationTracks = await _fetchStationTracks(
-            playlist.seedArtistName!,
-          );
+          final stationTracks = await _fetchStationTracks(playlist.seedArtistName!);
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
-            suggestions: const [],
+            isLiked: playlist.isLiked,
             isLoading: false,
           );
           return;
         }
 
-        // Fallback
         state = PlaylistDetailState(
           playlist: playlist,
           tracks: tracks,
-          suggestions: const [],
+          isLiked: playlist.isLiked,
           isLoading: false,
         );
         return;
       }
 
-      // ── Playlist/Album ─────────────────────────────────────────────────
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: tracks,
-        suggestions: const [],
+        isLiked: playlist.isLiked,       // ← respect backend isLiked on init
         isLoading: false,
         isSuggestionsLoading: playlist.type == PlaylistType.playlist,
       );
@@ -398,6 +438,76 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
           isLoading: false,
         );
       }
+    }
+  }
+
+  // ── LIKE / UNLIKE ─────────────────────────────────────────────────────────
+  /// Optimistically toggles like state + likeCount, rolls back on failure.
+  Future<void> toggleLike() async {
+    final playlist = state.playlist;
+    if (playlist == null) return;
+
+    final wasLiked = state.isLiked;
+    final previousCount = playlist.likeCount;
+
+    // Optimistic update — rebuild entity manually since copyWith has no likeCount
+    final optimisticPlaylist = PlaylistEntity(
+      id: playlist.id,
+      name: playlist.name,
+      ownerName: playlist.ownerName,
+      ownerId: playlist.ownerId,
+      isPublic: playlist.isPublic,
+      type: playlist.type,
+      trackCount: playlist.trackCount,
+      totalDuration: playlist.totalDuration,
+      createdAt: playlist.createdAt,
+      coverUrl: playlist.coverUrl,
+      description: playlist.description,
+      likeCount: wasLiked
+          ? (previousCount - 1).clamp(0, 999999999)
+          : previousCount + 1,
+      repostCount: playlist.repostCount,
+      isLiked: !wasLiked,
+      seedTrackTitle: playlist.seedTrackTitle,
+      seedArtistName: playlist.seedArtistName,
+      releaseYear: playlist.releaseYear,
+    );
+    state = state.copyWith(isLiked: !wasLiked, playlist: optimisticPlaylist);
+
+    try {
+      if (wasLiked) {
+        await _ds.unlikePlaylist(playlist.id);
+        debugPrint('[DETAIL] ✅ Unliked ${playlist.id}');
+      } else {
+        await _ds.likePlaylist(playlist.id);
+        debugPrint('[DETAIL] ✅ Liked ${playlist.id}');
+      }
+
+      // Also update the list provider so library shows correct liked state
+      ref.read(playlistListProvider.notifier).loadPlaylists();
+    } on DioException catch (e) {
+      debugPrint('[DETAIL] ❌ toggleLike ${e.response?.statusCode}');
+      // Rollback — rebuild entity since copyWith has no likeCount param
+      final rollbackPlaylist = PlaylistEntity(
+        id: playlist.id,
+        name: playlist.name,
+        ownerName: playlist.ownerName,
+        ownerId: playlist.ownerId,
+        isPublic: playlist.isPublic,
+        type: playlist.type,
+        trackCount: playlist.trackCount,
+        totalDuration: playlist.totalDuration,
+        createdAt: playlist.createdAt,
+        coverUrl: playlist.coverUrl,
+        description: playlist.description,
+        likeCount: previousCount,
+        repostCount: playlist.repostCount,
+        isLiked: wasLiked,
+        seedTrackTitle: playlist.seedTrackTitle,
+        seedArtistName: playlist.seedArtistName,
+        releaseYear: playlist.releaseYear,
+      );
+      state = state.copyWith(isLiked: wasLiked, playlist: rollbackPlaylist);
     }
   }
 
@@ -429,9 +539,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         suggestions: freshSuggestions,
       );
     } on DioException catch (e) {
-      debugPrint(
-        '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
-      );
+      debugPrint('[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}');
       state = state.copyWith(
         suggestions: [...optimistic, suggestion],
         error: 'Could not add "${suggestion.title}". Try again.',
@@ -464,10 +572,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     state = state.copyWith(isSuggestionsLoading: true);
     final fresh = await _fetchSuggestionsExcluding(state.tracks);
     state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
-    debugPrint('[DETAIL] Refreshed: ${fresh.length} suggestions');
   }
-
-  void toggleLike() => state = state.copyWith(isLiked: !state.isLiked);
 
   void reload() {
     if (_currentPlaylistId != null) init(_currentPlaylistId!);
@@ -483,7 +588,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         limit: 5,
       );
     } catch (e) {
-      debugPrint('[DETAIL] suggestions failed: $e');
       return [];
     }
   }
@@ -492,7 +596,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     try {
       return await _ds.fetchStationTracks(artistId, limit: 50);
     } catch (e) {
-      debugPrint('[DETAIL] station tracks failed: $e');
       return [];
     }
   }

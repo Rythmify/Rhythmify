@@ -38,6 +38,12 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   String? _sessionTrackId;
   DateTime? _sessionStartTime;
 
+  // ── [Playlist Module] Internal queue mirror for addToQueueNext/Last ────────
+  // These track the queue locally since AppPlayerState has no queue field.
+  final List<Track> _queue = [];
+  int _currentIndex = 0;
+  // ── [Playlist Module] end ──────────────────────────────────────────────────
+
   @override
   AppPlayerState build() {
     final getStreamUseCase = ref.read(getPlayerStateStreamUseCaseProvider);
@@ -125,11 +131,62 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Fallback to existing URL if API fails, or let it throw if critical
     }
 
+    // ── [Playlist Module] Mirror queue for addToQueueNext/Last ────────────
+    _queue
+      ..clear()
+      ..addAll(updatedTracks);
+    _currentIndex = initialIndex;
+    // ── [Playlist Module] end ─────────────────────────────────────────────
+
     await ref
         .read(loadQueueUseCaseProvider)
         .call(updatedTracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }
+
+  // ── [Playlist Module] Queue insertion methods ──────────────────────────────
+
+  /// Inserts [track] immediately after the currently playing track.
+  /// If nothing is playing, starts a new queue with this track.
+  Future<void> addToQueueNext(Track track) async {
+    if (state.currentTrack == null) {
+      await loadAndPlayQueue([track]);
+      return;
+    }
+    Track resolved = track;
+    try {
+      final url = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(track.id);
+      resolved = track.copyWith(streamUrl: url);
+    } catch (_) {}
+    _queue.insert(_currentIndex + 1, resolved);
+    await ref
+        .read(loadQueueUseCaseProvider)
+        .call(List<Track>.from(_queue), initialIndex: _currentIndex);
+  }
+
+  /// Appends [track] to the end of the current queue.
+  /// If nothing is playing, starts a new queue with this track.
+  Future<void> addToQueueLast(Track track) async {
+    if (state.currentTrack == null) {
+      await loadAndPlayQueue([track]);
+      return;
+    }
+    Track resolved = track;
+    try {
+      final url = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(track.id);
+      resolved = track.copyWith(streamUrl: url);
+    } catch (_) {}
+    _queue.add(resolved);
+    await ref
+        .read(loadQueueUseCaseProvider)
+        .call(List<Track>.from(_queue), initialIndex: _currentIndex);
+  }
+
+  // ── [Playlist Module] end ──────────────────────────────────────────────────
 
   /// Starts playback immediately with partial info and fetches full details in the background.
   Future<void> playOptimistic(Track initialTrack) async {

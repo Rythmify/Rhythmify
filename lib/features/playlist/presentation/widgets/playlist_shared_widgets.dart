@@ -1,26 +1,20 @@
-// ============================================================
-// SHARED PLAYLIST WIDGETS
-// ============================================================
-// These small widgets are used by multiple screens.
-// Keeping them here means each screen file stays under 400 LOC.
-// ============================================================
-/// Reusable widgets shared across all playlist screens.
-/// Includes [PlaylistCoverImage], [TrackTileInPlaylist], [BottomSheetHandle], and [OptionSheetTile].
-/// [PlaylistCoverImage] handles both local file paths and remote URLs automatically.
-/// [TrackTileInPlaylist] is intentionally separate from the feed's TrackCard — it's
-/// position-aware and carries playlist-specific state like [PlaylistTrack.isUnavailable].
+// lib/features/playlist/presentation/widgets/playlist_shared_widgets.dart
+//
+// CHANGES vs original:
+//   + TrackTileInPlaylist now shows timeAgo(addedAt) when addedAt is present
+
 library;
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/time_ago.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 import 'dart:io';
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // PlaylistCoverImage
-// ════════════════════════════════════════════════════════════
-/// Shows the playlist cover art, or the SoundCloud waveform placeholder
-/// if there's no cover. The [size] parameter controls width and height.
+// ════════════════════════════════════════════════════════════════════════════
+
 class PlaylistCoverImage extends StatelessWidget {
   const PlaylistCoverImage({
     super.key,
@@ -47,10 +41,7 @@ class PlaylistCoverImage extends StatelessWidget {
     );
   }
 
-  /// Decides whether to use Image.file or Image.network
-  /// based on whether the URL is a local file path or a remote URL.
   Widget _buildCoverImage(String url) {
-    // Local file paths start with / on iOS/Android
     if (url.startsWith('/') || url.startsWith('file://')) {
       return Image.file(
         File(url),
@@ -60,7 +51,6 @@ class PlaylistCoverImage extends StatelessWidget {
         errorBuilder: (_, _, _) => _Placeholder(playlist: playlist),
       );
     }
-    // Remote URL
     return Image.network(
       url,
       width: size,
@@ -94,14 +84,10 @@ class _Placeholder extends StatelessWidget {
   }
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // TrackTileInPlaylist
-// ════════════════════════════════════════════════════════════
-/// One track row as shown in the playlist detail screen (Images 1 & 2).
-/// Shows: cover · title · artist · play count · duration · like icon
-///
-/// This is DIFFERENT from your partner's TrackCard — that one is used
-/// in feeds and search. This one is used only inside playlists.
+// ════════════════════════════════════════════════════════════════════════════
+
 class TrackTileInPlaylist extends StatelessWidget {
   const TrackTileInPlaylist({
     super.key,
@@ -112,9 +98,6 @@ class TrackTileInPlaylist extends StatelessWidget {
 
   final PlaylistTrack track;
   final VoidCallback onTap;
-
-  /// Optional widget on the right: could be an [+] add button,
-  /// a drag handle, or a red [−] remove button.
   final Widget? trailingWidget;
 
   @override
@@ -125,7 +108,7 @@ class TrackTileInPlaylist extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
-            // Cover art
+            // ── Cover art ──────────────────────────────────────────────
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
               child: SizedBox(
@@ -144,7 +127,8 @@ class TrackTileInPlaylist extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Title + artist + stats
+
+            // ── Text column ────────────────────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +155,8 @@ class TrackTileInPlaylist extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 4),
-                  // Stats row: play count · duration · like heart
+
+                  // ── Stats / unavailable row ────────────────────────
                   if (track.isUnavailable)
                     Row(
                       children: [
@@ -213,6 +198,18 @@ class TrackTileInPlaylist extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
+
+                        // ── addedAt timestamp ───────────────────────
+                        if (track.addedAt != null) ...[
+                          Text(
+                            ' · ${timeAgo(track.addedAt!)}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+
                         if (track.isLiked) ...[
                           const SizedBox(width: 6),
                           const Icon(
@@ -226,6 +223,7 @@ class TrackTileInPlaylist extends StatelessWidget {
                 ],
               ),
             ),
+
             if (trailingWidget != null) ...[
               const SizedBox(width: 8),
               trailingWidget!,
@@ -237,10 +235,10 @@ class TrackTileInPlaylist extends StatelessWidget {
   }
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // BottomSheetHandle
-// ════════════════════════════════════════════════════════════
-/// The small grey pill at the top of every bottom sheet.
+// ════════════════════════════════════════════════════════════════════════════
+
 class BottomSheetHandle extends StatelessWidget {
   const BottomSheetHandle({super.key});
 
@@ -260,11 +258,10 @@ class BottomSheetHandle extends StatelessWidget {
   }
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // OptionSheetTile
-// ════════════════════════════════════════════════════════════
-/// One row in the ··· options bottom sheet (Image 4).
-/// Shows an icon + label, calls onTap when pressed.
+// ════════════════════════════════════════════════════════════════════════════
+
 class OptionSheetTile extends StatelessWidget {
   const OptionSheetTile({
     super.key,
