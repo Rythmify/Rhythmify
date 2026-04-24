@@ -104,11 +104,10 @@ class ProfileModel extends ProfileEntity {
       return 0;
     }
 
-    final primaryValue = parse(json[primaryKey]);
-    if (primaryValue > 0 || json.containsKey(primaryKey)) {
-      return primaryValue;
+    if (json.containsKey(primaryKey)) {
+      return parse(json[primaryKey]);
     }
-    if (fallbackKey != null) {
+    if (fallbackKey != null && json.containsKey(fallbackKey)) {
       return parse(json[fallbackKey]);
     }
     return 0;

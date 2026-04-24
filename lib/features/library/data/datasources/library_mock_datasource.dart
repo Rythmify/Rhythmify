@@ -363,9 +363,12 @@ class LibraryMockDatasource implements LibraryRemoteDatasource {
 
   @override
   Future<List<TrackInsightModel>> getMyInsights() async {
+    /// Fetches analytics insights for all tracks uploaded by the current user.
+    ///
+    /// Returns insights for all tracks including those still processing.
+    /// Mock data includes play counts, listener counts, likes, reposts, and comments.
     await Future.delayed(const Duration(milliseconds: 800));
     return _uploads
-        .where((t) => t.isReady)
         .map(
           (t) => TrackInsightModel(
             trackId: t.id,
