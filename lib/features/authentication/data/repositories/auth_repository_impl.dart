@@ -1,10 +1,15 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../data/datasources/discord_auth_data.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/auth_remote_datasource.dart';
 
-/// Authentication repository that maps datasource errors to domain failures.
+/// Concrete implementation of [AuthRepository].
+///
+/// Maps datasource results and exceptions to domain [Failure] types
+/// using [_mapError] for string-based errors and explicit catches for
+/// OAuth-specific exceptions.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDatasource remoteDatasource;
 
@@ -76,12 +81,23 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /// Opens the GitHub OAuth browser, exchanges the code, and persists
+  /// the returned access token via the datasource layer.
+  ///
+  /// Returns [Right] with [GitHubAuthData] on success.
+  /// Returns [Left] with [GitHubAuthFailure] if the user cancels the
+  /// browser, or [ServerFailure] for any backend error.
   @override
-  Future<Either<Failure, UserEntity>> signInWithApple() async {
+  Future<Either<Failure, GitHubAuthData>> loginWithGitHub() async {
     try {
-      final user = await remoteDatasource.signInWithApple();
-      return Right(user);
-    } catch (e) {
+      final data = await remoteDatasource.loginWithGitHub();
+      final authData = GitHubAuthData.fromJson(data);
+      return Right(authData);
+    } on Exception catch (e) {
+      if (e.toString().contains('cancelled') ||
+          e.toString().contains('USER_CANCELLED')) {
+        return const Left(GitHubAuthFailure());
+      }
       return Left(_mapError(e.toString()));
     }
   }
@@ -131,6 +147,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return const RefreshTokenInvalidFailure();
     } else if (error.contains('RATE_LIMIT_EXCEEDED')) {
       return const TooManyRequestsFailure();
+    } else if (error.contains('github') || error.contains('cancelled')) {
+      return const GitHubAuthFailure();
     } else if (error.contains('network') || error.contains('socket')) {
       return const NetworkFailure();
     }

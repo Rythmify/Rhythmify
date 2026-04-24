@@ -5,11 +5,12 @@ import '../../data/datasources/auth_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/models/user_model.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../data/datasources/discord_auth_data.dart';
 import '../../domain/usecases/sign_in_with_email_usecase.dart';
 import '../../domain/usecases/sign_up_with_email_usecase.dart';
 import '../../domain/usecases/sign_in_with_google_usecase.dart';
 import '../../domain/usecases/sign_up_with_google_usecase.dart';
-import '../../domain/usecases/sign_in_with_apple_usecase.dart';
+import '../../domain/usecases/login_with_github_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/send_verification_email_usecase.dart';
 import '../../domain/usecases/send_password_reset_usecase.dart';
@@ -28,7 +29,7 @@ class AuthNotifier extends Notifier<AuthState> {
   late final SignUpWithEmailUseCase _signUpWithEmail;
   late final SignInWithGoogleUseCase _signInWithGoogle;
   late final SignUpWithGoogleUseCase _signUpWithGoogle;
-  late final SignInWithAppleUseCase _signInWithApple;
+  late final LoginWithGitHubUseCase _loginWithGitHub;
   late final SignOutUseCase _signOut;
   late final SendVerificationEmailUseCase _sendVerificationEmail;
   late final SendPasswordResetUseCase _sendPasswordReset;
@@ -45,7 +46,7 @@ class AuthNotifier extends Notifier<AuthState> {
     _signUpWithEmail = SignUpWithEmailUseCase(repository);
     _signInWithGoogle = SignInWithGoogleUseCase(repository);
     _signUpWithGoogle = SignUpWithGoogleUseCase(repository);
-    _signInWithApple = SignInWithAppleUseCase(repository);
+    _loginWithGitHub = LoginWithGitHubUseCase(repository);
     _signOut = SignOutUseCase(repository);
     _sendVerificationEmail = SendVerificationEmailUseCase(repository);
     _sendPasswordReset = SendPasswordResetUseCase(repository);
@@ -59,15 +60,15 @@ class AuthNotifier extends Notifier<AuthState> {
     return const AuthChecking();
   }
 
+  // ── Internal helpers ──────────────────────────────────────────────────────
+
   /// Fetches the full profile from `/users/me` and merges it with
-  /// the token and ID from the basic auth login.
+  /// the token and ID from the basic auth login response.
   ///
   /// Passes the access token explicitly in the request header instead of
   /// relying on the [ApiClient] interceptor reading it from storage.
   /// This avoids a race condition where [FlutterSecureStorage.write] has not
-  /// yet completed by the time the interceptor calls [ApiClient.getToken],
-  /// which caused the `Authorization` header to be missing on the very first
-  /// `/users/me` call after login.
+  /// yet completed by the time the interceptor calls [ApiClient.getToken].
   Future<void> _fetchAndEmitFullProfile(UserEntity basicUser) async {
     if (useMockData) {
       ProfileMockDatasource.setCurrentUser(basicUser.id);
@@ -76,8 +77,6 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     try {
-      // Pass the token directly — do NOT rely on the interceptor reading
-      // from storage here because the write may not have flushed yet.
       final response = await apiClient.dio.get(
         '/users/me',
         options: Options(
@@ -104,6 +103,24 @@ class AuthNotifier extends Notifier<AuthState> {
       state = AuthAuthenticated(basicUser);
     }
   }
+
+  /// Builds a [UserEntity] from the GitHub OAuth response data map,
+  /// then fetches the full profile via `/users/me`.
+  ///
+  /// Mirrors the pattern used by Google sign-in: parse a minimal user
+  /// from the auth response, then enrich it with the full profile.
+  Future<void> _handleGitHubAuthData(GitHubAuthData authData) async {
+    final basicUser = UserModel(
+      id: '',
+      email: '',
+      displayName: '',
+      isEmailVerified: true,
+      token: authData.accessToken,
+    );
+    await _fetchAndEmitFullProfile(basicUser);
+  }
+
+  // ── Public methods ────────────────────────────────────────────────────────
 
   Future<void> checkAuthStatus() async {
     if (useMockData) {
@@ -134,7 +151,6 @@ class AuthNotifier extends Notifier<AuthState> {
         'id': data['id']?.toString() ?? data['user_id']?.toString(),
         'is_email_verified':
             data['is_verified'] ?? data['is_email_verified'] ?? true,
-        // THE FIX APPLIED HERE TOO
         'avatar_url': data['profile_picture'] ?? data['avatar_url'],
         'token': token,
       });
@@ -147,7 +163,6 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      // Keep the session for transient startup failures (network/backend hiccups).
       final token = await apiClient.getToken();
       if (token != null) {
         state = AuthAuthenticated(
@@ -167,11 +182,12 @@ class AuthNotifier extends Notifier<AuthState> {
 
   bool _isInvalidSessionError(Object error) {
     if (error is DioException) {
-      final status = error.response?.statusCode;
-      if (status == 401) return true;
+      return error.response?.statusCode == 401;
     }
     return false;
   }
+
+  // ── Email ─────────────────────────────────────────────────────────────────
 
   Future<void> signInWithEmailAndPassword({
     required String email,
@@ -179,13 +195,10 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthLoading();
     final result = await _signInWithEmail(email: email, password: password);
-
-    // Notice the 'async' added to this callback so we can await the profile
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) async => _fetchAndEmitFullProfile(basicUser),
+    );
   }
 
   Future<void> signUpWithEmailAndPassword({
@@ -203,36 +216,31 @@ class AuthNotifier extends Notifier<AuthState> {
       gender: gender,
       dateOfBirth: dateOfBirth,
     );
-
     result.fold(
       (failure) => state = AuthError(failure.message),
       (basicUser) => state = AuthEmailVerificationRequired(basicUser.email),
     );
   }
 
+  // ── Google ────────────────────────────────────────────────────────────────
+
   Future<void> signInWithGoogleAccount() async {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
-
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) async => _fetchAndEmitFullProfile(basicUser),
+    );
   }
 
   /// Completes registration for a user who signed in via Google OAuth.
   ///
-  /// Called after the user fills in the registration form (gender, date of birth)
-  /// on the RegisterPage. Sends the Google ID token along with profile data to
-  /// the backend to complete account setup.
-  ///
-  /// On success, the user is authenticated and navigated to home.
-  /// On failure, an [AuthError] state is emitted with the error message.
+  /// Called after the user fills in the registration form (gender,
+  /// date of birth) on the [RegisterPage].
   ///
   /// [idToken] — the Google ID token from the sign-in flow.
-  /// [gender] — lowercase gender string (e.g., 'male', 'female').
-  /// [dateOfBirth] — date in YYYY-MM-DD format.
+  /// [gender] — lowercase gender string (e.g. `'male'`).
+  /// [dateOfBirth] — date in `YYYY-MM-DD` format.
   Future<void> signUpWithGoogle({
     required String idToken,
     required String gender,
@@ -244,24 +252,44 @@ class AuthNotifier extends Notifier<AuthState> {
       gender: gender,
       dateOfBirth: dateOfBirth,
     );
-
-    result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
-    ) async {
-      await _fetchAndEmitFullProfile(basicUser);
-    });
+    result.fold(
+      (failure) => state = AuthError(failure.message),
+      (basicUser) async => _fetchAndEmitFullProfile(basicUser),
+    );
   }
 
-  Future<void> signInWithAppleAccount() async {
+  // ── GitHub ────────────────────────────────────────────────────────────────
+
+  /// Signs in an existing user via GitHub OAuth.
+  ///
+  /// Opens the GitHub consent screen in the system browser, waits for the
+  /// deep-link callback, and exchanges the code with the backend.
+  ///
+  /// On success, fetches the full profile and emits [AuthAuthenticated].
+  /// On failure, emits [AuthError] with the failure message.
+  Future<void> signInWithGitHub() async {
     state = const AuthLoading();
-    final result = await _signInWithApple();
-
+    final result = await _loginWithGitHub();
     result.fold((failure) => state = AuthError(failure.message), (
-      basicUser,
+      authData,
     ) async {
-      await _fetchAndEmitFullProfile(basicUser);
+      if (authData.isNewUser) {
+        // New account created — send to onboarding/register flow
+        state = const AuthEmailVerificationRequired('');
+      } else {
+        await _handleGitHubAuthData(authData);
+      }
     });
   }
+
+  /// Signs up a new user via GitHub OAuth.
+  ///
+  /// Identical flow to [signInWithGitHub] — the backend creates a new
+  /// account automatically if one does not exist for the GitHub identity.
+  /// The [GitHubAuthData.isNewUser] flag indicates which case occurred.
+  Future<void> signUpWithGitHub() async => signInWithGitHub();
+
+  // ── Sign out ──────────────────────────────────────────────────────────────
 
   Future<void> signOutUser() async {
     state = const AuthLoading();

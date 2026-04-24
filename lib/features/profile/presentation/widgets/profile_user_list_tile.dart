@@ -18,17 +18,19 @@ class ProfileUserListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(publicProfileProvider(user.id));
-    
+
     // Load profile if not already loaded
     ref.listen(publicProfileProvider(user.id), (prev, curr) {});
-    
+
     // Auto-load profile on first build
     if (profileState is ProfileInitial) {
       Future.microtask(() {
-        ref.read(publicProfileProvider(user.id).notifier).loadProfile(userId: user.id);
+        ref
+            .read(publicProfileProvider(user.id).notifier)
+            .loadProfile(userId: user.id);
       });
     }
-    
+
     final isFollowing = switch (profileState) {
       ProfileLoaded(:final profile) => profile.isFollowing,
       _ => false,
@@ -44,7 +46,8 @@ class ProfileUserListTile extends ConsumerWidget {
           child: Row(
             children: [
               ClipOval(
-                child: (user.avatarUrl != null &&
+                child:
+                    (user.avatarUrl != null &&
                         user.avatarUrl!.trim().isNotEmpty)
                     ? CachedNetworkImage(
                         imageUrl: user.avatarUrl!,
@@ -64,16 +67,18 @@ class ProfileUserListTile extends ConsumerWidget {
                     Text(user.displayName, style: AppTheme.labelLarge),
                     Text(
                       '@${user.username}',
-                      style: AppTheme.bodyMedium
-                          .copyWith(color: AppTheme.textSecondary),
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
               GestureDetector(
                 onTap: () {
-                  final notifier =
-                      ref.read(publicProfileProvider(user.id).notifier);
+                  final notifier = ref.read(
+                    publicProfileProvider(user.id).notifier,
+                  );
                   if (isFollowing) {
                     notifier.unfollowUser(userId: user.id);
                   } else {

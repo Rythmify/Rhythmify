@@ -49,16 +49,14 @@ class PlaylistRemoteDatasource {
     // For authenticated user's own playlists, use the /playlists endpoint with mine=true
     final isMine = userId == 'me';
     final endpoint = isMine ? '/playlists' : '/users/$userId/playlists';
-    
+
     _log('→ GET $endpoint  limit=$limit ${isMine ? '(mine=true)' : ''}');
-    final queryParams = <String, dynamic>{
-      'limit': limit,
-    };
+    final queryParams = <String, dynamic>{'limit': limit};
     if (isMine) {
       queryParams['mine'] = true;
       queryParams['filter'] = 'created';
     }
-    
+
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         endpoint,

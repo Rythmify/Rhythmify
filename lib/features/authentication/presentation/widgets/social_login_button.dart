@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 /// Reusable social-provider login button used across auth screens.
-enum SocialProvider { google, apple, facebook }
+enum SocialProvider { google, github, facebook }
 
 class SocialLoginButton extends StatelessWidget {
   final SocialProvider provider;
@@ -51,8 +51,8 @@ class SocialLoginButton extends StatelessWidget {
           height: 20,
           width: 20,
         );
-      case SocialProvider.apple:
-        return const Icon(Icons.apple, color: Colors.white, size: 22);
+      case SocialProvider.github:
+        return const Icon(Icons.code, color: Colors.white, size: 22);
       case SocialProvider.facebook:
         return const Icon(Icons.facebook, color: Colors.white, size: 22);
     }
@@ -62,8 +62,8 @@ class SocialLoginButton extends StatelessWidget {
     switch (provider) {
       case SocialProvider.google:
         return AppTheme.surface;
-      case SocialProvider.apple:
-        return Colors.black;
+      case SocialProvider.github:
+        return const Color(0xFF333333);
       case SocialProvider.facebook:
         return const Color(0xFF1877F2);
     }
@@ -86,8 +86,8 @@ class SocialLoginButton extends StatelessWidget {
     switch (provider) {
       case SocialProvider.google:
         return 'Continue with Google';
-      case SocialProvider.apple:
-        return 'Continue with Apple';
+      case SocialProvider.github:
+        return 'Continue with GitHub';
       case SocialProvider.facebook:
         return 'Continue with Facebook';
     }

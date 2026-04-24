@@ -40,8 +40,7 @@ class ProfileConnectionsNotifier extends Notifier<ProfileConnectionsState> {
     required ProfileConnectionsType type,
     bool refresh = false,
   }) async {
-    final contextChanged =
-        userId != _loadedUserId || type != _loadedType;
+    final contextChanged = userId != _loadedUserId || type != _loadedType;
 
     final shouldRefresh = refresh || contextChanged;
 
@@ -75,7 +74,7 @@ class ProfileConnectionsNotifier extends Notifier<ProfileConnectionsState> {
       );
       return;
     }
-    
+
     if (currentState.isLoadingMore || !currentState.hasMore) return;
 
     state = currentState.copyWith(isLoadingMore: true);

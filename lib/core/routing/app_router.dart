@@ -460,17 +460,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-                  GoRoute(
-                    path: 'playlists/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
-                  ),
 
                   // ── Albums ─────────────────────────────────────────────
                   // AlbumsPage re-exports LibraryAlbumsScreen
@@ -478,17 +467,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
-                  ),
-                  GoRoute(
-                    path: 'albums/:playlistId',
-                    builder: (context, state) {
-                      final playlistId = state.pathParameters['playlistId']!;
-                      final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
-                      );
-                    },
                   ),
 
                   // ── Stations ───────────────────────────────────────────
@@ -498,14 +476,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
+
+                  // ── Detail route for playlists/albums/stations ────────
                   GoRoute(
-                    path: 'stations/:playlistId',
-                    builder: (context, state) {
+                    name: 'library-detail',
+                    path: ':type/:playlistId',
+                    pageBuilder: (context, state) {
+                      final type = state.pathParameters['type']!;
                       final playlistId = state.pathParameters['playlistId']!;
                       final isOwner = state.extra as bool? ?? false;
-                      return PlaylistDetailScreen(
-                        playlistId: playlistId,
-                        isOwner: isOwner,
+                      return MaterialPage(
+                        key: ValueKey('library-detail-$type-$playlistId'),
+                        child: PlaylistDetailScreen(
+                          playlistId: playlistId,
+                          isOwner: isOwner,
+                        ),
                       );
                     },
                   ),

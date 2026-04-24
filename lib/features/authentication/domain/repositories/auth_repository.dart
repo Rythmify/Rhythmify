@@ -1,40 +1,28 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/user_entity.dart';
+import '../../data/datasources/discord_auth_data.dart';
 
 /// Defines the contract for all authentication operations in Rythmify.
-/// This abstract class sits in the domain layer and has no knowledge of
-/// how data is fetched or stored. Concrete implementations live in the
-/// data layer (e.g. [AuthRepositoryImpl]).
-/// All methods return [Either] from the `dartz` package:
+///
+/// All methods return [Either]:
 /// - [Left] wraps a [Failure] describing what went wrong.
 /// - [Right] wraps the successful result.
-
 abstract class AuthRepository {
-  /// Signs in an existing user with their email address and password.
-  /// Returns [Right] with a [UserEntity] on success.
-  /// Returns [Left] with [InvalidCredentialsFailure] if the credentials
-  /// are incorrect, or [EmailNotVerifiedFailure] if the account is
-  /// unverified.
+  /// Signs in an existing user with email and password.
   ///
-  /// [email] — the user's registered email address.
-  /// [password] — the user's plain-text password.
+  /// Returns [Right] with a [UserEntity] on success.
+  /// Returns [Left] with [InvalidCredentialsFailure] for wrong credentials,
+  /// or [EmailNotVerifiedFailure] if the account is unverified.
   Future<Either<Failure, UserEntity>> signInWithEmail({
     required String email,
     required String password,
   });
 
-  /// Registers a new user account with email and password.
-  /// Returns [Right] with a [UserEntity] on success.
-  /// Returns [Left] with [EmailAlreadyInUseFailure] if the email is
-  /// already registered.
+  /// Registers a new account with email and password.
   ///
-  /// [email] — the new user's email address.
-  /// [password] — the desired password (must meet strength requirements).
-  /// [displayName] — the name shown publicly across the app.
-  /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
-  /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
-
+  /// Returns [Right] with a [UserEntity] on success.
+  /// Returns [Left] with [EmailAlreadyInUseFailure] if the email exists.
   Future<Either<Failure, UserEntity>> signUpWithEmail({
     required String email,
     required String password,
@@ -46,55 +34,33 @@ abstract class AuthRepository {
   /// Signs in using a Google account via Firebase OAuth.
   ///
   /// Returns [Right] with a [UserEntity] on success.
-  /// Returns [Left] with an appropriate [Failure] if the sign-in
-  /// is cancelled or fails.
   Future<Either<Failure, UserEntity>> signInWithGoogle();
 
-  /// Completes registration for a user who signed in via Google OAuth.
-  ///
-  /// Called after [signInWithGoogle] when the user submits the registration form
-  /// with profile data (gender and date of birth). Sends the Google ID token along
-  /// with these fields to `POST /auth/google` to complete account setup.
+  /// Completes registration for a Google OAuth user.
   ///
   /// Returns [Right] with a [UserEntity] on success.
-  /// Returns [Left] with an appropriate [Failure] if registration fails.
-  ///
-  /// [idToken] — the Google ID token obtained during sign-in.
-  /// [gender] — the user's gender, sent as a lowercase string (e.g. `'male'`).
-  /// [dateOfBirth] — formatted as `YYYY-MM-DD` per the API spec.
   Future<Either<Failure, UserEntity>> signUpWithGoogle({
     required String idToken,
     required String gender,
     required String dateOfBirth,
   });
 
-  /// Signs in using an Apple ID via Firebase OAuth.
+  /// Authenticates the user via GitHub OAuth.
   ///
-  /// Returns [Right] with a [UserEntity] on success.
-  /// Returns [Left] with an appropriate [Failure] if the sign-in
-  /// is cancelled or fails.
-  Future<Either<Failure, UserEntity>> signInWithApple();
+  /// Opens the GitHub consent screen in the system browser, waits for the
+  /// deep-link callback, then exchanges the code with the backend.
+  ///
+  /// Returns [Right] with [GitHubAuthData] on success.
+  /// Returns [Left] with [GitHubAuthFailure] if the user cancels or the
+  /// backend rejects the token.
+  Future<Either<Failure, GitHubAuthData>> loginWithGitHub();
 
-  /// Signs out the currently authenticated user.
-  ///
-  /// Clears the stored JWT token from secure storage.
-  /// Returns [Right] with `void` on success.
-  /// Returns [Left] with a [Failure] if the sign-out request fails.
+  /// Signs out the currently authenticated user and clears stored tokens.
   Future<Either<Failure, void>> signOut();
 
-  /// Sends an email verification link to the current user's email address.
-  ///
-  /// Returns [Right] with `void` on success.
-  /// Returns [Left] with a [Failure] if the request fails.
+  /// Sends an email verification link to the current user.
   Future<Either<Failure, void>> sendVerificationEmail();
 
-  /// Sends a password reset email to the given address.
-  ///
-  /// Returns [Right] with `void` if the email was dispatched.
-  /// Returns [Left] with [InvalidCredentialsFailure] if no account
-  /// exists for the given [email].
-  ///
-  /// [email] — the email address associated with the account to reset.
-
+  /// Sends a password reset email to [email].
   Future<Either<Failure, void>> sendPasswordReset({required String email});
 }

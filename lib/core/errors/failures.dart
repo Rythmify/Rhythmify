@@ -150,6 +150,15 @@ class FileTooLargeFailure extends Failure {
   ]);
 }
 
+/// Thrown when a GitHub OAuth authentication fails.
+///
+/// Can occur when the user cancels the OAuth flow or the browser returns an error.
+class GitHubAuthFailure extends Failure {
+  /// Creates a [GitHubAuthFailure] with a fixed message.
+  const GitHubAuthFailure()
+    : super('GitHub authentication failed. Please try again.');
+}
+
 /// Thrown when the uploaded file format is not supported.
 ///
 /// Maps to a 415 response from the backend. Accepted formats are

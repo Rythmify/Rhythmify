@@ -140,7 +140,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
 }
 
 /// Individual user tile in the Following list.
-/// 
+///
 /// Displays user avatar, name, follower count, and a Following button.
 /// Long-pressing shows an unfollow confirmation dialog.
 class _UserTile extends ConsumerWidget {

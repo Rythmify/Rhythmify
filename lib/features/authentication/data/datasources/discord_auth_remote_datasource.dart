@@ -2,7 +2,7 @@ import '../models/user_model.dart';
 
 /// Remote datasource contract for authentication network operations.
 abstract class AuthRemoteDatasource {
-  /// Signs in an existing user with their email address and password.
+  /// Signs in with email and password.
   Future<UserModel> signInWithEmail({
     required String email,
     required String password,
@@ -31,7 +31,7 @@ abstract class AuthRemoteDatasource {
   /// code with the Rythmify backend.
   ///
   /// Returns the raw `data` map from the backend response on success.
-  /// Throws a descriptive [Exception] on cancellation or network failure.
+  /// Throws a [String] error message on failure.
   Future<Map<String, dynamic>> loginWithGitHub();
 
   /// Signs out the current user and clears stored tokens.
@@ -40,6 +40,6 @@ abstract class AuthRemoteDatasource {
   /// Sends an email verification link.
   Future<void> sendVerificationEmail();
 
-  /// Sends a password reset email to [email].
+  /// Sends a password reset email.
   Future<void> sendPasswordReset({required String email});
 }
