@@ -33,9 +33,9 @@ class TrackInfoHeader extends StatelessWidget {
                       aspectRatio: 1,
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(17),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: Colors.white.withValues(alpha: 0.4),
                             width: 1.0,
                           ),
                           boxShadow: [
@@ -73,7 +73,7 @@ class TrackInfoHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 22),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
