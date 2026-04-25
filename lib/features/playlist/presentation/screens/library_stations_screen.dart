@@ -186,7 +186,7 @@ class _MyStationsList extends ConsumerWidget {
           detail: station.detailSubtitle,
           coverUrl: station.coverUrl,
           isMyStation: true,
-          onTap: () => context.push('/playlist/${station.id}', extra: true),
+          onTap: () => context.push('/home/playlist/${station.id}', extra: true),
           onMoreTap: () => showModalBottomSheet(
             context: context,
             isScrollControlled: true,

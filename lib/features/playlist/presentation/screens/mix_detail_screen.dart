@@ -12,7 +12,6 @@ import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../data/local/local_saved_store.dart';
 import '../providers/saved_content_provider.dart';
-import '../widgets/playlist_screen_scaffold.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
 enum MixType { genre, daily, weekly }
@@ -66,7 +65,6 @@ class MixDetailScreen extends ConsumerWidget {
   }
 }
 
-// ── Body — ConsumerStatefulWidget so it can hold _isSaved state ───────────────
 class _MixDetailBody extends ConsumerStatefulWidget {
   const _MixDetailBody({
     required this.mixId,
@@ -135,148 +133,145 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    return PlaylistScreenScaffold(
-      child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // ── Header ─────────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.chevron_left,
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Header ─────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: AppTheme.textPrimary,
+                      size: 28,
+                    ),
+                    onPressed: () => context.pop(),
+                  ),
+                  _Cover(url: widget.coverUrl, label: widget.mixTitle),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.mixTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Private · $durStr · ${tracks.length} tracks',
+                          style: AppTheme.labelSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text('Made for ', style: AppTheme.labelSmall),
+                            Flexible(
+                              child: Text(
+                                widget.ownerName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTheme.labelSmall.copyWith(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Action bar ──────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _isSaved ? Icons.favorite : Icons.favorite_border,
+                      color: _isSaved
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
+                      size: 24,
+                    ),
+                    onPressed: _toggleLike,
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.more_horiz,
+                      color: AppTheme.textPrimary,
+                      size: 24,
+                    ),
+                    onPressed: () => _showOptions(context),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.shuffle,
+                      color: AppTheme.textSecondary,
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      final shuffled = List<Track>.from(tracks)..shuffle();
+                      _play(shuffled, 0);
+                    },
+                  ),
+                  GestureDetector(
+                    onTap: () => _play(tracks, 0),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.lighterSurface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
                         color: AppTheme.textPrimary,
                         size: 28,
                       ),
-                      onPressed: () => context.pop(),
                     ),
-                    _Cover(url: widget.coverUrl, label: widget.mixTitle),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.mixTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Private · $durStr · ${tracks.length} tracks',
-                            style: AppTheme.labelSmall,
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Text('Made for ', style: AppTheme.labelSmall),
-                              Flexible(
-                                child: Text(
-                                  widget.ownerName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTheme.labelSmall.copyWith(
-                                    color: AppTheme.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
-              // ── Action bar ──────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                child: Row(
-                  children: [
-                    // ✅ Wired like button
-                    IconButton(
-                      icon: Icon(
-                        _isSaved ? Icons.favorite : Icons.favorite_border,
-                        color: _isSaved
-                            ? AppTheme.primaryBrand
-                            : AppTheme.textPrimary,
-                        size: 24,
+            const Divider(color: AppTheme.lighterSurface, height: 1),
+
+            // ── Track list ──────────────────────────────────────────────
+            Expanded(
+              child: tracks.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No tracks in this mix yet',
+                        style: AppTheme.bodyMedium,
                       ),
-                      onPressed: _toggleLike,
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.more_horiz,
-                        color: AppTheme.textPrimary,
-                        size: 24,
-                      ),
-                      onPressed: () => _showOptions(context),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.shuffle,
-                        color: AppTheme.textSecondary,
-                        size: 24,
-                      ),
-                      onPressed: () {
-                        final shuffled = List<Track>.from(tracks)..shuffle();
-                        _play(shuffled, 0);
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 140),
+                      itemCount: tracks.length,
+                      itemBuilder: (context, index) {
+                        final t = tracks[index];
+                        return TrackTileFromTrack(
+                          key: Key('mix_track_${t.id}'),
+                          track: t,
+                          onTap: () => _play(tracks, index),
+                        );
                       },
                     ),
-                    GestureDetector(
-                      onTap: () => _play(tracks, 0),
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.lighterSurface,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppTheme.textPrimary,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Divider(color: AppTheme.lighterSurface, height: 1),
-
-              // ── Track list ──────────────────────────────────────────────
-              Expanded(
-                child: tracks.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No tracks in this mix yet',
-                          style: AppTheme.bodyMedium,
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 140),
-                        itemCount: tracks.length,
-                        itemBuilder: (context, index) {
-                          final t = tracks[index];
-                          return TrackTileFromTrack(
-                            key: Key('mix_track_${t.id}'),
-                            track: t,
-                            onTap: () => _play(tracks, index),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -303,11 +298,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(
-                    url: widget.coverUrl,
-                    label: widget.mixTitle,
-                    size: 56,
-                  ),
+                  _Cover(url: widget.coverUrl, label: widget.mixTitle, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -368,7 +359,7 @@ class _Cover extends StatelessWidget {
             ? Image.network(
                 url!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _placeholder(),
+                errorBuilder: (_, __, ___) => _placeholder(),
               )
             : _placeholder(),
       ),
@@ -376,16 +367,16 @@ class _Cover extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    color: AppTheme.surface,
-    child: Center(
-      child: Text(
-        label.isNotEmpty ? label[0].toUpperCase() : 'M',
-        style: const TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
+        color: AppTheme.surface,
+        child: Center(
+          child: Text(
+            label.isNotEmpty ? label[0].toUpperCase() : 'M',
+            style: const TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }
