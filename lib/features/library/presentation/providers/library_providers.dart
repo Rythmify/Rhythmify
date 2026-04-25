@@ -504,9 +504,11 @@ class HistoryNotifier extends Notifier<HistoryState> {
             .map((x) => '${x.trackId}-${x.playedAt.millisecondsSinceEpoch}')
             .toSet();
         final newEntries = e
-            .where((ne) =>
-                !existingKeys
-                    .contains('${ne.trackId}-${ne.playedAt.millisecondsSinceEpoch}'))
+            .where(
+              (ne) => !existingKeys.contains(
+                '${ne.trackId}-${ne.playedAt.millisecondsSinceEpoch}',
+              ),
+            )
             .toList();
 
         state = state.copyWith(

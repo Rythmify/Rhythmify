@@ -79,7 +79,7 @@ class PlaylistTrack {
       coverUrl: coverUrl,
       isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
-      addedAt: addedAt ?? this.addedAt,
+      addedAt: addedAt,
     );
   }
 

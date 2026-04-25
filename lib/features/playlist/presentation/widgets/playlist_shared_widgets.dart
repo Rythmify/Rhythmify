@@ -275,7 +275,7 @@ class TrackTileFromTrack extends StatelessWidget {
                     ? Image.network(
                         track.coverImage!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (_, _, _) => _placeholder(),
                       )
                     : _placeholder(),
               ),

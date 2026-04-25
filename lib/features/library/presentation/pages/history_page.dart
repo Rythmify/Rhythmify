@@ -5,7 +5,6 @@ import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
 
-
 /// Listening history page matching SoundCloud's layout.
 ///
 /// Structure:
@@ -116,7 +115,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           icon: const Icon(Icons.arrow_back, color: AppTheme.appBarItems),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: _SearchBar(
+        title: _searchBar(
           key: const Key('history_search_bar'),
           controller: _searchController,
           onChanged: (v) => setState(() => _query = v),
@@ -150,8 +149,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final filtered = _query.isEmpty
         ? state.entries
         : state.entries
-            .where((e) => e.title.toLowerCase().contains(_query.toLowerCase()))
-            .toList();
+              .where(
+                (e) => e.title.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
     return CustomScrollView(
       key: const Key('history_scroll_view'),
@@ -159,11 +160,18 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
-          child: _HistoryHeader(onClear: _confirmClear, onShuffle: () {}, onPlay: () {}),
+          child: _historyHeader(
+            onClear: _confirmClear,
+            onShuffle: () {},
+            onPlay: () {},
+          ),
         ),
 
         if (filtered.isEmpty && !state.isLoading)
-          const SliverFillRemaining(hasScrollBody: false, child: SizedBox.shrink())
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: SizedBox.shrink(),
+          )
         else ...[
           SliverPadding(
             padding: const EdgeInsets.only(bottom: 120),
@@ -205,13 +213,13 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             ),
           ),
         ],
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
   }
 
-  // Local _SearchBar used in AppBar
-  Widget _SearchBar({
+  // Local _searchBar used in AppBar
+  Widget _searchBar({
     required Key key,
     required TextEditingController controller,
     required ValueChanged<String> onChanged,
@@ -244,13 +252,29 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   // Header similar to Likes header but for history
-  Widget _HistoryHeader({required VoidCallback onClear, required VoidCallback onShuffle, required VoidCallback onPlay}) {
+  Widget _historyHeader({
+    required VoidCallback onClear,
+    required VoidCallback onShuffle,
+    required VoidCallback onPlay,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
-          Expanded(child: Text('Listening History', style: AppTheme.headlineLarge.copyWith(height: 1))),
-          IconButton(key: const Key('history_clear_icon_button'), icon: const Icon(Icons.delete_outline, color: AppTheme.textSecondary), onPressed: onClear),
+          Expanded(
+            child: Text(
+              'Listening History',
+              style: AppTheme.headlineLarge.copyWith(height: 1),
+            ),
+          ),
+          IconButton(
+            key: const Key('history_clear_icon_button'),
+            icon: const Icon(
+              Icons.delete_outline,
+              color: AppTheme.textSecondary,
+            ),
+            onPressed: onClear,
+          ),
           const SizedBox(width: 12),
           GestureDetector(
             key: const Key('history_play_button'),
@@ -258,19 +282,19 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             child: Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 28),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.black,
+                size: 28,
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-
-}
-
-class _Sentinel {
-  final bool isLoading;
-  const _Sentinel({required this.isLoading});
 }

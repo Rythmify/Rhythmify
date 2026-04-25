@@ -214,7 +214,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
             ),
           ),
         ],
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
   }
@@ -313,7 +313,10 @@ class _UploadsHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text('Your uploads', style: AppTheme.headlineLarge.copyWith(height: 1)),
+                child: Text(
+                  'Your uploads',
+                  style: AppTheme.headlineLarge.copyWith(height: 1),
+                ),
               ),
               // Upload icon button
               _CircleIconButton(

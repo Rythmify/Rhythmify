@@ -18,7 +18,6 @@ class WaveformPainter extends CustomPainter {
     bool? showTimeBox,
   }) : showTimeBox = showTimeBox ?? (heightMultiplier > 0);
 
-
   @override
   void paint(Canvas canvas, Size size) {
     if (amplitudes.isEmpty || duration.inMilliseconds == 0) return;
@@ -46,7 +45,6 @@ class WaveformPainter extends CustomPainter {
     final double maxHeight = size.height / 2;
     // When paused, gap collapses to 0. Otherwise it's 2px.
     final double gap = 2.0 * heightMultiplier;
-
 
     for (int i = 0; i < amplitudes.length; i++) {
       // Calculate the X center of the current bar
@@ -188,7 +186,6 @@ class WaveformPainter extends CustomPainter {
 
     // Draw text centered inside box
     tp.paint(canvas, Offset(boxLeft + boxPaddingX, boxTop + boxPaddingY));
-
   }
 
   @override

@@ -159,8 +159,9 @@ class QueueNotifier extends Notifier<AppQueueState> {
     if (oldIndex < 0 ||
         newIndex < 0 ||
         oldIndex >= state.upcomingTracks.length ||
-        newIndex > state.upcomingTracks.length)
+        newIndex > state.upcomingTracks.length) {
       return;
+    }
 
     final list = List<Track>.from(state.upcomingTracks);
     if (newIndex > oldIndex) {

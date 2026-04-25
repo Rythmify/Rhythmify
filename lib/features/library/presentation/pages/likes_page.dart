@@ -131,7 +131,7 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
             ),
           ),
         ],
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
   }

@@ -71,7 +71,8 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
         // our optimistic position with the stale stream value to prevent the
         // visual "snap back" effect. After the grace period the stream will
         // be accepted as authoritative.
-        final bool suppressRecentLocalSeek = _recentLocalSeek != null &&
+        final bool suppressRecentLocalSeek =
+            _recentLocalSeek != null &&
             DateTime.now().difference(_recentLocalSeek!) <
                 const Duration(milliseconds: 600);
 
@@ -107,7 +108,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Clear the local seek suppression if stream position has caught up
       if (_recentLocalSeek != null) {
         if (newState.position.inMilliseconds >=
-            (state.position?.inMilliseconds ?? 0)) {
+            (state.position.inMilliseconds)) {
           _recentLocalSeek = null;
         }
       }

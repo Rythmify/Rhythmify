@@ -361,22 +361,6 @@ class _RecentlyPlayedItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Build Track from entry
-    final track = Track(
-      id: entry.trackId,
-      userId: entry.userId,
-      title: entry.title,
-      artist: entry.artistName,
-      audioUrl: entry.audioUrl ?? '',
-      streamUrl: entry.streamUrl,
-      duration: Duration(seconds: entry.durationSeconds),
-      playCount: entry.playCount,
-      isLiked: entry.isLiked,
-      isArtistFollowed: entry.isArtistFollowed,
-      createdAt: entry.playedAt,
-      coverImage: entry.artworkUrl,
-    );
-
     // Build all tracks for queue
     final allTracks = allEntries.map((e) {
       return Track(
