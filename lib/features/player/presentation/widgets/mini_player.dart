@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
+import '../providers/queue_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
 import '../../../track/presentation/providers/track_sync_provider.dart';
 import 'mini_player_progress_button.dart';
@@ -36,6 +37,16 @@ class MiniPlayer extends ConsumerWidget {
       child: GestureDetector(
         key: const Key('player_mini_player_gesture_detector'),
         onTap: onTap,
+        onHorizontalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+          if (velocity < -300) {
+            // Swipe Left -> Next
+            ref.read(queueStateProvider.notifier).nextTrack();
+          } else if (velocity > 300) {
+            // Swipe Right -> Prev
+            ref.read(queueStateProvider.notifier).previousTrack();
+          }
+        },
 
         // ------- Mini Player Styling ------
         child: Container(
