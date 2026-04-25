@@ -8,31 +8,34 @@ import 'package:rythmify/features/notifications/presentation/providers/follow_st
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:rythmify/features/notifications/presentation/widgets/notification_tile.dart';
 
-enum Filter {all, comments, likes, followings, reposts, reactions}
+enum Filter { all, comments, likes, followings, reposts, reactions }
+
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>_NotificationScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _NotificationScreenState();
 }
 
-class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
-  Filter _filter=Filter.all;
-  final _scrollController =ScrollController();
+class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
+  Filter _filter = Filter.all;
+  final _scrollController = ScrollController();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_){
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(notificationsProvider.notifier).fetch();
     });
 
     _scrollController.addListener(_onScroll);
   }
 
-  void _onScroll(){
-    if(_scrollController.position.pixels>=_scrollController.position.maxScrollExtent-200){
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(notificationsProvider.notifier).loadMore();
     }
   }
@@ -54,58 +57,110 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
         actions: [
           IconButton(
             onPressed: _showFilterSheet,
-            icon: const Icon(Icons.tune_rounded)
-          )
+            icon: const Icon(Icons.tune_rounded),
+          ),
         ],
       ),
       body: _buildBody(state),
     );
   }
 
-  void _setFilter(Filter f){
-    setState(()=>_filter=f);
-    if(f!=Filter.all){
+  void _setFilter(Filter f) {
+    setState(() => _filter = f);
+    if (f != Filter.all) {
       ref.read(notificationsProvider.notifier).loadAll();
     }
   }
 
-  void _showFilterSheet(){
+  void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16))
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_){
+      builder: (_) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 8),
               Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
               const SizedBox(height: 8),
-              _FilterOption(icon: Icons.notifications_rounded,       label: 'Show all notifications', selected: _filter==Filter.all,        onTap: (){ Navigator.pop(context); _setFilter(Filter.all); }),
-              _FilterOption(icon: Icons.chat_bubble_outline_rounded, label: 'Comments',           selected: _filter==Filter.comments,   onTap: (){ Navigator.pop(context); _setFilter(Filter.comments); }),
-              _FilterOption(icon: Icons.favorite_border_rounded,     label: 'Likes',              selected: _filter==Filter.likes,      onTap: (){ Navigator.pop(context); _setFilter(Filter.likes); }),
-              _FilterOption(icon: Icons.person_outline_rounded,      label: 'Followings',         selected: _filter==Filter.followings, onTap: (){ Navigator.pop(context); _setFilter(Filter.followings); }),
-              _FilterOption(icon: Icons.repeat_rounded,              label: 'Reposts',            selected: _filter==Filter.reposts,    onTap: (){ Navigator.pop(context); _setFilter(Filter.reposts); }),
-              _FilterOption(icon: Icons.sentiment_satisfied_outlined, label: 'Reactions',         selected: _filter==Filter.reactions,  onTap: (){ Navigator.pop(context); _setFilter(Filter.reactions); }),
+              _FilterOption(
+                icon: Icons.notifications_rounded,
+                label: 'Show all notifications',
+                selected: _filter == Filter.all,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.all);
+                },
+              ),
+              _FilterOption(
+                icon: Icons.chat_bubble_outline_rounded,
+                label: 'Comments',
+                selected: _filter == Filter.comments,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.comments);
+                },
+              ),
+              _FilterOption(
+                icon: Icons.favorite_border_rounded,
+                label: 'Likes',
+                selected: _filter == Filter.likes,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.likes);
+                },
+              ),
+              _FilterOption(
+                icon: Icons.person_outline_rounded,
+                label: 'Followings',
+                selected: _filter == Filter.followings,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.followings);
+                },
+              ),
+              _FilterOption(
+                icon: Icons.repeat_rounded,
+                label: 'Reposts',
+                selected: _filter == Filter.reposts,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.reposts);
+                },
+              ),
+              _FilterOption(
+                icon: Icons.sentiment_satisfied_outlined,
+                label: 'Reactions',
+                selected: _filter == Filter.reactions,
+                onTap: () {
+                  Navigator.pop(context);
+                  _setFilter(Filter.reactions);
+                },
+              ),
               const SizedBox(height: 8),
             ],
-          )
+          ),
         );
-      }
+      },
     );
   }
 
-  String _getDateTitle(DateTime date){
-    final now=DateTime.now();
-    final today= DateTime(now.year,now.month,now.day);
-    final notificationDay=DateTime(date.year,date.month,date.day);
-    final diff=today.difference(notificationDay).inDays;
+  String _getDateTitle(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final notificationDay = DateTime(date.year, date.month, date.day);
+    final diff = today.difference(notificationDay).inDays;
 
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
@@ -118,24 +173,34 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
     return '${date.year}';
   }
 
-  List<NotificationEntity> _filterItems(List<NotificationEntity> notifications){
-    switch(_filter){
+  List<NotificationEntity> _filterItems(
+    List<NotificationEntity> notifications,
+  ) {
+    switch (_filter) {
       case Filter.all:
         return notifications;
       case Filter.comments:
-        return notifications.where((n)=>n.type==NotificationType.comment).toList();
+        return notifications
+            .where((n) => n.type == NotificationType.comment)
+            .toList();
       case Filter.followings:
-        return notifications.where((n)=>n.type==NotificationType.follow).toList();
+        return notifications
+            .where((n) => n.type == NotificationType.follow)
+            .toList();
       case Filter.likes:
-        return notifications.where((n)=>n.type==NotificationType.like).toList();
+        return notifications
+            .where((n) => n.type == NotificationType.like)
+            .toList();
       case Filter.reposts:
-        return notifications.where((n)=>n.type==NotificationType.repost).toList();
+        return notifications
+            .where((n) => n.type == NotificationType.repost)
+            .toList();
       case Filter.reactions:
         return [];
     }
   }
 
-  Widget _emptyListMessage(){
+  Widget _emptyListMessage() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -154,11 +219,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
             const SizedBox(height: 8),
             const Text(
               'Switch to showing all to see recent notifications',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
@@ -184,31 +245,31 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
     );
   }
 
-  List<dynamic> _buildItems(List<NotificationEntity> notifications){
-    final items=<dynamic>[];
+  List<dynamic> _buildItems(List<NotificationEntity> notifications) {
+    final items = <dynamic>[];
     String? currentCategory;
 
-    for(final notification in notifications){
-      final categ=_getDateTitle(notification.createdAt);
-      if(categ!=currentCategory){
+    for (final notification in notifications) {
+      final categ = _getDateTitle(notification.createdAt);
+      if (categ != currentCategory) {
         items.add(categ);
-        currentCategory=categ;
+        currentCategory = categ;
       }
       items.add(notification);
     }
     return items;
   }
 
-  void _onTap(NotificationEntity notification){
-    switch(notification.type){
+  void _onTap(NotificationEntity notification) {
+    switch (notification.type) {
       case NotificationType.follow:
         context.push('/profile/${notification.actorId}');
       case NotificationType.like:
       case NotificationType.repost:
-        if(notification.resourceId==null) return;
-        if(notification.resourceType==ResourceType.playlist){
+        if (notification.resourceId == null) return;
+        if (notification.resourceType == ResourceType.playlist) {
           context.push('/playlist/${notification.resourceId}');
-        }else if(notification.resourceType==ResourceType.track){
+        } else if (notification.resourceType == ResourceType.track) {
           context.push('/behind-the-track/${notification.resourceId}');
         }
       case NotificationType.newPostByFollowed:
@@ -217,22 +278,20 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
     }
   }
 
-  Widget _buildBody(NotificationsState state){
-    final followState =ref.watch(followStateProvider);
-    if(state.isLoading){
+  Widget _buildBody(NotificationsState state) {
+    final followState = ref.watch(followStateProvider);
+    if (state.isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: AppTheme.primaryBrand),
       );
     }
 
-    if(state.error!=null && state.items.isEmpty){
-      return Center(
-        child: Text(state.error!, style: AppTheme.bodyMedium),
-      );
+    if (state.error != null && state.items.isEmpty) {
+      return Center(child: Text(state.error!, style: AppTheme.bodyMedium));
     }
 
-    if(state.items.isEmpty){
-      if(_filter==Filter.all){
+    if (state.items.isEmpty) {
+      if (_filter == Filter.all) {
         return const Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -244,41 +303,44 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
               Text(
                 'Interact with people you follow to get some\nactivities and updates',
                 style: MessagingThemes.inboxEmptysubMsg,
-              )
+              ),
             ],
           ),
         );
-      }
-      else{
+      } else {
         return _emptyListMessage();
       }
     }
 
-    final filteredItems=_filterItems(state.items);
-    if(filteredItems.isEmpty) return _emptyListMessage();
-    final items =_buildItems(filteredItems);
+    final filteredItems = _filterItems(state.items);
+    if (filteredItems.isEmpty) return _emptyListMessage();
+    final items = _buildItems(filteredItems);
     return RefreshIndicator(
       color: AppTheme.primaryBrand,
-      onRefresh: ()=>ref.read(notificationsProvider.notifier).fetch(),
+      onRefresh: () => ref.read(notificationsProvider.notifier).fetch(),
       child: ListView.builder(
         controller: _scrollController,
-        itemCount: items.length+(state.isLoadingMore?1:0),
-        itemBuilder: (context,index){
-          if(index==items.length){
+        itemCount: items.length + (state.isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == items.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-              )
+              ),
             );
           }
-          final item =items[index];
-          if(item is String){
+          final item = items[index];
+          if (item is String) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               child: Text(
                 item,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             );
           }
@@ -286,23 +348,28 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
           return NotificationTile(
             notification: notification,
             onTap: () => _onTap(notification),
-            isFollowing: followState[notification.actorId]??false,
-            onFollowTap: (){
-              ref.read(notificationsProvider.notifier).toggleFollow(
-                notification.actorId,
-                followState[notification.actorId]??false
-              );
+            isFollowing: followState[notification.actorId] ?? false,
+            onFollowTap: () {
+              ref
+                  .read(notificationsProvider.notifier)
+                  .toggleFollow(
+                    notification.actorId,
+                    followState[notification.actorId] ?? false,
+                  );
             },
-            onLikeTap: notification.resourceId!=null
-                       ?()=>ref.read(notificationsProvider.notifier).toggleCommentLike(notification.resourceId!)
-                       :null,
-            isCommentLiked: state.likedCommentIds.contains(notification.resourceId),
+            onLikeTap: notification.resourceId != null
+                ? () => ref
+                      .read(notificationsProvider.notifier)
+                      .toggleCommentLike(notification.resourceId!)
+                : null,
+            isCommentLiked: state.likedCommentIds.contains(
+              notification.resourceId,
+            ),
           );
-        }
-      )
+        },
+      ),
     );
   }
-
 }
 
 class _FilterOption extends StatelessWidget {
@@ -311,7 +378,12 @@ class _FilterOption extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _FilterOption({required this.icon, required this.label, required this.selected, required this.onTap});
+  const _FilterOption({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +396,14 @@ class _FilterOption extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(width: 16),
-            Text(label, style: TextStyle(color: color, fontSize: 16, fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 16,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),

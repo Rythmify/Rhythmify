@@ -17,8 +17,8 @@ class NotificationTile extends StatelessWidget {
     this.onFollowTap,
     this.onLikeTap,
     this.onTap,
-    this.isCommentLiked=false,
-    this.isFollowing=false
+    this.isCommentLiked = false,
+    this.isFollowing = false,
   });
 
   @override
@@ -34,7 +34,10 @@ class NotificationTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _AvatarWithBadge(avatar: notification.actorAvatar, type: notification.type),
+            _AvatarWithBadge(
+              avatar: notification.actorAvatar,
+              type: notification.type,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -43,7 +46,8 @@ class NotificationTile extends StatelessWidget {
                   _buildHeader(),
                   const SizedBox(height: 2),
                   _buildActionText(),
-                  if (notification.type == NotificationType.comment) _buildLikeButton(),
+                  if (notification.type == NotificationType.comment)
+                    _buildLikeButton(),
                 ],
               ),
             ),
@@ -91,7 +95,9 @@ class NotificationTile extends StatelessWidget {
         return _richAction(
           verb: 'commented ',
           title: notification.resourceContent,
-          suffix: notification.resourceTitle != null ? ' on your ${_resourceLabel()} ' : null,
+          suffix: notification.resourceTitle != null
+              ? ' on your ${_resourceLabel()} '
+              : null,
           suffixTitle: notification.resourceTitle,
         );
       case NotificationType.newPostByFollowed:
@@ -114,7 +120,8 @@ class NotificationTile extends StatelessWidget {
           TextSpan(text: verb),
           if (title != null) TextSpan(text: title, style: AppTheme.bodyNormal),
           if (suffix != null) TextSpan(text: suffix),
-          if (suffixTitle != null) TextSpan(text: suffixTitle, style: AppTheme.bodyNormal),
+          if (suffixTitle != null)
+            TextSpan(text: suffixTitle, style: AppTheme.bodyNormal),
         ],
       ),
     );
@@ -146,9 +153,13 @@ class NotificationTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isCommentLiked? Icons.favorite_rounded:Icons.favorite_border_rounded,
-                color: isCommentLiked? const Color(0xFFE91E63) :AppTheme.semiWhite,
-                size: 14
+                isCommentLiked
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: isCommentLiked
+                    ? const Color(0xFFE91E63)
+                    : AppTheme.semiWhite,
+                size: 14,
               ),
               const SizedBox(width: 4),
               Text('Like', style: AppTheme.bodyMedium),
@@ -253,14 +264,14 @@ class _FollowButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isFollowing ? const Color(0xFF3C3C3C)  : Colors.white,
+          color: isFollowing ? const Color(0xFF3C3C3C) : Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           isFollowing ? 'Following' : 'Follow',
           style: AppTheme.labelLarge.copyWith(
-            color: isFollowing? Colors.white:Colors.black
-          )
+            color: isFollowing ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

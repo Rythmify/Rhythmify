@@ -100,12 +100,18 @@ class DataSourcesSockets {
 
   void onNotificationCreated(Function(Map<String, dynamic>) callback) {
     _socket?.off('notification:created');
-    _socket?.on('notification:created', (data) => callback(data as Map<String, dynamic>));
+    _socket?.on(
+      'notification:created',
+      (data) => callback(data as Map<String, dynamic>),
+    );
   }
 
   void onNotificationRead(Function(Map<String, dynamic>) callback) {
     _socket?.off('notification:read');
-    _socket?.on('notification:read', (data) => callback(data as Map<String, dynamic>));
+    _socket?.on(
+      'notification:read',
+      (data) => callback(data as Map<String, dynamic>),
+    );
   }
 
   void disconnect() {

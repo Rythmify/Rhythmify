@@ -3,6 +3,7 @@ import 'package:rythmify/features/notifications/data/datasources/notification_re
 import 'package:rythmify/features/notifications/data/models/notification_model.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// HTTP implementation of [NotificationRemoteDatasources].
 class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
   final Dio dio;
   NotificationDatasourcesImpl(this.dio);
@@ -23,7 +24,7 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
     final List rawItems = data['items'] as List? ?? [];
     final pagination = data['pagination'] as Map<String, dynamic>? ?? {};
 
-    // Drop new_post_by_followed
+    // new_post_by_followed has no dedicated UI — filtered out at the data layer.
     final items = rawItems
         .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
         .where((n) => n.type != NotificationType.newPostByFollowed)
@@ -48,7 +49,7 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
   }
 
   @override
-  Future<bool> getFollowStatus(String userId) async{
+  Future<bool> getFollowStatus(String userId) async {
     final result = await dio.get('/users/$userId/follow-status');
     return result.data['data']['is_following'] as bool? ?? false;
   }

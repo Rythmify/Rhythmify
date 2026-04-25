@@ -1,5 +1,10 @@
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// Data-layer representation of a [NotificationEntity].
+///
+/// Extends [NotificationEntity] and adds [fromJson] to deserialise the
+/// `GET /notifications` response. The actor object and resource_details
+/// are nested inside each notification item.
 class NotificationModel extends NotificationEntity {
   const NotificationModel({
     required super.id,
@@ -35,7 +40,10 @@ class NotificationModel extends NotificationEntity {
       resourceId: json['resource_id'] as String?,
       resourceTitle: resourceDetails?['title'] as String?,
       resourceContent: resourceDetails?['content'] as String?,
-      resourceImageUrl: resourceDetails?['cover_image'] as String? ?? resourceDetails?['cover_url'] as String?,
+      // Tries cover_image first (tracks), falls back to cover_url (playlists).
+      resourceImageUrl:
+          resourceDetails?['cover_image'] as String? ??
+          resourceDetails?['cover_url'] as String?,
       isRead: json['is_read'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
