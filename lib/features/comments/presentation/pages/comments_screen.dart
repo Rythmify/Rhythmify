@@ -52,9 +52,12 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Ensure the track is in the sync map for global count synchronization
+      ref.read(trackSyncProvider.notifier).syncTrack(widget.track);
+      
       ref
           .read(trackCommentsProvider(widget.track.id).notifier)
-          .setInitialCount(widget.track.commentCount);
+          .setInitialTrack(widget.track);
     });
   }
 
@@ -216,7 +219,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
         ),
         titleSpacing: 8,
         title: Text(
-          '${state.totalCommentCount} Comments',
+          '${syncedTrack.commentCount} Comments',
           style: AppTheme.titleMedium.copyWith(fontSize: 18),
         ),
         actions: [

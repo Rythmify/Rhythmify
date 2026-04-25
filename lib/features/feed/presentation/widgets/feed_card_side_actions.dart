@@ -1,54 +1,71 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/feed_item.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/entities/feed_item.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../track/presentation/providers/track_sync_provider.dart';
+import '../../../track/presentation/providers/track_interaction_provider.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/formatters.dart';
 
-class FeedCardSideActions extends StatefulWidget {
+class FeedCardSideActions extends ConsumerWidget {
   final FeedItemEntity item;
 
   const FeedCardSideActions({super.key, required this.item});
 
-  @override
-  State<FeedCardSideActions> createState() => _FeedCardSideActionsState();
-}
+  Track _toTrack() {
+    return Track(
+      id: item.track.id,
+      userId: item.user.id,
+      title: item.track.title,
+      artist: item.user.displayName,
+      artistPfp: item.user.avatar,
+      audioUrl: item.track.audioUrl,
+      coverImage: item.track.coverUrl,
+      duration: Duration(seconds: item.track.duration),
+      createdAt: item.createdAt,
+      playCount: item.track.playCount,
+      likeCount: item.track.likeCount,
+      // Note: FeedTrackEntity doesn't have commentCount or repostCount, 
+      // they will be 0 until synced or fetched.
+      commentCount: 0,
+      repostCount: 0,
+    );
+  }
 
-class _FeedCardSideActionsState extends State<FeedCardSideActions> {
-  bool _liked = false;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final baseTrack = _toTrack();
+    final syncedTrack = ref.watch(syncedTrackProvider(baseTrack));
+
     return Column(
       key: const Key('feed_card_side_actions_column'),
       mainAxisSize: MainAxisSize.min,
       children: [
         _ActionButton(
           key: const Key('feed_card_side_actions_like'),
-          icon: _liked ? Icons.favorite : Icons.favorite_border,
-          label: '${widget.item.track.likeCount + (_liked ? 1 : 0)}',
-          color: _liked ? Colors.orange : Colors.white,
-          onTap: () => setState(() => _liked = !_liked),
+          icon: syncedTrack.isLiked ? Icons.favorite : Icons.favorite_border,
+          label: Formatters.formatCount(syncedTrack.likeCount),
+          color: syncedTrack.isLiked ? AppTheme.primaryBrand : Colors.white,
+          onTap: () {
+            ref.read(trackInteractionProvider).handleToggleLike(
+                  syncedTrack.id,
+                  syncedTrack.isLiked,
+                  currentTrack: syncedTrack,
+                );
+          },
         ),
         const SizedBox(height: 20),
         _ActionButton(
           key: const Key('feed_card_side_actions_comment'),
-          icon: Icons.comment_outlined,
-          label: '0',
-
+          icon: Icons.chat_outlined,
+          label: Formatters.formatCount(syncedTrack.commentCount),
           onTap: () {
-            final track = Track(
-              id: widget.item.track.id,
-              userId: widget.item.user.id,
-              title: widget.item.track.title,
-              artist: widget.item.user.displayName,
-              artistPfp: widget.item.user.avatar,
-              audioUrl: widget.item.track.audioUrl,
-              coverImage: widget.item.track.coverUrl,
-              duration: Duration(seconds: widget.item.track.duration),
-              createdAt: widget.item.createdAt,
-              playCount: widget.item.track.playCount,
-              likeCount: widget.item.track.likeCount,
+            context.pushNamed(
+              'comments',
+              pathParameters: {'trackId': syncedTrack.id},
+              extra: syncedTrack,
             );
-            context.push('/comments/${widget.item.track.id}', extra: track);
           },
         ),
       ],

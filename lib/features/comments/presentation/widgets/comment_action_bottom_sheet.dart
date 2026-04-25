@@ -10,7 +10,6 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/player_dependency_providers.dart';
 import '../../domain/entities/comment.dart';
-import '../providers/comment_di_providers.dart';
 import '../providers/track_comments_notifier.dart';
 import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
@@ -82,20 +81,34 @@ class CommentActionBottomSheet extends ConsumerWidget {
     );
   }
 
-  void _blockUser(BuildContext context, WidgetRef ref) async {
+  void _toggleBlock(BuildContext context, WidgetRef ref) async {
     Navigator.pop(context);
+    final shouldBlock = !comment.isAuthorBlocked;
     try {
-      await ref.read(blockUserProvider)(comment.userId);
+      if (comment.parentId == null) {
+        await ref
+            .read(trackCommentsProvider(comment.trackId).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      } else {
+        await ref
+            .read(commentRepliesProvider(comment.parentId!).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('User blocked')));
+        ).showSnackBar(SnackBar(
+          content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
+        ));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to block user: $e')));
+        ).showSnackBar(SnackBar(
+          content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e'),
+        ));
       }
     }
   }
@@ -176,11 +189,11 @@ class CommentActionBottomSheet extends ConsumerWidget {
               onTap: () => _reportUser(context),
             ),
 
-            // Row 6 (Other): Block
+            // Row 6 (Other): Block/Unblock
             _buildActionRow(
               icon: Icons.block,
-              label: 'Block',
-              onTap: () => _blockUser(context, ref),
+              label: comment.isAuthorBlocked ? 'Unblock' : 'Block',
+              onTap: () => _toggleBlock(context, ref),
             ),
           ],
         ],

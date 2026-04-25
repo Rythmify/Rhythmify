@@ -45,6 +45,17 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   CommentRepliesNotifier(this.ref, this.parentId)
     : super(TrackCommentsState.initial()) {
     fetchReplies();
+
+    // Listen to the global blocked users set to synchronize UI across different notifiers
+    ref.listen<Set<String>>(blockedUserIdsProvider, (previous, next) {
+      if (mounted) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            return c.copyWith(isAuthorBlocked: next.contains(c.userId));
+          }).toList(),
+        );
+      }
+    }, fireImmediately: true);
   }
 
   /// Fetches a paginated list of replies from the backend.
@@ -208,6 +219,46 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
           .read(trackCommentsProvider(trackId).notifier)
           .decrementReplyCount(parentId);
       ref.read(trackCommentsProvider(trackId).notifier).decrementTotalCount();
+    }
+  }
+
+  /// Toggles the blocked status for a specific user across all replies in the current state.
+  ///
+  /// Optimistically updates the `isAuthorBlocked` flag for every reply authored
+  /// by the target [userId]. Reverts if the backend request fails.
+  Future<void> toggleBlockUser(String userId, {required bool shouldBlock}) async {
+    final originalComments = [...state.comments];
+    final originalBlockedUsers = ref.read(blockedUserIdsProvider);
+
+    if (mounted) {
+      // 1. Update local state for immediate feedback
+      state = state.copyWith(
+        comments: state.comments.map((c) {
+          if (c.userId == userId) {
+            return c.copyWith(isAuthorBlocked: shouldBlock);
+          }
+          return c;
+        }).toList(),
+      );
+
+      // 2. Update global provider to sync with other notifiers (top-level or other replies)
+      ref.read(blockedUserIdsProvider.notifier).toggle(userId, shouldBlock);
+    }
+
+    try {
+      if (shouldBlock) {
+        final blockUserUseCase = ref.read(blockUserProvider);
+        await blockUserUseCase(userId);
+      } else {
+        final unblockUserUseCase = ref.read(unblockUserProvider);
+        await unblockUserUseCase(userId);
+      }
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(comments: originalComments);
+        ref.read(blockedUserIdsProvider.notifier).setAll(originalBlockedUsers);
+      }
+      rethrow;
     }
   }
 

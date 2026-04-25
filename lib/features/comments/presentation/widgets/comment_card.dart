@@ -45,6 +45,8 @@ class CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBlocked = comment.isAuthorBlocked;
+
     return Padding(
       padding: EdgeInsets.only(
         left: isReply ? 48.0 : 16.0,
@@ -55,45 +57,48 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () => context.push('/profile/${comment.userId}'),
-            borderRadius: BorderRadius.circular(isReply ? 16 : 20),
-            child: Container(
-              width: isReply ? 32 : 40,
-              height: isReply ? 32 : 40,
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-                shape: BoxShape.circle,
-              ),
-              child: ClipOval(
-                child: comment.userPfp == null || comment.userPfp!.isEmpty
-                    ? Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: isReply ? 16 : 20,
-                      )
-                    : (comment.userPfp!.startsWith('http') ||
-                              comment.userPfp!.startsWith('https')
-                          ? Image.network(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )
-                          : Image.asset(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )),
+          Opacity(
+            opacity: isBlocked ? 0.4 : 1.0,
+            child: InkWell(
+              onTap: isBlocked ? null : () => context.push('/profile/${comment.userId}'),
+              borderRadius: BorderRadius.circular(isReply ? 16 : 20),
+              child: Container(
+                width: isReply ? 32 : 40,
+                height: isReply ? 32 : 40,
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: comment.userPfp == null || comment.userPfp!.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: isReply ? 16 : 20,
+                        )
+                      : (comment.userPfp!.startsWith('http') ||
+                                comment.userPfp!.startsWith('https')
+                            ? Image.network(
+                                comment.userPfp!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: isReply ? 16 : 20,
+                                    ),
+                              )
+                            : Image.asset(
+                                comment.userPfp!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: isReply ? 16 : 20,
+                                    ),
+                              )),
+                ),
               ),
             ),
           ),
@@ -104,54 +109,60 @@ class CommentCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    InkWell(
-                      onTap: () => context.push('/profile/${comment.userId}'),
-                      borderRadius: BorderRadius.circular(
-                        4,
-                      ), // Gives the ripple a nice rounded edge
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 2.0,
-                          vertical: 2.0,
-                        ), // Slight padding so the ripple doesn't cut off the text
-                        child: Text(
-                          comment.userDisplayName,
-                          style: AppTheme.bodyNormal.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                    Opacity(
+                      opacity: isBlocked ? 0.4 : 1.0,
+                      child: InkWell(
+                        onTap: isBlocked ? null : () => context.push('/profile/${comment.userId}'),
+                        borderRadius: BorderRadius.circular(
+                          4,
+                        ), // Gives the ripple a nice rounded edge
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2.0,
+                            vertical: 2.0,
+                          ), // Slight padding so the ripple doesn't cut off the text
+                          child: Text(
+                            comment.userDisplayName,
+                            style: AppTheme.bodyNormal.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'at  ',
-                          style: AppTheme.commentLabel.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[850],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            TimeUtils.formatTrackTimestamp(
-                              comment.trackTimestamp,
-                            ),
+                    Opacity(
+                      opacity: isBlocked ? 0.4 : 1.0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'at  ',
                             style: AppTheme.commentLabel.copyWith(
-                              color: Colors.blueAccent,
+                              color: Colors.white70,
                             ),
                           ),
-                        ),
-                      ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 3,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[850],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              TimeUtils.formatTrackTimestamp(
+                                comment.trackTimestamp,
+                              ),
+                              style: AppTheme.commentLabel.copyWith(
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 4),
                     const Text('·', style: TextStyle(color: Colors.white70)),
@@ -165,14 +176,33 @@ class CommentCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  comment.content,
-                  style: AppTheme.bodyNormal.copyWith(fontSize: 14),
-                ),
+                if (isBlocked)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      'You blocked this user',
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontSize: 14,
+                        color: Colors.red.withValues(alpha: 0.5),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    comment.content,
+                    style: AppTheme.bodyNormal.copyWith(fontSize: 14),
+                  ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    if (!isReply) ...[
+                    if (!isReply && !isBlocked) ...[
                       GestureDetector(
                         onTap: onReply,
                         child: Text(
@@ -241,24 +271,25 @@ class CommentCard extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            children: [
-              IconButton(
-                onPressed: onLike,
-                icon: Icon(
-                  comment.isLikedByMe ? Icons.favorite : Icons.favorite_border,
-                  size: 16,
-                  color: comment.isLikedByMe ? Colors.red : Colors.white70,
+          if (!isBlocked)
+            Column(
+              children: [
+                IconButton(
+                  onPressed: onLike,
+                  icon: Icon(
+                    comment.isLikedByMe ? Icons.favorite : Icons.favorite_border,
+                    size: 16,
+                    color: comment.isLikedByMe ? Colors.red : Colors.white70,
+                  ),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
                 ),
-                constraints: const BoxConstraints(),
-                padding: EdgeInsets.zero,
-              ),
-              Text(
-                comment.likesCount.toString(),
-                style: AppTheme.labelSmall.copyWith(fontSize: 10),
-              ),
-            ],
-          ),
+                Text(
+                  comment.likesCount.toString(),
+                  style: AppTheme.labelSmall.copyWith(fontSize: 10),
+                ),
+              ],
+            ),
         ],
       ),
     );

@@ -125,3 +125,36 @@ final blockUserProvider = Provider<BlockUserUseCase>((ref) {
 final unblockUserProvider = Provider<UnblockUserUseCase>((ref) {
   return UnblockUserUseCase(ref.watch(commentRepositoryProvider));
 });
+
+/// A global notifier to track blocked user IDs across the application.
+/// Used to synchronize "Blocked User" UI states between top-level comments and replies.
+class BlockedUserIdsNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() {
+    return {};
+  }
+
+  void add(String userId) {
+    state = {...state, userId};
+  }
+
+  void remove(String userId) {
+    state = state.where((id) => id != userId).toSet();
+  }
+
+  void toggle(String userId, bool shouldBlock) {
+    if (shouldBlock) {
+      add(userId);
+    } else {
+      remove(userId);
+    }
+  }
+
+  void setAll(Set<String> userIds) {
+    state = userIds;
+  }
+}
+
+final blockedUserIdsProvider = NotifierProvider<BlockedUserIdsNotifier, Set<String>>(() {
+  return BlockedUserIdsNotifier();
+});
