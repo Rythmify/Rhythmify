@@ -370,6 +370,26 @@ const String vibesList                      = 'vibes_list';
 const String vibesGrid                      = 'vibes_masonry_grid';
 const String searchBarField                 = 'search_bar_field';
 const String searchBarClearButton           = 'search_bar_clear_button';
+//TODO: pending cross-team Key() implementation ───────────────────
+const String searchNavButton             = 'search_nav_button';
+const String searchBackButton            = 'search_back_button';
+const String searchVibeDetailScreenKey   = 'search_vibe_detail_screen';
+const String searchVibeDetailScrollView  = 'search_vibe_detail_scroll_view';
+const String searchVibeDetailPageView    = 'search_vibe_detail_page_view';
+const String searchResultsScreenKey      = 'search_results_screen';
+const String searchResultsPageView       = 'search_results_page_view';
+const String searchResultsScrollView     = 'search_results_scroll_view';
+const String searchFirstTrackPlayButton  = 'search_first_track_play_button';
+const String searchMiniPlayerBar         = 'search_mini_player_bar';
+const String searchResultsTabAll         = 'search_results_tab_all';
+const String searchResultsTabTracks      = 'search_results_tab_tracks';
+const String searchResultsTabProfiles    = 'search_results_tab_profiles';
+const String searchResultsTabPlaylists   = 'search_results_tab_playlists';
+const String searchResultsTabAlbums      = 'search_results_tab_albums';
+const String searchVibeTabAll            = 'search_vibe_tab_all';
+const String searchVibeTabTrending       = 'search_vibe_tab_trending';
+const String searchVibeTabPlaylists      = 'search_vibe_tab_playlists';
+const String searchVibeTabAlbums         = 'search_vibe_tab_albums';
 
 // --- Settings ---
 const String deleteAccountButton            = 'delete_account_button';
