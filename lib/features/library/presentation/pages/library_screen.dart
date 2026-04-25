@@ -77,75 +77,82 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ],
       ),
-      body: ListView(
-        key: const Key('library_main_scroll_view'),
-        children: [
-          if (_showBanner)
-            Dismissible(
-              key: const Key('library_import_banner_dismissible'),
-              direction: DismissDirection.horizontal,
-              onDismissed: (_) => _dismissBanner(),
-              child: _ImportBannerCard(
-                onImport: () =>
-                    context.push('/library/settings/import-my-music'),
-                onClose: _dismissBanner,
+      body: RefreshIndicator(
+        color: AppTheme.primaryBrand,
+        onRefresh: () async {
+          // Refresh the recently played section (history)
+          await ref.read(historyProvider.notifier).load(refresh: true);
+        },
+        child: ListView(
+          key: const Key('library_main_scroll_view'),
+          children: [
+            if (_showBanner)
+              Dismissible(
+                key: const Key('library_import_banner_dismissible'),
+                direction: DismissDirection.horizontal,
+                onDismissed: (_) => _dismissBanner(),
+                child: _ImportBannerCard(
+                  onImport: () =>
+                      context.push('/library/settings/import-my-music'),
+                  onClose: _dismissBanner,
+                ),
               ),
+
+            if (_showBanner) const SizedBox(height: 8),
+
+            _menuItem(
+              context,
+              label: 'Your likes',
+              key: const Key('library_likes_item'),
+              onTap: () => context.push('/library/likes'),
+            ),
+            _menuItem(
+              context,
+              label: 'Playlists',
+              key: const Key('library_playlists_item'),
+              onTap: () => context.push('/library/playlists'),
+            ),
+            _menuItem(
+              context,
+              label: 'Albums',
+              key: const Key('library_albums_item'),
+              onTap: () => context.pushNamed('library-albums'),
+            ),
+            _menuItem(
+              context,
+              label: 'Following',
+              key: const Key('library_following_item'),
+              onTap: () => context.push('/library/following'),
+            ),
+            _menuItem(
+              context,
+              label: 'Stations',
+              key: const Key('library_stations_item'),
+              onTap: () => context.pushNamed('library-stations'),
+            ),
+            _menuItem(
+              context,
+              label: 'Your insights',
+              key: const Key('library_insights_item'),
+              onTap: () => context.push('/library/insights'),
+            ),
+            _menuItem(
+              context,
+              label: 'Your uploads',
+              key: const Key('library_uploads_item'),
+              onTap: () => context.push('/library/uploads'),
             ),
 
-          if (_showBanner) const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          _menuItem(
-            context,
-            label: 'Your likes',
-            key: const Key('library_likes_item'),
-            onTap: () => context.push('/library/likes'),
-          ),
-          _menuItem(
-            context,
-            label: 'Playlists',
-            key: const Key('library_playlists_item'),
-            onTap: () => context.push('/library/playlists'),
-          ),
-          _menuItem(
-            context,
-            label: 'Albums',
-            key: const Key('library_albums_item'),
-            onTap: () => context.pushNamed('library-albums'),
-          ),
-          _menuItem(
-            context,
-            label: 'Following',
-            key: const Key('library_following_item'),
-            onTap: () => context.push('/library/following'),
-          ),
-          _menuItem(
-            context,
-            label: 'Stations',
-            key: const Key('library_stations_item'),
-            onTap: () => context.pushNamed('library-stations'),
-          ),
-          _menuItem(
-            context,
-            label: 'Your insights',
-            key: const Key('library_insights_item'),
-            onTap: () => context.push('/library/insights'),
-          ),
-          _menuItem(
-            context,
-            label: 'Your uploads',
-            key: const Key('library_uploads_item'),
-            onTap: () => context.push('/library/uploads'),
-          ),
+            _RecentlyPlayedSection(
+              entries: historyState.entries.take(10).toList(),
+              onSeeAll: () => context.push('/library/history'),
+            ),
 
-          const SizedBox(height: 8),
-
-          _RecentlyPlayedSection(
-            entries: historyState.entries.take(10).toList(),
-            onSeeAll: () => context.push('/library/history'),
-          ),
-
-          const SizedBox(height: 120),
-        ],
+            const SizedBox(height: 120),
+          ],
+        ),
       ),
     );
   }
