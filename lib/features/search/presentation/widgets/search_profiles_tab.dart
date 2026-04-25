@@ -18,7 +18,7 @@ class SearchProfileCard extends StatelessWidget {
 
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        radius: 30,
+        radius: 24,
         backgroundColor: Colors.grey[800],
         // Falls back to a person icon if no avatar URL is available.
         backgroundImage: profile.avatarUrl != null

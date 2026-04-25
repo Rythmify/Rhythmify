@@ -169,7 +169,7 @@ class GenreDto {
     return GenreArtist(
       id: json['id'] as String,
       displayName: json['display_name'] as String,
-      username: json['username'] as String? ?? '',
+      username: json['username'] as String,
       profilePicture: json['profile_picture'] as String? ?? '',
       isVerified: json['is_verified'] as bool? ?? false,
       followerCount: (json['follower_count'] as num).toInt(),

@@ -68,21 +68,10 @@ class AllTab extends ConsumerWidget {
           ],
           // ── Profiles ────────────────────────────────────────
           if (data.profiles.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Profiles',
-              onSeeAll: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SearchSeeAllPage(
-                    title: 'Profiles',
-                    child: ProfilesTab(),
-                  ),
-                ),
-              ),
-            ),
+            const _SectionTitle('Profiles'),
             const SizedBox(height: 12),
             ...data.profiles
-                .take(1)
+                .take(3)
                 .toList()
                 .asMap()
                 .entries
@@ -98,18 +87,7 @@ class AllTab extends ConsumerWidget {
 
           // ── Playlists ───────────────────────────────────────
           if (data.playlists.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Playlists',
-              onSeeAll: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SearchSeeAllPage(
-                    title: 'Playlists',
-                    child: PlaylistsTab(),
-                  ),
-                ),
-              ),
-            ),
+            const _SectionTitle('Playlists'),
             const SizedBox(height: 12),
             ...data.playlists
                 .take(3)
@@ -168,7 +146,7 @@ class AllTab extends ConsumerWidget {
                   (e) => Padding(
                     key: Key('all_tab_more_track_${e.key}'),
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: TrackCard(track: e.value),
+                    child: TrackTile(track: e.value),
                   ),
                 ),
           ],
@@ -190,9 +168,6 @@ class _PlaylistRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${playlist['id']}', extra: false);
-      },
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.asset(
@@ -234,9 +209,6 @@ class _AlbumRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${album['id']}', extra: false);
-      },
       isThreeLine: true,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
@@ -394,7 +366,7 @@ class _TracksSection extends StatelessWidget {
         return Padding(
           key: Key('all_tab_track_${e.key}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: TrackCard(track: e.value),
+          child: TrackTile(track: e.value),
         );
       }).toList(),
     );
