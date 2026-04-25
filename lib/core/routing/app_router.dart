@@ -45,7 +45,6 @@ import '../../core/domain/entities/track.dart';
 
 //  Player imports
 import '../../features/player/presentation/pages/full_player_page.dart';
-import '../../features/player/presentation/pages/queue_screen.dart';
 
 //  Comments imports
 import '../../features/comments/presentation/pages/comments_screen.dart';
@@ -64,6 +63,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
+import '../../features/playlist/presentation/screens/related_tracks_screen.dart'; // NEW
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -553,11 +553,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FullPlayerPage(),
       ),
       GoRoute(
-        path: '/queue',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const QueueScreen(),
-      ),
-      GoRoute(
         path: '/comments/:trackId',
         name: 'comments',
         parentNavigatorKey: _rootNavigatorKey,
@@ -621,6 +616,51 @@ final routerProvider = Provider<GoRouter>((ref) {
             mixType: mixType,
             coverUrl: extra['coverUrl'] as String?,
             trackCount: extra['trackCount'] as int?,
+          );
+        },
+      ),
+
+      // ── More of what you like — track-based related tracks ──────────────
+      // Partner calls: context.push('/related-tracks/$trackId', extra: {
+      //   'basedOnName': artistName,
+      //   'title': trackTitle,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/related-tracks/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.track,
+            basedOnName: extra['basedOnName'] as String? ?? '',
+            title: extra['title'] as String? ?? 'Related Tracks',
+            coverUrl: extra['coverUrl'] as String?,
+          );
+        },
+      ),
+
+      // ── Discover with stations — artist-based station tracks ────────────
+      // Partner calls: context.push('/station/$artistId', extra: {
+      //   'artistName': artistName,
+      //   'stationName': stationName,
+      //   'coverUrl': imagePath,
+      // });
+      GoRoute(
+        path: '/station/:sourceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final sourceId = state.pathParameters['sourceId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final artistName = extra['artistName'] as String? ?? '';
+          return RelatedTracksScreen(
+            sourceId: sourceId,
+            source: RelatedTracksSource.station,
+            basedOnName: artistName,
+            title: extra['stationName'] as String? ?? artistName,
+            coverUrl: extra['coverUrl'] as String?,
           );
         },
       ),
