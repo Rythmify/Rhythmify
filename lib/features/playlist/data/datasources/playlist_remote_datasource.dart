@@ -7,13 +7,14 @@ import '../../domain/entities/playlist_track.dart';
 import '../models/playlist_model.dart';
 import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
+import '../../data/local/local_saved_store.dart';
 
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
   final Dio _dio;
 
   // ============================================================
-  // ── FETCH: My Playlists
+  // ── FETCH: My Playlists (created)
   // ============================================================
   Future<List<PlaylistEntity>> fetchMyPlaylists({
     String filter = 'created',
@@ -35,6 +36,10 @@ class PlaylistRemoteDatasource {
       final outerData = response.data!['data'] as Map<String, dynamic>;
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} playlists from server');
+      // Use fromJsonListOwned for filter=created so isOwned=true on all items
+      if (filter == 'created') {
+        return PlaylistModel.fromJsonListOwned(items);
+      }
       return PlaylistModel.fromJsonList(items);
     } on DioException catch (e) {
       _logError('fetchMyPlaylists failed', e);
@@ -42,11 +47,93 @@ class PlaylistRemoteDatasource {
     }
   }
 
+  // ============================================================
+  // ── FETCH: Liked Playlists (GET /me/liked-playlists)
+  // ============================================================
+  // This is the correct endpoint for liked mixes and playlists.
+  // Response uses "id"/"title"/"display_name" instead of the
+  // "playlist_id"/"name"/"owner_user_id" shape that /playlists uses.
+  // Cover and track_count are enriched from LocalSavedStore for generated
+  // playlists (mixes) where the backend returns null/0.
+  Future<List<PlaylistEntity>> fetchLikedPlaylists({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    _log('→ GET /me/liked-playlists  limit=$limit offset=$offset');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/me/liked-playlists',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      _log('← ${response.statusCode}');
+      final outerData = response.data!['data'] as Map<String, dynamic>;
+      final items = outerData['items'] as List<dynamic>;
+      _log('← Got ${items.length} liked playlists');
+
+      // Load locally saved mixes to enrich missing cover/trackCount.
+      // LocalSavedStore.getMixes() — correct method name from local_saved_store.dart
+      final savedMixes = await LocalSavedStore.instance.getMixes();
+      final mixById = {for (final m in savedMixes) m.mixId: m};
+
+      return items
+          .cast<Map<String, dynamic>>()
+          .map((json) => _likedItemFromJson(json, mixById))
+          .toList();
+    } on DioException catch (e) {
+      _logError('fetchLikedPlaylists() failed', e);
+      rethrow;
+    }
+  }
+
+  // Maps a /me/liked-playlists item → PlaylistEntity.
+  PlaylistEntity _likedItemFromJson(
+    Map<String, dynamic> json,
+    Map<String, SavedMix> localMixes,
+  ) {
+    _log('[LIKED] RAW: $json');
+
+    final id = json['id'] as String;
+    final local = localMixes[id];
+
+    // Backend returns null cover for generated playlists — fall back to local
+    final backendCover = json['cover_image'] as String?;
+    final coverUrl = (backendCover != null && backendCover.isNotEmpty)
+        ? backendCover
+        : local?.coverUrl;
+
+    // Backend returns 0 tracks for generated playlists — fall back to local
+    final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
+    final trackCount = backendTrackCount > 0
+        ? backendTrackCount
+        : (local?.trackCount ?? 0);
+
+    return PlaylistEntity(
+      id: id,
+      name: json['title'] as String? ?? local?.title ?? 'Untitled',
+      ownerName: json['display_name'] as String? ?? local?.ownerName ?? '',
+      ownerId: json['user_id'] as String? ?? '',
+      isPublic: json['is_public'] as bool? ?? false,
+      type: PlaylistType.playlist,
+      trackCount: trackCount,
+      totalDuration: Duration.zero,
+      createdAt: json['liked_at'] != null
+          ? DateTime.parse(json['liked_at'] as String)
+          : DateTime.now(),
+      coverUrl: coverUrl,
+      description: json['description'] as String?,
+      likeCount: (json['like_count'] as num?)?.toInt() ?? 0,
+      isLiked: true, // always true — endpoint only returns liked items
+      isOwned: false, // always false — liked ≠ owned
+    );
+  }
+
+  // ============================================================
+  // ── FETCH: User Playlists
+  // ============================================================
   Future<List<PlaylistEntity>> fetchUserPlaylists({
     required String userId,
     int limit = 50,
   }) async {
-    // For authenticated user's own playlists, use the /playlists endpoint with mine=true
     final isMine = userId == 'me';
     final endpoint = isMine ? '/playlists' : '/users/$userId/playlists';
 
@@ -153,7 +240,7 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode} Created');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final created = PlaylistModel.fromJson(data);
+      final created = PlaylistModel.fromJson(data, isOwned: true);
       _log('← New playlist ID: ${created.id}  name: "${created.name}"');
       _log('✅ Playlist created successfully');
       return created;
@@ -200,7 +287,7 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final updated = PlaylistModel.fromJson(data);
+      final updated = PlaylistModel.fromJson(data, isOwned: true);
       _log('✅ Playlist updated. Cover URL: ${updated.coverUrl ?? "none"}');
       return updated;
     } on DioException catch (e) {
@@ -301,7 +388,7 @@ class PlaylistRemoteDatasource {
   }
 
   // ============================================================
-  // ── ENGAGEMENT: Like / Unlike
+  // ── ENGAGEMENT: Like / Unlike Playlist
   // ============================================================
   Future<void> likePlaylist(String id) async {
     _log('→ POST /playlists/$id/like');
@@ -322,6 +409,120 @@ class PlaylistRemoteDatasource {
     } on DioException catch (e) {
       _logError('unlikePlaylist($id) failed', e);
       rethrow;
+    }
+  }
+
+  // ============================================================
+  // ── ENGAGEMENT: Like / Unlike Mix
+  // ============================================================
+  Future<void> likeMix(String mixId) async {
+    _log('→ POST /home/mixes/$mixId/like');
+    try {
+      await _dio.post<dynamic>('/home/mixes/$mixId/like');
+      _log('← ✅ Liked mix $mixId');
+    } on DioException catch (e) {
+      _logError('likeMix($mixId) failed', e);
+      rethrow;
+    }
+  }
+
+  Future<void> unlikeMix(String mixId) async {
+    _log('→ DELETE /home/mixes/$mixId/like');
+    try {
+      await _dio.delete<dynamic>('/home/mixes/$mixId/like');
+      _log('← ✅ Unliked mix $mixId');
+    } on DioException catch (e) {
+      _logError('unlikeMix($mixId) failed', e);
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // ── ENGAGEMENT: Like / Unlike Station
+  // ============================================================
+  Future<void> likeStation(String artistId) async {
+    _log('→ POST /stations/$artistId/like');
+    try {
+      await _dio.post<dynamic>('/stations/$artistId/like');
+      _log('← ✅ Saved station $artistId');
+    } on DioException catch (e) {
+      _logError('likeStation($artistId) failed', e);
+      rethrow;
+    }
+  }
+
+  Future<void> unlikeStation(String artistId) async {
+    _log('→ DELETE /stations/$artistId/like');
+    try {
+      await _dio.delete<dynamic>('/stations/$artistId/like');
+      _log('← ✅ Removed station $artistId');
+    } on DioException catch (e) {
+      _logError('unlikeStation($artistId) failed', e);
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // ── ENGAGEMENT: Like / Unlike Track Radio
+  // ============================================================
+  Future<String?> likeTrackRadio(String trackId) async {
+    _log('→ POST /tracks/$trackId/like-radio');
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/tracks/$trackId/like-radio',
+      );
+      _log('← ${response.statusCode}  ✅ Track radio saved for $trackId');
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      return data?['playlist_id'] as String?;
+    } on DioException catch (e) {
+      _logError('likeTrackRadio($trackId) failed', e);
+      rethrow;
+    }
+  }
+
+  Future<void> unlikeTrackRadio(String trackId) async {
+    _log('→ DELETE /tracks/$trackId/like-radio');
+    try {
+      await _dio.delete<dynamic>('/tracks/$trackId/like-radio');
+      _log('← ✅ Track radio removed for $trackId');
+    } on DioException catch (e) {
+      _logError('unlikeTrackRadio($trackId) failed', e);
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // ── FETCH: Saved Stations (GET /users/me/stations)
+  // ============================================================
+  Future<List<SavedStation>> fetchSavedStations({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    _log('→ GET /users/me/stations  limit=$limit offset=$offset');
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/users/me/stations',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      _log('← ${response.statusCode}');
+      final data = response.data!['data'] as List<dynamic>;
+      _log('← Got ${data.length} saved stations');
+      return data.map((json) {
+        final j = json as Map<String, dynamic>;
+        return SavedStation(
+          artistId: j['artist_id'] as String,
+          artistName: j['artist_name'] as String? ?? 'Unknown Artist',
+          stationName: '${j['artist_name'] ?? 'Unknown'} Radio',
+          coverUrl: j['profile_picture'] as String?,
+          trackCount: (j['track_count'] as num?)?.toInt() ?? 0,
+          savedAt: j['saved_at'] != null
+              ? DateTime.parse(j['saved_at'] as String)
+              : DateTime.now(),
+        );
+      }).toList();
+    } on DioException catch (e) {
+      _logError('fetchSavedStations() failed', e);
+      return [];
     }
   }
 
@@ -351,7 +552,7 @@ class PlaylistRemoteDatasource {
   }
 
   // ============================================================
-  // ── STATIONS: Fetch List
+  // ── STATIONS: Fetch List from home
   // ============================================================
   Future<List<PlaylistEntity>> fetchStations({int limit = 10}) async {
     _log('→ GET /home (reading discover_with_stations)  limit=$limit');
@@ -383,8 +584,6 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}  keys: ${response.data?.keys}');
 
-      // StationTracksResponse: { "station": {...}, "data": [...], "pagination": {...} }
-      // Tracks are directly in response.data['data'] as a List — NOT nested under ['tracks']
       final rawData = response.data!['data'];
       _log('← data type: ${rawData.runtimeType}');
 
@@ -393,7 +592,6 @@ class PlaylistRemoteDatasource {
         trackList = rawData;
       } else if (rawData is Map<String, dynamic> &&
           rawData.containsKey('tracks')) {
-        // Fallback: in case server wraps them
         trackList = rawData['tracks'] as List<dynamic>? ?? [];
       } else {
         _log('← Unexpected station data shape, returning empty');
@@ -414,16 +612,8 @@ class PlaylistRemoteDatasource {
     }
   }
 
-  // ADD this method to PlaylistRemoteDatasource.
-  // Place it after fetchStationTracks and before fetchRecommendedTracks.
   // ============================================================
-
-  // ============================================================
-  // ── RELATED TRACKS: for station generation
-  // GET /tracks/{track_id}/related?limit=50
-  //
-  // Returns tracks related by same artist and same genre.
-  // Used when converting a playlist to a station.
+  // ── RELATED TRACKS
   // ============================================================
   Future<List<PlaylistTrack>> fetchRelatedTracks(
     String trackId, {
@@ -436,30 +626,18 @@ class PlaylistRemoteDatasource {
         queryParameters: {'limit': limit, 'offset': 0},
       );
       _log('← ${response.statusCode}');
-
-      // Response shape from spec:
-      // { "reference_track": {...}, "data": [...DiscoveryTrack], "pagination": {...} }
       final data = response.data!['data'] as List<dynamic>;
       _log('← Got ${data.length} related tracks for $trackId');
-
       return _mapDiscoveryTracksToPlaylistTracks(data);
     } on DioException catch (e) {
       _logError('fetchRelatedTracks($trackId) failed', e);
-      return []; // Non-fatal — station still works with fewer tracks
+      return [];
     }
   }
 
   // ============================================================
-  // REPLACE fetchMixTracks, fetchDailyMixTracks, fetchWeeklyMixTracks
-  // in playlist_remote_datasource.dart
-  //
-  // Key fixes:
-  // 1. No c0000 filtering — mixes contain real tracks, filter was wrong here
-  // 2. Full debug logging so you can see what mixId arrives and what response comes back
-  // 3. Handles both { data: { tracks: [] } } and { data: [] } response shapes
+  // ── MIX TRACKS
   // ============================================================
-
-  // ── MIX TRACKS: GET /home/mixes/{mixId} ──────────────────────────────────
   Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
     _log('→ GET /home/mixes/$mixId');
     try {
@@ -473,10 +651,8 @@ class PlaylistRemoteDatasource {
 
       List<dynamic> trackList;
       if (rawData is Map<String, dynamic>) {
-        // Shape: { "data": { "tracks": [...], "mix_id": "...", ... } }
         trackList = rawData['tracks'] as List<dynamic>? ?? [];
       } else if (rawData is List) {
-        // Shape: { "data": [...] }
         trackList = rawData;
       } else {
         _log('← Unexpected data shape, returning empty');
@@ -484,13 +660,10 @@ class PlaylistRemoteDatasource {
       }
 
       _log('← Raw track count: ${trackList.length}');
-
-      // Log first track to understand structure
       if (trackList.isNotEmpty) {
         _log('← First track raw: ${trackList.first}');
       }
 
-      // NO c0000 filtering here — mixes contain real backend tracks
       return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
       _logError('fetchMixTracks($mixId) failed', e);
@@ -498,7 +671,6 @@ class PlaylistRemoteDatasource {
     }
   }
 
-  // ── DAILY MIX TRACKS: GET /home/made-for-you/daily ───────────────────────
   Future<List<PlaylistTrack>> fetchDailyMixTracks() async {
     _log('→ GET /home/made-for-you/daily');
     try {
@@ -506,7 +678,6 @@ class PlaylistRemoteDatasource {
         '/home/made-for-you/daily',
       );
       _log('← ${response.statusCode}  keys: ${response.data?.keys}');
-
       final rawData = response.data!['data'];
       List<dynamic> trackList;
       if (rawData is Map<String, dynamic>) {
@@ -516,7 +687,6 @@ class PlaylistRemoteDatasource {
       } else {
         return [];
       }
-
       _log('← Daily mix raw track count: ${trackList.length}');
       return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
@@ -525,7 +695,6 @@ class PlaylistRemoteDatasource {
     }
   }
 
-  // ── WEEKLY MIX TRACKS: GET /home/made-for-you/weekly ─────────────────────
   Future<List<PlaylistTrack>> fetchWeeklyMixTracks() async {
     _log('→ GET /home/made-for-you/weekly');
     try {
@@ -533,7 +702,6 @@ class PlaylistRemoteDatasource {
         '/home/made-for-you/weekly',
       );
       _log('← ${response.statusCode}  keys: ${response.data?.keys}');
-
       final rawData = response.data!['data'];
       List<dynamic> trackList;
       if (rawData is Map<String, dynamic>) {
@@ -543,7 +711,6 @@ class PlaylistRemoteDatasource {
       } else {
         return [];
       }
-
       _log('← Weekly mix raw track count: ${trackList.length}');
       return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
@@ -552,9 +719,114 @@ class PlaylistRemoteDatasource {
     }
   }
 
-  // ── INTERNAL HELPER: Map without seed ID filtering ────────────────────────
-  // Used for mixes — these are real backend tracks, no filtering needed.
-  // The c0000 filter only applies to suggestion tracks added to user playlists.
+  // ============================================================
+  // ── RECOMMENDATIONS
+  // ============================================================
+  Future<List<PlaylistTrack>> fetchRecommendedTracks({int limit = 5}) async {
+    _log('→ fetchRecommendedTracks: two-step fetch via genres');
+    try {
+      final genreIds = await _fetchGenreIdsFromHome();
+      if (genreIds.isEmpty) {
+        _log('← No genre IDs found, returning empty suggestions');
+        return [];
+      }
+      _log('← Got ${genreIds.length} genre IDs: $genreIds');
+
+      final responses = await Future.wait(
+        genreIds.map(
+          (genreId) => _dio
+              .get<Map<String, dynamic>>(
+                '/genres/$genreId/tracks',
+                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
+              )
+              .catchError((e) {
+                _log('Genre $genreId fetch failed, skipping: $e');
+                return Response<Map<String, dynamic>>(
+                  requestOptions: RequestOptions(path: ''),
+                  data: null,
+                );
+              }),
+        ),
+      );
+
+      final seenIds = <String>{};
+      final allTracks = <dynamic>[];
+
+      for (final response in responses) {
+        if (response.data == null) continue;
+        try {
+          final outerData = response.data!['data'];
+          List<dynamic> tracks;
+          if (outerData is List) {
+            tracks = outerData;
+          } else if (outerData is Map && outerData.containsKey('tracks')) {
+            tracks = outerData['tracks'] as List<dynamic>;
+          } else {
+            continue;
+          }
+          for (final t in tracks) {
+            final id = (t as Map<String, dynamic>)['id'] as String?;
+            if (id == null || id.isEmpty) continue;
+            if (id.startsWith('c0000')) continue;
+            if (seenIds.contains(id)) continue;
+            seenIds.add(id);
+            allTracks.add(t);
+          }
+        } catch (e) {
+          _log('Error parsing genre response: $e');
+        }
+      }
+
+      _log('← Got ${allTracks.length} unique real tracks across all genres');
+      if (allTracks.isEmpty) return [];
+      allTracks.shuffle();
+      return _mapDiscoveryTracksToPlaylistTracks(
+        allTracks.take(limit).toList(),
+      );
+    } on DioException catch (e) {
+      _logError('fetchRecommendedTracks() failed', e);
+      return [];
+    } catch (e) {
+      _log('fetchRecommendedTracks() unexpected error: $e');
+      return [];
+    }
+  }
+
+  Future<List<PlaylistTrack>> fetchRecommendedTracksExcluding({
+    required List<String> excludeIds,
+    int limit = 5,
+  }) async {
+    final all = await fetchRecommendedTracks(limit: 20);
+    final filtered = all.where((t) => !excludeIds.contains(t.id)).toList();
+    filtered.shuffle();
+    return filtered.take(limit).toList();
+  }
+
+  // ============================================================
+  // ── INTERNAL: Genre IDs from /home
+  // ============================================================
+  Future<List<String>> _fetchGenreIdsFromHome() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/home');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
+      final genres = trendingByGenre['genres'] as List<dynamic>;
+      return genres
+          .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
+          .where((id) => id != null && id.isNotEmpty)
+          .cast<String>()
+          .toList();
+    } catch (e) {
+      _log('_fetchGenreIdsFromHome failed: $e');
+      return [];
+    }
+  }
+
+  // ============================================================
+  // ── INTERNAL HELPERS: Map discovery tracks → PlaylistTrack
+  // ============================================================
+
+  // With no-filter — for mixes, stations, related (display-only tracks)
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracksNoFilter(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -563,8 +835,6 @@ class PlaylistRemoteDatasource {
     for (int i = 0; i < rawList.length; i++) {
       try {
         final json = rawList[i] as Map<String, dynamic>;
-
-        // Try both 'id' and 'track_id' field names
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) {
           _log(
@@ -572,7 +842,6 @@ class PlaylistRemoteDatasource {
           );
           continue;
         }
-
         result.add(
           PlaylistTrack(
             id: id,
@@ -596,163 +865,7 @@ class PlaylistRemoteDatasource {
     return result;
   }
 
-  // ============================================================
-  // ── RECOMMENDATIONS: Real tracks for suggestions
-  //
-  // Strategy:
-  //   Step 1 → GET /home to extract real genre_id values
-  //   Step 2 → GET /genres/{genre_id}/tracks for real UUIDs
-  //
-  // Why not /home tracks directly?
-  //   The discover_with_stations and trending tracks in /home use
-  //   seed IDs (c0000...) that don't exist in the DB → 400 on add.
-  //   /genres/{id}/tracks returns tracks uploaded by real users.
-  //
-  // Why not hardcoded artist IDs?
-  //   Those were seed users. The 39 real uploaded tracks belong to
-  //   real user accounts whose IDs we discover dynamically via genres.
-  // ============================================================
-  Future<List<PlaylistTrack>> fetchRecommendedTracks({int limit = 5}) async {
-    _log('→ fetchRecommendedTracks: two-step fetch via genres');
-
-    try {
-      // ── Step 1: Get genre IDs from /home ──────────────────────────────
-      final genreIds = await _fetchGenreIdsFromHome();
-
-      if (genreIds.isEmpty) {
-        _log('← No genre IDs found, returning empty suggestions');
-        return [];
-      }
-
-      _log('← Got ${genreIds.length} genre IDs: $genreIds');
-
-      // ── Step 2: Fetch tracks from all genres in parallel ──────────────
-      // We fetch from all genres so we get a wide pool of the 39 real tracks
-      final responses = await Future.wait(
-        genreIds.map(
-          (genreId) => _dio
-              .get<Map<String, dynamic>>(
-                '/genres/$genreId/tracks',
-                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
-              )
-              .catchError((e) {
-                _log('Genre $genreId fetch failed, skipping: $e');
-                return Response<Map<String, dynamic>>(
-                  requestOptions: RequestOptions(path: ''),
-                  data: null,
-                );
-              }),
-        ),
-      );
-
-      // ── Collect and deduplicate all tracks ────────────────────────────
-      final seenIds = <String>{};
-      final allTracks = <dynamic>[];
-
-      for (final response in responses) {
-        if (response.data == null) continue;
-        try {
-          final outerData = response.data!['data'];
-          List<dynamic> tracks;
-
-          if (outerData is List) {
-            tracks = outerData;
-          } else if (outerData is Map && outerData.containsKey('tracks')) {
-            tracks = outerData['tracks'] as List<dynamic>;
-          } else {
-            continue;
-          }
-
-          for (final t in tracks) {
-            final id = (t as Map<String, dynamic>)['id'] as String?;
-            if (id == null || id.isEmpty) continue;
-            // Skip seed/fake UUIDs — these fail when added to a playlist
-            if (id.startsWith('c0000')) continue;
-            if (seenIds.contains(id)) continue;
-            seenIds.add(id);
-            allTracks.add(t);
-          }
-        } catch (e) {
-          _log('Error parsing genre response: $e');
-        }
-      }
-
-      _log('← Got ${allTracks.length} unique real tracks across all genres');
-
-      if (allTracks.isEmpty) return [];
-
-      // Shuffle so refresh shows different tracks
-      allTracks.shuffle();
-
-      return _mapDiscoveryTracksToPlaylistTracks(
-        allTracks.take(limit).toList(),
-      );
-    } on DioException catch (e) {
-      _logError('fetchRecommendedTracks() failed', e);
-      return [];
-    } catch (e) {
-      _log('fetchRecommendedTracks() unexpected error: $e');
-      return [];
-    }
-  }
-
-  /// Same as [fetchRecommendedTracks] but excludes tracks already in the playlist.
-  /// Called after adding a suggestion and on refresh button tap.
-  Future<List<PlaylistTrack>> fetchRecommendedTracksExcluding({
-    required List<String> excludeIds,
-    int limit = 5,
-  }) async {
-    // Fetch a larger pool, then filter
-    final all = await fetchRecommendedTracks(limit: 20);
-    final filtered = all.where((t) => !excludeIds.contains(t.id)).toList();
-    filtered.shuffle();
-    return filtered.take(limit).toList();
-  }
-
-  // ============================================================
-  // ── INTERNAL: Get genre IDs from /home response
-  // ============================================================
-  Future<List<String>> _fetchGenreIdsFromHome() async {
-    try {
-      final response = await _dio.get<Map<String, dynamic>>('/home');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
-      final genres = trendingByGenre['genres'] as List<dynamic>;
-
-      return genres
-          .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
-          .where((id) => id != null && id.isNotEmpty)
-          .cast<String>()
-          .toList();
-    } catch (e) {
-      _log('_fetchGenreIdsFromHome failed: $e');
-      return [];
-    }
-  }
-
-  // ============================================================
-  // ── INTERNAL HELPER: Map DiscoveryTrack JSON → PlaylistTrack
-  //
-  // DiscoveryTrack shape (from /genres/{id}/tracks and /home stations):
-  // {
-  //   "id": "real-uuid",        ← NOT "track_id"
-  //   "title": "string",
-  //   "artist_name": "string",  ← flat, NOT nested
-  //   "cover_image": "url",     ← nullable
-  //   "duration": 213,          ← seconds as int
-  //   "play_count": 4200,
-  //   "stream_url": "url"       ← nullable
-  // }
-  // ============================================================
-  // ============================================================
-  // REPLACE _mapDiscoveryTracksToPlaylistTracks in playlist_remote_datasource.dart
-  //
-  // Removed: id.startsWith('c0000') filter
-  // Reason: backend now blocks c0000 IDs on CREATE (adding to playlist)
-  // but still returns them on FETCH (display only).
-  // Filtering on fetch caused empty screens for mixes/stations/related tracks.
-  // ============================================================
-
+  // Standard mapper — c0000 tracks pass through (display-only)
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -761,14 +874,8 @@ class PlaylistRemoteDatasource {
     for (int i = 0; i < rawList.length; i++) {
       try {
         final json = rawList[i] as Map<String, dynamic>;
-
-        // Try both 'id' and 'track_id' field names
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) continue;
-        // NOTE: c0000 tracks are allowed through here — they are display-only.
-        // The backend blocks them on POST /playlists/{id}/tracks (add track).
-        // Filtering here was causing empty screens for mixes/stations/related.
-
         result.add(
           PlaylistTrack(
             id: id,
