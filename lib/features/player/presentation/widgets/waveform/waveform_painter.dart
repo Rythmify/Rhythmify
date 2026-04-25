@@ -7,6 +7,7 @@ class WaveformPainter extends CustomPainter {
   final Duration activePosition; // Drag position OR playing position
   final Duration actualPosition; // Strictly the playing position
   final double heightMultiplier; // 1.0 = playing, 0.0 = paused (thin line)
+  final bool showTimeBox; // Instant visibility flag for the time box
 
   WaveformPainter({
     required this.amplitudes,
@@ -14,7 +15,9 @@ class WaveformPainter extends CustomPainter {
     required this.activePosition,
     required this.actualPosition,
     required this.heightMultiplier,
-  });
+    bool? showTimeBox,
+  }) : showTimeBox = showTimeBox ?? (heightMultiplier > 0);
+
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -43,6 +46,7 @@ class WaveformPainter extends CustomPainter {
     final double maxHeight = size.height / 2;
     // When paused, gap collapses to 0. Otherwise it's 2px.
     final double gap = 2.0 * heightMultiplier;
+
 
     for (int i = 0; i < amplitudes.length; i++) {
       // Calculate the X center of the current bar
@@ -137,12 +141,61 @@ class WaveformPainter extends CustomPainter {
         bottomPaint,
       );
     }
+
+    // Draw small time box exactly above the middle line showing [current : total].
+    // Box is black when playing (heightMultiplier > 0) and transparent when paused.
+    String fmt(Duration d) {
+      final int mm = d.inMinutes.remainder(60);
+      final int ss = d.inSeconds.remainder(60);
+      return '${mm.toString().padLeft(2, '0')}:${ss.toString().padLeft(2, '0')}';
+    }
+
+    final String timeText = '${fmt(actualPosition)} : ${fmt(duration)}';
+    final TextSpan span = TextSpan(
+      text: timeText,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+    final TextPainter tp = TextPainter(
+      text: span,
+      textDirection: TextDirection.ltr,
+    );
+    tp.layout();
+
+    const double boxPaddingX = 6.0;
+    const double boxPaddingY = 4.0;
+    final double boxWidth = tp.width + boxPaddingX * 2;
+    final double boxHeight = tp.height + boxPaddingY * 2;
+    final double boxLeft = nodeX - (boxWidth / 2);
+    // place the box just above the middle gap/line
+    final double boxTop = size.height / 2.0 - gap / 2 - boxHeight;
+
+    final Paint boxPaint = Paint()
+      ..color = showTimeBox ? Colors.black : Colors.transparent
+      ..style = PaintingStyle.fill;
+
+    // Draw rounded rect background
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(boxLeft, boxTop, boxWidth, boxHeight),
+        const Radius.circular(2.0),
+      ),
+      boxPaint,
+    );
+
+    // Draw text centered inside box
+    tp.paint(canvas, Offset(boxLeft + boxPaddingX, boxTop + boxPaddingY));
+
   }
 
   @override
   bool shouldRepaint(covariant WaveformPainter oldDelegate) {
     return oldDelegate.activePosition != activePosition ||
         oldDelegate.actualPosition != actualPosition ||
-        oldDelegate.heightMultiplier != heightMultiplier;
+        oldDelegate.heightMultiplier != heightMultiplier ||
+        oldDelegate.showTimeBox != showTimeBox;
   }
 }
