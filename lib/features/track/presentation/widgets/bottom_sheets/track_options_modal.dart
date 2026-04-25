@@ -232,7 +232,7 @@ class TrackOptionsModal extends ConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const UploadTrackScreen(),
+                            builder: (context) => UploadTrackScreen(),
                           ),
                         );
                       },

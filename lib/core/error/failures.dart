@@ -130,6 +130,12 @@ class StationNotFoundFailure extends Failure {
   const StationNotFoundFailure() : super('Station not found.');
 }
 
+/// User cancelled the GitHub OAuth browser, or the backend rejected the token.
+class GitHubAuthFailure extends Failure {
+  const GitHubAuthFailure([
+    super.message = 'GitHub sign-in failed or was cancelled.',
+  ]);
+}
 // ── Re-export Either for convenience ─────────────────────────────────────
 
 typedef PlaylistResult<T> = Either<Failure, T>;

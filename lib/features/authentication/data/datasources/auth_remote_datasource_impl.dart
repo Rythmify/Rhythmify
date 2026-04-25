@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
 /// Real HTTP implementation of [AuthRemoteDatasource].
 ///
@@ -338,16 +339,13 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<UserModel> signInWithApple() async {
     try {
+      // Placeholder implementation — real Apple Sign-In flow should be wired up
       final response = await client.dio.post(
         '/auth/apple',
-        data: {'id_token': 'APPLE_ID_TOKEN_HERE'},
+        data: {'id_token': 'placeholder-apple-token'},
       );
 
-      final responseData = response.data is List
-          ? response.data[0]
-          : response.data;
-
-      final data = responseData['data'];
+      final data = response.data['data'];
       final token = data['access_token'] as String;
       final refreshToken = data['refresh_token'] as String?;
       await client.saveAuthTokens(
@@ -359,9 +357,72 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       return UserModel.fromJson({
         ...user,
         'id': user['id']?.toString() ?? user['user_id']?.toString(),
-        'is_email_verified': true,
+        'is_email_verified':
+            user['is_verified'] ?? user['is_email_verified'] ?? true,
         'token': token,
       });
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  /// Opens the GitHub OAuth consent screen via the system browser,
+  /// waits for the deep-link callback (`rythmify://oauth`), then
+  /// exchanges the authorization code with the Rythmify backend.
+  ///
+  /// Flow:
+  /// 1. `GET /auth/github/url` → backend returns the GitHub auth URL.
+  /// 2. [FlutterWebAuth2.authenticate] opens the browser and blocks
+  ///    until `rythmify://oauth?code=...&state=...` fires.
+  /// 3. Extracts `code` and `state` from the callback URI.
+  /// 4. `POST /auth/github/callback` exchanges the code for tokens.
+  /// 5. Saves the access token via [client.saveAuthTokens] and returns
+  ///    the raw `data` map for [AuthRepositoryImpl] to parse.
+  ///
+  /// Throws [Exception('GITHUB_CANCELLED')] if the user closes the browser.
+  /// Throws [Exception] via [_handleDioError] on any backend error.
+  @override
+  Future<Map<String, dynamic>> loginWithGitHub() async {
+    try {
+      // 1. Build the full authorization URL directly — no need to call
+      //    the backend first since GET /auth/oauth/github is itself a redirect.
+      final baseUrl = client.dio.options.baseUrl;
+      final authUrl = '$baseUrl/auth/oauth/github';
+
+      // 2. Open browser — blocks until rythmify://oauth?code=...&state=... fires
+      late String result;
+      try {
+        result = await FlutterWebAuth2.authenticate(
+          url: authUrl,
+          callbackUrlScheme: 'rythmify',
+        );
+      } catch (_) {
+        throw Exception('GITHUB_CANCELLED');
+      }
+
+      // 3. Extract code and state from the callback URI
+      final uri = Uri.parse(result);
+      final code = uri.queryParameters['code'];
+      if (code == null) throw Exception('GITHUB_CANCELLED');
+      final state = uri.queryParameters['state'];
+
+      // 4. Exchange code — backend expects GET with query params
+      final response = await client.dio.get(
+        '/auth/oauth/github/callback',
+        queryParameters: {'code': code, 'state': ?state},
+      );
+
+      // 5. Persist tokens
+      final data = response.data['data'] as Map<String, dynamic>;
+      final accessToken = data['access_token'] as String;
+      final refreshToken = data['refresh_token'] as String?;
+      await client.saveAuthTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+
+      return data;
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

@@ -14,7 +14,17 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
-        
+        <activity
+  android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+  android:exported="true">
+  <intent-filter android:label="flutter_web_auth_2">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <!-- must match the redirectUri you send to your backend -->
+    <data android:scheme="rythmify" android:host="oauth" />
+  </intent-filter>
+</activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"
