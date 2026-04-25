@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/create_playlist_sheet.dart';
@@ -31,6 +32,10 @@ class _LibraryPlaylistsScreenState
 
   final List<PlaylistEntity> _allPlaylists = [];
   final List<PlaylistEntity> _likedPlaylists = [];
+
+  // Set of mix IDs saved locally — used to distinguish mixes from playlists
+  Set<String> _savedMixIds = {};
+
   bool _loading = true;
 
   OverlayEntry? _overlayEntry;
@@ -52,15 +57,16 @@ class _LibraryPlaylistsScreenState
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
 
-    // Load created (these come back with isOwned=true from the notifier)
+    // Load locally saved mix IDs so we can distinguish mixes from playlists
+    final savedMixes = await LocalSavedStore.instance.getMixes();
+    _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
+
     await notifier.loadPlaylists();
     final created = ref.read(playlistListProvider).playlists;
 
-    // Load liked (these come back with isOwned=false)
     await notifier.loadLikedPlaylists();
     final liked = ref.read(playlistListProvider).playlists;
 
-    // Merge: created first, then liked items not already in created
     final createdIds = created.map((p) => p.id).toSet();
     final merged = [
       ...created,
@@ -79,7 +85,6 @@ class _LibraryPlaylistsScreenState
       });
     }
 
-    // Restore provider to created state
     await notifier.loadPlaylists();
   }
 
@@ -108,7 +113,6 @@ class _LibraryPlaylistsScreenState
       case _FilterOption.liked:
         return _likedPlaylists;
       case _FilterOption.owned:
-        // Use isOwned flag — NOT ownerId comparison
         return _allPlaylists.where((p) => p.isOwned).toList();
     }
   }
@@ -139,6 +143,35 @@ class _LibraryPlaylistsScreenState
     }
 
     return result;
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
+    if (playlist.isOwned) {
+      // Owned playlist → PlaylistDetailScreen with full edit access
+      context.push('/library/playlists/${playlist.id}', extra: true);
+      return;
+    }
+
+    // Non-owned: check if it was locally saved as a mix
+    // If yes → MixDetailScreen (loads tracks from /home/mixes/:id)
+    // If no  → PlaylistDetailScreen as non-owner (loads from /playlists/:id)
+    if (_savedMixIds.contains(playlist.id)) {
+      context.push(
+        '/home/mix/${playlist.id}',
+        extra: {
+          'title': playlist.name,
+          'ownerName':
+              playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+          'coverUrl': playlist.coverUrl,
+          'trackCount': playlist.trackCount,
+          'mixType': 'genre',
+        },
+      );
+    } else {
+      // Regular playlist liked from another user → open as non-owner
+      context.push('/home/playlist/${playlist.id}', extra: false);
+    }
   }
 
   void _toggleOverlay() {
@@ -208,7 +241,6 @@ class _LibraryPlaylistsScreenState
       body: SafeArea(
         child: Column(
           children: [
-            // ── Search row ──────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
               child: Row(
@@ -244,8 +276,8 @@ class _LibraryPlaylistsScreenState
                     onPressed: () => context.pop(),
                     child: Text(
                       'Cancel',
-                      style:
-                          AppTheme.bodyNormal.copyWith(color: AppTheme.textPrimary),
+                      style: AppTheme.bodyNormal
+                          .copyWith(color: AppTheme.textPrimary),
                     ),
                   ),
                   IconButton(
@@ -263,7 +295,6 @@ class _LibraryPlaylistsScreenState
               ),
             ),
 
-            // ── Title ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Align(
@@ -272,7 +303,6 @@ class _LibraryPlaylistsScreenState
               ),
             ),
 
-            // ── Import + Create buttons ─────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Row(
@@ -290,8 +320,7 @@ class _LibraryPlaylistsScreenState
                       label: Text('Import', style: AppTheme.labelLarge),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: AppTheme.surface,
-                        side:
-                            const BorderSide(color: AppTheme.lighterSurface),
+                        side: const BorderSide(color: AppTheme.lighterSurface),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
@@ -305,8 +334,7 @@ class _LibraryPlaylistsScreenState
                       label: Text('Create', style: AppTheme.labelLarge),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: AppTheme.surface,
-                        side:
-                            const BorderSide(color: AppTheme.lighterSurface),
+                        side: const BorderSide(color: AppTheme.lighterSurface),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
@@ -316,7 +344,6 @@ class _LibraryPlaylistsScreenState
               ),
             ),
 
-            // ── List ───────────────────────────────────────────────
             Expanded(
               child: _loading
                   ? const Center(
@@ -329,16 +356,10 @@ class _LibraryPlaylistsScreenState
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final playlist = filtered[index];
-                            // KEY FIX: use isOwned flag, not ownerId comparison.
-                            // Liked playlists from other users have isOwned=false
-                            // so they open as non-owner view (no add/remove tracks).
                             final isOwner = playlist.isOwned;
                             return _PlaylistListTile(
                               playlist: playlist,
-                              onTap: () => context.push(
-                                '/library/playlists/${playlist.id}',
-                                extra: isOwner,
-                              ),
+                              onTap: () => _onPlaylistTap(context, playlist),
                               onMoreTap: () =>
                                   _showOptions(context, playlist, isOwner),
                             );

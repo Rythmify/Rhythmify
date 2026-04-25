@@ -161,7 +161,6 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Search row ──────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
               child: Row(
@@ -208,7 +207,6 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               ),
             ),
 
-            // ── Title ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               child: Align(
@@ -217,7 +215,6 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               ),
             ),
 
-            // ── List ───────────────────────────────────────────────
             Expanded(
               child: state.isLoading
                   ? const Center(
@@ -246,8 +243,10 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                                 album.ownerId == _currentUserId();
                             return _AlbumTile(
                               album: album,
+                              // FIX: was '/playlist/:id' which doesn't exist.
+                              // Use '/home/playlist/:id' — exists in router.
                               onTap: () => context.push(
-                                '/playlist/${album.id}',
+                                '/home/playlist/${album.id}',
                                 extra: isOwner,
                               ),
                               onMoreTap: () =>
