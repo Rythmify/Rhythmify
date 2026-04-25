@@ -44,10 +44,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final fullTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [fullTrack],
-        initialIndex: 0,
-      );
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        fullTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
     }
@@ -60,10 +59,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(tracks[index].id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [clickedTrack],
-        initialIndex: 0,
-      );
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        clickedTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to play: $e');
     }
@@ -83,10 +81,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(shuffled.first.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [clickedTrack],
-        initialIndex: 0,
-      );
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        clickedTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }

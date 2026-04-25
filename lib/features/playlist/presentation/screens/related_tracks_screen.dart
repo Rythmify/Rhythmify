@@ -20,30 +20,29 @@ import '../widgets/playlist_shared_widgets.dart';
 
 // ── Source type ───────────────────────────────────────────────────────────────
 enum RelatedTracksSource {
-  track,   // GET /tracks/{id}/related — "more of what you like"
+  track, // GET /tracks/{id}/related — "more of what you like"
   station, // GET /home/stations/{artist_id}/tracks
 }
 
 // ── Station tracks provider ───────────────────────────────────────────────────
-final _stationTracksProvider =
-    FutureProvider.autoDispose.family<List<Track>, String>(
-        (ref, artistId) async {
-  final ds = ref.read(playlistDatasourceProvider);
-  final pts = await ds.fetchStationTracks(artistId, limit: 50);
-  return pts.map(_toTrack).toList();
-});
+final _stationTracksProvider = FutureProvider.autoDispose
+    .family<List<Track>, String>((ref, artistId) async {
+      final ds = ref.read(playlistDatasourceProvider);
+      final pts = await ds.fetchStationTracks(artistId, limit: 50);
+      return pts.map(_toTrack).toList();
+    });
 
 Track _toTrack(PlaylistTrack pt) => Track(
-      id: pt.id,
-      userId: '',
-      title: pt.title,
-      artist: pt.artistName,
-      audioUrl: pt.id,
-      coverImage: pt.coverUrl,
-      duration: pt.duration,
-      playCount: pt.playCount,
-      createdAt: DateTime.now(),
-    );
+  id: pt.id,
+  userId: '',
+  title: pt.title,
+  artist: pt.artistName,
+  audioUrl: pt.id,
+  coverImage: pt.coverUrl,
+  duration: pt.duration,
+  playCount: pt.playCount,
+  createdAt: DateTime.now(),
+);
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 class RelatedTracksScreen extends ConsumerWidget {
@@ -72,13 +71,16 @@ class RelatedTracksScreen extends ConsumerWidget {
       loading: () => const Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-          child: Text('Could not load tracks',
-              style: const TextStyle(color: AppTheme.textSecondary)),
+          child: Text(
+            'Could not load tracks',
+            style: const TextStyle(color: AppTheme.textSecondary),
+          ),
         ),
       ),
       data: (tracks) => _Body(
@@ -127,8 +129,9 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   Future<void> _checkSaved() async {
-    final saved =
-        await LocalSavedStore.instance.isStationSaved(widget.sourceId);
+    final saved = await LocalSavedStore.instance.isStationSaved(
+      widget.sourceId,
+    );
     if (mounted) setState(() => _isSaved = saved);
   }
 
@@ -160,8 +163,7 @@ class _BodyState extends ConsumerState<_Body> {
   @override
   Widget build(BuildContext context) {
     final tracks = widget.tracks;
-    final totalDuration =
-        tracks.fold(Duration.zero, (s, t) => s + t.duration);
+    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -183,8 +185,11 @@ class _BodyState extends ConsumerState<_Body> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: AppTheme.textPrimary, size: 28),
+                      icon: const Icon(
+                        Icons.chevron_left,
+                        color: AppTheme.textPrimary,
+                        size: 28,
+                      ),
                       onPressed: () => context.pop(),
                     ),
                     _Cover(url: widget.coverUrl, label: widget.title),
@@ -193,17 +198,21 @@ class _BodyState extends ConsumerState<_Body> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTheme.titleLarge),
+                          Text(
+                            widget.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.titleLarge,
+                          ),
                           const SizedBox(height: 2),
                           Row(
                             children: [
                               if (isStation) ...[
-                                const Icon(Icons.sensors,
-                                    size: 13,
-                                    color: AppTheme.textSecondary),
+                                const Icon(
+                                  Icons.sensors,
+                                  size: 13,
+                                  color: AppTheme.textSecondary,
+                                ),
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
@@ -225,16 +234,16 @@ class _BodyState extends ConsumerState<_Body> {
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              Text('Based on ',
-                                  style: AppTheme.labelSmall),
+                              Text('Based on ', style: AppTheme.labelSmall),
                               Flexible(
                                 child: Text(
                                   widget.basedOnName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTheme.labelSmall.copyWith(
-                                      color: AppTheme.textPrimary,
-                                      fontWeight: FontWeight.w600),
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
@@ -262,17 +271,22 @@ class _BodyState extends ConsumerState<_Body> {
                       onPressed: isStation ? _toggleLike : null,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.more_horiz,
-                          color: AppTheme.textPrimary, size: 24),
+                      icon: const Icon(
+                        Icons.more_horiz,
+                        color: AppTheme.textPrimary,
+                        size: 24,
+                      ),
                       onPressed: () => _showOptions(context),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.shuffle,
-                          color: AppTheme.textSecondary, size: 24),
+                      icon: const Icon(
+                        Icons.shuffle,
+                        color: AppTheme.textSecondary,
+                        size: 24,
+                      ),
                       onPressed: () {
-                        final shuffled =
-                            List<Track>.from(tracks)..shuffle();
+                        final shuffled = List<Track>.from(tracks)..shuffle();
                         _play(shuffled, 0);
                       },
                     ),
@@ -282,10 +296,14 @@ class _BodyState extends ConsumerState<_Body> {
                         width: 52,
                         height: 52,
                         decoration: const BoxDecoration(
-                            color: AppTheme.lighterSurface,
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow,
-                            color: AppTheme.textPrimary, size: 28),
+                          color: AppTheme.lighterSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: AppTheme.textPrimary,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ],
@@ -298,8 +316,11 @@ class _BodyState extends ConsumerState<_Body> {
               Expanded(
                 child: tracks.isEmpty
                     ? Center(
-                        child: Text('No tracks found',
-                            style: AppTheme.bodyMedium))
+                        child: Text(
+                          'No tracks found',
+                          style: AppTheme.bodyMedium,
+                        ),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.only(bottom: 140),
                         itemCount: tracks.length,
@@ -332,7 +353,8 @@ class _BodyState extends ConsumerState<_Body> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + 90),
+          bottom: MediaQuery.of(context).padding.bottom + 90,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -348,8 +370,10 @@ class _BodyState extends ConsumerState<_Body> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(widget.title, style: AppTheme.bodyNormal),
-                        Text('Based on ${widget.basedOnName}',
-                            style: AppTheme.artistTitle),
+                        Text(
+                          'Based on ${widget.basedOnName}',
+                          style: AppTheme.artistTitle,
+                        ),
                       ],
                     ),
                   ),
@@ -358,19 +382,19 @@ class _BodyState extends ConsumerState<_Body> {
             ),
             const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
-                icon: Icons.queue_play_next,
-                label: 'Play next',
-                onTap: () => Navigator.of(context).pop()),
+              icon: Icons.queue_play_next,
+              label: 'Play next',
+              onTap: () => Navigator.of(context).pop(),
+            ),
             OptionSheetTile(
-                icon: Icons.add_to_queue,
-                label: 'Play last',
-                onTap: () => Navigator.of(context).pop()),
+              icon: Icons.add_to_queue,
+              label: 'Play last',
+              onTap: () => Navigator.of(context).pop(),
+            ),
             if (isStation)
               OptionSheetTile(
                 icon: _isSaved ? Icons.sensors_off : Icons.sensors,
-                label: _isSaved
-                    ? 'Remove from Saved Stations'
-                    : 'Save Station',
+                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
                 onTap: () {
                   Navigator.of(context).pop();
                   _toggleLike();
@@ -399,23 +423,27 @@ class _Cover extends StatelessWidget {
         width: size,
         height: size,
         child: url != null && url!.isNotEmpty && url!.startsWith('http')
-            ? Image.network(url!, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder())
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
             : _placeholder(),
       ),
     );
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            label.isNotEmpty ? label[0].toUpperCase() : 'S',
-            style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 22,
-                fontWeight: FontWeight.w700),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'S',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }
