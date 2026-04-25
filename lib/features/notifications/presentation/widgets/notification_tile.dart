@@ -109,7 +109,10 @@ class NotificationTile extends StatelessWidget {
                 children: [
                   const TextSpan(text: 'commented '),
                   if (notification.resourceContent != null)
-                    TextSpan(text: notification.resourceContent, style: AppTheme.bodyNormal),
+                    TextSpan(
+                      text: notification.resourceContent,
+                      style: AppTheme.bodyNormal,
+                    ),
                 ],
               ),
             ),
@@ -121,7 +124,9 @@ class NotificationTile extends StatelessWidget {
                     const TextSpan(text: 'on '),
                     TextSpan(
                       text: trackEmbed!.embedName,
-                      style: AppTheme.bodyNormal.copyWith(fontWeight: FontWeight.bold),
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -201,9 +206,8 @@ class NotificationTile extends StatelessWidget {
   Widget _buildTrailing() {
     if (notification.type == NotificationType.follow) {
       return _FollowButton(isFollowing: isFollowing, onTap: onFollowTap);
-    }
-    else if(notification.type == NotificationType.comment){
-      return _ResourceThumbnail(imageUrl:trackEmbed?.thumbnailUrl);
+    } else if (notification.type == NotificationType.comment) {
+      return _ResourceThumbnail(imageUrl: trackEmbed?.thumbnailUrl);
     }
     return _ResourceThumbnail(imageUrl: notification.resourceImageUrl);
   }

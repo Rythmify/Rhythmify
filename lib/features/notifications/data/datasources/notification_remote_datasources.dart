@@ -25,5 +25,7 @@ abstract class NotificationRemoteDatasources {
   /// Returns the `track_id` for the comment identified by [commentId].
   ///
   /// Calls `GET /comments/{commentId}` and extracts `track_id`.
-  Future<({String? trackId,bool isLikedByMe})> getTrackIdByCommentId(String commentId);
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  );
 }

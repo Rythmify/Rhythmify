@@ -8,5 +8,6 @@ class GetTrackIdByCommentIdUsecase {
   final NotificationsRepoInterface repo;
   GetTrackIdByCommentIdUsecase(this.repo);
 
-  Future<({String? trackId, bool isLikedByMe})> call(String commentId) => repo.getTrackIdByCommentId(commentId);
+  Future<({String? trackId, bool isLikedByMe})> call(String commentId) =>
+      repo.getTrackIdByCommentId(commentId);
 }

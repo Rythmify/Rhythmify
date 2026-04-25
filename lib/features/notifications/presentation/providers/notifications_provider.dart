@@ -115,9 +115,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   /// unread items. Also seeds [FollowStateNotifier] for follow-type actors.
   Future<void> fetch({String? type}) async {
     _activeType = type;
-    state = state.copyWith(isLoading: true, clearError: true,items: []);
+    state = state.copyWith(isLoading: true, clearError: true, items: []);
     try {
-      final result = await _getNotifications(page: 1,type: _activeType);
+      final result = await _getNotifications(page: 1, type: _activeType);
       final unread = result.items.where((n) => !n.isRead).toList();
 
       state = state.copyWith(
@@ -141,7 +141,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       //   }
       // }
 
-      for(final n in unread){
+      for (final n in unread) {
         _markRead(n.id).catchError((_) {});
       }
     } catch (e) {
@@ -192,16 +192,16 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   /// Reverts if the API call returns a failure.
   Future<void> toggleFollow(String actorId, bool currentlyFollowing) async {
     _followState.setFollowing(actorId, isFollowing: !currentlyFollowing);
-    try{
+    try {
       final result = currentlyFollowing
-        ? await _unfollow(userId: actorId)
-        : await _follow(userId: actorId);
+          ? await _unfollow(userId: actorId)
+          : await _follow(userId: actorId);
       result.fold(
         (_) =>
             _followState.setFollowing(actorId, isFollowing: currentlyFollowing),
         (_) {},
       );
-    }catch(_){
+    } catch (_) {
       _followState.setFollowing(actorId, isFollowing: currentlyFollowing);
     }
   }

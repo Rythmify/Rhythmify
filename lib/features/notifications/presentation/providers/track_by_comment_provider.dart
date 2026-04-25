@@ -10,9 +10,16 @@ import 'package:rythmify/features/notifications/presentation/providers/repo_prov
 /// Step 2: delegates to [getTrackDetailsProvider] → [SharedEmbed] (track ID, title, cover).
 /// Returns `null` if the comment has no `track_id`.
 /// Cached by Riverpod — multiple tiles for the same comment share one request.
-final trackByCommentProvider=
-  FutureProvider.family<({SharedEmbed? embed, bool isLikedByMe}), String>((ref,commentId)async{
-    final result = await GetTrackIdByCommentIdUsecase(ref.read(repositoryprovider)).call(commentId);
-    final embed=result.trackId!=null? await ref.read(getTrackDetailsProvider(result.trackId!).future): null;
-    return (embed: embed,isLikedByMe: result.isLikedByMe);
-});
+final trackByCommentProvider =
+    FutureProvider.family<({SharedEmbed? embed, bool isLikedByMe}), String>((
+      ref,
+      commentId,
+    ) async {
+      final result = await GetTrackIdByCommentIdUsecase(
+        ref.read(repositoryprovider),
+      ).call(commentId);
+      final embed = result.trackId != null
+          ? await ref.read(getTrackDetailsProvider(result.trackId!).future)
+          : null;
+      return (embed: embed, isLikedByMe: result.isLikedByMe);
+    });

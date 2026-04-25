@@ -11,5 +11,10 @@ class GetNotificationsUsecase {
 
   Future<({List<NotificationEntity> items, int unreadCount, bool hasNext})>
   call({int page = 1, int limit = 20, bool? unreadOnly, String? type}) =>
-      repo.getNotifications(page: page, limit: limit, unreadOnly: unreadOnly, type: type);
+      repo.getNotifications(
+        page: page,
+        limit: limit,
+        unreadOnly: unreadOnly,
+        type: type,
+      );
 }

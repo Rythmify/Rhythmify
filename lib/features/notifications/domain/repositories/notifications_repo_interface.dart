@@ -21,5 +21,7 @@ abstract class NotificationsRepoInterface {
   Future<bool> getFollowStatus(String userId);
 
   /// Returns the `track_id` for the comment identified by [commentId].
-  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(String commentId);
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  );
 }
