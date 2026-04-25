@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../pages/related_tracks_page.dart';
+import 'package:go_router/go_router.dart';
 
 class MoreOfWhatYouLikeSection extends ConsumerWidget {
   const MoreOfWhatYouLikeSection({super.key});
@@ -71,12 +71,13 @@ class PlaylistSquareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              RelatedTracksPage(trackId: id, trackTitle: trackTitle),
-        ),
+      onTap: () => context.push(
+        '/home/related-tracks/$id',
+        extra: {
+          'basedOnName': artistName,
+          'title': trackTitle,
+          'coverUrl': imagePath,
+        },
       ),
 
       child: SizedBox(

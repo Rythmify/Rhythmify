@@ -29,7 +29,7 @@ class TrendingByGenre extends ConsumerStatefulWidget {
 }
 
 class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   TabController? _tabController;
   List<GenreTab>? _genres;
 
@@ -40,11 +40,20 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
   }
 
   void _initTabController(List<GenreTab> genres) {
-    if (_genres == genres) return;
+    if (_genres != null && _genres!.length == genres.length) {
+      bool identical = true;
+      for (int i = 0; i < genres.length; i++) {
+        if (_genres![i].genreId != genres[i].genreId) {
+          identical = false;
+          break;
+        }
+      }
+      if (identical) return;
+    }
+
     _tabController?.dispose();
     _genres = genres;
     _tabController = TabController(length: genres.length, vsync: this);
-    setState(() {});
   }
 
   @override
@@ -308,13 +317,13 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             height: 50,
                             fit: BoxFit.cover,
                           )
-                        : Image.asset(
-                            track.coverImage!,
+                        : Container(
                             width: 50,
                             height: 50,
-                            fit: BoxFit.cover,
+                            color: Colors.grey[800],
                           ),
                   ),
+
                   title: Text(
                     track.title,
                     style: const TextStyle(fontSize: 14, color: Colors.white),
