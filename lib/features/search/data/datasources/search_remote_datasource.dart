@@ -4,6 +4,7 @@ import '../../../../core/data/models/track_dto.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_results.dart';
+import 'dart:developer' as dev;
 
 /// Contract for the search remote data source.
 abstract class SearchRemoteSource {
@@ -58,7 +59,7 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
       '/search',
       queryParameters: {'q': query, 'type': 'everything'},
     );
-
+    dev.log('Search response: ${response.data}', name: 'SearchDatasource');
     final data = response.data['data'] as Map<String, dynamic>;
 
     final tracks = (data['tracks'] as List? ?? [])
