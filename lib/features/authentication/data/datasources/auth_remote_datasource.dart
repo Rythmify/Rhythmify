@@ -2,11 +2,13 @@ import '../models/user_model.dart';
 
 /// Remote datasource contract for authentication network operations.
 abstract class AuthRemoteDatasource {
+  /// Signs in an existing user with their email address and password.
   Future<UserModel> signInWithEmail({
     required String email,
     required String password,
   });
 
+  /// Registers a new account with email and password.
   Future<UserModel> signUpWithEmail({
     required String email,
     required String password,
@@ -15,18 +17,32 @@ abstract class AuthRemoteDatasource {
     required String dateOfBirth,
   });
 
+  /// Signs in using a Google ID token.
   Future<UserModel> signInWithGoogle();
 
+  /// Completes Google sign-up with profile data.
   Future<UserModel> signUpWithGoogle({
     required String idToken,
     required String gender,
     required String dateOfBirth,
   });
 
+  /// Signs in using Apple Sign-in.
   Future<UserModel> signInWithApple();
 
+  /// Opens the GitHub OAuth browser flow and exchanges the resulting
+  /// code with the Rythmify backend.
+  ///
+  /// Returns the raw `data` map from the backend response on success.
+  /// Throws a descriptive [Exception] on cancellation or network failure.
+  Future<Map<String, dynamic>> loginWithGitHub();
+
+  /// Signs out the current user and clears stored tokens.
   Future<void> signOut();
+
+  /// Sends an email verification link.
   Future<void> sendVerificationEmail();
 
+  /// Sends a password reset email to [email].
   Future<void> sendPasswordReset({required String email});
 }
