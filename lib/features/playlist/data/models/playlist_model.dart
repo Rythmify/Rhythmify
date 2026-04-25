@@ -1,19 +1,19 @@
 // lib/features/playlist/data/models/playlist_model.dart
-//
-// FIX: _typeFromSubtype now handles all generated playlist subtypes from the
-// backend (auto_generated, curated_daily, curated_weekly, genre_trending,
-// track_radio). These all map to PlaylistType.playlist so they render
-// correctly in LibraryPlaylistsScreen.
-
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/playlist_entity.dart';
 
 class PlaylistModel {
-  static PlaylistEntity fromJson(Map<String, dynamic> json) {
+  static PlaylistEntity fromJson(
+    Map<String, dynamic> json, {
+    bool isOwned = false, // caller sets this — true for filter=created
+  }) {
     debugPrintPlaylist('RAW JSON received: $json');
 
     final subtype = json['subtype'] as String? ?? 'playlist';
     final playlistType = _typeFromSubtype(subtype);
-    final releaseYear = (json['release_date'] as String?)?.substring(0, 4);
+    final releaseYear = (json['release_date'] as String?)?.isNotEmpty == true
+        ? (json['release_date'] as String).substring(0, 4)
+        : null;
 
     final entity = PlaylistEntity(
       id: json['playlist_id'] as String,
@@ -22,15 +22,16 @@ class PlaylistModel {
       ownerId: json['owner_user_id'] as String,
       isPublic: json['is_public'] as bool? ?? true,
       type: playlistType,
-      trackCount: json['track_count'] as int? ?? 0,
+      trackCount: (json['track_count'] as num?)?.toInt() ?? 0,
       totalDuration: Duration.zero,
       createdAt: DateTime.parse(json['created_at'] as String),
       coverUrl: json['cover_image'] as String?,
       description: json['description'] as String?,
-      likeCount: json['like_count'] as int? ?? 0,
+      likeCount: (json['like_count'] as num?)?.toInt() ?? 0,
       isLiked: json['is_liked_by_me'] as bool? ?? false,
-      repostCount: json['repost_count'] as int? ?? 0,
+      repostCount: (json['repost_count'] as num?)?.toInt() ?? 0,
       releaseYear: releaseYear,
+      isOwned: isOwned,
     );
 
     debugPrintPlaylist(
@@ -39,6 +40,7 @@ class PlaylistModel {
       'type: ${entity.type}  '
       'subtype: $subtype  '
       'isLiked: ${entity.isLiked}  '
+      'isOwned: ${entity.isOwned}  '
       'tracks: ${entity.trackCount}  '
       'cover: ${entity.coverUrl ?? "none"}',
     );
@@ -46,11 +48,6 @@ class PlaylistModel {
     return entity;
   }
 
-  /// Maps the API's subtype string to PlaylistType.
-  ///
-  /// Generated playlist types (auto_generated, curated_daily, curated_weekly,
-  /// genre_trending, track_radio) all map to PlaylistType.playlist so they
-  /// appear in the playlist library screen's Liked tab.
   static PlaylistType _typeFromSubtype(String subtype) {
     switch (subtype) {
       case 'album':
@@ -58,7 +55,6 @@ class PlaylistModel {
       case 'single':
       case 'compilation':
         return PlaylistType.album;
-      // Generated types — render as playlist in library
       case 'auto_generated':
       case 'curated_daily':
       case 'curated_weekly':
@@ -70,6 +66,16 @@ class PlaylistModel {
     }
   }
 
+  // Used by fetchMyPlaylists(filter: 'created') — marks all as owned
+  static List<PlaylistEntity> fromJsonListOwned(List<dynamic> list) {
+    debugPrintPlaylist('Parsing list of ${list.length} owned playlists...');
+    return list
+        .cast<Map<String, dynamic>>()
+        .map((json) => fromJson(json, isOwned: true))
+        .toList();
+  }
+
+  // Used by other callers that don't know ownership (search results etc.)
   static List<PlaylistEntity> fromJsonList(List<dynamic> list) {
     debugPrintPlaylist('Parsing list of ${list.length} playlists...');
     return list.cast<Map<String, dynamic>>().map(fromJson).toList();
@@ -87,6 +93,6 @@ class PlaylistModel {
 
   static void debugPrintPlaylist(String message) {
     // ignore: avoid_print
-    print('[PLAYLIST MODEL] $message');
+    debugPrint('[PLAYLIST MODEL] $message');
   }
 }

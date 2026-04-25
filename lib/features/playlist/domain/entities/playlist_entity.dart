@@ -1,9 +1,4 @@
 // lib/features/playlist/domain/entities/playlist_entity.dart
-/// Core domain entity shared by playlists, albums, and stations.
-/// [PlaylistType] drives how each screen labels, formats, and routes a collection.
-/// All three types share one entity so [PlaylistDetailScreen] and all list
-/// tiles work without type-specific widget trees.
-/// [detailSubtitle] and [subtitleLine] adapt their output per type automatically.
 library;
 
 enum PlaylistType { playlist, album, station }
@@ -26,7 +21,8 @@ class PlaylistEntity {
     this.isLiked = false,
     this.seedTrackTitle,
     this.seedArtistName,
-    this.releaseYear, // NEW — used by albums: shows "2026 · Album" in header
+    this.releaseYear,
+    this.isOwned = false,
   });
 
   final String id;
@@ -45,7 +41,8 @@ class PlaylistEntity {
   final bool isLiked;
   final String? seedTrackTitle;
   final String? seedArtistName;
-  final String? releaseYear; // NEW
+  final String? releaseYear;
+  final bool isOwned;
 
   // ── Label helpers ──────────────────────────────────────────────────────────
 
@@ -70,15 +67,9 @@ class PlaylistEntity {
     return '$mm:$ss';
   }
 
-  /// Used in the Library list tile: "Playlist · 3 tracks · 9:25"
   String get subtitleLine =>
       '$typeLabel · $trackCount ${trackCount == 1 ? 'track' : 'tracks'} · $formattedDuration';
 
-  /// NEW — used in the detail screen header. Each type shows differently:
-  ///
-  /// Playlist → "Playlist · 3 tracks · 9:25"
-  /// Album    → "2026 · Album"
-  /// Station  → "Artist Station · 2:27:08 · 50 tracks"
   String get detailSubtitle {
     switch (type) {
       case PlaylistType.album:
@@ -101,9 +92,10 @@ class PlaylistEntity {
     int? trackCount,
     Duration? totalDuration,
     bool? isLiked,
-    PlaylistType? type, // NEW — needed for convert operations
-    String? seedArtistName, // NEW — needed for convert to station
-    String? releaseYear, // NEW — needed for convert to album
+    bool? isOwned,
+    PlaylistType? type,
+    String? seedArtistName,
+    String? releaseYear,
     bool clearCover = false,
   }) {
     return PlaylistEntity(
@@ -121,6 +113,7 @@ class PlaylistEntity {
       likeCount: likeCount,
       repostCount: repostCount,
       isLiked: isLiked ?? this.isLiked,
+      isOwned: isOwned ?? this.isOwned,
       seedTrackTitle: seedTrackTitle,
       seedArtistName: seedArtistName ?? this.seedArtistName,
       releaseYear: releaseYear ?? this.releaseYear,
