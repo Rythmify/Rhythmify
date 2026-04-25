@@ -17,13 +17,13 @@ abstract class SearchRemoteSource {
 /// Real HTTP implementation of [SearchRemoteSource].
 
 class SearchRemoteSourceImpl implements SearchRemoteSource {
+  final _dio = apiClient.dio;
   @override
   Future<List<SearchSuggestion>> getSuggestions(String query) async {
     final response = await _dio.get(
       '/suggestions',
       queryParameters: {'q': query},
     );
-    dev.log('SUGGESTIONS RESPONSE: ${response.data}');
 
     final data = response.data['data'] as Map<String, dynamic>;
 
@@ -58,7 +58,7 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
       '/search',
       queryParameters: {'q': query, 'type': 'everything'},
     );
-    dev.log('SEARCH RESULTS RESPONSE: ${response.data}');
+
     final data = response.data['data'] as Map<String, dynamic>;
 
     final tracks = (data['tracks'] as List? ?? [])
