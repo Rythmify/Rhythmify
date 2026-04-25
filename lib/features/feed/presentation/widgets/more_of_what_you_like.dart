@@ -72,7 +72,7 @@ class PlaylistSquareCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push(
-        '/related-tracks/$id',
+        '/home/related-tracks/$id',
         extra: {
           'basedOnName': artistName,
           'title': trackTitle,

@@ -91,7 +91,7 @@ class StationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push(
-        '/station/$artistId',
+        '/home/station/$artistId',
         extra: {
           'artistName': artistName,
           'stationName': stationName,

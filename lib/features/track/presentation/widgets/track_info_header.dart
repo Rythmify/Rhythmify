@@ -14,6 +14,76 @@ class TrackInfoHeader extends StatelessWidget {
 
   const TrackInfoHeader({super.key, required this.track});
 
+  void _showFullScreenArtwork(BuildContext context) {
+    showDialog(
+      context: context,
+      useSafeArea: false,
+      builder: (context) => Material(
+        color: const Color(0xFF1E1E1E), // Deep grey background
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Hero(
+                    tag: 'track_artwork_${track.id}',
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 30,
+                              spreadRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: track.artworkUrl.toString().startsWith('http')
+                              ? Image.network(
+                                  track.artworkUrl,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  track.artworkUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 15,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -21,47 +91,55 @@ class TrackInfoHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey.withValues(alpha: 0.7),
-                width: 0.6,
-              ),
-              borderRadius: BorderRadius.circular(9),
-              color: Colors.grey.withValues(alpha: 0.4),
-            ),
-
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: track.artworkUrl.toString().startsWith('http')
-                  ? Image.network(
-                      track.artworkUrl,
-                      width: 110,
-                      height: 110,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 110,
-                        height: 110,
-                        color: AppTheme.perfectGrey,
-                        child: const Icon(
-                          Icons.music_note,
-                          color: Colors.white,
-                          size: 40,
+          GestureDetector(
+            onTap: () => _showFullScreenArtwork(context),
+            child: Hero(
+              tag: 'track_artwork_${track.id}',
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.7),
+                    width: 0.6,
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                  color: Colors.grey.withValues(alpha: 0.4),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: track.artworkUrl.toString().startsWith('http')
+                      ? Image.network(
+                          track.artworkUrl,
+                          width: 110,
+                          height: 110,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                width: 110,
+                                height: 110,
+                                color: AppTheme.perfectGrey,
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white,
+                                  size: 40,
+                                ),
+                              ),
+                        )
+                      : Image.asset(
+                          track.artworkUrl,
+                          width: 110,
+                          height: 110,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                width: 110,
+                                height: 110,
+                                color: AppTheme.perfectGrey,
+                                child:
+                                    const Icon(Icons.error, color: Colors.red),
+                              ),
                         ),
-                      ),
-                    )
-                  : Image.asset(
-                      track.artworkUrl,
-                      width: 110,
-                      height: 110,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 110,
-                        height: 110,
-                        color: AppTheme.perfectGrey,
-                        child: const Icon(Icons.error, color: Colors.red),
-                      ),
-                    ),
+                ),
+              ),
             ),
           ),
 
