@@ -73,17 +73,13 @@ class UploadTrackRemoteDataSource {
         'title': title,
         'artists': artist, // spec: 'artists'
         'genre': genre,
-        'is_public': isPublic.toString(),
+        'is_public': isPublic, // Pass as boolean
         'audio_file': await MultipartFile.fromFile(
           // spec: 'audio_file'
           audioFile.path,
           contentType: DioMediaType.parse(audioMime),
         ),
       };
-      // Only send genre if user actually selected one
-      if (genre.isNotEmpty) {
-        fields['genre'] = genre;
-      }
 
       if (description != null && description.isNotEmpty) {
         fields['description'] = description;
@@ -103,7 +99,7 @@ class UploadTrackRemoteDataSource {
 
       // Tags sent as repeated fields — spec: tags is array
       for (final tag in tags) {
-        formData.fields.add(MapEntry('tags[]', tag));
+        formData.fields.add(MapEntry('tags', tag));
       }
 
       debugPrint('=== SENDING TO BACKEND ===');
@@ -115,6 +111,12 @@ class UploadTrackRemoteDataSource {
       final response = await _dio.post(
         '/tracks',
         data: formData,
+        options: Options(
+          contentType:
+              null, // Allow Dio to set multipart/form-data with boundary
+          sendTimeout: const Duration(minutes: 2),
+          receiveTimeout: const Duration(minutes: 2),
+        ),
         onSendProgress: (sent, total) {
           if (total > 0 && onProgress != null) {
             final progress = (sent / total).clamp(0.0, 1.0);
@@ -142,30 +144,13 @@ class UploadTrackRemoteDataSource {
     try {
       final response = await _dio.get('/genres');
       final data = response.data;
+      final rawList = data['data']?['items'] ?? data['data'] ?? [];
 
-      debugPrint('=== GENRES RAW RESPONSE: $data ===');
-
-      // New API spec: data.data is a direct array of Genre objects
-      // { "data": [ { "id": "...", "name": "Pop" }, ... ], "pagination": {...} }
-      List<dynamic> rawList = [];
-
-      if (data['data'] is List) {
-        // Shape: { "data": [...] }
-        rawList = data['data'] as List<dynamic>;
-      } else if (data['data'] is Map) {
-        // Shape: { "data": { "items": [...] } }
-        rawList = data['data']?['items'] ?? [];
-      }
-
-      final genres = rawList
+      return (rawList as List<dynamic>)
           .map((g) => g['name'] as String? ?? '')
           .where((g) => g.isNotEmpty)
           .toList();
-
-      debugPrint('=== GENRES PARSED: $genres ===');
-      return genres;
     } on DioException catch (e) {
-      debugPrint('=== GENRES ERROR: ${e.response?.data} ===');
       throw _handleError(e);
     }
   }

@@ -1,97 +1,43 @@
 // lib/features/playlist/presentation/screens/related_tracks_screen.dart
-//
-// Shared screen for two entry points:
-//   1. "More of what you like" → partner passes track.id
-//      → calls GET /tracks/{id}/related?limit=50
-//   2. "Discover with Stations" → partner passes artist_id
-//      → calls GET /home/stations/{artist_id}/tracks
-//
-// UI: station-style — "Artist Station · duration · N tracks" / "Based on [name]"
-// No suggestions, no edit, no delete.
-
+// ignore_for_file: avoid_print
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/domain/entities/track.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../track/presentation/providers/track_dependency_providers.dart';
-import '../../data/datasources/playlist_remote_datasource.dart';
+import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
+import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-// ── Source type ───────────────────────────────────────────────────────────────
-enum RelatedTracksSource {
-  track, // GET /tracks/{id}/related  — "more of what you like"
-  station, // GET /home/stations/{artist_id}/tracks — "discover with stations"
-}
+enum RelatedTracksSource { track, station }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-class RelatedTracksState {
-  const RelatedTracksState({
-    this.tracks = const [],
-    this.isLoading = true,
-    this.error,
-  });
+final _stationTracksProvider = FutureProvider.autoDispose
+    .family<List<Track>, String>((ref, artistId) async {
+      final ds = ref.read(playlistDatasourceProvider);
+      final pts = await ds.fetchStationTracks(artistId, limit: 50);
+      return pts.map(_toTrack).toList();
+    });
 
-  final List<PlaylistTrack> tracks;
-  final bool isLoading;
-  final String? error;
+Track _toTrack(PlaylistTrack pt) => Track(
+  id: pt.id,
+  userId: '',
+  title: pt.title,
+  artist: pt.artistName,
+  audioUrl: pt.id,
+  coverImage: pt.coverUrl,
+  duration: pt.duration,
+  playCount: pt.playCount,
+  createdAt: DateTime.now(),
+);
 
-  RelatedTracksState copyWith({
-    List<PlaylistTrack>? tracks,
-    bool? isLoading,
-    String? error,
-  }) => RelatedTracksState(
-    tracks: tracks ?? this.tracks,
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-  );
-}
-
-// ── Notifier ──────────────────────────────────────────────────────────────────
-class RelatedTracksNotifier extends Notifier<RelatedTracksState> {
-  @override
-  RelatedTracksState build() => const RelatedTracksState(isLoading: true);
-
-  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
-
-  Future<void> load({
-    required String sourceId,
-    required RelatedTracksSource source,
-  }) async {
-    state = const RelatedTracksState(isLoading: true);
-    print('[RelatedTracks] load() sourceId="$sourceId" source=$source');
-    try {
-      final List<PlaylistTrack> tracks;
-      switch (source) {
-        case RelatedTracksSource.track:
-          tracks = await _ds.fetchRelatedTracks(sourceId, limit: 50);
-        case RelatedTracksSource.station:
-          tracks = await _ds.fetchStationTracks(sourceId, limit: 50);
-      }
-      print('[RelatedTracks] ✅ Got ${tracks.length} tracks');
-      state = RelatedTracksState(tracks: tracks, isLoading: false);
-    } catch (e) {
-      print('[RelatedTracks] ❌ Failed: $e');
-      state = RelatedTracksState(
-        isLoading: false,
-        error: 'Could not load tracks',
-      );
-    }
-  }
-}
-
-// ── Provider ──────────────────────────────────────────────────────────────────
-final relatedTracksProvider =
-    NotifierProvider<RelatedTracksNotifier, RelatedTracksState>(
-      RelatedTracksNotifier.new,
-    );
-
-// ── Screen ────────────────────────────────────────────────────────────────────
-class RelatedTracksScreen extends ConsumerStatefulWidget {
+class RelatedTracksScreen extends ConsumerWidget {
   const RelatedTracksScreen({
     super.key,
     required this.sourceId,
@@ -103,102 +49,127 @@ class RelatedTracksScreen extends ConsumerStatefulWidget {
 
   final String sourceId;
   final RelatedTracksSource source;
-  final String basedOnName; // shown as "Based on [basedOnName]"
-  final String title; // shown as the header name
+  final String basedOnName;
+  final String title;
   final String? coverUrl;
 
   @override
-  ConsumerState<RelatedTracksScreen> createState() =>
-      _RelatedTracksScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncTracks = source == RelatedTracksSource.track
+        ? ref.watch(relatedTracksProvider(sourceId))
+        : ref.watch(_stationTracksProvider(sourceId));
+
+    return asyncTracks.when(
+      loading: () => const Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
+      ),
+      error: (e, _) => Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: Text(
+            'Could not load tracks',
+            style: const TextStyle(color: AppTheme.textSecondary),
+          ),
+        ),
+      ),
+      data: (tracks) => _Body(
+        sourceId: sourceId,
+        source: source,
+        title: title,
+        basedOnName: basedOnName,
+        coverUrl: coverUrl,
+        tracks: tracks,
+      ),
+    );
+  }
 }
 
-class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
+class _Body extends ConsumerStatefulWidget {
+  const _Body({
+    required this.sourceId,
+    required this.source,
+    required this.title,
+    required this.basedOnName,
+    required this.tracks,
+    this.coverUrl,
+  });
+
+  final String sourceId;
+  final RelatedTracksSource source;
+  final String title;
+  final String basedOnName;
+  final String? coverUrl;
+  final List<Track> tracks;
+
+  @override
+  ConsumerState<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends ConsumerState<_Body> {
+  bool _isSaved = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(relatedTracksProvider.notifier)
-          .load(sourceId: widget.sourceId, source: widget.source);
-    });
-  }
-
-  Future<void> _fetchAndPlay(PlaylistTrack pt) async {
-    try {
-      final fullTrack = await ref
-          .read(getTrackDetailsUseCaseProvider)
-          .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        fullTrack,
-      ], initialIndex: 0);
-    } catch (e) {
-      debugPrint('[RelatedTracks] Failed to play "${pt.title}": $e');
+    if (widget.source == RelatedTracksSource.station) {
+      _checkSaved();
     }
   }
 
-  Future<void> _playAll() async {
-    final tracks = ref.read(relatedTracksProvider).tracks;
-    if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
+  Future<void> _checkSaved() async {
+    final saved = await LocalSavedStore.instance.isStationSaved(
+      widget.sourceId,
+    );
+    if (mounted) setState(() => _isSaved = saved);
   }
 
-  Future<void> _shuffle() async {
-    final tracks = List<PlaylistTrack>.from(
-      ref.read(relatedTracksProvider).tracks,
-    )..shuffle();
-    if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
+  Future<void> _toggleLike() async {
+    if (widget.source != RelatedTracksSource.station) return;
+    final station = SavedStation(
+      artistId: widget.sourceId,
+      artistName: widget.basedOnName,
+      stationName: widget.title,
+      coverUrl: widget.coverUrl,
+      trackCount: widget.tracks.length,
+      savedAt: DateTime.now(),
+    );
+    await ref.read(savedStationsProvider.notifier).toggle(station);
+    if (mounted) setState(() => _isSaved = !_isSaved);
   }
 
-  Future<void> _playFrom(int index) async {
-    final tracks = ref.read(relatedTracksProvider).tracks;
-    if (tracks.isEmpty || index >= tracks.length) return;
-    await _fetchAndPlay(tracks[index]);
+  Future<void> _play(List<Track> list, int index) async {
+    if (list.isEmpty || index >= list.length) return;
+    try {
+      await ref
+          .read(playerStateProvider.notifier)
+          .loadAndPlayQueue(list, initialIndex: index);
+    } catch (e) {
+      debugPrint('[RelatedTracks] play failed: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(relatedTracksProvider);
-
-    if (state.isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF111111),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF5500)),
-        ),
-      );
-    }
-
-    if (state.error != null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF111111),
-        body: Center(
-          child: Text(
-            state.error!,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-
-    final tracks = state.tracks;
-    final totalDuration = tracks.fold(
-      Duration.zero,
-      (sum, t) => sum + t.duration,
-    );
+    final tracks = widget.tracks;
+    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
-    final durationStr = h > 0
+    final durStr = h > 0
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
+    final isStation = widget.source == RelatedTracksSource.station;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ──────────────────────────────────────────────────────
+            // ── Header ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
               child: Row(
@@ -206,29 +177,12 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
                   IconButton(
                     icon: const Icon(
                       Icons.chevron_left,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 28,
                     ),
                     onPressed: () => context.pop(),
                   ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child:
-                          widget.coverUrl != null &&
-                              widget.coverUrl!.isNotEmpty &&
-                              widget.coverUrl!.startsWith('http')
-                          ? Image.network(
-                              widget.coverUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _CoverPlaceholder(widget.title),
-                            )
-                          : _CoverPlaceholder(widget.title),
-                    ),
-                  ),
+                  _Cover(url: widget.coverUrl, label: widget.title),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -238,38 +192,46 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
                           widget.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Artist Station · $durationStr · ${tracks.length} tracks',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                          ),
+                          style: AppTheme.titleLarge,
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Text(
-                              'Based on ',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12,
+                            if (isStation) ...[
+                              const Icon(
+                                Icons.sensors,
+                                size: 13,
+                                color: AppTheme.textSecondary,
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Artist Station · $durStr · ${tracks.length} tracks',
+                                  style: AppTheme.labelSmall,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ] else
+                              Flexible(
+                                child: Text(
+                                  'Related Tracks · $durStr · ${tracks.length} tracks',
+                                  style: AppTheme.labelSmall,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text('Based on ', style: AppTheme.labelSmall),
                             Flexible(
                               child: Text(
                                 widget.basedOnName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
+                                style: AppTheme.labelSmall.copyWith(
+                                  color: AppTheme.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -283,23 +245,25 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
               ),
             ),
 
-            // ── Action bar ───────────────────────────────────────────────────
+            // ── Action bar ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  const IconButton(
+                  IconButton(
                     icon: Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
+                      _isSaved ? Icons.favorite : Icons.favorite_border,
+                      color: _isSaved
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
                       size: 24,
                     ),
-                    onPressed: null,
+                    onPressed: isStation ? _toggleLike : null,
                   ),
                   IconButton(
                     icon: const Icon(
                       Icons.more_horiz,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 24,
                     ),
                     onPressed: () => _showOptions(context),
@@ -308,23 +272,26 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
                   IconButton(
                     icon: const Icon(
                       Icons.shuffle,
-                      color: Colors.white60,
+                      color: AppTheme.textSecondary,
                       size: 24,
                     ),
-                    onPressed: _shuffle,
+                    onPressed: () {
+                      final shuffled = List<Track>.from(tracks)..shuffle();
+                      _play(shuffled, 0);
+                    },
                   ),
                   GestureDetector(
-                    onTap: _playAll,
+                    onTap: () => _play(tracks, 0),
                     child: Container(
                       width: 52,
                       height: 52,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF3A3A3A),
+                        color: AppTheme.lighterSurface,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.play_arrow,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                         size: 28,
                       ),
                     ),
@@ -333,24 +300,28 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
               ),
             ),
 
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
 
-            // ── Track list ────────────────────────────────────────────────────
+            // ── Track list ──────────────────────────────────────────────
             Expanded(
               child: tracks.isEmpty
                   ? Center(
                       child: Text(
                         'No tracks found',
-                        style: TextStyle(color: Colors.grey[500]),
+                        style: AppTheme.bodyMedium,
                       ),
                     )
                   : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 140),
                       itemCount: tracks.length,
-                      itemBuilder: (context, index) => TrackTileInPlaylist(
-                        key: Key('related_track_${tracks[index].id}'),
-                        track: tracks[index],
-                        onTap: () => _playFrom(index),
-                      ),
+                      itemBuilder: (context, index) {
+                        final t = tracks[index];
+                        return TrackTileFromTrack(
+                          key: Key('related_${t.id}_$index'),
+                          track: t,
+                          onTap: () => _play(tracks, index),
+                        );
+                      },
                     ),
             ),
           ],
@@ -360,13 +331,14 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
   }
 
   void _showOptions(BuildContext context) {
+    final isStation = widget.source == RelatedTracksSource.station;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1C),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
@@ -380,36 +352,16 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child:
-                          widget.coverUrl != null && widget.coverUrl!.isNotEmpty
-                          ? Image.network(widget.coverUrl!, fit: BoxFit.cover)
-                          : _CoverPlaceholder(widget.title),
-                    ),
-                  ),
+                  _Cover(url: widget.coverUrl, label: widget.title, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(widget.title, style: AppTheme.bodyNormal),
                         Text(
                           'Based on ${widget.basedOnName}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
-                          ),
+                          style: AppTheme.artistTitle,
                         ),
                       ],
                     ),
@@ -417,7 +369,7 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
                 ],
               ),
             ),
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
               icon: Icons.queue_play_next,
               label: 'Play next',
@@ -428,6 +380,15 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
               label: 'Play last',
               onTap: () => Navigator.of(context).pop(),
             ),
+            if (isStation)
+              OptionSheetTile(
+                icon: _isSaved ? Icons.sensors_off : Icons.sensors,
+                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _toggleLike();
+                },
+              ),
             const SizedBox(height: 40),
           ],
         ),
@@ -436,25 +397,41 @@ class _RelatedTracksScreenState extends ConsumerState<RelatedTracksScreen> {
   }
 }
 
-// ── Cover placeholder ─────────────────────────────────────────────────────────
-class _CoverPlaceholder extends StatelessWidget {
-  const _CoverPlaceholder(this.title);
-  final String title;
+class _Cover extends StatelessWidget {
+  const _Cover({required this.url, required this.label, this.size = 56});
+  final String? url;
+  final String label;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF2A2A2A),
-      child: Center(
-        child: Text(
-          title.isNotEmpty ? title[0].toUpperCase() : 'S',
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: url != null && url!.isNotEmpty && url!.startsWith('http')
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _placeholder(),
+              )
+            : _placeholder(),
       ),
     );
   }
+
+  Widget _placeholder() => Container(
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'S',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
 }

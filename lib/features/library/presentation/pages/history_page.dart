@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
-import '../../domain/entities/library_entities.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
 
@@ -22,21 +21,39 @@ class HistoryPage extends ConsumerStatefulWidget {
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!mounted) return;
+    try {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
+        final state = ref.read(historyProvider);
+        if (state.isLoading || !state.hasMore) return;
         ref.read(historyProvider.notifier).load();
       }
-    });
+    } catch (_) {
+      // If the controller is not attached or throws while disposing, ignore.
+    }
   }
 
   @override
   void dispose() {
+    // Remove the listener first to avoid it firing during dispose and
+    // attempting to access Riverpod providers after the widget has been
+    // unmounted, which causes exceptions.
+    try {
+      _scrollController.removeListener(_onScroll);
+    } catch (_) {}
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -91,188 +108,193 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Listening history'),
-        centerTitle: false,
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        leading: IconButton(
+          key: const Key('history_back_button'),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.appBarItems),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: _searchBar(
+          key: const Key('history_search_bar'),
+          controller: _searchController,
+          onChanged: (v) => setState(() => _query = v),
+        ),
+        actions: [
+          IconButton(
+            key: const Key('history_filter_button'),
+            icon: const Icon(Icons.tune, color: AppTheme.appBarItems),
+            onPressed: () {},
+          ),
+          IconButton(
+            key: const Key('history_cast_button'),
+            icon: const Icon(Icons.cast, color: AppTheme.appBarItems),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () => ref.read(historyProvider.notifier).load(refresh: true),
-        child: _buildBody(state),
+        child: state.isLoading && state.entries.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+              )
+            : _buildScrollView(context, state),
       ),
     );
   }
 
-  Widget _buildBody(HistoryState state) {
-    if (state.isClearing || (state.isLoading && state.entries.isEmpty)) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-      );
-    }
+  Widget _buildScrollView(BuildContext context, HistoryState state) {
+    final filtered = _query.isEmpty
+        ? state.entries
+        : state.entries
+              .where(
+                (e) => e.title.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
-    if (state.entries.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.history, color: AppTheme.textSecondary, size: 56),
-            const SizedBox(height: 16),
-            Text(
-              'No listening history',
-              style: AppTheme.titleMedium.copyWith(
-                color: AppTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tracks you play will appear here.',
-              style: AppTheme.bodyMedium,
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Build flat list with date-label headers inserted
-    final grouped = _group(state.entries);
-    final sections = grouped.keys.toList();
-
-    final flatItems = <Object>[];
-    for (final section in sections) {
-      flatItems.add(section); // String header
-      flatItems.addAll(grouped[section]!);
-    }
-    // Append pagination sentinel
-    flatItems.add(_Sentinel(isLoading: state.isLoading));
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            children: [
-              IconButton(
-                key: const Key('history_clear_icon_button'),
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: AppTheme.textSecondary,
-                ),
-                tooltip: 'Clear history',
-                onPressed: _confirmClear,
-              ),
-              const Spacer(),
-              IconButton(
-                key: const Key('history_shuffle_icon_button'),
-                icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
-                onPressed: () {},
-              ),
-              FloatingActionButton.small(
-                key: const Key('history_play_all_fab'),
-                heroTag: 'history_play',
-                backgroundColor: Colors.white,
-                onPressed: () {},
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Colors.black,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
+    return CustomScrollView(
+      key: const Key('history_scroll_view'),
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: _historyHeader(
+            onClear: _confirmClear,
+            onShuffle: () {},
+            onPlay: () {},
           ),
         ),
 
-        Expanded(
-          child: ListView.builder(
-            key: const Key('history_list_view'),
-            controller: _scrollController,
-            itemCount: flatItems.length,
-            itemBuilder: (context, index) {
-              final item = flatItems[index];
-
-              // Date header
-              if (item is String) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-                  child: Text(
-                    item,
-                    style: AppTheme.labelLarge.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                );
-              }
-
-              if (item is _Sentinel) {
-                return item.isLoading
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryBrand,
-                            strokeWidth: 2,
+        if (filtered.isEmpty && !state.isLoading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: SizedBox.shrink(),
+          )
+        else ...[
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 120),
+            sliver: SliverList.builder(
+              itemCount: filtered.length + 1,
+              itemBuilder: (context, index) {
+                if (index == filtered.length) {
+                  return state.isLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryBrand,
+                              strokeWidth: 2,
+                            ),
                           ),
-                        ),
-                      )
-                    : const SizedBox.shrink();
-              }
+                        )
+                      : const SizedBox.shrink();
+                }
 
-              final entry = item as RecentlyPlayedEntry;
-              final track = Track(
-                id: entry.trackId,
-                userId: entry.userId,
-                title: entry.title,
-                artist: entry.artistName,
-                audioUrl: entry.audioUrl ?? '',
-                streamUrl: entry.streamUrl,
-                duration: Duration(seconds: entry.durationSeconds),
-                playCount: entry.playCount,
-                isLiked: entry.isLiked,
-                isArtistFollowed: entry.isArtistFollowed,
-                createdAt: entry.playedAt,
-                coverImage: entry.artworkUrl,
-              );
-              return TrackCard(
-                key: Key(
-                  'history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}',
-                ),
-                track: track,
-              );
-            },
+                final entry = filtered[index];
+                final track = Track(
+                  id: entry.trackId,
+                  userId: entry.userId,
+                  title: entry.title,
+                  artist: entry.artistName,
+                  audioUrl: entry.audioUrl ?? '',
+                  streamUrl: entry.streamUrl,
+                  duration: Duration(seconds: entry.durationSeconds),
+                  playCount: entry.playCount,
+                  isLiked: entry.isLiked,
+                  isArtistFollowed: entry.isArtistFollowed,
+                  createdAt: entry.playedAt,
+                  coverImage: entry.artworkUrl,
+                );
+
+                return TrackCard(track: track);
+              },
+            ),
           ),
-        ),
-        const SizedBox(height: 150),
+        ],
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
   }
 
-  Map<String, List<RecentlyPlayedEntry>> _group(
-    List<RecentlyPlayedEntry> entries,
-  ) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final weekAgo = today.subtract(const Duration(days: 7));
-    final result = <String, List<RecentlyPlayedEntry>>{};
-    for (final e in entries) {
-      final d = DateTime(e.playedAt.year, e.playedAt.month, e.playedAt.day);
-      final String label;
-      if (!d.isBefore(today)) {
-        label = 'Today';
-      } else if (!d.isBefore(yesterday)) {
-        label = 'Yesterday';
-      } else if (!d.isBefore(weekAgo)) {
-        label = 'This Week';
-      } else {
-        label = 'Older';
-      }
-
-      result.putIfAbsent(label, () => []).add(e);
-    }
-    return result;
+  // Local _searchBar used in AppBar
+  Widget _searchBar({
+    required Key key,
+    required TextEditingController controller,
+    required ValueChanged<String> onChanged,
+  }) {
+    return Container(
+      key: key,
+      height: 38,
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(19),
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          hintText: 'Search in your history',
+          hintStyle: AppTheme.bodyMedium,
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppTheme.textSecondary,
+            size: 18,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          isDense: true,
+        ),
+      ),
+    );
   }
-}
 
-class _Sentinel {
-  final bool isLoading;
-  const _Sentinel({required this.isLoading});
+  // Header similar to Likes header but for history
+  Widget _historyHeader({
+    required VoidCallback onClear,
+    required VoidCallback onShuffle,
+    required VoidCallback onPlay,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Listening History',
+              style: AppTheme.headlineLarge.copyWith(height: 1),
+            ),
+          ),
+          IconButton(
+            key: const Key('history_clear_icon_button'),
+            icon: const Icon(
+              Icons.delete_outline,
+              color: AppTheme.textSecondary,
+            ),
+            onPressed: onClear,
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            key: const Key('history_play_button'),
+            onTap: onPlay,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.black,
+                size: 28,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

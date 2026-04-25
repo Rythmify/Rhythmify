@@ -42,13 +42,14 @@ class DiscoverWithStationsSection extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final station = items[index];
                   return StationCard(
                     key: Key('discover_with_stations_item_${station.id}'),
                     id: station.id,
                     artistName: station.artistName,
+                    artistId: station.artistId,
                     centerImage: station.images.center,
                     leftImage: station.images.left,
                     rightImage: station.images.right,
@@ -73,12 +74,14 @@ class StationCard extends StatelessWidget {
   final String? leftImage;
   final String? rightImage;
   final Color ringColor;
+  final String artistId;
 
   const StationCard({
     super.key,
     required this.id,
     required this.artistName,
     required this.stationName,
+    required this.artistId,
     this.centerImage,
     this.leftImage,
     this.rightImage,
@@ -89,7 +92,7 @@ class StationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push(
-        '/station/$id',
+        '/home/station/$artistId',
         extra: {
           'artistName': artistName,
           'stationName': stationName,
@@ -174,7 +177,7 @@ class StationCard extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.78),
+                              Colors.black.withValues(alpha: 0.78),
                             ],
                           ),
                         ),
@@ -255,8 +258,8 @@ class _VinylPainter extends CustomPainter {
       final t = i / ringCount;
       final radius = maxRadius * t;
       final color = i.isEven
-          ? ringColor.withOpacity(0.55)
-          : ringColor.withOpacity(0.35);
+          ? ringColor.withValues(alpha: 0.55)
+          : ringColor.withValues(alpha: 0.35);
       ringPaint.color = color;
       canvas.drawCircle(center, radius, ringPaint);
     }
@@ -269,7 +272,7 @@ class _VinylPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
-        ..color = ringColor.withOpacity(0.6),
+        ..color = ringColor.withValues(alpha: 0.6),
     );
   }
 

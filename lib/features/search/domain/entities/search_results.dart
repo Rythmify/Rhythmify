@@ -1,5 +1,6 @@
 import 'package:rythmify/features/profile/domain/entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';
+import 'top_result.dart';
 
 /// Holds the results of a search query, grouped by content type.
 class SearchResults {
@@ -8,6 +9,7 @@ class SearchResults {
     this.playlists = const [],
     this.profiles = const [],
     this.albums = const [],
+    this.topResult,
   });
 
   final List<Track> tracks;
@@ -20,4 +22,6 @@ class SearchResults {
 
   /// Raw maps until a teammate-owned Album entity is available.
   final List<Map<String, String>> albums; // swap to AlbumEntity when ready
+
+  final TopResult? topResult;
 }

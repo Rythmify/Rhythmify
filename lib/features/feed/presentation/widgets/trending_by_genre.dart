@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/genre_tab.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
@@ -28,7 +29,7 @@ class TrendingByGenre extends ConsumerStatefulWidget {
 }
 
 class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   TabController? _tabController;
   List<GenreTab>? _genres;
 
@@ -39,11 +40,20 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
   }
 
   void _initTabController(List<GenreTab> genres) {
-    if (_genres == genres) return;
+    if (_genres != null && _genres!.length == genres.length) {
+      bool identical = true;
+      for (int i = 0; i < genres.length; i++) {
+        if (_genres![i].genreId != genres[i].genreId) {
+          identical = false;
+          break;
+        }
+      }
+      if (identical) return;
+    }
+
     _tabController?.dispose();
     _genres = genres;
     _tabController = TabController(length: genres.length, vsync: this);
-    setState(() {});
   }
 
   @override
@@ -306,11 +316,6 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Container(
-                              width: 50,
-                              height: 50,
-                              color: Colors.grey[800],
-                            ),
                           )
                         : Container(
                             width: 50,
@@ -318,6 +323,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                             color: Colors.grey[800],
                           ),
                   ),
+
                   title: Text(
                     track.title,
                     style: const TextStyle(fontSize: 14, color: Colors.white),
@@ -354,9 +360,12 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     if (isThisTrackLoaded) {
                       ref.read(playerStateProvider.notifier).togglePlayPause();
                     } else {
-                      ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-                        track,
-                      ]);
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
+                            tracks: tracks,
+                            initialIndex: tracks.indexOf(track),
+                          );
                     }
                   },
                 ),

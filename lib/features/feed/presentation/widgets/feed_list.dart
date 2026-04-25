@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/feed_providers.dart';
 import 'feed_card.dart';
-
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/feed_item.dart';
@@ -14,18 +13,25 @@ class FeedList extends ConsumerStatefulWidget {
   const FeedList({super.key, required this.tab});
 
   @override
-  ConsumerState<FeedList> createState() => _FeedListState();
+  ConsumerState<FeedList> createState() => FeedListState();
 }
 
-class _FeedListState extends ConsumerState<FeedList> {
+class FeedListState extends ConsumerState<FeedList> {
   final _pageController = PageController();
-  bool _previewMode = false; // false = silent, true = auto-playing
+  bool _previewMode = false;
   String? _nowPlayingTrackId;
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void resetPreview() {
+    setState(() {
+      _previewMode = false;
+      _nowPlayingTrackId = null;
+    });
   }
 
   void _activatePreviewMode(Track track) {
@@ -50,7 +56,7 @@ class _FeedListState extends ConsumerState<FeedList> {
   void _onBottomInfoPlay(String trackId) {
     setState(() {
       _nowPlayingTrackId = trackId;
-      _previewMode = false; // bottom info play does not activate preview mode
+      _previewMode = false;
     });
   }
 
@@ -60,6 +66,7 @@ class _FeedListState extends ConsumerState<FeedList> {
     ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
   }
 
+  // preview url = audioUrl, full stream = streamUrl
   Track _trackFromFollowing(FeedItemEntity item) => Track(
     id: item.track.id,
     userId: item.user.id,
@@ -67,6 +74,22 @@ class _FeedListState extends ConsumerState<FeedList> {
     artist: item.user.displayName,
     artistPfp: item.user.avatar,
     audioUrl: item.track.audioUrl,
+    streamUrl: item.track.streamUrl,
+    coverImage: item.track.coverUrl,
+    duration: Duration(seconds: item.track.duration),
+    createdAt: item.createdAt,
+    playCount: item.track.playCount,
+    likeCount: item.track.likeCount,
+  );
+
+  Track _trackFromDiscover(FeedItemEntity item) => Track(
+    id: item.track.id,
+    userId: item.user.id,
+    title: item.track.title,
+    artist: item.user.displayName,
+    artistPfp: item.user.avatar,
+    audioUrl: item.track.audioUrl,
+    streamUrl: item.track.streamUrl,
     coverImage: item.track.coverUrl,
     duration: Duration(seconds: item.track.duration),
     createdAt: item.createdAt,
@@ -80,39 +103,55 @@ class _FeedListState extends ConsumerState<FeedList> {
       final async = ref.watch(discoverFeedProvider);
       return async.when(
         loading: () => const Center(
+          key: Key('feed_list_discover_loading'),
           child: CircularProgressIndicator(color: Colors.orange),
         ),
         error: (e, _) => Center(
+          key: const Key('feed_list_discover_error'),
           child: Text(
             e.toString(),
             style: const TextStyle(color: Colors.white54),
           ),
         ),
         data: (items) => PageView.builder(
+          key: const Key('feed_list_discover_pageview'),
           controller: _pageController,
           scrollDirection: Axis.vertical,
           itemCount: items.length,
           onPageChanged: (index) {
             if (_previewMode) {
-              _playTrack(_trackFromFollowing(items[index]));
+              _playTrack(_trackFromDiscover(items[index]));
             }
           },
-          itemBuilder: (context, index) => GestureDetector(
-            onTap: () {
-              if (_previewMode) {
-                _deactivatePreviewMode();
-              } else {
-                _activatePreviewMode(_trackFromFollowing(items[index]));
-              }
-            },
-            child: FeedCard(
-              item: items[index],
-              tab: widget.tab,
-              previewMode: _previewMode,
-              nowPlayingTrackId: _nowPlayingTrackId,
-              onPlay: () => _onBottomInfoPlay(items[index].track.id),
-              fullScreen: true,
-            ),
+          itemBuilder: (context, index) => Stack(
+            key: Key('feed_list_discover_gesture_$index'),
+            children: [
+              FeedCard(
+                key: Key('feed_list_discover_card_$index'),
+                item: items[index],
+                tab: widget.tab,
+                previewMode: _previewMode,
+                nowPlayingTrackId: _nowPlayingTrackId,
+                onPlay: () => _onBottomInfoPlay(items[index].track.id),
+                fullScreen: true, // ← add this
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 350,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (_previewMode) {
+                      _deactivatePreviewMode();
+                    } else {
+                      _activatePreviewMode(_trackFromDiscover(items[index]));
+                    }
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -120,15 +159,19 @@ class _FeedListState extends ConsumerState<FeedList> {
 
     final async = ref.watch(followingFeedProvider);
     return async.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator(color: Colors.orange)),
+      loading: () => const Center(
+        key: Key('feed_list_following_loading'),
+        child: CircularProgressIndicator(color: Colors.orange),
+      ),
       error: (e, _) => Center(
+        key: const Key('feed_list_following_error'),
         child: Text(
           e.toString(),
           style: const TextStyle(color: Colors.white54),
         ),
       ),
       data: (items) => PageView.builder(
+        key: const Key('feed_list_following_pageview'),
         controller: _pageController,
         scrollDirection: Axis.vertical,
         itemCount: items.length,
@@ -137,21 +180,34 @@ class _FeedListState extends ConsumerState<FeedList> {
             _playTrack(_trackFromFollowing(items[index]));
           }
         },
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () {
-            if (_previewMode) {
-              _deactivatePreviewMode();
-            } else {
-              _activatePreviewMode(_trackFromFollowing(items[index]));
-            }
-          },
-          child: FeedCard(
-            item: items[index],
-            tab: widget.tab,
-            previewMode: _previewMode,
-            nowPlayingTrackId: _nowPlayingTrackId, // add
-            onPlay: () => _onBottomInfoPlay(items[index].track.id), // add
-          ),
+        itemBuilder: (context, index) => Stack(
+          key: Key('feed_list_following_gesture_$index'),
+          children: [
+            FeedCard(
+              key: Key('feed_list_following_card_$index'),
+              item: items[index],
+              tab: widget.tab,
+              previewMode: _previewMode,
+              nowPlayingTrackId: _nowPlayingTrackId,
+              onPlay: () => _onBottomInfoPlay(items[index].track.id),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 350,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  if (_previewMode) {
+                    _deactivatePreviewMode();
+                  } else {
+                    _activatePreviewMode(_trackFromFollowing(items[index]));
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -76,7 +76,7 @@ class MixedPlaylistCard extends ConsumerWidget {
         : '';
     return GestureDetector(
       onTap: () => context.push(
-        '/mix/$id',
+        '/home/mix/$id',
         extra: {
           'title': mixLabel,
           'ownerName': currentUserName, // ← now the signed-in user's name

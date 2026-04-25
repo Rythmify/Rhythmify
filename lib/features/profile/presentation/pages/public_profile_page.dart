@@ -12,6 +12,7 @@ import '../widgets/share_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/widgets/mini_player.dart';
@@ -50,7 +51,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   late String _resolvedUserId;
 
   // ── Player sheet constants (same values as MainAppScaffold) ─────────────
-  static const double _navBarHeight = 0.0; // no nav bar on this page
   static const double _miniPlayerHeight = 65.0;
   static const double _maxSize = 1.0;
 
@@ -374,40 +374,11 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         ),
                       )
                     else
-                      GestureDetector(
-                        key: const Key('public_profile_follow_gesture'),
-                        onTap: () {
-                          final notifier = _resolvedUserId == 'me'
-                              ? ref.read(ownProfileProvider.notifier)
-                              : ref.read(
-                                  publicProfileProvider(
-                                    _resolvedUserId,
-                                  ).notifier,
-                                );
-                          if (state.profile.isFollowing) {
-                            notifier.unfollowUser(userId: widget.userId);
-                          } else {
-                            notifier.followUser(userId: widget.userId);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            state.profile.isFollowing ? 'Following' : 'Follow',
-                            style: AppTheme.labelLarge,
-                          ),
+                      FollowButton(
+                        key: Key(
+                          'public_profile_follow_button_${state.profile.id}',
                         ),
+                        targetUserId: state.profile.id,
                       ),
                     const Spacer(),
                     GestureDetector(
@@ -597,17 +568,14 @@ class _ProfileSection extends ConsumerWidget {
         ...tracks.asMap().entries.map((entry) {
           final index = entry.key;
           final track = entry.value;
-          return GestureDetector(
-            key: Key('profile_${title}_${track.id}_gesture'),
+          return TrackCard(
+            key: Key('profile_${title}_${track.id}'),
+            track: track,
             onTap: () {
               ref
                   .read(playerStateProvider.notifier)
                   .loadAndPlayQueue(tracks, initialIndex: index);
             },
-            child: TrackCard(
-              key: Key('profile_${title}_${track.id}'),
-              track: track,
-            ),
           );
         }),
         const SizedBox(height: 12),
@@ -651,7 +619,7 @@ class _PlaylistsSection extends ConsumerWidget {
             children: [
               Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
-                onPressed: () => context.push('/library/playlists'),
+                onPressed: () => context.go('/library/playlists'),
                 child: Text(
                   'See All',
                   style: AppTheme.labelLarge.copyWith(
@@ -723,8 +691,8 @@ class _PlaylistGridCard extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: playlist.coverUrl!,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => _coverPlaceholder(),
-                    errorWidget: (_, __, ___) => _coverPlaceholder(),
+                    placeholder: (_, _) => _coverPlaceholder(),
+                    errorWidget: (_, _, _) => _coverPlaceholder(),
                   )
                 : _coverPlaceholder(),
           ),
@@ -743,9 +711,9 @@ class _PlaylistGridCard extends StatelessWidget {
         const SizedBox(height: 2),
 
         // ── Owner name ───────────────────────────────────────────────────
-        if (playlist.ownerName != null && playlist.ownerName!.isNotEmpty)
+        if (playlist.ownerName.isNotEmpty)
           Text(
-            playlist.ownerName!,
+            playlist.ownerName,
             style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

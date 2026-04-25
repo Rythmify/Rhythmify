@@ -135,7 +135,7 @@ class HomeDto {
               center: imagesJson['center'] as String?,
               right: imagesJson['right'] as String?,
             )
-          : const StationImages(), // ← fallback if null or wrong type
+          : const StationImages(),
     );
   }
 }
