@@ -62,7 +62,9 @@ class TrackActionBar extends ConsumerWidget {
             Formatters.formatCount(syncedTrack.repostCount),
             onTap: () async {
               try {
-                await ref.read(trackInteractionProvider).handleToggleRepost(
+                await ref
+                    .read(trackInteractionProvider)
+                    .handleToggleRepost(
                       syncedTrack.id,
                       syncedTrack.isReposted,
                       currentTrack: syncedTrack,

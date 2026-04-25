@@ -6,13 +6,18 @@ class ErrorHandler {
     if (error is DioException) {
       final statusCode = error.response?.statusCode;
       final data = error.response?.data;
-      
+
       // Try to extract backend message
-      final serverMessage = data is Map ? (data['message'] ?? data['error']?['message']) : null;
+      final serverMessage = data is Map
+          ? (data['message'] ?? data['error']?['message'])
+          : null;
 
       if (statusCode == 403) {
         // Specific case for reposting own track
-        if (serverMessage?.toString().toLowerCase().contains('repost your own') ?? false) {
+        if (serverMessage?.toString().toLowerCase().contains(
+              'repost your own',
+            ) ??
+            false) {
           return 'You cannot repost your own tracks.';
         }
         return serverMessage?.toString() ?? 'Action not allowed.';
@@ -30,19 +35,22 @@ class ErrorHandler {
         return 'Our server is having trouble. Please try again later.';
       }
 
-      if (error.type == DioExceptionType.connectionTimeout || 
+      if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.receiveTimeout) {
         return 'Connection timed out. Please check your internet.';
       }
-      
-      return serverMessage?.toString() ?? 'Something went wrong. Please try again.';
+
+      return serverMessage?.toString() ??
+          'Something went wrong. Please try again.';
     }
 
     final errorStr = error.toString();
     if (errorStr.contains('repost your own')) {
-       return 'You cannot repost your own tracks.';
+      return 'You cannot repost your own tracks.';
     }
 
-    return errorStr.replaceAll('Exception: ', '').replaceAll('Exception', 'Error');
+    return errorStr
+        .replaceAll('Exception: ', '')
+        .replaceAll('Exception', 'Error');
   }
 }

@@ -112,7 +112,8 @@ class UploadTrackRemoteDataSource {
         '/tracks',
         data: formData,
         options: Options(
-          contentType: null, // Allow Dio to set multipart/form-data with boundary
+          contentType:
+              null, // Allow Dio to set multipart/form-data with boundary
           sendTimeout: const Duration(minutes: 2),
           receiveTimeout: const Duration(minutes: 2),
         ),

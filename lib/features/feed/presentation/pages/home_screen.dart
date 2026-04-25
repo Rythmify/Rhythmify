@@ -185,7 +185,7 @@ class HomeScreen extends ConsumerWidget {
             /// Displays discovery-based station suggestions.
             DiscoverWithStationsSection(),
 
-            const SizedBox(height: 30),
+            //const SizedBox(height: 10),
 
             /// Displays additional personalized music suggestions.
             MoreOfWhatYouLikeSection(),

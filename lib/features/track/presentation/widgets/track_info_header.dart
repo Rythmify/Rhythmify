@@ -134,8 +134,10 @@ class TrackInfoHeader extends StatelessWidget {
                                 width: 110,
                                 height: 110,
                                 color: AppTheme.perfectGrey,
-                                child:
-                                    const Icon(Icons.error, color: Colors.red),
+                                child: const Icon(
+                                  Icons.error,
+                                  color: Colors.red,
+                                ),
                               ),
                         ),
                 ),
