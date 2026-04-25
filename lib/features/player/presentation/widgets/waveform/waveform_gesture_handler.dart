@@ -60,13 +60,23 @@ class _WaveformGestureHandlerState extends ConsumerState<WaveformGestureHandler>
   void _commitSeek() {
     final finalDrag = ref.read(seekDragPositionProvider);
     if (finalDrag != null) {
+      // Immediately reflect the final drag position in presentation state so
+      // the artwork and other UI elements continue from where the user left
+      // without briefly snapping back to the pre-drag position.
+      ref.read(playerStateProvider.notifier).updatePosition(finalDrag);
+
+      // Allow the presentation state to accept incoming stream updates again.
+      ref.read(playerStateProvider.notifier).setDragging(false);
+
+      // Propagate the seek to the playback backend.
       ref.read(playerStateProvider.notifier).seek(finalDrag);
 
+      // Keep the temporary drag position for a short time to avoid abrupt
+      // flicker while the audio backend processes the seek, then clear it.
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
         if (!_isDragging && !_controller.isAnimating) {
           ref.read(seekDragPositionProvider.notifier).setPosition(null);
-          ref.read(playerStateProvider.notifier).setDragging(false);
         }
       });
     }
