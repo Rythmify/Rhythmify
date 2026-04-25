@@ -10,7 +10,6 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
@@ -426,7 +425,7 @@ class _Cover extends StatelessWidget {
             ? Image.network(
                 url!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder(),
+                errorBuilder: (_, _, _) => _placeholder(),
               )
             : _placeholder(),
       ),

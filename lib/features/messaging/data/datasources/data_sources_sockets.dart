@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class DataSourcesSockets {
@@ -20,7 +21,6 @@ class DataSourcesSockets {
     );
 
     _socket!.onConnect((_) {
-      print('✅ Socket connected! ID: ${_socket!.id}');
       if (_currentConversationId != null) {
         _socket!.emit('message:join', {
           'conversationId': _currentConversationId,
@@ -29,9 +29,9 @@ class DataSourcesSockets {
       }
     });
 
-    _socket!.onDisconnect((_) => print('❌ Socket disconnected'));
-    _socket!.onConnectError((err) => print('🚨 Connection error: $err'));
-    _socket!.onError((err) => print('🚨 Socket error: $err'));
+    _socket!.onDisconnect((_) => debugPrint('❌ Socket disconnected'));
+    _socket!.onConnectError((err) => debugPrint('🚨 Connection error: $err'));
+    _socket!.onError((err) => debugPrint('🚨 Socket error: $err'));
 
     _socket!.connect();
   }

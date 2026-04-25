@@ -355,7 +355,7 @@ class _StationTile extends StatelessWidget {
                         ? Image.network(
                             coverUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder(title),
+                            errorBuilder: (_, _, _) => _placeholder(title),
                           )
                         : _placeholder(title),
                   ),
@@ -449,7 +449,7 @@ class _StationTile extends StatelessWidget {
     child: Center(
       child: Icon(
         Icons.sensors,
-        color: AppTheme.primaryBrand.withOpacity(0.6),
+        color: AppTheme.primaryBrand.withValues(alpha: 0.6),
         size: 28,
       ),
     ),

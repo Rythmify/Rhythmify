@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_follow_status_usecase.dart';
 import 'package:rythmify/features/notifications/presentation/providers/repo_provider.dart';
 

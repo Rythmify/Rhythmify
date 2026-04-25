@@ -148,16 +148,6 @@ class _PlayerTrackPage extends ConsumerWidget {
           if (isCurrent)
             const Positioned.fill(child: PlaybackOverlayControls()),
 
-          // ── Track Info ──────────────────────────────────────────────────
-          Positioned(
-            top: 60,
-            left: 16,
-            child: TrackInfoBox(
-              trackInfo: track,
-              onNavigateBehindTrack: onNavigateBehindTrack,
-            ),
-          ),
-
           // ── Right Side Actions (Collapse, Follow) ────────────────────────
           Positioned(
             top: 60,
@@ -196,6 +186,18 @@ class _PlayerTrackPage extends ConsumerWidget {
                 const SizedBox(height: 40),
                 if (isCurrent) PlayerActionBar(trackId: track.id),
               ],
+            ),
+          ),
+
+          // Track Info moved lower so it renders above the waveform
+
+          // Track Info moved to bottom so it renders above the waveform
+          Positioned(
+            top: 60,
+            left: 16,
+            child: TrackInfoBox(
+              trackInfo: track,
+              onNavigateBehindTrack: onNavigateBehindTrack,
             ),
           ),
         ],

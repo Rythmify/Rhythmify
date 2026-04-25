@@ -483,11 +483,14 @@ class HistoryNotifier extends Notifier<HistoryState> {
   }
 
   Future<void> load({bool refresh = false}) async {
+    // Prevent concurrent paginated loads which cause duplicated/looping fetches.
     if (refresh) {
       _page = 1;
       state = state.copyWith(entries: [], isLoading: true, hasMore: true);
     } else {
-      if (!state.hasMore) return;
+      // If there's no more data, or a load is already in progress for subsequent
+      // pages, bail out early.
+      if (!state.hasMore || (state.isLoading && _page > 1)) return;
       state = state.copyWith(isLoading: true);
     }
 
@@ -496,8 +499,20 @@ class HistoryNotifier extends Notifier<HistoryState> {
       (f) => state = state.copyWith(isLoading: false, error: f.message),
       (e) {
         _page++;
+        // Filter out any items already present (dedupe by trackId + playedAt)
+        final existingKeys = state.entries
+            .map((x) => '${x.trackId}-${x.playedAt.millisecondsSinceEpoch}')
+            .toSet();
+        final newEntries = e
+            .where(
+              (ne) => !existingKeys.contains(
+                '${ne.trackId}-${ne.playedAt.millisecondsSinceEpoch}',
+              ),
+            )
+            .toList();
+
         state = state.copyWith(
-          entries: [...state.entries, ...e],
+          entries: [...state.entries, ...newEntries],
           isLoading: false,
           hasMore: e.length == 20,
         );

@@ -51,7 +51,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   late String _resolvedUserId;
 
   // ── Player sheet constants (same values as MainAppScaffold) ─────────────
-  static const double _navBarHeight = 0.0; // no nav bar on this page
   static const double _miniPlayerHeight = 65.0;
   static const double _maxSize = 1.0;
 

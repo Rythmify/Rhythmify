@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../player/domain/entities/player_state.dart';
 
 class FeedCardPlayCircle extends ConsumerWidget {
   final bool showProgress;
@@ -15,11 +14,8 @@ class FeedCardPlayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(playerStateProvider.select((s) => s.status));
     final position = ref.watch(playerStateProvider.select((s) => s.position));
     final duration = ref.watch(playerStateProvider.select((s) => s.duration));
-
-    final isPlaying = status == PlayerStatus.playing;
 
     double progress = 0.0;
     if (showProgress && duration.inMilliseconds > 0) {
