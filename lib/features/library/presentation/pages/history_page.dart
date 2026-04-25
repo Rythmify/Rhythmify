@@ -5,7 +5,6 @@ import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../player/presentation/providers/player_provider.dart';
 
 /// Listening history page matching SoundCloud's layout.
 ///
@@ -145,24 +144,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     // Append pagination sentinel
     flatItems.add(_Sentinel(isLoading: state.isLoading));
 
-    // Build flat track list for queue context (excluding headers and sentinel)
-    final allTracks = state.entries.map((entry) {
-      return Track(
-        id: entry.trackId,
-        userId: entry.userId,
-        title: entry.title,
-        artist: entry.artistName,
-        audioUrl: entry.audioUrl ?? '',
-        streamUrl: entry.streamUrl,
-        duration: Duration(seconds: entry.durationSeconds),
-        playCount: entry.playCount,
-        isLiked: entry.isLiked,
-        isArtistFollowed: entry.isArtistFollowed,
-        createdAt: entry.playedAt,
-        coverImage: entry.artworkUrl,
-      );
-    }).toList();
-
     return Column(
       children: [
         Padding(
@@ -250,24 +231,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 createdAt: entry.playedAt,
                 coverImage: entry.artworkUrl,
               );
-
-              final trackIndex = allTracks.indexWhere((t) => t.id == track.id);
-
               return TrackCard(
                 key: Key(
                   'history_item_${entry.trackId}_${entry.playedAt.millisecondsSinceEpoch}',
                 ),
                 track: track,
-                onTap: trackIndex >= 0
-                    ? () {
-                        ref
-                            .read(playerStateProvider.notifier)
-                            .loadAndPlayQueue(
-                              allTracks,
-                              initialIndex: trackIndex,
-                            );
-                      }
-                    : null,
               );
             },
           ),

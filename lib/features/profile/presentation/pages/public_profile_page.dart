@@ -12,7 +12,6 @@ import '../widgets/share_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../../../core/presentation/widgets/follow_button.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/widgets/mini_player.dart';
@@ -375,11 +374,40 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         ),
                       )
                     else
-                      FollowButton(
-                        key: Key(
-                          'public_profile_follow_button_${state.profile.id}',
+                      GestureDetector(
+                        key: const Key('public_profile_follow_gesture'),
+                        onTap: () {
+                          final notifier = _resolvedUserId == 'me'
+                              ? ref.read(ownProfileProvider.notifier)
+                              : ref.read(
+                                  publicProfileProvider(
+                                    _resolvedUserId,
+                                  ).notifier,
+                                );
+                          if (state.profile.isFollowing) {
+                            notifier.unfollowUser(userId: widget.userId);
+                          } else {
+                            notifier.followUser(userId: widget.userId);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppTheme.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            state.profile.isFollowing ? 'Following' : 'Follow',
+                            style: AppTheme.labelLarge,
+                          ),
                         ),
-                        targetUserId: state.profile.id,
                       ),
                     const Spacer(),
                     GestureDetector(
@@ -569,14 +597,17 @@ class _ProfileSection extends ConsumerWidget {
         ...tracks.asMap().entries.map((entry) {
           final index = entry.key;
           final track = entry.value;
-          return TrackCard(
-            key: Key('profile_${title}_${track.id}'),
-            track: track,
+          return GestureDetector(
+            key: Key('profile_${title}_${track.id}_gesture'),
             onTap: () {
               ref
                   .read(playerStateProvider.notifier)
                   .loadAndPlayQueue(tracks, initialIndex: index);
             },
+            child: TrackCard(
+              key: Key('profile_${title}_${track.id}'),
+              track: track,
+            ),
           );
         }),
         const SizedBox(height: 12),
@@ -620,7 +651,7 @@ class _PlaylistsSection extends ConsumerWidget {
             children: [
               Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
-                onPressed: () => context.go('/library/playlists'),
+                onPressed: () => context.push('/library/playlists'),
                 child: Text(
                   'See All',
                   style: AppTheme.labelLarge.copyWith(

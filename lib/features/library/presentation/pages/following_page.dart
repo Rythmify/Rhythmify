@@ -154,7 +154,7 @@ class _UserTile extends ConsumerWidget {
   Future<void> _showUnfollowDialog(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: const Text('Unfollow?', style: TextStyle(color: Colors.white)),
         content: Text(
@@ -163,11 +163,11 @@ class _UserTile extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context, false),
             child: Text('Cancel', style: AppTheme.labelLarge),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Unfollow',
               style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
@@ -176,8 +176,8 @@ class _UserTile extends ConsumerWidget {
         ],
       ),
     );
-    if (confirm == true && context.mounted) {
-      await ref.read(followingProvider.notifier).unfollow(user.id);
+    if (confirm == true) {
+      ref.read(followingProvider.notifier).unfollow(user.id);
     }
   }
 

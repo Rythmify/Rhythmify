@@ -8,7 +8,6 @@ class ProfileUserSummaryModel extends ProfileUserSummary {
     required super.displayName,
     required super.username,
     super.avatarUrl,
-    super.isFollowing,
   });
 
   /// Builds a model from backend JSON payload.
@@ -25,7 +24,6 @@ class ProfileUserSummaryModel extends ProfileUserSummary {
           json['profile_picture'] as String? ??
           json['avatar_url'] as String? ??
           json['avatar'] as String?,
-      isFollowing: json['is_following'] as bool? ?? false,
     );
   }
 }

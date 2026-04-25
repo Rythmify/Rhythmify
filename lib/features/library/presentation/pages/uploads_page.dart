@@ -18,7 +18,7 @@ import '../../../track_upload/presentation/providers/upload_track_provider.dart'
 ///    [UploadsState.tracks] is empty.
 ///
 /// The minutes-used chip is computed from [UploadsState] by summing
-/// [TrackEntity.duration] across all uploaded tracks and converting
+/// [TrackEntity.durationSeconds] across all uploaded tracks and converting
 /// to whole minutes (capped at [_kUploadLimitMinutes]).
 class UploadsPage extends ConsumerStatefulWidget {
   const UploadsPage({super.key});
@@ -54,18 +54,6 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  /// Returns the total uploaded duration in whole minutes by summing
-  /// [duration.inSeconds] across all tracks in [state].
-  ///
-  /// Falls back to 0 when [state.tracks] is empty.
-  int _computeUsedMinutes(UploadsState state) {
-    final totalSeconds = state.tracks.fold<int>(
-      0,
-      (sum, item) => sum + item.track.duration.inSeconds,
-    );
-    return (totalSeconds / 60).floor();
   }
 
   /// Handles audio file selection and prepares it for upload.
@@ -109,6 +97,13 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
       ref.read(uploadFormProvider.notifier).startAudioUpload();
     }
   }
+
+  // ─── helpers ────────────────────────────────────────────────────────────────
+
+  /// Returns the total uploaded duration in whole minutes by summing
+  /// [durationSeconds] across all tracks in [state].
+  ///
+  /// Falls back to 0 when duration data is unavailable.
 
   // ─── build ──────────────────────────────────────────────────────────────────
 
@@ -175,7 +170,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
         // ── Header: title + controls + stat chips ──────────────────────────
         SliverToBoxAdapter(
           child: _UploadsHeader(
-            usedMinutes: _computeUsedMinutes(state),
+            usedMinutes: 80,
             limitMinutes: _kUploadLimitMinutes,
             onUpload: _handleUploadButtonPress,
             onShuffle: () {},

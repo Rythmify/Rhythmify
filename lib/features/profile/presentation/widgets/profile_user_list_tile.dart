@@ -4,18 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/profile_user_summary.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/presentation/widgets/follow_button.dart';
+import '../providers/profile_provider.dart';
+import '../providers/profile_state.dart';
 
-/// Lightweight user row used in followers / following lists.
-///
-/// Displays the user's avatar, display name, and username on the left,
-/// and a [FollowButton] on the right.  Tapping the row navigates to
-/// `/profile/{user.id}`.
-///
-/// The follow state is managed entirely by [FollowButton] via
-/// [followStatusProvider] — no local state or provider watch needed here.
+/// Lightweight user row used in followers/following lists.
 class ProfileUserListTile extends ConsumerWidget {
-  /// The user to render in this tile.
+  /// User to render.
   final ProfileUserSummary user;
 
   /// Creates a [ProfileUserListTile].
@@ -23,6 +17,25 @@ class ProfileUserListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profileState = ref.watch(publicProfileProvider(user.id));
+
+    // Load profile if not already loaded
+    ref.listen(publicProfileProvider(user.id), (prev, curr) {});
+
+    // Auto-load profile on first build
+    if (profileState is ProfileInitial) {
+      Future.microtask(() {
+        ref
+            .read(publicProfileProvider(user.id).notifier)
+            .loadProfile(userId: user.id);
+      });
+    }
+
+    final isFollowing = switch (profileState) {
+      ProfileLoaded(:final profile) => profile.isFollowing,
+      _ => false,
+    };
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -32,7 +45,6 @@ class ProfileUserListTile extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              // ── Avatar ────────────────────────────────────────────────
               ClipOval(
                 child:
                     (user.avatarUrl != null &&
@@ -48,35 +60,47 @@ class ProfileUserListTile extends ConsumerWidget {
                     : _buildAvatarFallback(),
               ),
               const SizedBox(width: 12),
-
-              // ── Name + username ───────────────────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.displayName,
-                      style: AppTheme.labelLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(user.displayName, style: AppTheme.labelLarge),
                     Text(
                       '@${user.username}',
                       style: AppTheme.bodyMedium.copyWith(
                         color: AppTheme.textSecondary,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-
-              // ── Universal Follow button ───────────────────────────────
-              FollowButton(
-                key: Key('follow_button_tile_${user.id}'),
-                targetUserId: user.id,
-                compact: true,
+              GestureDetector(
+                onTap: () {
+                  final notifier = ref.read(
+                    publicProfileProvider(user.id).notifier,
+                  );
+                  if (isFollowing) {
+                    notifier.unfollowUser(userId: user.id);
+                  } else {
+                    notifier.followUser(userId: user.id);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isFollowing ? 'Following' : 'Follow',
+                    style: AppTheme.labelLarge,
+                  ),
+                ),
               ),
             ],
           ),
@@ -85,7 +109,7 @@ class ProfileUserListTile extends ConsumerWidget {
     );
   }
 
-  /// Fallback avatar shown when the network image is unavailable.
+  /// Fallback avatar when network image is unavailable.
   Widget _buildAvatarFallback() {
     return Container(
       width: 44,

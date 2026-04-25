@@ -40,6 +40,7 @@ class GenreRemoteSourceImpl implements GenreRemoteSource {
   @override
   Future<GenreContent> getGenreContent(String genreId) async {
     final response = await _dio.get('/genres/$genreId/page');
+    dev.log('GENRE CONTENT RAW: ${response.data}');
     final body = response.data as Map<String, dynamic>;
 
     final data = body['data'] as Map<String, dynamic>? ?? {};
