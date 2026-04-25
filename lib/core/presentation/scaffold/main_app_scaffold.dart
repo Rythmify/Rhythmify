@@ -92,62 +92,80 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                 maxChildSize: _maxSize,
                 snap: true,
                 builder: (context, scrollController) {
-                  return Container(
-                    color: Colors.transparent,
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      physics: const ClampingScrollPhysics(),
-                      child: SizedBox(
-                        height: screenHeight,
-                        child: AnimatedBuilder(
-                          animation: _draggableController,
-                          builder: (context, child) {
-                            final extent = _draggableController.isAttached
-                                ? _draggableController.size
-                                : currentMinSize;
-                            final t =
-                                ((extent - currentMinSize) /
-                                        (_maxSize - currentMinSize))
-                                    .clamp(0.0, 1.0);
+                  return AnimatedBuilder(
+                    animation: _draggableController,
+                    builder: (context, _) {
+                      final extent = _draggableController.isAttached
+                          ? _draggableController.size
+                          : currentMinSize;
+                      final isCollapsed = extent <= currentMinSize + 0.01;
 
-                            return Stack(
-                              children: [
-                                // Full Player
-                                Opacity(
-                                  opacity: t,
-                                  child: Container(
-                                    color: Colors.black,
-                                    child: IgnorePointer(
-                                      ignoring: t < 0.5,
-                                      child: FullPlayerPage(
-                                        key: const Key('main_full_player_page'),
-                                        onCollapse: _collapsePlayer,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                      return IgnorePointer(
+                        ignoring: isFeedRoute && isCollapsed,
+                        child: Container(
+                          color: Colors.transparent,
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            physics: const ClampingScrollPhysics(),
+                            child: SizedBox(
+                              height: screenHeight,
+                              child: AnimatedBuilder(
+                                animation: _draggableController,
+                                builder: (context, child) {
+                                  final extent = _draggableController.isAttached
+                                      ? _draggableController.size
+                                      : currentMinSize;
+                                  final t =
+                                      ((extent - currentMinSize) /
+                                              (_maxSize - currentMinSize))
+                                          .clamp(0.0, 1.0);
 
-                                if (t < 0.5 && !isFeedRoute)
-                                  Positioned(
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: Opacity(
-                                      opacity: (1 - t * 5).clamp(0.0, 1.0),
-                                      child: MiniPlayer(
-                                        key: const Key(
-                                          'main_mini_player_widget',
+                                  return Stack(
+                                    children: [
+                                      // Full Player
+                                      Opacity(
+                                        opacity: t,
+                                        child: Container(
+                                          color: Colors.black,
+                                          child: IgnorePointer(
+                                            ignoring: t < 0.5,
+                                            child: FullPlayerPage(
+                                              key: const Key(
+                                                'main_full_player_page',
+                                              ),
+                                              onCollapse: _collapsePlayer,
+                                            ),
+                                          ),
                                         ),
-                                        onTap: _expandPlayer,
                                       ),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+
+                                      if (t < 0.5 && !isFeedRoute)
+                                        Positioned(
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Opacity(
+                                            opacity: (1 - t * 5).clamp(
+                                              0.0,
+                                              1.0,
+                                            ),
+                                            child: MiniPlayer(
+                                              key: const Key(
+                                                'main_mini_player_widget',
+                                              ),
+                                              onTap: _expandPlayer,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),
