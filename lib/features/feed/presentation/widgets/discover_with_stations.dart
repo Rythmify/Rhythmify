@@ -41,7 +41,7 @@ class DiscoverWithStationsSection extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final station = items[index];
                   return StationCard(
@@ -176,7 +176,7 @@ class StationCard extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.78),
+                              Colors.black.withValues(alpha: 0.78),
                             ],
                           ),
                         ),
@@ -257,8 +257,8 @@ class _VinylPainter extends CustomPainter {
       final t = i / ringCount;
       final radius = maxRadius * t;
       final color = i.isEven
-          ? ringColor.withOpacity(0.55)
-          : ringColor.withOpacity(0.35);
+          ? ringColor.withValues(alpha: 0.55)
+          : ringColor.withValues(alpha: 0.35);
       ringPaint.color = color;
       canvas.drawCircle(center, radius, ringPaint);
     }
@@ -271,7 +271,7 @@ class _VinylPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
-        ..color = ringColor.withOpacity(0.6),
+        ..color = ringColor.withValues(alpha: 0.6),
     );
   }
 

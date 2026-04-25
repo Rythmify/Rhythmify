@@ -5,6 +5,8 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/error/error_handler.dart';
+import '../../../../core/utils/ui_utils.dart';
 import 'bottom_sheets/track_options_modal.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/track_interaction_provider.dart';
@@ -58,14 +60,23 @@ class TrackActionBar extends ConsumerWidget {
           _buildActionButton(
             Icons.repeat,
             Formatters.formatCount(syncedTrack.repostCount),
-            onTap: () {
-              ref
-                  .read(trackInteractionProvider)
-                  .handleToggleRepost(
-                    syncedTrack.id,
-                    syncedTrack.isReposted,
-                    currentTrack: syncedTrack,
+            onTap: () async {
+              try {
+                await ref
+                    .read(trackInteractionProvider)
+                    .handleToggleRepost(
+                      syncedTrack.id,
+                      syncedTrack.isReposted,
+                      currentTrack: syncedTrack,
+                    );
+              } catch (e) {
+                if (context.mounted) {
+                  UIUtils.showErrorSnackBar(
+                    context,
+                    ErrorHandler.getFriendlyMessage(e),
                   );
+                }
+              }
             },
             iconColor: syncedTrack.isReposted
                 ? AppTheme.primaryBrand
