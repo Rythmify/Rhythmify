@@ -66,7 +66,10 @@ class FeedCardBottomInfo extends ConsumerWidget {
             borderRadius: BorderRadius.circular(15),
             color: Colors.white.withValues(alpha: 0.12),
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
             ),
           ),
           child: Row(

@@ -9,7 +9,7 @@ enum QueueSource {
   userLikes,
   trending,
   feed,
-  unknown
+  unknown,
 }
 
 class QueueContext extends Equatable {
@@ -63,7 +63,8 @@ class AppQueueState extends Equatable {
       history: history ?? this.history,
       currentTrack: currentTrack ?? this.currentTrack,
       upcomingTracks: upcomingTracks ?? this.upcomingTracks,
-      unShuffledUpcomingTracks: unShuffledUpcomingTracks ?? this.unShuffledUpcomingTracks,
+      unShuffledUpcomingTracks:
+          unShuffledUpcomingTracks ?? this.unShuffledUpcomingTracks,
       isShuffled: isShuffled ?? this.isShuffled,
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
@@ -72,13 +73,13 @@ class AppQueueState extends Equatable {
 
   @override
   List<Object?> get props => [
-        context,
-        history,
-        currentTrack,
-        upcomingTracks,
-        unShuffledUpcomingTracks,
-        isShuffled,
-        hasMore,
-        currentPage,
-      ];
+    context,
+    history,
+    currentTrack,
+    upcomingTracks,
+    unShuffledUpcomingTracks,
+    isShuffled,
+    hasMore,
+    currentPage,
+  ];
 }

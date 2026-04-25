@@ -88,10 +88,9 @@ class TrackTile extends ConsumerWidget {
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {
-          ref.read(queueStateProvider.notifier).playQueue(
-                tracks: [track],
-                initialIndex: 0,
-              );
+          ref
+              .read(queueStateProvider.notifier)
+              .playQueue(tracks: [track], initialIndex: 0);
         }
       },
     );

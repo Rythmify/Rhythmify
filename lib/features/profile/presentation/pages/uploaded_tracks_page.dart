@@ -175,10 +175,9 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
                 key: Key('upload_item_${filtered[index].id}'),
                 track: filtered[index],
                 onTap: () {
-                  ref.read(queueStateProvider.notifier).playQueue(
-                        tracks: filtered,
-                        initialIndex: index,
-                      );
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .playQueue(tracks: filtered, initialIndex: index);
                 },
               );
             },

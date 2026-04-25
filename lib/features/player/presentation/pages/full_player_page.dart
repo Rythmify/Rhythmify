@@ -71,10 +71,13 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
     // Sync PageController if track changed from outside (e.g. Action Bar)
     final syncIndex = queue.history.length;
     if (_currentPage != syncIndex) {
-      final isUserScrolling = _pageController.hasClients && 
-                             (_pageController.position.isScrollingNotifier.value || 
-                              _pageController.position.pixels % (MediaQuery.of(context).size.width) != 0);
-      
+      final isUserScrolling =
+          _pageController.hasClients &&
+          (_pageController.position.isScrollingNotifier.value ||
+              _pageController.position.pixels %
+                      (MediaQuery.of(context).size.width) !=
+                  0);
+
       if (!isUserScrolling) {
         _currentPage = syncIndex;
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -138,13 +141,12 @@ class _PlayerTrackPage extends ConsumerWidget {
         children: [
           // ── Background ──────────────────────────────────────────────────
           Positioned.fill(
-            child: ScrollingArtworkBackground(
-              artworkUrl: track.artworkUrl,
-            ),
+            child: ScrollingArtworkBackground(artworkUrl: track.artworkUrl),
           ),
 
           // ── Overlay Controls (Play/Pause indicator) ──────────────────────
-          if (isCurrent) const Positioned.fill(child: PlaybackOverlayControls()),
+          if (isCurrent)
+            const Positioned.fill(child: PlaybackOverlayControls()),
 
           // ── Track Info ──────────────────────────────────────────────────
           Positioned(
@@ -188,7 +190,7 @@ class _PlayerTrackPage extends ConsumerWidget {
                   const TrackWaveformVisualizer()
                 else
                   const _StaticWaveformPlaceholder(),
-                
+
                 const SizedBox(height: 5),
                 if (isCurrent) const FloatingCommentBar(),
                 const SizedBox(height: 40),

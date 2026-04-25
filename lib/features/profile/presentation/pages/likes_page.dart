@@ -186,10 +186,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                 icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
                 onPressed: () {
                   if (filtered.isNotEmpty) {
-                    ref.read(queueStateProvider.notifier).playQueue(
-                          tracks: filtered,
-                          initialIndex: 0,
-                        );
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: 0);
                     ref.read(queueStateProvider.notifier).toggleShuffle();
                   }
                 },
@@ -200,10 +199,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                 backgroundColor: Colors.white,
                 onPressed: () {
                   if (filtered.isNotEmpty) {
-                    ref.read(queueStateProvider.notifier).playQueue(
-                          tracks: filtered,
-                          initialIndex: 0,
-                        );
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: 0);
                   }
                 },
                 child: const Icon(
@@ -243,10 +241,9 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                 key: Key('item_${filtered[index].id}'),
                 track: filtered[index],
                 onTap: () {
-                  ref.read(queueStateProvider.notifier).playQueue(
-                        tracks: filtered,
-                        initialIndex: index,
-                      );
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .playQueue(tracks: filtered, initialIndex: index);
                 },
               );
             },

@@ -27,7 +27,8 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       // Call fetch more if backend was available
     }
   }
@@ -42,13 +43,18 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Up Next', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Up Next',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
               queueState.isShuffled ? Icons.shuffle_on : Icons.shuffle,
-              color: queueState.isShuffled ? AppTheme.primaryBrand : Colors.white,
+              color: queueState.isShuffled
+                  ? AppTheme.primaryBrand
+                  : Colors.white,
             ),
             onPressed: () {
               ref.read(queueStateProvider.notifier).toggleShuffle();
@@ -57,18 +63,28 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
         ],
       ),
       body: upcomingTracks.isEmpty
-          ? const Center(child: Text('Queue is empty', style: TextStyle(color: Colors.grey)))
+          ? const Center(
+              child: Text(
+                'Queue is empty',
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
           : ReorderableListView.builder(
               scrollController: _scrollController,
               itemCount: upcomingTracks.length,
               onReorder: (oldIndex, newIndex) {
-                ref.read(queueStateProvider.notifier).reorder(oldIndex, newIndex);
+                ref
+                    .read(queueStateProvider.notifier)
+                    .reorder(oldIndex, newIndex);
               },
               itemBuilder: (context, index) {
                 final track = upcomingTracks[index];
                 return Padding(
                   key: ValueKey(track.id), // Important for ReorderableListView
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.drag_handle, color: Colors.grey),
@@ -76,13 +92,11 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            ref.read(queueStateProvider.notifier).playFromQueue(index);
+                            ref
+                                .read(queueStateProvider.notifier)
+                                .playFromQueue(index);
                           },
-                          child: IgnorePointer(
-                            child: TrackCard(
-                              track: track,
-                            ),
-                          ),
+                          child: IgnorePointer(child: TrackCard(track: track)),
                         ),
                       ),
                     ],

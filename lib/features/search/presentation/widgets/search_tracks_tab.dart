@@ -39,10 +39,9 @@ class TracksTab extends ConsumerWidget {
             key: Key('track_tile_$i'),
             track: data.tracks[i],
             onTap: () {
-              ref.read(queueStateProvider.notifier).playQueue(
-                    tracks: data.tracks,
-                    initialIndex: i,
-                  );
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(tracks: data.tracks, initialIndex: i);
             },
           ),
         );

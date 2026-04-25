@@ -43,10 +43,9 @@ class GenreAllTracksList extends ConsumerWidget {
             key: Key('genre_all_track_$i'),
             track: tracks[i],
             onTap: () {
-              ref.read(queueStateProvider.notifier).playQueue(
-                    tracks: tracks,
-                    initialIndex: i,
-                  );
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(tracks: tracks, initialIndex: i);
             },
           ),
         );

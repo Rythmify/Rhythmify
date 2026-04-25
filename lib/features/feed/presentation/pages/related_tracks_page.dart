@@ -29,10 +29,9 @@ class RelatedTracksPage extends ConsumerWidget {
           itemBuilder: (_, i) => TrackCard(
             track: tracks[i],
             onTap: () {
-              ref.read(queueStateProvider.notifier).playQueue(
-                    tracks: tracks,
-                    initialIndex: i,
-                  );
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(tracks: tracks, initialIndex: i);
             },
           ),
         ),
