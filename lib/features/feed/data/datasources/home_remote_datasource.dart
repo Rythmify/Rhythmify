@@ -18,9 +18,7 @@ class HomeRemoteDatasource {
 
   Future<HomeData> getHomeData() async {
     final response = await _dio.get('/home');
-    dev.log(
-      'stations keys: ${(response.data['data'] as Map<String, dynamic>)['discover_with_stations']}',
-    );
+    debugPrint('DEBUG: /home response: ${response.data}');
     final data = response.data['data'] as Map<String, dynamic>;
     return HomeDto.fromJson(data);
   }
@@ -60,7 +58,7 @@ class HomeRemoteDatasource {
 
   Future<List<DiscoverStation>> getDiscoverStations() async {
     final response = await _dio.get('/home/discover-stations');
-
+    debugPrint('DEBUG: /home/discover-stations response: ${response.data}');
     return (response.data['data'] as List)
         .map((s) => HomeDto.parseDiscoverStation(s as Map<String, dynamic>))
         .toList();

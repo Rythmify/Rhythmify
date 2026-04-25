@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import 'track_tile.dart';
 
@@ -36,7 +35,7 @@ class TracksTab extends ConsumerWidget {
           itemCount: data.tracks.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (_, i) =>
-              TrackCard(key: Key('track_tile_$i'), track: data.tracks[i]),
+              TrackTile(key: Key('track_tile_$i'), track: data.tracks[i]),
         );
       },
     );

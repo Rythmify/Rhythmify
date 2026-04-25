@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/features/search/presentation/widgets/search_albums_tab.dart';
 import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import '../widgets/track_tile.dart';
@@ -10,6 +11,7 @@ import '../pages/search_seeall_page.dart';
 import '../widgets/search_tracks_tab.dart';
 import '../widgets/search_playlists_tab.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/entities/top_result.dart';
 
 /// The "All" tab in search results. Shows a mixed-content summary page with:
 /// Top Result, Tracks (first 3), Profiles (first 3), Playlists (first 3),
@@ -35,49 +37,41 @@ class AllTab extends ConsumerWidget {
           // ── Top Result ──────────────────────────────────────
           const _SectionTitle('Top Result'),
           const SizedBox(height: 12),
-          if (data.tracks.isNotEmpty)
-            _TopResultCard(track: data.tracks.first)
+          if (data.topResult != null)
+            _TopResultCard(topResult: data.topResult!)
           else
             const _EmptySection(label: 'No top result'),
 
           const SizedBox(height: 24),
 
           // ── Tracks ──────────────────────────────────────────
-          _SectionHeader(
-            title: 'Tracks',
-            onSeeAll: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    const SearchSeeAllPage(title: 'Tracks', child: TracksTab()),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (data.tracks.isNotEmpty)
-            _TracksSection(tracks: data.tracks)
-          else
-            const _EmptySection(label: 'No tracks found'),
-
-          const SizedBox(height: 24),
-
-          // ── Profiles ────────────────────────────────────────
-          if (data.profiles.isNotEmpty) ...[
+          if (data.tracks.isNotEmpty) ...[
             _SectionHeader(
-              title: 'Profiles',
+              title: 'Tracks',
               onSeeAll: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => const SearchSeeAllPage(
-                    title: 'Profiles',
-                    child: ProfilesTab(),
+                    title: 'Tracks',
+                    child: TracksTab(),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
+            if (data.tracks.isNotEmpty)
+              _TracksSection(tracks: data.tracks)
+            else
+              const _EmptySection(label: 'No tracks found'),
+
+            const SizedBox(height: 24),
+          ],
+          // ── Profiles ────────────────────────────────────────
+          if (data.profiles.isNotEmpty) ...[
+            const _SectionTitle('Profiles'),
+            const SizedBox(height: 12),
             ...data.profiles
-                .take(1)
+                .take(3)
                 .toList()
                 .asMap()
                 .entries
@@ -93,18 +87,7 @@ class AllTab extends ConsumerWidget {
 
           // ── Playlists ───────────────────────────────────────
           if (data.playlists.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Playlists',
-              onSeeAll: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SearchSeeAllPage(
-                    title: 'Playlists',
-                    child: PlaylistsTab(),
-                  ),
-                ),
-              ),
-            ),
+            const _SectionTitle('Playlists'),
             const SizedBox(height: 12),
             ...data.playlists
                 .take(3)
@@ -123,7 +106,18 @@ class AllTab extends ConsumerWidget {
 
           // ── Albums ──────────────────────────────────────────
           if (data.albums.isNotEmpty) ...[
-            const _SectionTitle('Albums'),
+            _SectionHeader(
+              title: 'Albums',
+              onSeeAll: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SearchSeeAllPage(
+                    title: 'Albums',
+                    child: AlbumsTab(),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 12),
             ...data.albums
                 .take(3)
@@ -152,7 +146,7 @@ class AllTab extends ConsumerWidget {
                   (e) => Padding(
                     key: Key('all_tab_more_track_${e.key}'),
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: TrackCard(track: e.value),
+                    child: TrackTile(track: e.value),
                   ),
                 ),
           ],
@@ -174,9 +168,6 @@ class _PlaylistRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${playlist['id']}', extra: false);
-      },
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: Image.asset(
@@ -218,9 +209,6 @@ class _AlbumRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () {
-        context.push('/playlist/${album['id']}', extra: false);
-      },
       isThreeLine: true,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
@@ -267,48 +255,101 @@ class _AlbumRow extends StatelessWidget {
 /// Displays the top search result as a prominent track card with artwork,
 /// title, artist, and formatted duration.
 class _TopResultCard extends StatelessWidget {
-  const _TopResultCard({required this.track});
-  final Track track;
+  const _TopResultCard({required this.topResult});
+  final TopResult topResult;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      key: const Key('all_tab_top_result'),
-      contentPadding: EdgeInsets.zero,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.asset(
-          track.artworkUrl.isNotEmpty
-              ? track.artworkUrl
-              : 'assets/images/placeholder.png',
-          key: const Key('all_tab_top_result_artwork'),
-          width: 50,
-          height: 50,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              Container(width: 50, height: 50, color: Colors.grey[800]),
+    return switch (topResult) {
+      TopResultTrack(:final track) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            track.artworkUrl.isNotEmpty ? track.artworkUrl : '',
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                Container(width: 50, height: 50, color: Colors.grey[800]),
+          ),
         ),
+        title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text(track.artist, style: TextStyle(color: Colors.grey[400])),
+        trailing: const Icon(Icons.more_vert),
       ),
-      title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            track.artist,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey[400]),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            Formatters.formatDuration(track.duration),
-            style: TextStyle(color: Colors.grey[500], fontSize: 12),
-          ),
-        ],
+
+      TopResultUser(:final profile) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundImage: profile.avatarUrl != null
+              ? NetworkImage(profile.avatarUrl!)
+              : null,
+          child: profile.avatarUrl == null ? const Icon(Icons.person) : null,
+        ),
+        title: Text(
+          profile.displayName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text('Profile', style: TextStyle(color: Colors.grey[400])),
+        trailing: const Icon(Icons.more_vert),
+        onTap: () => context.push('/profile/${profile.id}'),
       ),
-      trailing: const Icon(Icons.more_vert),
-      onTap: () {},
-    );
+
+      TopResultPlaylist(:final playlist) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.network(
+            playlist['artworkUrl'] ?? '',
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                Container(width: 50, height: 50, color: Colors.grey[800]),
+          ),
+        ),
+        title: Text(
+          playlist['title'] ?? '',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          'Playlist · ${playlist['trackCount']} tracks',
+          style: TextStyle(color: Colors.grey[400]),
+        ),
+        trailing: const Icon(Icons.more_vert),
+        onTap: () => context.push('/playlist/${playlist['id']}', extra: false),
+      ),
+
+      TopResultAlbum(:final album) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.network(
+            album['artworkUrl'] ?? '',
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                Container(width: 50, height: 50, color: Colors.grey[800]),
+          ),
+        ),
+        title: Text(
+          album['title'] ?? '',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          '${album['year']} · ${album['type']}',
+          style: TextStyle(color: Colors.grey[400]),
+        ),
+        trailing: const Icon(Icons.more_vert),
+        onTap: () => context.push('/playlist/${album['id']}', extra: false),
+      ),
+    };
   }
 }
 
@@ -325,7 +366,7 @@ class _TracksSection extends StatelessWidget {
         return Padding(
           key: Key('all_tab_track_${e.key}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: TrackCard(track: e.value),
+          child: TrackTile(track: e.value),
         );
       }).toList(),
     );
@@ -380,10 +421,10 @@ class _SectionHeader extends StatelessWidget {
         ),
         TextButton(
           onPressed: onSeeAll,
-          child: const Text('See all'),
           style: TextButton.styleFrom(
             foregroundColor: const Color.fromARGB(255, 255, 255, 255),
           ),
+          child: const Text('See all'),
         ),
       ],
     );

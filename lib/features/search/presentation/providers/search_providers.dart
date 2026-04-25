@@ -5,11 +5,12 @@ import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_results.dart';
 import '../../domain/usecases/get_search_suggestions.dart';
 import '../../domain/usecases/get_search_results.dart';
-import '../../data/datasources/search_mock_datasource.dart';
+import '../../data/datasources/search_mock_datasource.dart'; // now has Impl
+// now has Impl
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
 
-const bool _useSearchMock = false;
+const bool _useSearchMock = true;
 
 final searchRemoteSourceProvider = Provider<SearchRemoteSource>(
   (_) => _useSearchMock ? SearchRemoteSourceMock() : SearchRemoteSourceImpl(),

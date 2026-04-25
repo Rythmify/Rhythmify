@@ -46,6 +46,7 @@ class FeedTrackEntity {
   final int likeCount;
   final String? coverUrl;
   final String audioUrl;
+  final String? streamUrl; // added
   final String uploaderUsername;
 
   const FeedTrackEntity({
@@ -56,6 +57,7 @@ class FeedTrackEntity {
     required this.likeCount,
     this.coverUrl,
     required this.audioUrl,
+    this.streamUrl, // added
     required this.uploaderUsername,
   });
 }
