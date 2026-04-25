@@ -49,13 +49,13 @@ class PlaylistTrack {
   final DateTime? addedAt; // ← NEW
 
   // ── Formatted helpers ──────────────────────────────────────────────────────
- 
+
   String get formattedDuration {
     final m = duration.inMinutes;
     final s = (duration.inSeconds % 60).toString().padLeft(2, '0');
     return '$m:$s';
   }
- 
+
   String get formattedPlayCount {
     if (playCount >= 1000000) {
       return '${(playCount / 1000000).toStringAsFixed(1)}M';
@@ -79,7 +79,7 @@ class PlaylistTrack {
       coverUrl: coverUrl,
       isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
-      addedAt: addedAt ?? this.addedAt
+      addedAt: addedAt ?? this.addedAt,
     );
   }
 

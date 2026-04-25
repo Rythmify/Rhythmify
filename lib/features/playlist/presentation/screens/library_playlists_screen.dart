@@ -18,15 +18,20 @@ import '../widgets/playlist_shared_widgets.dart';
 
 // ── Filter enums ──────────────────────────────────────────────────────────
 enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
+
 enum _FilterOption { all, liked, owned }
 
 extension _SortLabel on _SortOption {
   String get label {
     switch (this) {
-      case _SortOption.recentlyAdded: return 'Recently added';
-      case _SortOption.firstAdded: return 'First added';
-      case _SortOption.recentlyUpdated: return 'Recently updated';
-      case _SortOption.playlistName: return 'Playlist name';
+      case _SortOption.recentlyAdded:
+        return 'Recently added';
+      case _SortOption.firstAdded:
+        return 'First added';
+      case _SortOption.recentlyUpdated:
+        return 'Recently updated';
+      case _SortOption.playlistName:
+        return 'Playlist name';
     }
   }
 }
@@ -34,9 +39,12 @@ extension _SortLabel on _SortOption {
 extension _FilterLabel on _FilterOption {
   String get label {
     switch (this) {
-      case _FilterOption.all: return 'All playlists';
-      case _FilterOption.liked: return 'Liked playlists';
-      case _FilterOption.owned: return 'Owned playlists';
+      case _FilterOption.all:
+        return 'All playlists';
+      case _FilterOption.liked:
+        return 'Liked playlists';
+      case _FilterOption.owned:
+        return 'Owned playlists';
     }
   }
 }
@@ -78,8 +86,11 @@ class _LibraryPlaylistsScreenState
     }
 
     if (_searchQuery.isNotEmpty) {
-      result = result.where((p) =>
-          p.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+      result = result
+          .where(
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
     }
 
     switch (_sort) {
@@ -90,8 +101,9 @@ class _LibraryPlaylistsScreenState
       case _SortOption.recentlyUpdated:
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       case _SortOption.playlistName:
-        result.sort((a, b) =>
-            a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        result.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
 
     return result;
@@ -128,7 +140,8 @@ class _LibraryPlaylistsScreenState
                 children: List.generate(12, (i) {
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 3),
-                    width: 320, // Reduced width so it doesn't cross the whole screen
+                    width:
+                        320, // Reduced width so it doesn't cross the whole screen
                     height: 80, // More compact height
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
@@ -163,8 +176,10 @@ class _LibraryPlaylistsScreenState
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.chevron_left,
-                            color: AppTheme.textPrimary),
+                        icon: Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
+                        ),
                         onPressed: () => context.pop(),
                       ),
                       Expanded(
@@ -175,26 +190,30 @@ class _LibraryPlaylistsScreenState
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(
-                            onChanged: (v) =>
-                                setState(() => _searchQuery = v),
+                            onChanged: (v) => setState(() => _searchQuery = v),
                             style: AppTheme.bodyNormal,
                             decoration: InputDecoration(
                               hintText:
                                   'Search ${state.playlists.length} playlists',
                               hintStyle: AppTheme.bodyMedium,
-                              prefixIcon: Icon(Icons.search,
-                                  color: AppTheme.textSecondary),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
                               border: InputBorder.none,
                             ),
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.tune,
-                            color: (_sort != _SortOption.recentlyAdded ||
-                                    _filter != _FilterOption.all)
-                                ? AppTheme.primaryBrand
-                                : AppTheme.textSecondary),
+                        icon: Icon(
+                          Icons.tune,
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
+                                  _filter != _FilterOption.all)
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
                         onPressed: () => _showFilterSheet(context),
                       ),
                     ],
@@ -206,8 +225,7 @@ class _LibraryPlaylistsScreenState
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('Playlists',
-                        style: AppTheme.headlineLarge),
+                    child: Text('Playlists', style: AppTheme.headlineLarge),
                   ),
                 ),
 
@@ -221,18 +239,18 @@ class _LibraryPlaylistsScreenState
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text(
-                                      'Import not available yet')),
+                                content: Text('Import not available yet'),
+                              ),
                             );
                           },
-                          icon: Icon(Icons.download_outlined,
-                              color: AppTheme.textPrimary),
-                          label: Text('Import',
-                              style: AppTheme.labelLarge),
+                          icon: Icon(
+                            Icons.download_outlined,
+                            color: AppTheme.textPrimary,
+                          ),
+                          label: Text('Import', style: AppTheme.labelLarge),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
-                            side: BorderSide(
-                                color: AppTheme.lighterSurface),
+                            side: BorderSide(color: AppTheme.lighterSurface),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -242,16 +260,12 @@ class _LibraryPlaylistsScreenState
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _showCreateSheet(context),
-                          icon: Icon(Icons.add,
-                              color: AppTheme.textPrimary),
-                          label: Text('Create',
-                              style: AppTheme.labelLarge),
+                          onPressed: () => _showCreateSheet(context),
+                          icon: Icon(Icons.add, color: AppTheme.textPrimary),
+                          label: Text('Create', style: AppTheme.labelLarge),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
-                            side: BorderSide(
-                                color: AppTheme.lighterSurface),
+                            side: BorderSide(color: AppTheme.lighterSurface),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -267,7 +281,8 @@ class _LibraryPlaylistsScreenState
                   child: state.isLoading
                       ? Center(
                           child: CircularProgressIndicator(
-                              color: AppTheme.primaryBrand),
+                            color: AppTheme.primaryBrand,
+                          ),
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.only(bottom: 140),
@@ -275,8 +290,7 @@ class _LibraryPlaylistsScreenState
                           itemBuilder: (context, index) {
                             final playlist = filtered[index];
                             final isOwner =
-                                playlist.ownerId ==
-                                    _currentUserId();
+                                playlist.ownerId == _currentUserId();
 
                             return _PlaylistListTile(
                               playlist: playlist,
@@ -284,8 +298,8 @@ class _LibraryPlaylistsScreenState
                                 '/library/playlists/${playlist.id}',
                                 extra: isOwner,
                               ),
-                              onMoreTap: () => _showOptions(
-                                  context, playlist, isOwner),
+                              onMoreTap: () =>
+                                  _showOptions(context, playlist, isOwner),
                             );
                           },
                         ),
@@ -312,20 +326,22 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) =>
-            context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
 
   void _showOptions(
-      BuildContext context, PlaylistEntity playlist, bool isOwner) {
+    BuildContext context,
+    PlaylistEntity playlist,
+    bool isOwner,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PlaylistOptionsSheet(
-          playlistId: playlist.id, isOwner: isOwner),
+      builder: (_) =>
+          PlaylistOptionsSheet(playlistId: playlist.id, isOwner: isOwner),
     );
   }
 }
@@ -347,24 +363,17 @@ class _PlaylistListTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(
-              playlist: playlist,
-              size: 60,
-              borderRadius: 0,
-            ),
+            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 0),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(playlist.name,
-                      style: AppTheme.bodyNormal),
-                  Text(playlist.ownerName,
-                      style: AppTheme.artistTitle),
+                  Text(playlist.name, style: AppTheme.bodyNormal),
+                  Text(playlist.ownerName, style: AppTheme.artistTitle),
                   Text(
                     '${playlist.subtitleLine} · ${timeAgo(playlist.createdAt)}',
                     style: AppTheme.labelSmall,
@@ -373,8 +382,7 @@ class _PlaylistListTile extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.more_vert,
-                  color: AppTheme.textSecondary),
+              icon: Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],

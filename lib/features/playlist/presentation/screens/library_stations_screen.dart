@@ -21,8 +21,7 @@ class LibraryStationsScreen extends ConsumerStatefulWidget {
       _LibraryStationsScreenState();
 }
 
-class _LibraryStationsScreenState
-    extends ConsumerState<LibraryStationsScreen> {
+class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
   String _searchQuery = '';
   bool _showSaved = false;
 
@@ -40,22 +39,20 @@ class _LibraryStationsScreenState
   Widget build(BuildContext context) {
     final listState = ref.watch(playlistListProvider);
 
-   final savedStations = ref.watch(savedStationsProvider).maybeWhen(
-  data: (list) => list,
-  orElse: () => <SavedStation>[],
-);
+    final savedStations = ref
+        .watch(savedStationsProvider)
+        .maybeWhen(data: (list) => list, orElse: () => <SavedStation>[]);
 
     final myStations = listState.playlists
         .where((p) => p.type == PlaylistType.station)
-        .where((p) => p.name
-            .toLowerCase()
-            .contains(_searchQuery.toLowerCase()))
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     final filteredSaved = savedStations
-        .where((s) => s.stationName
-            .toLowerCase()
-            .contains(_searchQuery.toLowerCase()))
+        .where(
+          (s) =>
+              s.stationName.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
         .toList();
 
     return Scaffold(
@@ -65,8 +62,11 @@ class _LibraryStationsScreenState
         elevation: 0,
         leading: IconButton(
           key: const Key('library_stations_back_button'),
-          icon: const Icon(Icons.chevron_left,
-              color: AppTheme.textPrimary, size: 28),
+          icon: const Icon(
+            Icons.chevron_left,
+            color: AppTheme.textPrimary,
+            size: 28,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text('Stations', style: AppTheme.titleMedium),
@@ -92,11 +92,13 @@ class _LibraryStationsScreenState
                       ? 'Search ${filteredSaved.length} saved stations'
                       : 'Search ${myStations.length} stations',
                   hintStyle: AppTheme.bodyMedium,
-                  prefixIcon: const Icon(Icons.search,
-                      color: AppTheme.textSecondary, size: 18),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppTheme.textSecondary,
+                    size: 18,
+                  ),
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
               ),
             ),
@@ -212,10 +214,7 @@ class _MyStationsList extends ConsumerWidget {
 
 // ── Saved Stations ────────────────────────────────────────────────────────────
 class _SavedStationsList extends ConsumerWidget {
-  const _SavedStationsList({
-    required this.stations,
-    required this.searchQuery,
-  });
+  const _SavedStationsList({required this.stations, required this.searchQuery});
   final List<SavedStation> stations;
   final String searchQuery;
 
@@ -258,8 +257,7 @@ class _SavedStationsList extends ConsumerWidget {
     );
   }
 
-  void _showOptions(
-      BuildContext context, WidgetRef ref, SavedStation s) {
+  void _showOptions(BuildContext context, WidgetRef ref, SavedStation s) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -270,7 +268,8 @@ class _SavedStationsList extends ConsumerWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + 90),
+          bottom: MediaQuery.of(context).padding.bottom + 90,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -286,8 +285,10 @@ class _SavedStationsList extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(s.stationName, style: AppTheme.bodyNormal),
-                        Text('Based on ${s.artistName}',
-                            style: AppTheme.artistTitle),
+                        Text(
+                          'Based on ${s.artistName}',
+                          style: AppTheme.artistTitle,
+                        ),
                       ],
                     ),
                   ),
@@ -347,12 +348,15 @@ class _StationTile extends StatelessWidget {
                   child: SizedBox(
                     width: 65,
                     height: 65,
-                    child: coverUrl != null &&
+                    child:
+                        coverUrl != null &&
                             coverUrl!.isNotEmpty &&
                             coverUrl!.startsWith('http')
-                        ? Image.network(coverUrl!, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _placeholder(title))
+                        ? Image.network(
+                            coverUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _placeholder(title),
+                          )
                         : _placeholder(title),
                   ),
                 ),
@@ -365,8 +369,11 @@ class _StationTile extends StatelessWidget {
                       color: AppTheme.primaryBrand,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.sensors,
-                        size: 10, color: Colors.white),
+                    child: const Icon(
+                      Icons.sensors,
+                      size: 10,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -376,37 +383,47 @@ class _StationTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.bodyNormal),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.bodyNormal,
+                  ),
                   const SizedBox(height: 3),
-                  Text(subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.artistTitle),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.artistTitle,
+                  ),
                   const SizedBox(height: 3),
                   Row(
                     children: [
                       if (isMyStation)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           margin: const EdgeInsets.only(right: 6),
                           decoration: BoxDecoration(
                             color: AppTheme.surface,
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                                color: AppTheme.lighterSurface),
+                            border: Border.all(color: AppTheme.lighterSurface),
                           ),
-                          child: Text('My Station',
-                              style: AppTheme.labelSmall.copyWith(
-                                  color: AppTheme.primaryBrand)),
+                          child: Text(
+                            'My Station',
+                            style: AppTheme.labelSmall.copyWith(
+                              color: AppTheme.primaryBrand,
+                            ),
+                          ),
                         ),
                       Flexible(
-                        child: Text(detail,
-                            style: AppTheme.labelSmall,
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          detail,
+                          style: AppTheme.labelSmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -414,8 +431,11 @@ class _StationTile extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.more_vert,
-                  color: AppTheme.textSecondary, size: 20),
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
               onPressed: onMoreTap,
             ),
           ],
@@ -425,12 +445,15 @@ class _StationTile extends StatelessWidget {
   }
 
   Widget _placeholder(String label) => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Icon(Icons.sensors,
-              color: AppTheme.primaryBrand.withOpacity(0.6), size: 28),
-        ),
-      );
+    color: AppTheme.surface,
+    child: Center(
+      child: Icon(
+        Icons.sensors,
+        color: AppTheme.primaryBrand.withOpacity(0.6),
+        size: 28,
+      ),
+    ),
+  );
 }
 
 // ── Filter chip ───────────────────────────────────────────────────────────────
@@ -455,17 +478,14 @@ class _FilterChip extends StatelessWidget {
           color: selected ? AppTheme.primaryBrand : AppTheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected
-                ? AppTheme.primaryBrand
-                : AppTheme.lighterSurface,
+            color: selected ? AppTheme.primaryBrand : AppTheme.lighterSurface,
           ),
         ),
         child: Text(
           label,
           style: AppTheme.labelSmall.copyWith(
             color: selected ? Colors.white : AppTheme.textSecondary,
-            fontWeight:
-                selected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),
@@ -490,8 +510,11 @@ class _CoverThumb extends StatelessWidget {
             : Container(
                 color: AppTheme.surface,
                 child: const Center(
-                  child: Icon(Icons.sensors,
-                      color: AppTheme.primaryBrand, size: 24),
+                  child: Icon(
+                    Icons.sensors,
+                    color: AppTheme.primaryBrand,
+                    size: 24,
+                  ),
                 ),
               ),
       ),

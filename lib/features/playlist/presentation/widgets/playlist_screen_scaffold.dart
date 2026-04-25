@@ -48,9 +48,7 @@ class PlaylistScreenScaffold extends ConsumerWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            child: MiniPlayer(
-              onTap: () => context.push('/player'),
-            ),
+            child: MiniPlayer(onTap: () => context.push('/player')),
           ),
       ],
     );
