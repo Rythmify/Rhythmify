@@ -134,7 +134,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         _followState.fetchFollowState(n.actorId);
       }
 
-      // if (unread.isNotEmpty) {           //TODO:check
+      // if (unread.isNotEmpty) {           
       //   state = state.copyWith(unreadCount: 0);
       //   for (final n in unread) {
       //     _markRead(n.id).catchError((_) {});
@@ -151,7 +151,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   /// Keeps loading pages until [hasNext] is false.
   /// Used when a filter is applied that requires the full list client-side.
-  // Future<void> loadAll() async { //TODO: check
+  // Future<void> loadAll() async { 
   //   while (state.hasNext) {
   //     final prevPage=state.currentPage;
   //     await loadMore();
