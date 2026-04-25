@@ -7,6 +7,7 @@ import '../../domain/entities/playlist_track.dart';
 import '../models/playlist_model.dart';
 import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
+import '../../data/local/local_saved_store.dart';
 
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
@@ -324,6 +325,144 @@ class PlaylistRemoteDatasource {
       rethrow;
     }
   }
+  // ============================================================
+// ADD these 4 methods to PlaylistRemoteDatasource
+// Place them after unlikePlaylist() and before fetchStations()
+// ============================================================
+
+// ── MIX: Like ────────────────────────────────────────────────────────────────
+Future<void> likeMix(String mixId) async {
+  _log('→ POST /home/mixes/$mixId/like');
+  try {
+    await _dio.post<dynamic>('/home/mixes/$mixId/like');
+    _log('← ✅ Liked mix $mixId');
+  } on DioException catch (e) {
+    _logError('likeMix($mixId) failed', e);
+    rethrow;
+  }
+}
+
+// ── MIX: Unlike ──────────────────────────────────────────────────────────────
+Future<void> unlikeMix(String mixId) async {
+  _log('→ DELETE /home/mixes/$mixId/like');
+  try {
+    await _dio.delete<dynamic>('/home/mixes/$mixId/like');
+    _log('← ✅ Unliked mix $mixId');
+  } on DioException catch (e) {
+    _logError('unlikeMix($mixId) failed', e);
+    rethrow;
+  }
+}
+
+// ── STATION: Like ─────────────────────────────────────────────────────────────
+Future<void> likeStation(String artistId) async {
+  _log('→ POST /stations/$artistId/like');
+  try {
+    await _dio.post<dynamic>('/stations/$artistId/like');
+    _log('← ✅ Saved station $artistId');
+  } on DioException catch (e) {
+    _logError('likeStation($artistId) failed', e);
+    rethrow;
+  }
+}
+
+// ── STATION: Unlike ───────────────────────────────────────────────────────────
+Future<void> unlikeStation(String artistId) async {
+  _log('→ DELETE /stations/$artistId/like');
+  try {
+    await _dio.delete<dynamic>('/stations/$artistId/like');
+    _log('← ✅ Removed station $artistId');
+  } on DioException catch (e) {
+    _logError('unlikeStation($artistId) failed', e);
+    rethrow;
+  }
+}
+
+// ADD these two methods to PlaylistRemoteDatasource
+// Place them after unlikeStation() and before fetchSavedStations()
+// ============================================================
+
+// ── TRACK RADIO: Like ─────────────────────────────────────────────────────
+// POST /api/v1/tracks/:track_id/like-radio
+// Response 201: { "data": { "playlist_id": "uuid", "seed_track_id": "uuid", "title": "..." } }
+Future<String?> likeTrackRadio(String trackId) async {
+  _log('→ POST /tracks/$trackId/like-radio');
+  try {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/tracks/$trackId/like-radio',
+    );
+    _log('← ${response.statusCode}  ✅ Track radio saved for $trackId');
+    // Return the playlist_id so callers can navigate to it or refresh library
+    final data = response.data?['data'] as Map<String, dynamic>?;
+    return data?['playlist_id'] as String?;
+  } on DioException catch (e) {
+    _logError('likeTrackRadio($trackId) failed', e);
+    rethrow;
+  }
+}
+
+// ── TRACK RADIO: Unlike ───────────────────────────────────────────────────
+// DELETE /api/v1/tracks/:track_id/like-radio
+Future<void> unlikeTrackRadio(String trackId) async {
+  _log('→ DELETE /tracks/$trackId/like-radio');
+  try {
+    await _dio.delete<dynamic>('/tracks/$trackId/like-radio');
+    _log('← ✅ Track radio removed for $trackId');
+  } on DioException catch (e) {
+    _logError('unlikeTrackRadio($trackId) failed', e);
+    rethrow;
+  }
+}
+
+// ── SAVED STATIONS: Fetch from backend ───────────────────────────────────────
+// GET /api/v1/users/me/stations
+// Response shape:
+// {
+//   "data": [
+//     {
+//       "id": "uuid",
+//       "artist_id": "uuid",
+//       "artist_name": "DJ Karim",
+//       "profile_picture": "url | null",
+//       "track_count": 9,
+//       "follower_count": 1200,
+//       "saved_at": "ISO string",
+//       "type": "artist_station"
+//     }
+//   ],
+//   "meta": { "limit": 20, "offset": 0, "total": 3 }
+// }
+Future<List<SavedStation>> fetchSavedStations({
+  int limit = 20,
+  int offset = 0,
+}) async {
+  _log('→ GET /users/me/stations  limit=$limit offset=$offset');
+  try {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/users/me/stations',
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
+    _log('← ${response.statusCode}');
+    final data = response.data!['data'] as List<dynamic>;
+    _log('← Got ${data.length} saved stations');
+    return data.map((json) {
+      final j = json as Map<String, dynamic>;
+      return SavedStation(
+        artistId: j['artist_id'] as String,
+        artistName: j['artist_name'] as String? ?? 'Unknown Artist',
+        stationName: '${j['artist_name'] ?? 'Unknown'} Radio',
+        coverUrl: j['profile_picture'] as String?,
+        trackCount: (j['track_count'] as num?)?.toInt() ?? 0,
+        savedAt: j['saved_at'] != null
+            ? DateTime.parse(j['saved_at'] as String)
+            : DateTime.now(),
+      );
+    }).toList();
+  } on DioException catch (e) {
+    _logError('fetchSavedStations() failed', e);
+    return [];
+  }
+}
 
   // ============================================================
   // ── ENGAGEMENT: Repost / Remove Repost

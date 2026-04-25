@@ -38,7 +38,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     });
   }
 
-  // Used only for suggestion tiles (they don't have an index in the main list)
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
       final fullTrack = await ref
@@ -87,6 +86,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }
+  }
+
+  String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return '$count';
   }
 
   @override
@@ -204,23 +209,40 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  IconButton(
+                  // ✅ Like button + count
+                  GestureDetector(
                     key: const Key('playlist_detail_like_button'),
-                    icon: Icon(
-                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
-                      color: playlist.isLiked
-                          ? const Color(0xFFFF5500)
-                          : Colors.white,
-                      size: 24,
-                    ),
-                    onPressed: () =>
+                    onTap: () =>
                         ref.read(playlistDetailProvider.notifier).toggleLike(),
-                  ),
-                  if (!widget.isOwner && playlist.likeCount > 0)
-                    Text(
-                      _formatCount(playlist.likeCount),
-                      style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          playlist.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: playlist.isLiked
+                              ? const Color(0xFFFF5500)
+                              : Colors.white,
+                          size: 24,
+                        ),
+                        if (playlist.likeCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatCount(playlist.likeCount),
+                            style: TextStyle(
+                              color: playlist.isLiked
+                                  ? const Color(0xFFFF5500)
+                                  : Colors.grey[400],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
+                  const SizedBox(width: 4),
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
                     icon: const Icon(
@@ -375,11 +397,5 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         ),
       ),
     );
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return '$count';
   }
 }

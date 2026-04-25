@@ -41,6 +41,7 @@ class PlaylistModel {
       coverUrl: json['cover_image'] as String?,
       description: json['description'] as String?,
       likeCount: json['like_count'] as int? ?? 0,
+      isLiked: json['is_liked_by_me'] as bool? ?? false,
       repostCount: json['repost_count'] as int? ?? 0,
       releaseYear: releaseYear,
 

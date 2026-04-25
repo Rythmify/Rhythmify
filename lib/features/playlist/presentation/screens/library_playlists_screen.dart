@@ -19,7 +19,8 @@ import '../widgets/playlist_shared_widgets.dart';
 // ── Filter enums ──────────────────────────────────────────────────────────
 enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
 
-enum _FilterOption { all, owned }
+// Added: liked filter
+enum _FilterOption { all, owned, liked }
 
 // ════════════════════════════════════════════════════════════════════════════
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
@@ -34,14 +35,20 @@ class _LibraryPlaylistsScreenState
     extends ConsumerState<LibraryPlaylistsScreen> {
   String _searchQuery = '';
   final _SortOption _sort = _SortOption.recentlyAdded;
-  final _FilterOption _filter = _FilterOption.all;
+  _FilterOption _filter = _FilterOption.all;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  void _load() {
+    if (_filter == _FilterOption.liked) {
+      ref.read(playlistListProvider.notifier).loadLikedPlaylists();
+    } else {
       ref.read(playlistListProvider.notifier).loadPlaylists();
-    });
+    }
   }
 
   String _currentUserId() {
@@ -56,6 +63,7 @@ class _LibraryPlaylistsScreenState
       final uid = _currentUserId();
       result = result.where((p) => p.ownerId == uid).toList();
     }
+    // liked: backend already returns only liked items via loadLikedPlaylists()
 
     if (_searchQuery.isNotEmpty) {
       result = result
@@ -90,22 +98,21 @@ class _LibraryPlaylistsScreenState
       backgroundColor: AppTheme.background,
       body: Stack(
         children: [
-          // 🔶 TOP BACKGROUND (Refined positioning to match small tilted layers)
+          // 🔶 TOP BACKGROUND
           Positioned(
             top: -60,
             right: -80,
             child: Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()
-                ..rotateZ(0.45) // Steeper angle
-                ..setEntry(0, 1, 0.2), // Skew to match the perspective
+                ..rotateZ(0.45)
+                ..setEntry(0, 1, 0.2),
               child: Column(
                 children: List.generate(12, (i) {
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 3),
-                    width:
-                        320, // Reduced width so it doesn't cross the whole screen
-                    height: 80, // More compact height
+                    width: 320,
+                    height: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       gradient: LinearGradient(
@@ -118,7 +125,7 @@ class _LibraryPlaylistsScreenState
                       ),
                     ),
                     child: Container(
-                      margin: const EdgeInsets.all(1.2), // Thin border
+                      margin: const EdgeInsets.all(1.2),
                       decoration: BoxDecoration(
                         color: AppTheme.background,
                         borderRadius: BorderRadius.circular(4),
@@ -139,7 +146,7 @@ class _LibraryPlaylistsScreenState
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.chevron_left,
                           color: AppTheme.textPrimary,
                         ),
@@ -159,7 +166,7 @@ class _LibraryPlaylistsScreenState
                               hintText:
                                   'Search ${state.playlists.length} playlists',
                               hintStyle: AppTheme.bodyMedium,
-                              prefixIcon: Icon(
+                              prefixIcon: const Icon(
                                 Icons.search,
                                 color: AppTheme.textSecondary,
                               ),
@@ -171,8 +178,7 @@ class _LibraryPlaylistsScreenState
                       IconButton(
                         icon: Icon(
                           Icons.tune,
-                          color:
-                              (_sort != _SortOption.recentlyAdded ||
+                          color: (_sort != _SortOption.recentlyAdded ||
                                   _filter != _FilterOption.all)
                               ? AppTheme.primaryBrand
                               : AppTheme.textSecondary,
@@ -192,6 +198,45 @@ class _LibraryPlaylistsScreenState
                   ),
                 ),
 
+                // ── Filter chips ─────────────────────────
+                SizedBox(
+                  height: 36,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _FilterChip(
+                        label: 'All',
+                        active: _filter == _FilterOption.all,
+                        onTap: () {
+                          setState(() => _filter = _FilterOption.all);
+                          _load();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      _FilterChip(
+                        label: 'Created',
+                        active: _filter == _FilterOption.owned,
+                        onTap: () {
+                          setState(() => _filter = _FilterOption.owned);
+                          _load();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      _FilterChip(
+                        label: 'Liked',
+                        active: _filter == _FilterOption.liked,
+                        onTap: () {
+                          setState(() => _filter = _FilterOption.liked);
+                          _load();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
                 // ── Buttons ─────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -206,14 +251,15 @@ class _LibraryPlaylistsScreenState
                               ),
                             );
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.download_outlined,
                             color: AppTheme.textPrimary,
                           ),
                           label: Text('Import', style: AppTheme.labelLarge),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
-                            side: BorderSide(color: AppTheme.lighterSurface),
+                            side: const BorderSide(
+                                color: AppTheme.lighterSurface),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -224,11 +270,13 @@ class _LibraryPlaylistsScreenState
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _showCreateSheet(context),
-                          icon: Icon(Icons.add, color: AppTheme.textPrimary),
+                          icon: const Icon(Icons.add,
+                              color: AppTheme.textPrimary),
                           label: Text('Create', style: AppTheme.labelLarge),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
-                            side: BorderSide(color: AppTheme.lighterSurface),
+                            side: const BorderSide(
+                                color: AppTheme.lighterSurface),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -242,30 +290,32 @@ class _LibraryPlaylistsScreenState
                 // ── List ────────────────────────────────
                 Expanded(
                   child: state.isLoading
-                      ? Center(
+                      ? const Center(
                           child: CircularProgressIndicator(
                             color: AppTheme.primaryBrand,
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 140),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final playlist = filtered[index];
-                            final isOwner =
-                                playlist.ownerId == _currentUserId();
+                      : filtered.isEmpty
+                          ? _emptyState()
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 140),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final playlist = filtered[index];
+                                final isOwner =
+                                    playlist.ownerId == _currentUserId();
 
-                            return _PlaylistListTile(
-                              playlist: playlist,
-                              onTap: () => context.push(
-                                '/library/playlists/${playlist.id}',
-                                extra: isOwner,
-                              ),
-                              onMoreTap: () =>
-                                  _showOptions(context, playlist, isOwner),
-                            );
-                          },
-                        ),
+                                return _PlaylistListTile(
+                                  playlist: playlist,
+                                  onTap: () => context.push(
+                                    '/library/playlists/${playlist.id}',
+                                    extra: isOwner,
+                                  ),
+                                  onMoreTap: () =>
+                                      _showOptions(context, playlist, isOwner),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
@@ -275,11 +325,83 @@ class _LibraryPlaylistsScreenState
     );
   }
 
+  Widget _emptyState() {
+    final message = switch (_filter) {
+      _FilterOption.liked => 'No liked playlists yet\nLike a mix or playlist to save it here',
+      _FilterOption.owned => 'No playlists created yet',
+      _FilterOption.all => 'No playlists yet',
+    };
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Text(
+          message,
+          style: AppTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
   void _showFilterSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.surface,
-      builder: (_) => const SizedBox(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+      ),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            top: 16,
+            left: 16,
+            right: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Filter & Sort', style: AppTheme.titleLarge),
+              const SizedBox(height: 16),
+              Text('Filter', style: AppTheme.labelSmall),
+              RadioListTile<_FilterOption>(
+                value: _FilterOption.all,
+                groupValue: _filter,
+                title: Text('All', style: AppTheme.bodyNormal),
+                activeColor: AppTheme.primaryBrand,
+                onChanged: (v) {
+                  setState(() => _filter = v!);
+                  _load();
+                  Navigator.of(ctx).pop();
+                },
+              ),
+              RadioListTile<_FilterOption>(
+                value: _FilterOption.owned,
+                groupValue: _filter,
+                title: Text('Created by me', style: AppTheme.bodyNormal),
+                activeColor: AppTheme.primaryBrand,
+                onChanged: (v) {
+                  setState(() => _filter = v!);
+                  _load();
+                  Navigator.of(ctx).pop();
+                },
+              ),
+              RadioListTile<_FilterOption>(
+                value: _FilterOption.liked,
+                groupValue: _filter,
+                title: Text('Liked', style: AppTheme.bodyNormal),
+                activeColor: AppTheme.primaryBrand,
+                onChanged: (v) {
+                  setState(() => _filter = v!);
+                  _load();
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -305,6 +427,42 @@ class _LibraryPlaylistsScreenState
       backgroundColor: Colors.transparent,
       builder: (_) =>
           PlaylistOptionsSheet(playlistId: playlist.id, isOwner: isOwner),
+    );
+  }
+}
+
+// ── Small filter chip ─────────────────────────────────────────────────────────
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? AppTheme.primaryBrand : AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? Colors.white : AppTheme.textSecondary,
+            fontSize: 13,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -345,7 +503,8 @@ class _PlaylistListTile extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.more_vert, color: AppTheme.textSecondary),
+              icon: const Icon(Icons.more_vert,
+                  color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],
