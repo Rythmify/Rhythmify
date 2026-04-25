@@ -13,7 +13,6 @@ import '../providers/playlist_provider.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-// ── Enums ─────────────────────────────────────────────────────────────────────
 enum _AlbumSort { recentlyAdded, firstAdded, albumName }
 
 enum _AlbumTypeFilter { all, album, compilation, ep, single }
@@ -31,40 +30,6 @@ extension _AlbumSortLabel on _AlbumSort {
   }
 }
 
-extension _AlbumTypeFilterLabel on _AlbumTypeFilter {
-  String get label {
-    switch (this) {
-      case _AlbumTypeFilter.all:
-        return 'All';
-      case _AlbumTypeFilter.album:
-        return 'Album';
-      case _AlbumTypeFilter.compilation:
-        return 'Compilation';
-      case _AlbumTypeFilter.ep:
-        return 'EP';
-      case _AlbumTypeFilter.single:
-        return 'Single';
-    }
-  }
-
-  // Maps to the subtype string the backend uses
-  String? get subtype {
-    switch (this) {
-      case _AlbumTypeFilter.all:
-        return null;
-      case _AlbumTypeFilter.album:
-        return 'album';
-      case _AlbumTypeFilter.compilation:
-        return 'compilation';
-      case _AlbumTypeFilter.ep:
-        return 'ep';
-      case _AlbumTypeFilter.single:
-        return 'single';
-    }
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
 class LibraryAlbumsScreen extends ConsumerStatefulWidget {
   const LibraryAlbumsScreen({super.key});
 
@@ -101,19 +66,8 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   }
 
   List<PlaylistEntity> _applyFilters(List<PlaylistEntity> input) {
-    // Only albums
     var result = input.where((p) => p.type == PlaylistType.album).toList();
 
-    // Subtype filter (all = show everything album-type)
-    if (_typeFilter != _AlbumTypeFilter.all) {
-      // We can only filter client-side on what we have.
-      // Albums, EPs, Singles, Compilations all map to PlaylistType.album
-      // so we'd need the raw subtype. For now mark all as 'album' subtype
-      // since PlaylistModel maps them all to PlaylistType.album.
-      // This will be fully functional once backend returns subtype correctly.
-    }
-
-    // Search
     if (_searchQuery.isNotEmpty) {
       result = result
           .where(
@@ -122,7 +76,6 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
           .toList();
     }
 
-    // Sort
     switch (_sort) {
       case _AlbumSort.recentlyAdded:
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -138,10 +91,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   }
 
   bool get _isFiltered =>
-      _sort != _AlbumSort.recentlyAdded ||
-      _typeFilter != _AlbumTypeFilter.all;
-
-  // ── Overlay ───────────────────────────────────────────────────────────────
+      _sort != _AlbumSort.recentlyAdded || _typeFilter != _AlbumTypeFilter.all;
 
   void _toggleOverlay() {
     if (_overlayEntry != null) {
@@ -208,152 +158,106 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: Stack(
-        children: [
-          // ── Decorative background ────────────────────────────────
-          Positioned(
-            top: -60,
-            right: -80,
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..rotateZ(0.45)
-                ..setEntry(0, 1, 0.2),
-              child: Column(
-                children: List.generate(12, (i) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 3),
-                    width: 320,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFFFF7700).withValues(alpha: 0.8),
-                          const Color(0xFFFF7700).withValues(alpha: 0.0),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Search row ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left,
+                        color: AppTheme.textPrimary),
+                    onPressed: () => context.pop(),
+                  ),
+                  Expanded(
                     child: Container(
-                      margin: const EdgeInsets.all(1.2),
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.background,
-                        borderRadius: BorderRadius.circular(4),
+                        color: AppTheme.surface.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: TextField(
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                        style: AppTheme.bodyNormal,
+                        decoration: InputDecoration(
+                          hintText:
+                              'Search ${filtered.length} album${filtered.length == 1 ? '' : 's'}',
+                          hintStyle: AppTheme.bodyMedium,
+                          prefixIcon: const Icon(Icons.search,
+                              color: AppTheme.textSecondary),
+                          border: InputBorder.none,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                        ),
                       ),
                     ),
-                  );
-                }),
+                  ),
+                  IconButton(
+                    key: _filterIconKey,
+                    icon: Icon(
+                      Icons.tune,
+                      color: _isFiltered
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textSecondary,
+                    ),
+                    onPressed: _toggleOverlay,
+                  ),
+                ],
               ),
             ),
-          ),
 
-          SafeArea(
-            child: Column(
-              children: [
-                // ── Search row ──────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left,
-                            color: AppTheme.textPrimary),
-                        onPressed: () => context.pop(),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppTheme.surface.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: TextField(
-                            onChanged: (v) =>
-                                setState(() => _searchQuery = v),
-                            style: AppTheme.bodyNormal,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Search ${filtered.length} album${filtered.length == 1 ? '' : 's'}',
-                              hintStyle: AppTheme.bodyMedium,
-                              prefixIcon: const Icon(Icons.search,
-                                  color: AppTheme.textSecondary),
-                              border: InputBorder.none,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        key: _filterIconKey,
-                        icon: Icon(
-                          Icons.tune,
-                          color: _isFiltered
-                              ? AppTheme.primaryBrand
-                              : AppTheme.textSecondary,
-                        ),
-                        onPressed: _toggleOverlay,
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Title ──────────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child:
-                        Text('Albums', style: AppTheme.headlineLarge),
-                  ),
-                ),
-
-                // ── List ───────────────────────────────────────────
-                Expanded(
-                  child: state.isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                              color: AppTheme.primaryBrand),
-                        )
-                      : filtered.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Text(
-                                  _searchQuery.isEmpty
-                                      ? 'No albums yet'
-                                      : 'No results for "$_searchQuery"',
-                                  style: AppTheme.bodyMedium,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding:
-                                  const EdgeInsets.only(bottom: 140),
-                              itemCount: filtered.length,
-                              itemBuilder: (context, index) {
-                                final album = filtered[index];
-                                final isOwner =
-                                    album.ownerId == _currentUserId();
-                                return _AlbumTile(
-                                  album: album,
-                                  onTap: () => context.push(
-                                    '/playlist/${album.id}',
-                                    extra: isOwner,
-                                  ),
-                                  onMoreTap: () =>
-                                      _showOptions(context, album, isOwner),
-                                );
-                              },
-                            ),
-                ),
-              ],
+            // ── Title ──────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Albums', style: AppTheme.headlineLarge),
+              ),
             ),
-          ),
-        ],
+
+            // ── List ───────────────────────────────────────────────
+            Expanded(
+              child: state.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryBrand),
+                    )
+                  : filtered.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Text(
+                              _searchQuery.isEmpty
+                                  ? 'No albums yet'
+                                  : 'No results for "$_searchQuery"',
+                              style: AppTheme.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 140),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final album = filtered[index];
+                            final isOwner =
+                                album.ownerId == _currentUserId();
+                            return _AlbumTile(
+                              album: album,
+                              onTap: () => context.push(
+                                '/playlist/${album.id}',
+                                extra: isOwner,
+                              ),
+                              onMoreTap: () =>
+                                  _showOptions(context, album, isOwner),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -416,7 +320,6 @@ class _AlbumFilterDropdown extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Sort group
             _DropdownItem(
               label: 'Recently added',
               checked: sort == _AlbumSort.recentlyAdded,
@@ -433,7 +336,6 @@ class _AlbumFilterDropdown extends StatelessWidget {
               onTap: () => onSortChanged(_AlbumSort.albumName),
             ),
             const Divider(height: 1, thickness: 1, color: Color(0xFF3A3A3A)),
-            // Type filter group
             _DropdownItem(
               label: 'All',
               checked: typeFilter == _AlbumTypeFilter.all,
@@ -467,7 +369,6 @@ class _AlbumFilterDropdown extends StatelessWidget {
   }
 }
 
-// ── Shared dropdown item ──────────────────────────────────────────────────────
 class _DropdownItem extends StatelessWidget {
   const _DropdownItem({
     required this.label,

@@ -10,10 +10,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../data/local/local_saved_store.dart';
 import '../providers/saved_content_provider.dart';
 
-// ── Enums ─────────────────────────────────────────────────────────────────────
 enum _StationSort { recentlyAdded, firstAdded, stationName }
 
-// ═════════════════════════════════════════════════════════════════════════════
 class LibraryStationsScreen extends ConsumerStatefulWidget {
   const LibraryStationsScreen({super.key});
 
@@ -64,8 +62,6 @@ class _LibraryStationsScreenState
   }
 
   bool get _isFiltered => _sort != _StationSort.recentlyAdded;
-
-  // ── Overlay ───────────────────────────────────────────────────────────────
 
   void _toggleOverlay() {
     if (_overlayEntry != null) {
@@ -126,197 +122,152 @@ class _LibraryStationsScreenState
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: Stack(
-        children: [
-          // ── Decorative background ────────────────────────────────
-          Positioned(
-            top: -60,
-            right: -80,
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..rotateZ(0.45)
-                ..setEntry(0, 1, 0.2),
-              child: Column(
-                children: List.generate(12, (i) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 3),
-                    width: 320,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFFFF7700).withValues(alpha: 0.8),
-                          const Color(0xFFFF7700).withValues(alpha: 0.0),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Container(
-                      margin: const EdgeInsets.all(1.2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.background,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
+      body: SafeArea(
+        child: asyncStations.when(
+          loading: () => const Center(
+            child:
+                CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
-
-          SafeArea(
-            child: asyncStations.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(
-                    color: AppTheme.primaryBrand),
-              ),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Could not load stations',
-                        style: AppTheme.bodyMedium),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () =>
-                          ref.read(savedStationsProvider.notifier).refresh(),
-                      child: Text(
-                        'Retry',
-                        style: AppTheme.bodyMedium
-                            .copyWith(color: AppTheme.primaryBrand),
-                      ),
-                    ),
-                  ],
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Could not load stations',
+                    style: AppTheme.bodyMedium),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () =>
+                      ref.read(savedStationsProvider.notifier).refresh(),
+                  child: Text(
+                    'Retry',
+                    style: AppTheme.bodyMedium
+                        .copyWith(color: AppTheme.primaryBrand),
+                  ),
                 ),
-              ),
-              data: (stations) {
-                final filtered = _applySortAndSearch(stations);
-                return Column(
-                  children: [
-                    // ── Search row ────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left,
-                                color: AppTheme.textPrimary),
-                            onPressed: () => context.pop(),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppTheme.surface
-                                    .withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: TextField(
-                                onChanged: (v) =>
-                                    setState(() => _searchQuery = v),
-                                style: AppTheme.bodyNormal,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Search ${stations.length} station${stations.length == 1 ? '' : 's'}',
-                                  hintStyle: AppTheme.bodyMedium,
-                                  prefixIcon: const Icon(Icons.search,
-                                      color: AppTheme.textSecondary),
-                                  border: InputBorder.none,
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(
-                                          vertical: 10),
-                                ),
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            key: _filterIconKey,
-                            icon: Icon(
-                              Icons.tune,
-                              color: _isFiltered
-                                  ? AppTheme.primaryBrand
-                                  : AppTheme.textSecondary,
-                            ),
-                            onPressed: _toggleOverlay,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // ── Title ─────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Stations',
-                            style: AppTheme.headlineLarge),
-                      ),
-                    ),
-
-                    // ── List ──────────────────────────────────────
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.sensors_off,
-                                        color: AppTheme.textSecondary,
-                                        size: 48),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      stations.isEmpty
-                                          ? 'No saved stations yet\nSave stations from the home screen'
-                                          : 'No results for "$_searchQuery"',
-                                      style: AppTheme.bodyMedium,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : RefreshIndicator(
-                              color: AppTheme.primaryBrand,
-                              backgroundColor: AppTheme.surface,
-                              onRefresh: () => ref
-                                  .read(savedStationsProvider.notifier)
-                                  .refresh(),
-                              child: ListView.builder(
-                                padding:
-                                    const EdgeInsets.only(bottom: 140),
-                                itemCount: filtered.length,
-                                itemBuilder: (context, i) {
-                                  final s = filtered[i];
-                                  return _StationTile(
-                                    station: s,
-                                    onTap: () => context.push(
-                                      '/home/station/${s.artistId}',
-                                      extra: {
-                                        'artistName': s.artistName,
-                                        'stationName': s.stationName,
-                                        'coverUrl': s.coverUrl,
-                                      },
-                                    ),
-                                    onUnsave: () => ref
-                                        .read(
-                                            savedStationsProvider.notifier)
-                                        .toggle(s),
-                                  );
-                                },
-                              ),
-                            ),
-                    ),
-                  ],
-                );
-              },
+              ],
             ),
           ),
-        ],
+          data: (stations) {
+            final filtered = _applySortAndSearch(stations);
+            return Column(
+              children: [
+                // ── Search row ──────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left,
+                            color: AppTheme.textPrimary),
+                        onPressed: () => context.pop(),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color:
+                                AppTheme.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: TextField(
+                            onChanged: (v) =>
+                                setState(() => _searchQuery = v),
+                            style: AppTheme.bodyNormal,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Search ${stations.length} station${stations.length == 1 ? '' : 's'}',
+                              hintStyle: AppTheme.bodyMedium,
+                              prefixIcon: const Icon(Icons.search,
+                                  color: AppTheme.textSecondary),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        key: _filterIconKey,
+                        icon: Icon(
+                          Icons.tune,
+                          color: _isFiltered
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
+                        onPressed: _toggleOverlay,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Title ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child:
+                        Text('Stations', style: AppTheme.headlineLarge),
+                  ),
+                ),
+
+                // ── List ───────────────────────────────────────────
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.sensors_off,
+                                    color: AppTheme.textSecondary,
+                                    size: 48),
+                                const SizedBox(height: 12),
+                                Text(
+                                  stations.isEmpty
+                                      ? 'No saved stations yet\nSave stations from the home screen'
+                                      : 'No results for "$_searchQuery"',
+                                  style: AppTheme.bodyMedium,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          color: AppTheme.primaryBrand,
+                          backgroundColor: AppTheme.surface,
+                          onRefresh: () => ref
+                              .read(savedStationsProvider.notifier)
+                              .refresh(),
+                          child: ListView.builder(
+                            padding:
+                                const EdgeInsets.only(bottom: 140),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, i) {
+                              final s = filtered[i];
+                              return _StationTile(
+                                station: s,
+                                onTap: () => context.push(
+                                  '/home/station/${s.artistId}',
+                                  extra: {
+                                    'artistName': s.artistName,
+                                    'stationName': s.stationName,
+                                    'coverUrl': s.coverUrl,
+                                  },
+                                ),
+                                onUnsave: () => ref
+                                    .read(savedStationsProvider.notifier)
+                                    .toggle(s),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -442,7 +393,6 @@ class _StationTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            // Cover
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: SizedBox(
@@ -459,7 +409,6 @@ class _StationTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,7 +437,6 @@ class _StationTile extends StatelessWidget {
                 ],
               ),
             ),
-            // Unsave button
             IconButton(
               icon: const Icon(Icons.sensors_off,
                   color: AppTheme.textSecondary, size: 20),
