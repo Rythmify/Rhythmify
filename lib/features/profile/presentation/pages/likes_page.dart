@@ -131,8 +131,18 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               )
               .toList();
 
-    return Column(
-      children: [
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        await ref.read(profileProvider.notifier).loadProfile(userId: widget.userId);
+        await ref.read(profileProvider.notifier).loadLikedTracks(
+              userId: widget.userId,
+              refresh: true,
+              limit: 20,
+            );
+      },
+      child: Column(
+        children: [
         // ── Search bar ──────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -250,6 +260,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
           ),
         ),
       ],
-    );
+    ),);
   }
 }

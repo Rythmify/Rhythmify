@@ -124,8 +124,18 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
               )
               .toList();
 
-    return Column(
-      children: [
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        await ref.read(profileProvider.notifier).loadProfile(userId: widget.userId);
+        await ref.read(profileProvider.notifier).loadUploadedTracks(
+              userId: widget.userId,
+              refresh: true,
+              limit: 20,
+            );
+      },
+      child: Column(
+        children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Container(
@@ -184,6 +194,6 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
           ),
         ),
       ],
-    );
+    ),);
   }
 }

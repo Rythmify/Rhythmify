@@ -23,7 +23,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       DraggableScrollableController();
 
   // Heights in logical pixels
-  static const double _navBarHeight = 85.0;
+  static const double _navBarHeight = 70.0;
   static const double _miniPlayerHeight = 80.0;
 
   double get _minSize {

@@ -190,10 +190,21 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     // Extra bottom padding so last item clears the mini player
     final bottomPadding = hasTrack ? 80.0 : 0.0;
 
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverToBoxAdapter(
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        final notifier = _resolvedUserId == 'me'
+            ? ref.read(ownProfileProvider.notifier)
+            : ref.read(publicProfileProvider(_resolvedUserId).notifier);
+        
+        await notifier.loadProfile(userId: _resolvedUserId);
+        await notifier.loadPreviews(_resolvedUserId);
+      },
+      child: CustomScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Column(
@@ -347,7 +358,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
         ],
       ],
-    );
+    ),);
   }
 
   Widget _buildCoverPhoto(String? coverUrl) {
