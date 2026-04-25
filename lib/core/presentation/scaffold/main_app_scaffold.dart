@@ -23,8 +23,8 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       DraggableScrollableController();
 
   // Heights in logical pixels
-  static const double _navBarHeight = 85.0;
-  static const double _miniPlayerHeight = 65.0;
+  static const double _navBarHeight = 70.0;
+  static const double _miniPlayerHeight = 80.0;
 
   double get _minSize {
     if (!context.mounted) return 0.08;
@@ -60,12 +60,23 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   Widget build(BuildContext context) {
     ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
-    playerSheetNotifier.value = _expandPlayer;
+
+    // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        playerSheetNotifier.value = _expandPlayer;
+        playerCollapseNotifier.value = _collapsePlayer;
+      }
+    });
+
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final routerState = GoRouterState.of(context);
-    final location = routerState.uri.path;
+    // Use string matching directly on the shell's current location if possible,
+    // or keep this light.
+    final location = GoRouter.of(
+      context,
+    ).routeInformationProvider.value.uri.path;
     final isChatRoute = location.contains('/chat');
     final isFeedRoute = location == '/feed';
     final isVisible = !isChatRoute;

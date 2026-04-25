@@ -27,3 +27,4 @@ final discoverFeedProvider = FutureProvider<List<FeedItemEntity>>((ref) async {
 });
 
 final playerSheetNotifier = ValueNotifier<VoidCallback?>(null);
+final playerCollapseNotifier = ValueNotifier<VoidCallback?>(null);

@@ -171,7 +171,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       final endpoint = userId == 'me'
           ? '/me/liked-tracks'
-          : '/users/$userId/tracks';
+          : '/users/$userId/liked-tracks';
 
       final response = await client.dio.get(
         endpoint,
@@ -219,7 +219,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       final endpoint = userId == 'me'
           ? '/me/reposted-tracks'
-          : '/users/$userId/tracks';
+          : '/users/$userId/reposted-tracks';
 
       final response = await client.dio.get(
         endpoint,

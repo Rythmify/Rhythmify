@@ -156,7 +156,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                         key: Key('library_album_tile_${album.id}'),
                         album: album,
                         onTap: () => context.push(
-                          '/playlist/${album.id}', // ✅ FIXED: was /library/albums/
+                          '/home/playlist/${album.id}', // ✅ FIXED: was /library/albums/
                           extra: isOwner,
                         ),
                         onMoreTap: () => showModalBottomSheet(

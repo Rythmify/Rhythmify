@@ -42,6 +42,9 @@ class Comment extends Equatable {
   /// The optional parent comment ID, if this comment is a reply.
   final String? parentId;
 
+  /// Indicates whether the author of this comment is currently blocked by the user.
+  final bool isAuthorBlocked;
+
   /// Creates a new [Comment] instance.
   const Comment({
     required this.id,
@@ -56,6 +59,7 @@ class Comment extends Equatable {
     required this.isLikedByMe,
     required this.replyCount,
     this.parentId,
+    this.isAuthorBlocked = false,
   });
 
   /// Creates a copy of this [Comment] with the given fields replaced by the new values.
@@ -72,6 +76,7 @@ class Comment extends Equatable {
     bool? isLikedByMe,
     int? replyCount,
     String? parentId,
+    bool? isAuthorBlocked,
   }) {
     return Comment(
       id: id ?? this.id,
@@ -86,6 +91,7 @@ class Comment extends Equatable {
       isLikedByMe: isLikedByMe ?? this.isLikedByMe,
       replyCount: replyCount ?? this.replyCount,
       parentId: parentId ?? this.parentId,
+      isAuthorBlocked: isAuthorBlocked ?? this.isAuthorBlocked,
     );
   }
 
@@ -103,5 +109,6 @@ class Comment extends Equatable {
     isLikedByMe,
     replyCount,
     parentId,
+    isAuthorBlocked,
   ];
 }
