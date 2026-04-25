@@ -104,7 +104,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                       children: [
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => context.push('/profile/${item.user.id}'),
+                          onTap: () => context.push('/home/profile/${item.user.id}'),
                           child: CircleAvatar(
                             key: const Key('feed_card_bottom_info_avatar'),
                             radius: 14,
@@ -127,7 +127,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                         const SizedBox(width: 8),
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => context.push('/profile/${item.user.id}'),
+                          onTap: () => context.push('/home/profile/${item.user.id}'),
                           child: Text(
                             key: const Key('feed_card_bottom_info_username'),
                             item.user.displayName,

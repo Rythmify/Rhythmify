@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
 import 'comment_action_bottom_sheet.dart';
+import '../../../../features/feed/presentation/providers/feed_providers.dart';
 
 /// A reusable UI widget that displays a standard comment or reply.
 ///
@@ -13,13 +14,13 @@ class CommentCard extends StatelessWidget {
   /// The [Comment] entity containing the data to display.
   final Comment comment;
 
-  /// Callback triggered when the user taps the like heart icon.
+  /// Callback triggered when the like button is pressed.
   final VoidCallback? onLike;
 
-  /// Callback triggered when the user taps the "Reply" text button.
+  /// Callback triggered when the reply button is pressed.
   final VoidCallback? onReply;
 
-  /// Callback triggered when the user taps the vertical ellipsis (more options).
+  /// Callback triggered when the vertical ellipsis (more options).
   final VoidCallback? onMore;
 
   /// Callback triggered when the user toggles the "Show replies" dropdown.
@@ -28,7 +29,7 @@ class CommentCard extends StatelessWidget {
   /// Indicates whether this card is being rendered as a nested reply (adds left padding).
   final bool isReply;
 
-  /// Indicates whether the replies section for this comment is currently expanded.
+  /// Whether the replies section for this comment is currently expanded.
   final bool isExpanded;
 
   /// Creates a [CommentCard] for the specified [comment].
@@ -60,7 +61,11 @@ class CommentCard extends StatelessWidget {
           Opacity(
             opacity: isBlocked ? 0.4 : 1.0,
             child: InkWell(
-              onTap: isBlocked ? null : () => context.push('/profile/${comment.userId}'),
+              onTap: isBlocked ? null : () {
+                playerCollapseNotifier.value?.call(); // Collapse player
+                context.pop(); // Close comments
+                context.push('/home/profile/${comment.userId}');
+              },
               borderRadius: BorderRadius.circular(isReply ? 16 : 20),
               child: Container(
                 width: isReply ? 32 : 40,
@@ -112,7 +117,11 @@ class CommentCard extends StatelessWidget {
                     Opacity(
                       opacity: isBlocked ? 0.4 : 1.0,
                       child: InkWell(
-                        onTap: isBlocked ? null : () => context.push('/profile/${comment.userId}'),
+                        onTap: isBlocked ? null : () {
+                playerCollapseNotifier.value?.call(); // Collapse player
+                context.pop(); // Close comments
+                context.push('/home/profile/${comment.userId}');
+              },
                         borderRadius: BorderRadius.circular(
                           4,
                         ), // Gives the ripple a nice rounded edge

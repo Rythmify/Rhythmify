@@ -290,7 +290,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Go to profile',
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/profile/${syncedTrack.userId}');
+                      context.push('/home/profile/${syncedTrack.userId}');
                     },
                   ),
                   _buildActionRow(

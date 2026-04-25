@@ -13,6 +13,7 @@ import '../../domain/entities/comment.dart';
 import '../providers/track_comments_notifier.dart';
 import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
+import '../../../../features/feed/presentation/providers/feed_providers.dart';
 
 /// A bottom sheet widget displaying contextual actions for a specific comment.
 ///
@@ -29,11 +30,6 @@ class CommentActionBottomSheet extends ConsumerWidget {
   void _copyComment(BuildContext context) {
     Clipboard.setData(ClipboardData(text: comment.content));
     Navigator.pop(context);
-  }
-
-  void _goToProfile(BuildContext context) {
-    Navigator.pop(context);
-    context.push('/profile/${comment.userId}');
   }
 
   void _playFrom(BuildContext context, WidgetRef ref) {
@@ -79,38 +75,6 @@ class CommentActionBottomSheet extends ConsumerWidget {
         builder: (context) => ReportPage(reportedContentId: comment.id),
       ),
     );
-  }
-
-  void _toggleBlock(BuildContext context, WidgetRef ref) async {
-    Navigator.pop(context);
-    final shouldBlock = !comment.isAuthorBlocked;
-    try {
-      if (comment.parentId == null) {
-        await ref
-            .read(trackCommentsProvider(comment.trackId).notifier)
-            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
-      } else {
-        await ref
-            .read(commentRepliesProvider(comment.parentId!).notifier)
-            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
-      }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(
-          content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
-        ));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(
-          content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e'),
-        ));
-      }
-    }
   }
 
   @override
@@ -163,8 +127,13 @@ class CommentActionBottomSheet extends ConsumerWidget {
           // Row 3: Go to profile
           _buildActionRow(
             icon: Icons.person_outline,
-            label: 'Go to profile',
-            onTap: () => _goToProfile(context),
+            label: 'View profile',
+            onTap: () {
+              playerCollapseNotifier.value?.call(); // Collapse player
+              Navigator.pop(context); // Close bottom sheet
+              context.pop(); // Close comments screen
+              context.push('/home/profile/${comment.userId}');
+            },
           ),
 
           // Row 4: Copy
@@ -199,6 +168,38 @@ class CommentActionBottomSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _toggleBlock(BuildContext context, WidgetRef ref) async {
+    Navigator.pop(context);
+    final shouldBlock = !comment.isAuthorBlocked;
+    try {
+      if (comment.parentId == null) {
+        await ref
+            .read(trackCommentsProvider(comment.trackId).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      } else {
+        await ref
+            .read(commentRepliesProvider(comment.parentId!).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(
+          content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
+        ));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(
+          content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e'),
+        ));
+      }
+    }
   }
 
   Widget _buildActionRow({

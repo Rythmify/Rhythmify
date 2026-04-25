@@ -15,8 +15,6 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../player/presentation/widgets/mini_player.dart';
-import '../../../player/presentation/pages/full_player_page.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
@@ -44,41 +42,8 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
 
-  /// Controls the draggable player sheet — mirrors [MainAppScaffold].
-  final _draggableController = DraggableScrollableController();
-
   bool _showIncompleteBanner = true;
   late String _resolvedUserId;
-
-  // ── Player sheet constants (same values as MainAppScaffold) ─────────────
-  static const double _miniPlayerHeight = 65.0;
-  static const double _maxSize = 1.0;
-
-  double get _minSize {
-    if (!context.mounted) return 0.08;
-    final h = MediaQuery.of(context).size.height;
-    return h > 0 ? _miniPlayerHeight / h : 0.08;
-  }
-
-  void _expandPlayer() {
-    if (_draggableController.isAttached) {
-      _draggableController.animateTo(
-        _maxSize,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  void _collapsePlayer() {
-    if (_draggableController.isAttached) {
-      _draggableController.animateTo(
-        _minSize,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    }
-  }
 
   @override
   void initState() {
@@ -95,10 +60,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
     Future.microtask(() async {
       // ── Guard: skip reload if this profile is already loaded ────────────
-      // When navigating back from followers/following (root-level routes),
-      // PublicProfilePage rebuilds and initState fires again. Without this
-      // guard, loadProfile + loadPreviews would re-run on an already-correct
-      // state, causing follower/following counts to appear doubled.
       final currentState = _resolvedUserId == 'me'
           ? ref.read(ownProfileProvider)
           : ref.read(publicProfileProvider(_resolvedUserId));
@@ -129,7 +90,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _draggableController.dispose();
     super.dispose();
   }
 
@@ -148,16 +108,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : ref.watch(publicProfileProvider(_resolvedUserId));
 
     final authState = ref.watch(authProvider);
-    final currentUserId = authState is AuthAuthenticated
-        ? authState.user.id
-        : null;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
-
-    final playerState = ref.watch(playerStateProvider);
-    final hasTrack = playerState.currentTrack != null;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final currentMinSize = _minSize;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -184,118 +138,40 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // ── Profile content ──────────────────────────────────────────────
-          switch (profileState) {
-            ProfileInitial() => const SizedBox.shrink(),
-            ProfileLoading() => const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-            ),
-            ProfileError(:final message) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(message, style: AppTheme.bodyMedium),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    key: const Key('public_profile_retry_button'),
-                    onPressed: () {
-                      final notifier = _resolvedUserId == 'me'
-                          ? ref.read(ownProfileProvider.notifier)
-                          : ref.read(
-                              publicProfileProvider(_resolvedUserId).notifier,
-                            );
-                      notifier.loadProfile(userId: _resolvedUserId);
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-            ProfileLoaded() => _buildLoaded(
-              context,
-              profileState,
-              isOwnProfile,
-              hasTrack,
-            ),
-            _ => const SizedBox.shrink(),
-          },
-
-          // ── Mini / Full player overlay (mirrors MainAppScaffold) ─────────
-          if (hasTrack)
-            DraggableScrollableSheet(
-              key: const Key('profile_player_draggable_sheet'),
-              controller: _draggableController,
-              initialChildSize: currentMinSize,
-              minChildSize: currentMinSize,
-              maxChildSize: _maxSize,
-              snap: true,
-              builder: (context, scrollController) {
-                return Container(
-                  color: Colors.transparent,
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    child: SizedBox(
-                      height: screenHeight,
-                      child: AnimatedBuilder(
-                        animation: _draggableController,
-                        builder: (context, child) {
-                          final extent = _draggableController.isAttached
-                              ? _draggableController.size
-                              : currentMinSize;
-                          final t =
-                              ((extent - currentMinSize) /
-                                      (_maxSize - currentMinSize))
-                                  .clamp(0.0, 1.0);
-
-                          return Stack(
-                            children: [
-                              // Full player
-                              Opacity(
-                                opacity: t,
-                                child: Container(
-                                  color: Colors.black,
-                                  child: IgnorePointer(
-                                    ignoring: t < 0.5,
-                                    child: FullPlayerPage(
-                                      key: const Key(
-                                        'profile_full_player_page',
-                                      ),
-                                      onCollapse: _collapsePlayer,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // Mini player
-                              if (t < 0.5)
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: Opacity(
-                                    opacity: (1 - t * 5).clamp(0.0, 1.0),
-                                    child: MiniPlayer(
-                                      key: const Key(
-                                        'profile_mini_player_widget',
-                                      ),
-                                      onTap: _expandPlayer,
-                                    ),
-                                  ),
-                                ),
-                            ],
+      body: switch (profileState) {
+        ProfileInitial() => const SizedBox.shrink(),
+        ProfileLoading() => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+          ),
+        ProfileError(:final message) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(message, style: AppTheme.bodyMedium),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  key: const Key('public_profile_retry_button'),
+                  onPressed: () {
+                    final notifier = _resolvedUserId == 'me'
+                        ? ref.read(ownProfileProvider.notifier)
+                        : ref.read(
+                            publicProfileProvider(_resolvedUserId).notifier,
                           );
-                        },
-                      ),
-                    ),
-                  ),
-                );
-              },
+                    notifier.loadProfile(userId: _resolvedUserId);
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
             ),
-        ],
-      ),
+          ),
+        ProfileLoaded() => _buildLoaded(
+            context,
+            profileState,
+            isOwnProfile,
+            ref.watch(playerStateProvider).currentTrack != null,
+          ),
+        _ => const SizedBox.shrink(),
+      },
     );
   }
 
@@ -347,7 +223,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     onDismissed: (_) =>
                         setState(() => _showIncompleteBanner = false),
                     child: _IncompleteProfileBanner(
-                      onEdit: () => context.push('/profile/edit'),
+                      onEdit: () => context.push('/home/profile/edit'),
                     ),
                   ),
                 ],
@@ -356,9 +232,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   followersCount: state.profile.followersCount,
                   followingCount: state.profile.followingCount,
                   onFollowersTap: () =>
-                      context.push('/profile/${state.profile.id}/followers'),
+                      context.push('/home/profile/${state.profile.id}/followers'),
                   onFollowingTap: () =>
-                      context.push('/profile/${state.profile.id}/following'),
+                      context.push('/home/profile/${state.profile.id}/following'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -366,7 +242,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     if (isOwnProfile)
                       GestureDetector(
                         key: const Key('public_profile_edit_gesture'),
-                        onTap: () => context.push('/profile/edit'),
+                        onTap: () => context.push('/home/profile/edit'),
                         child: const Icon(
                           Icons.edit_outlined,
                           color: AppTheme.textSecondary,
@@ -440,7 +316,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 title: 'Uploads',
                 tracks: state.uploadedTracks.take(3).toList(),
                 onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/uploads'),
+                    context.push('/home/profile/$_resolvedUserId/uploads'),
               ),
             ),
           if (state.likedTracks.isNotEmpty)
@@ -448,7 +324,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               child: _ProfileSection(
                 title: 'Likes',
                 tracks: state.likedTracks.take(3).toList(),
-                onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
+                onSeeAll: () => context.push('/home/profile/$_resolvedUserId/likes'),
               ),
             ),
           if (state.repostedTracks.isNotEmpty)
@@ -457,7 +333,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 title: 'Reposts',
                 tracks: state.repostedTracks.take(3).toList(),
                 onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/reposts'),
+                    context.push('/home/profile/$_resolvedUserId/reposts'),
               ),
             ),
           if (state.playlists.isNotEmpty)
@@ -650,7 +526,7 @@ class _PlaylistsSection extends ConsumerWidget {
               return GestureDetector(
                 key: Key('profile_playlist_${playlist.id}_gesture'),
                 onTap: () =>
-                    context.push('/playlist/${playlist.id}', extra: false),
+                    context.push('/home/playlist/${playlist.id}', extra: false),
                 child: _PlaylistGridCard(
                   key: Key('playlist_grid_card_${playlist.id}'),
                   playlist: playlist,

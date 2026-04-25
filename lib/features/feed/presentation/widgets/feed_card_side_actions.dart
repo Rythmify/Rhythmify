@@ -61,9 +61,8 @@ class FeedCardSideActions extends ConsumerWidget {
           icon: Icons.chat_outlined,
           label: Formatters.formatCount(syncedTrack.commentCount),
           onTap: () {
-            context.pushNamed(
-              'comments',
-              pathParameters: {'trackId': syncedTrack.id},
+            context.push(
+              '/home/comments/${syncedTrack.id}',
               extra: syncedTrack,
             );
           },

@@ -179,7 +179,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                     .copyPlaylist(playlistId);
                 if (newId != null && sheetContext.mounted) {
                   ScaffoldMessenger.of(sheetContext).hideCurrentSnackBar();
-                  sheetContext.push('/playlist/$newId', extra: true);
+                  sheetContext.push('/home/playlist/$newId', extra: true);
                 }
               },
             ),
