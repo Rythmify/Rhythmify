@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/bottom_navigation.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../features/notifications/presentation/providers/notifications_provider.dart';
 import '../../../../features/player/presentation/widgets/mini_player.dart';
 import '../../../../features/player/presentation/pages/full_player_page.dart';
 import '../../../../features/player/presentation/providers/player_provider.dart';
@@ -57,6 +58,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
     playerSheetNotifier.value = _expandPlayer;
     final hasTrack = playerState.currentTrack != null;
