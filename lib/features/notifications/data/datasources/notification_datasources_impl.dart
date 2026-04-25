@@ -16,7 +16,7 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
       queryParameters: {
         'page': page,
         'limit': limit,
-        if (unreadOnly != null) 'unread_only': unreadOnly,
+        'unread_only': ?unreadOnly,
       },
     );
 
