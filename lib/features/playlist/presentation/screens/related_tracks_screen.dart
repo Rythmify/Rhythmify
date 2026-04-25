@@ -1,4 +1,4 @@
-// lib/features/playlist/presentation/screens/related_tracks_screen.dart
+// lib/features/playlist/presentation/screens/mix_detail_screen.dart
 // ignore_for_file: avoid_print
 library;
 
@@ -10,83 +10,52 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/local/local_saved_store.dart';
-import '../../domain/entities/playlist_track.dart';
-import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_screen_scaffold.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-enum RelatedTracksSource {
-  track, // GET /tracks/{id}/related — "more of what you like"
-  station, // GET /home/stations/{artist_id}/tracks
-}
+enum MixType { genre, daily, weekly }
 
-// ── Station tracks provider ───────────────────────────────────────────────────
-final _stationTracksProvider = FutureProvider.autoDispose
-    .family<List<Track>, String>((ref, artistId) async {
-      final ds = ref.read(playlistDatasourceProvider);
-      final pts = await ds.fetchStationTracks(artistId, limit: 50);
-      return pts.map(_toTrack).toList();
-    });
-
-Track _toTrack(PlaylistTrack pt) => Track(
-  id: pt.id,
-  userId: '',
-  title: pt.title,
-  artist: pt.artistName,
-  audioUrl: pt.id,
-  coverImage: pt.coverUrl,
-  duration: pt.duration,
-  playCount: pt.playCount,
-  createdAt: DateTime.now(),
-);
-
-// ── Screen ────────────────────────────────────────────────────────────────────
-class RelatedTracksScreen extends ConsumerWidget {
-  const RelatedTracksScreen({
+class MixDetailScreen extends ConsumerWidget {
+  const MixDetailScreen({
     super.key,
-    required this.sourceId,
-    required this.source,
-    required this.basedOnName,
-    required this.title,
+    required this.mixId,
+    required this.mixTitle,
+    required this.ownerName,
+    this.mixType = MixType.genre,
     this.coverUrl,
+    this.trackCount,
   });
 
-  final String sourceId;
-  final RelatedTracksSource source;
-  final String basedOnName;
-  final String title;
+  final String mixId;
+  final String mixTitle;
+  final String ownerName;
+  final MixType mixType;
   final String? coverUrl;
+  final int? trackCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncTracks = source == RelatedTracksSource.track
-        ? ref.watch(relatedTracksProvider(sourceId))
-        : ref.watch(_stationTracksProvider(sourceId));
+    final asyncTracks = ref.watch(mixTracksProvider(mixId));
 
     return asyncTracks.when(
       loading: () => const Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-        ),
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-          child: Text(
-            'Could not load tracks',
-            style: const TextStyle(color: AppTheme.textSecondary),
-          ),
+          child: Text('Could not load mix',
+              style: const TextStyle(color: AppTheme.textSecondary)),
         ),
       ),
-      data: (tracks) => _Body(
-        sourceId: sourceId,
-        source: source,
-        title: title,
-        basedOnName: basedOnName,
+      data: (tracks) => _MixDetailBody(
+        mixId: mixId,
+        mixTitle: mixTitle,
+        ownerName: ownerName,
         coverUrl: coverUrl,
         tracks: tracks,
       ),
@@ -94,58 +63,51 @@ class RelatedTracksScreen extends ConsumerWidget {
   }
 }
 
-// ── Body — ConsumerStatefulWidget for _isSaved state ─────────────────────────
-class _Body extends ConsumerStatefulWidget {
-  const _Body({
-    required this.sourceId,
-    required this.source,
-    required this.title,
-    required this.basedOnName,
+// ── Body — ConsumerStatefulWidget so it can hold _isSaved state ───────────────
+class _MixDetailBody extends ConsumerStatefulWidget {
+  const _MixDetailBody({
+    required this.mixId,
+    required this.mixTitle,
+    required this.ownerName,
     required this.tracks,
     this.coverUrl,
   });
 
-  final String sourceId;
-  final RelatedTracksSource source;
-  final String title;
-  final String basedOnName;
+  final String mixId;
+  final String mixTitle;
+  final String ownerName;
   final String? coverUrl;
   final List<Track> tracks;
 
   @override
-  ConsumerState<_Body> createState() => _BodyState();
+  ConsumerState<_MixDetailBody> createState() => _MixDetailBodyState();
 }
 
-class _BodyState extends ConsumerState<_Body> {
+class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
   bool _isSaved = false;
 
   @override
   void initState() {
     super.initState();
-    // Only stations can be saved
-    if (widget.source == RelatedTracksSource.station) {
-      _checkSaved();
-    }
+    _checkSaved();
   }
 
   Future<void> _checkSaved() async {
-    final saved = await LocalSavedStore.instance.isStationSaved(
-      widget.sourceId,
-    );
+    final saved =
+        await LocalSavedStore.instance.isMixSaved(widget.mixId);
     if (mounted) setState(() => _isSaved = saved);
   }
 
   Future<void> _toggleLike() async {
-    if (widget.source != RelatedTracksSource.station) return;
-    final station = SavedStation(
-      artistId: widget.sourceId,
-      artistName: widget.basedOnName,
-      stationName: widget.title,
+    final mix = SavedMix(
+      mixId: widget.mixId,
+      title: widget.mixTitle,
+      ownerName: widget.ownerName,
       coverUrl: widget.coverUrl,
       trackCount: widget.tracks.length,
       savedAt: DateTime.now(),
     );
-    await ref.read(savedStationsProvider.notifier).toggle(station);
+    await ref.read(savedMixesProvider.notifier).toggle(mix);
     if (mounted) setState(() => _isSaved = !_isSaved);
   }
 
@@ -156,22 +118,21 @@ class _BodyState extends ConsumerState<_Body> {
           .read(playerStateProvider.notifier)
           .loadAndPlayQueue(list, initialIndex: index);
     } catch (e) {
-      debugPrint('[RelatedTracks] play failed: $e');
+      debugPrint('[MixDetail] play failed: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final tracks = widget.tracks;
-    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
+    final totalDuration =
+        tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
     final durStr = h > 0
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-
-    final isStation = widget.source == RelatedTracksSource.station;
 
     return PlaylistScreenScaffold(
       child: Scaffold(
@@ -185,69 +146,37 @@ class _BodyState extends ConsumerState<_Body> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(
-                        Icons.chevron_left,
-                        color: AppTheme.textPrimary,
-                        size: 28,
-                      ),
+                      icon: const Icon(Icons.chevron_left,
+                          color: AppTheme.textPrimary, size: 28),
                       onPressed: () => context.pop(),
                     ),
-                    _Cover(url: widget.coverUrl, label: widget.title),
+                    _Cover(url: widget.coverUrl, label: widget.mixTitle),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(widget.mixTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.titleLarge),
+                          const SizedBox(height: 2),
                           Text(
-                            widget.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTheme.titleLarge,
+                            'Private · $durStr · ${tracks.length} tracks',
+                            style: AppTheme.labelSmall,
                           ),
                           const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              if (isStation) ...[
-                                const Icon(
-                                  Icons.sensors,
-                                  size: 13,
-                                  color: AppTheme.textSecondary,
-                                ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    'Artist Station · $durStr · ${tracks.length} tracks',
-                                    style: AppTheme.labelSmall,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ] else
-                                Flexible(
-                                  child: Text(
-                                    'Related Tracks · $durStr · ${tracks.length} tracks',
-                                    style: AppTheme.labelSmall,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Text('Based on ', style: AppTheme.labelSmall),
-                              Flexible(
-                                child: Text(
-                                  widget.basedOnName,
+                          Row(children: [
+                            Text('Made for ', style: AppTheme.labelSmall),
+                            Flexible(
+                              child: Text(widget.ownerName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTheme.labelSmall.copyWith(
-                                    color: AppTheme.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w600)),
+                            ),
+                          ]),
                         ],
                       ),
                     ),
@@ -260,7 +189,7 @@ class _BodyState extends ConsumerState<_Body> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 child: Row(
                   children: [
-                    // ✅ Like button — active only for stations
+                    // ✅ Wired like button
                     IconButton(
                       icon: Icon(
                         _isSaved ? Icons.favorite : Icons.favorite_border,
@@ -269,23 +198,17 @@ class _BodyState extends ConsumerState<_Body> {
                             : AppTheme.textPrimary,
                         size: 24,
                       ),
-                      onPressed: isStation ? _toggleLike : null,
+                      onPressed: _toggleLike,
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.more_horiz,
-                        color: AppTheme.textPrimary,
-                        size: 24,
-                      ),
+                      icon: const Icon(Icons.more_horiz,
+                          color: AppTheme.textPrimary, size: 24),
                       onPressed: () => _showOptions(context),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(
-                        Icons.shuffle,
-                        color: AppTheme.textSecondary,
-                        size: 24,
-                      ),
+                      icon: const Icon(Icons.shuffle,
+                          color: AppTheme.textSecondary, size: 24),
                       onPressed: () {
                         final shuffled = List<Track>.from(tracks)..shuffle();
                         _play(shuffled, 0);
@@ -297,14 +220,10 @@ class _BodyState extends ConsumerState<_Body> {
                         width: 52,
                         height: 52,
                         decoration: const BoxDecoration(
-                          color: AppTheme.lighterSurface,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppTheme.textPrimary,
-                          size: 28,
-                        ),
+                            color: AppTheme.lighterSurface,
+                            shape: BoxShape.circle),
+                        child: const Icon(Icons.play_arrow,
+                            color: AppTheme.textPrimary, size: 28),
                       ),
                     ),
                   ],
@@ -317,18 +236,15 @@ class _BodyState extends ConsumerState<_Body> {
               Expanded(
                 child: tracks.isEmpty
                     ? Center(
-                        child: Text(
-                          'No tracks found',
-                          style: AppTheme.bodyMedium,
-                        ),
-                      )
+                        child: Text('No tracks in this mix yet',
+                            style: AppTheme.bodyMedium))
                     : ListView.builder(
                         padding: const EdgeInsets.only(bottom: 140),
                         itemCount: tracks.length,
                         itemBuilder: (context, index) {
                           final t = tracks[index];
                           return TrackTileFromTrack(
-                            key: Key('related_${t.id}_$index'),
+                            key: Key('mix_track_${t.id}'),
                             track: t,
                             onTap: () => _play(tracks, index),
                           );
@@ -343,7 +259,6 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   void _showOptions(BuildContext context) {
-    final isStation = widget.source == RelatedTracksSource.station;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -354,8 +269,7 @@ class _BodyState extends ConsumerState<_Body> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom + 90,
-        ),
+            bottom: MediaQuery.of(context).padding.bottom + 90),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -364,17 +278,15 @@ class _BodyState extends ConsumerState<_Body> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(url: widget.coverUrl, label: widget.title, size: 56),
+                  _Cover(url: widget.coverUrl, label: widget.mixTitle, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.title, style: AppTheme.bodyNormal),
-                        Text(
-                          'Based on ${widget.basedOnName}',
-                          style: AppTheme.artistTitle,
-                        ),
+                        Text(widget.mixTitle, style: AppTheme.bodyNormal),
+                        Text('Made for ${widget.ownerName}',
+                            style: AppTheme.artistTitle),
                       ],
                     ),
                   ),
@@ -383,25 +295,21 @@ class _BodyState extends ConsumerState<_Body> {
             ),
             const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
-              icon: Icons.queue_play_next,
-              label: 'Play next',
-              onTap: () => Navigator.of(context).pop(),
-            ),
+                icon: Icons.queue_play_next,
+                label: 'Play next',
+                onTap: () => Navigator.of(context).pop()),
             OptionSheetTile(
-              icon: Icons.add_to_queue,
-              label: 'Play last',
-              onTap: () => Navigator.of(context).pop(),
+                icon: Icons.add_to_queue,
+                label: 'Play last',
+                onTap: () => Navigator.of(context).pop()),
+            OptionSheetTile(
+              icon: _isSaved ? Icons.favorite : Icons.favorite_border,
+              label: _isSaved ? 'Remove from library' : 'Save to library',
+              onTap: () {
+                Navigator.of(context).pop();
+                _toggleLike();
+              },
             ),
-            // Save option only for stations
-            if (isStation)
-              OptionSheetTile(
-                icon: _isSaved ? Icons.sensors_off : Icons.sensors,
-                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _toggleLike();
-                },
-              ),
             const SizedBox(height: 40),
           ],
         ),
@@ -424,27 +332,23 @@ class _Cover extends StatelessWidget {
         width: size,
         height: size,
         child: url != null && url!.isNotEmpty && url!.startsWith('http')
-            ? Image.network(
-                url!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder(),
-              )
+            ? Image.network(url!, fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _placeholder())
             : _placeholder(),
       ),
     );
   }
 
   Widget _placeholder() => Container(
-    color: AppTheme.surface,
-    child: Center(
-      child: Text(
-        label.isNotEmpty ? label[0].toUpperCase() : 'S',
-        style: const TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
+        color: AppTheme.surface,
+        child: Center(
+          child: Text(
+            label.isNotEmpty ? label[0].toUpperCase() : 'M',
+            style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }

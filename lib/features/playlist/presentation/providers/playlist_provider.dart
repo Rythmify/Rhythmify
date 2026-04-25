@@ -70,8 +70,10 @@ class PlaylistDetailState {
       suggestions.isNotEmpty && playlist?.type == PlaylistType.playlist;
 
   /// Sum of all track durations — shown in header and library tile
-  Duration get totalDuration =>
-      tracks.fold(Duration.zero, (acc, t) => acc + t.duration);
+  Duration get totalDuration => tracks.fold(
+    Duration.zero,
+    (acc, t) => acc + t.duration,
+  );
 
   PlaylistDetailState copyWith({
     PlaylistEntity? playlist,
@@ -404,9 +406,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         }
 
         if (playlist.seedArtistName != null) {
-          final stationTracks = await _fetchStationTracks(
-            playlist.seedArtistName!,
-          );
+          final stationTracks = await _fetchStationTracks(playlist.seedArtistName!);
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
@@ -428,7 +428,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: tracks,
-        isLiked: playlist.isLiked, // ← respect backend isLiked on init
+        isLiked: playlist.isLiked,       // ← respect backend isLiked on init
         isLoading: false,
         isSuggestionsLoading: playlist.type == PlaylistType.playlist,
       );
@@ -459,15 +459,17 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     }
   }
 
+
+   
   Future<void> toggleLike() async {
     if (_currentPlaylistId == null) return;
     final wasLiked = state.playlist?.isLiked ?? false;
-
+ 
     // Optimistic update
     state = state.copyWith(
       playlist: state.playlist?.copyWith(isLiked: !wasLiked),
     );
-
+ 
     try {
       if (wasLiked) {
         await _ds.unlikePlaylist(_currentPlaylistId!);
@@ -511,9 +513,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         suggestions: freshSuggestions,
       );
     } on DioException catch (e) {
-      debugPrint(
-        '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
-      );
+      debugPrint('[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}');
       state = state.copyWith(
         suggestions: [...optimistic, suggestion],
         error: 'Could not add "${suggestion.title}". Try again.',
