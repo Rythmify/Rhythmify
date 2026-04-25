@@ -15,6 +15,8 @@ import '../../../../core/data/models/track_dto.dart';
 //imports for track upload added by hana
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../providers/home_providers.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -149,36 +151,46 @@ class HomeScreen extends ConsumerWidget {
       ///
       /// Each section represents a modular UI component responsible for
       /// displaying a specific type of recommendation or content grouping.
-      body: ListView(
-        key: const Key('home_scroll_view'),
-        padding: const EdgeInsets.only(bottom: 150),
+      body: RefreshIndicator(
+        color: AppTheme.primaryBrand,
+        onRefresh: () async {
+          ref.invalidate(homeDataProvider);
+          ref.invalidate(hotForYouProvider);
+          // Also invalidate specific genre if needed, but homeDataProvider covers most
+          await ref.read(homeDataProvider.future);
+          await ref.read(hotForYouProvider.future);
+        },
+        child: ListView(
+          key: const Key('home_scroll_view'),
+          padding: const EdgeInsets.only(bottom: 150),
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            const SizedBox(height: 16),
 
-        children: [
-          const SizedBox(height: 16),
+            /// Displays trending tracks grouped by genre.
+            TrendingByGenre(),
 
-          /// Displays trending tracks grouped by genre.
-          TrendingByGenre(),
+            //const SizedBox(height: 24),
 
-          //const SizedBox(height: 24),
+            /// Displays personalized "Hot For You" recommendations.
+            HotForYouSection(),
 
-          /// Displays personalized "Hot For You" recommendations.
-          HotForYouSection(),
+            const SizedBox(height: 40),
 
-          const SizedBox(height: 40),
+            /// Displays mixed playlist recommendations.
+            MixedPlaylistsSection(),
 
-          /// Displays mixed playlist recommendations.
-          MixedPlaylistsSection(),
+            const SizedBox(height: 30),
 
-          const SizedBox(height: 30),
+            /// Displays discovery-based station suggestions.
+            DiscoverWithStationsSection(),
 
-          /// Displays discovery-based station suggestions.
-          DiscoverWithStationsSection(),
+            //const SizedBox(height: 10),
 
-          const SizedBox(height: 30),
-
-          /// Displays additional personalized music suggestions.
-          MoreOfWhatYouLikeSection(),
-        ],
+            /// Displays additional personalized music suggestions.
+            MoreOfWhatYouLikeSection(),
+          ],
+        ),
       ),
     );
   }

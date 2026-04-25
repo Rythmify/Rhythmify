@@ -84,14 +84,16 @@ class _BottomNavBar extends StatelessWidget {
 
     // Determine active tab from current route
     int activeIndex = 0;
-    if (location.startsWith('/feed'))
+    if (location.startsWith('/feed')) {
       activeIndex = 1;
-    else if (location.startsWith('/search'))
+    } else if (location.startsWith('/search')) {
       activeIndex = 2;
-    else if (location.startsWith('/library'))
+    } else if (location.startsWith('/library')) {
       activeIndex = 3;
-    else if (location.startsWith('/upgrade'))
+    } else if (location.startsWith('/upgrade')) {
       activeIndex = 4;
+    }
+
     // Playlist/mix/station routes don't match any tab — keep home highlighted
     // unless we came from library (not easily detectable, so default to home)
 

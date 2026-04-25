@@ -46,7 +46,8 @@ class ApiClient {
         baseUrl: _baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
-        headers: {'Content-Type': 'application/json'},
+        contentType: null,
+        headers: {},
       ),
     );
 
@@ -233,12 +234,22 @@ class ApiClient {
   // ─── storage helpers ─────────────────────────────────────────────────────
 
   /// Persists [token] as the current access token.
-  Future<void> saveToken(String token) =>
-      _storage.write(key: _accessTokenKey, value: token);
+  Future<void> saveToken(String token) async {
+    try {
+      await _storage.write(key: _accessTokenKey, value: token);
+    } catch (e) {
+      debugPrint('[ApiClient] Failed to save token: $e');
+    }
+  }
 
   /// Persists [token] as the current refresh token.
-  Future<void> saveRefreshToken(String token) =>
-      _storage.write(key: _refreshTokenKey, value: token);
+  Future<void> saveRefreshToken(String token) async {
+    try {
+      await _storage.write(key: _refreshTokenKey, value: token);
+    } catch (e) {
+      debugPrint('[ApiClient] Failed to save refresh token: $e');
+    }
+  }
 
   /// Persists both tokens in parallel.
   Future<void> saveAuthTokens({
@@ -252,18 +263,47 @@ class ApiClient {
   }
 
   /// Returns the stored access token, or `null` if none exists.
-  Future<String?> getToken() => _storage.read(key: _accessTokenKey);
+  ///
+  /// Handles decryption failures (e.g. [BadPaddingException]) by clearing
+  /// storage and returning null, forcing a fresh login.
+  Future<String?> getToken() async {
+    try {
+      return await _storage.read(key: _accessTokenKey);
+    } catch (e) {
+      debugPrint('[ApiClient] getToken decryption error: $e');
+      await clearTokens(); // Wiping corrupted storage
+      return null;
+    }
+  }
 
   /// Returns the stored refresh token, or `null` if none exists.
-  Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
+  Future<String?> getRefreshToken() async {
+    try {
+      return await _storage.read(key: _refreshTokenKey);
+    } catch (e) {
+      debugPrint('[ApiClient] getRefreshToken decryption error: $e');
+      await clearTokens();
+      return null;
+    }
+  }
 
   /// Deletes only the access token (keeps the refresh token).
-  Future<void> clearToken() => _storage.delete(key: _accessTokenKey);
+  Future<void> clearToken() async {
+    try {
+      await _storage.delete(key: _accessTokenKey);
+    } catch (e) {
+      debugPrint('[ApiClient] clearToken error: $e');
+    }
+  }
 
   /// Deletes both the access token and the refresh token.
   Future<void> clearTokens() async {
-    await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
+    try {
+      await _storage.delete(key: _accessTokenKey);
+      await _storage.delete(key: _refreshTokenKey);
+    } catch (e) {
+      debugPrint('[ApiClient] clearTokens error: $e');
+    }
   }
 }
 
