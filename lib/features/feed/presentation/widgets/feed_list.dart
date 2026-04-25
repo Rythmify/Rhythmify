@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/feed_providers.dart';
 import 'feed_card.dart';
-
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/feed_item.dart';
@@ -14,10 +13,10 @@ class FeedList extends ConsumerStatefulWidget {
   const FeedList({super.key, required this.tab});
 
   @override
-  ConsumerState<FeedList> createState() => _FeedListState();
+  ConsumerState<FeedList> createState() => FeedListState();
 }
 
-class _FeedListState extends ConsumerState<FeedList> {
+class FeedListState extends ConsumerState<FeedList> {
   final _pageController = PageController();
   bool _previewMode = false;
   String? _nowPlayingTrackId;
@@ -26,6 +25,13 @@ class _FeedListState extends ConsumerState<FeedList> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void resetPreview() {
+    setState(() {
+      _previewMode = false;
+      _nowPlayingTrackId = null;
+    });
   }
 
   void _activatePreviewMode(Track track) {
@@ -60,6 +66,7 @@ class _FeedListState extends ConsumerState<FeedList> {
     ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
   }
 
+  // preview url = audioUrl, full stream = streamUrl
   Track _trackFromFollowing(FeedItemEntity item) => Track(
     id: item.track.id,
     userId: item.user.id,
@@ -67,6 +74,22 @@ class _FeedListState extends ConsumerState<FeedList> {
     artist: item.user.displayName,
     artistPfp: item.user.avatar,
     audioUrl: item.track.audioUrl,
+    streamUrl: item.track.streamUrl,
+    coverImage: item.track.coverUrl,
+    duration: Duration(seconds: item.track.duration),
+    createdAt: item.createdAt,
+    playCount: item.track.playCount,
+    likeCount: item.track.likeCount,
+  );
+
+  Track _trackFromDiscover(FeedItemEntity item) => Track(
+    id: item.track.id,
+    userId: item.user.id,
+    title: item.track.title,
+    artist: item.user.displayName,
+    artistPfp: item.user.avatar,
+    audioUrl: item.track.audioUrl,
+    streamUrl: item.track.streamUrl,
     coverImage: item.track.coverUrl,
     duration: Duration(seconds: item.track.duration),
     createdAt: item.createdAt,
@@ -97,27 +120,38 @@ class _FeedListState extends ConsumerState<FeedList> {
           itemCount: items.length,
           onPageChanged: (index) {
             if (_previewMode) {
-              _playTrack(_trackFromFollowing(items[index]));
+              _playTrack(_trackFromDiscover(items[index]));
             }
           },
-          itemBuilder: (context, index) => GestureDetector(
+          itemBuilder: (context, index) => Stack(
             key: Key('feed_list_discover_gesture_$index'),
-            onTap: () {
-              if (_previewMode) {
-                _deactivatePreviewMode();
-              } else {
-                _activatePreviewMode(_trackFromFollowing(items[index]));
-              }
-            },
-            child: FeedCard(
-              key: Key('feed_list_discover_card_$index'),
-              item: items[index],
-              tab: widget.tab,
-              previewMode: _previewMode,
-              nowPlayingTrackId: _nowPlayingTrackId,
-              onPlay: () => _onBottomInfoPlay(items[index].track.id),
-              fullScreen: true,
-            ),
+            children: [
+              FeedCard(
+                key: Key('feed_list_discover_card_$index'),
+                item: items[index],
+                tab: widget.tab,
+                previewMode: _previewMode,
+                nowPlayingTrackId: _nowPlayingTrackId,
+                onPlay: () => _onBottomInfoPlay(items[index].track.id),
+                fullScreen: true, // ← add this
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 350,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (_previewMode) {
+                      _deactivatePreviewMode();
+                    } else {
+                      _activatePreviewMode(_trackFromDiscover(items[index]));
+                    }
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -146,23 +180,34 @@ class _FeedListState extends ConsumerState<FeedList> {
             _playTrack(_trackFromFollowing(items[index]));
           }
         },
-        itemBuilder: (context, index) => GestureDetector(
+        itemBuilder: (context, index) => Stack(
           key: Key('feed_list_following_gesture_$index'),
-          onTap: () {
-            if (_previewMode) {
-              _deactivatePreviewMode();
-            } else {
-              _activatePreviewMode(_trackFromFollowing(items[index]));
-            }
-          },
-          child: FeedCard(
-            key: Key('feed_list_following_card_$index'),
-            item: items[index],
-            tab: widget.tab,
-            previewMode: _previewMode,
-            nowPlayingTrackId: _nowPlayingTrackId,
-            onPlay: () => _onBottomInfoPlay(items[index].track.id),
-          ),
+          children: [
+            FeedCard(
+              key: Key('feed_list_following_card_$index'),
+              item: items[index],
+              tab: widget.tab,
+              previewMode: _previewMode,
+              nowPlayingTrackId: _nowPlayingTrackId,
+              onPlay: () => _onBottomInfoPlay(items[index].track.id),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 350,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  if (_previewMode) {
+                    _deactivatePreviewMode();
+                  } else {
+                    _activatePreviewMode(_trackFromFollowing(items[index]));
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

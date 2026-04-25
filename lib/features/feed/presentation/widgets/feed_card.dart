@@ -49,68 +49,74 @@ class FeedCard extends ConsumerWidget {
             ),
           ),
         ),
-        AnimatedOpacity(
-          key: const Key('feed_card_animated_opacity'),
-          duration: const Duration(milliseconds: 300),
-          opacity: (previewMode || isThisTrackNowPlaying) ? 0.0 : 0.45,
-          child: const ColoredBox(
-            key: Key('feed_card_dark_overlay'),
-            color: Colors.black,
-            child: SizedBox.expand(),
+        IgnorePointer(
+          child: AnimatedOpacity(
+            key: const Key('feed_card_animated_opacity'),
+            duration: const Duration(milliseconds: 300),
+            opacity: (previewMode || isThisTrackNowPlaying) ? 0.0 : 0.45,
+            child: const ColoredBox(
+              key: Key('feed_card_dark_overlay'),
+              color: Colors.black,
+              child: SizedBox.expand(),
+            ),
           ),
         ),
         if (showTapToPreview)
-          const Center(
-            key: Key('feed_card_tap_to_preview_center'),
-            child: Column(
-              key: Key('feed_card_tap_to_preview_column'),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  key: Key('feed_card_tap_to_preview_text'),
-                  'Tap to preview',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+          const IgnorePointer(
+            child: Center(
+              key: Key('feed_card_tap_to_preview_center'),
+              child: Column(
+                key: Key('feed_card_tap_to_preview_column'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    key: Key('feed_card_tap_to_preview_text'),
+                    'Tap to preview',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-                Icon(
-                  key: Key('feed_card_tap_to_preview_icon'),
-                  Icons.volume_off,
-                  color: Colors.white54,
-                  size: 36,
-                ),
-                SizedBox(height: 10),
-              ],
+                  Icon(
+                    key: Key('feed_card_tap_to_preview_icon'),
+                    Icons.volume_off,
+                    color: Colors.white54,
+                    size: 36,
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         if (isThisTrackNowPlaying)
-          const Center(
-            key: Key('feed_card_now_playing_center'),
-            child: Column(
-              key: Key('feed_card_now_playing_column'),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  key: Key('feed_card_now_playing_text'),
-                  'Now Playing',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+          const IgnorePointer(
+            child: Center(
+              key: Key('feed_card_now_playing_center'),
+              child: Column(
+                key: Key('feed_card_now_playing_column'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    key: Key('feed_card_now_playing_text'),
+                    'Now Playing',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-                Icon(
-                  key: Key('feed_card_now_playing_icon'),
-                  Icons.equalizer,
-                  color: Colors.white54,
-                  size: 36,
-                ),
-                SizedBox(height: 10),
-              ],
+                  Icon(
+                    key: Key('feed_card_now_playing_icon'),
+                    Icons.equalizer,
+                    color: Colors.white54,
+                    size: 36,
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         Positioned(

@@ -1,5 +1,5 @@
 import '../../../../core/network/api_client.dart';
-
+import '../../domain/entities/top_result.dart';
 import '../../../../core/data/models/track_dto.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../domain/entities/search_suggestion.dart';
@@ -44,7 +44,7 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
         id: map['id'] as String,
         text: map['display_name'] as String? ?? '',
         type: 'user',
-        avatarUrl: map['profile_picture'] as String?, // ← add this
+        avatarUrl: map['profile_picture'] as String?,
       );
     }).toList();
 
@@ -53,7 +53,10 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
 
   @override
   Future<SearchResults> getSearchResults(String query) async {
-    final response = await _dio.get('/search', queryParameters: {'q': query});
+    final response = await _dio.get(
+      '/search',
+      queryParameters: {'q': query, 'type': 'everything'},
+    );
     dev.log('SEARCH RESULTS RESPONSE: ${response.data}');
     final data = response.data['data'] as Map<String, dynamic>;
 
@@ -92,12 +95,14 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
                     as String? ??
                 ''
           : '';
+      final artworkUrl =
+          (map['cover_image'] as String?) ?? firstTrackCover; // ← changed
       return <String, String>{
         'id': map['id'] as String? ?? '',
         'title': map['title'] as String? ?? '',
         'creator': owner['display_name'] as String? ?? '',
         'trackCount': (map['track_count'] as int? ?? 0).toString(),
-        'artworkUrl': firstTrackCover,
+        'artworkUrl': artworkUrl, // ← changed
       };
     }).toList();
 
@@ -123,7 +128,42 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
         'type': map['subtype'] as String? ?? 'Album',
       };
     }).toList();
+    TopResult? topResult;
+
+    final topTrackRaw = data['top_track'] as Map<String, dynamic>?;
+    final topUserRaw = data['top_user'] as Map<String, dynamic>?;
+
+    final trackScore = (topTrackRaw?['score'] as num?)?.toDouble() ?? -1;
+    final userScore = (topUserRaw?['score'] as num?)?.toDouble() ?? -1;
+
+    if (topUserRaw != null && userScore >= trackScore) {
+      topResult = TopResultUser(
+        ProfileEntity(
+          id: topUserRaw['id'] as String,
+          displayName: topUserRaw['display_name'] as String? ?? '',
+          username: topUserRaw['username'] as String?,
+          avatarUrl: topUserRaw['profile_picture'] as String?,
+          followersCount: topUserRaw['follower_count'] as int? ?? 0,
+          followingCount: 0,
+          tracksCount: 0,
+          isFollowing: topUserRaw['is_following'] as bool? ?? false,
+        ),
+      );
+    } else if (topTrackRaw != null) {
+      topResult = TopResultTrack(
+        TrackDto.fromJson({
+          ...topTrackRaw,
+          if (topTrackRaw['artist'] == null &&
+              topTrackRaw['artist_name'] != null)
+            'artist': topTrackRaw['artist_name'],
+          if (topTrackRaw['genre'] == null && topTrackRaw['genre_name'] != null)
+            'genre': topTrackRaw['genre_name'],
+        }),
+      );
+    }
+
     return SearchResults(
+      topResult: topResult,
       tracks: tracks,
       profiles: profiles,
       playlists: playlists,

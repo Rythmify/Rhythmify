@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/feed_item.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/domain/entities/track.dart';
 
 class FeedCardSideActions extends StatefulWidget {
   final FeedItemEntity item;
@@ -31,7 +33,23 @@ class _FeedCardSideActionsState extends State<FeedCardSideActions> {
           key: const Key('feed_card_side_actions_comment'),
           icon: Icons.comment_outlined,
           label: '0',
-          onTap: () {},
+
+          onTap: () {
+            final track = Track(
+              id: widget.item.track.id,
+              userId: widget.item.user.id,
+              title: widget.item.track.title,
+              artist: widget.item.user.displayName,
+              artistPfp: widget.item.user.avatar,
+              audioUrl: widget.item.track.audioUrl,
+              coverImage: widget.item.track.coverUrl,
+              duration: Duration(seconds: widget.item.track.duration),
+              createdAt: widget.item.createdAt,
+              playCount: widget.item.track.playCount,
+              likeCount: widget.item.track.likeCount,
+            );
+            context.push('/comments/${widget.item.track.id}', extra: track);
+          },
         ),
       ],
     );

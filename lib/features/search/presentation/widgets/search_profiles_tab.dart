@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../../../core/utils/formatters.dart';
+import 'package:go_router/go_router.dart';
 
 /// A reusable profile card showing avatar, display name, follower count, and a Follow button.
 /// Used both in [ProfilesTab] and inline in the All tab's profiles section.
@@ -13,6 +14,8 @@ class SearchProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () => context.push('/profile/${profile.id}'),
+
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
         radius: 30,
