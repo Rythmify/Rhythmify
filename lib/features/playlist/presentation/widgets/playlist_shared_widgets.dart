@@ -236,29 +236,29 @@ class TrackTileInPlaylist extends StatelessWidget {
   }
 }
 
-//ADDED IN HOME AND SEARCH WIRING 
+//ADDED IN HOME AND SEARCH WIRING
 class TrackTileFromTrack extends StatelessWidget {
   const TrackTileFromTrack({
     super.key,
     required this.track,
     required this.onTap,
   });
- 
+
   final Track track;
   final VoidCallback onTap;
- 
+
   @override
   Widget build(BuildContext context) {
     final minutes = track.duration.inMinutes;
     final seconds = (track.duration.inSeconds % 60).toString().padLeft(2, '0');
     final durationStr = '$minutes:$seconds';
- 
+
     final playStr = track.playCount >= 1000000
         ? '${(track.playCount / 1000000).toStringAsFixed(1)}M'
         : track.playCount >= 1000
-            ? '${(track.playCount / 1000).toStringAsFixed(1)}K'
-            : '${track.playCount}';
- 
+        ? '${(track.playCount / 1000).toStringAsFixed(1)}K'
+        : '${track.playCount}';
+
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -281,7 +281,7 @@ class TrackTileFromTrack extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
- 
+
             // Title + artist + meta
             Expanded(
               child: Column(
@@ -307,8 +307,7 @@ class TrackTileFromTrack extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.play_arrow,
-                          size: 12, color: Colors.grey[600]),
+                      Icon(Icons.play_arrow, size: 12, color: Colors.grey[600]),
                       const SizedBox(width: 2),
                       Text(
                         '$playStr · $durationStr',
@@ -316,15 +315,18 @@ class TrackTileFromTrack extends StatelessWidget {
                       ),
                       if (track.isLiked) ...[
                         const SizedBox(width: 6),
-                        const Icon(Icons.favorite,
-                            size: 11, color: Color(0xFFFF5500)),
+                        const Icon(
+                          Icons.favorite,
+                          size: 11,
+                          color: Color(0xFFFF5500),
+                        ),
                       ],
                     ],
                   ),
                 ],
               ),
             ),
- 
+
             // Options menu
             IconButton(
               icon: Icon(Icons.more_horiz, color: Colors.grey[600], size: 20),
@@ -337,12 +339,12 @@ class TrackTileFromTrack extends StatelessWidget {
       ),
     );
   }
- 
+
   Widget _placeholder() => Container(
-        color: const Color(0xFF2A2A2A),
-        child: const Icon(Icons.music_note, color: Colors.white38, size: 20),
-      );
- 
+    color: const Color(0xFF2A2A2A),
+    child: const Icon(Icons.music_note, color: Colors.white38, size: 20),
+  );
+
   void _showTrackOptions(BuildContext context, Track track) {
     showModalBottomSheet(
       context: context,
@@ -354,7 +356,8 @@ class TrackTileFromTrack extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + 90),
+          bottom: MediaQuery.of(context).padding.bottom + 90,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -378,16 +381,23 @@ class TrackTileFromTrack extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(track.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
-                        Text(track.artist,
-                            style: TextStyle(
-                                color: Colors.grey[500], fontSize: 13)),
+                        Text(
+                          track.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          track.artist,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ),

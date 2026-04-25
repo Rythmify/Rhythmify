@@ -43,13 +43,16 @@ class MixDetailScreen extends ConsumerWidget {
       loading: () => const Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-          child: Text('Could not load mix',
-              style: const TextStyle(color: AppTheme.textSecondary)),
+          child: Text(
+            'Could not load mix',
+            style: const TextStyle(color: AppTheme.textSecondary),
+          ),
         ),
       ),
       data: (tracks) => _MixDetailBody(
@@ -93,8 +96,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
   }
 
   Future<void> _checkSaved() async {
-    final saved =
-        await LocalSavedStore.instance.isMixSaved(widget.mixId);
+    final saved = await LocalSavedStore.instance.isMixSaved(widget.mixId);
     if (mounted) setState(() => _isSaved = saved);
   }
 
@@ -125,8 +127,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
   @override
   Widget build(BuildContext context) {
     final tracks = widget.tracks;
-    final totalDuration =
-        tracks.fold(Duration.zero, (s, t) => s + t.duration);
+    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -146,8 +147,11 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left,
-                          color: AppTheme.textPrimary, size: 28),
+                      icon: const Icon(
+                        Icons.chevron_left,
+                        color: AppTheme.textPrimary,
+                        size: 28,
+                      ),
                       onPressed: () => context.pop(),
                     ),
                     _Cover(url: widget.coverUrl, label: widget.mixTitle),
@@ -156,27 +160,34 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.mixTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTheme.titleLarge),
+                          Text(
+                            widget.mixTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.titleLarge,
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             'Private · $durStr · ${tracks.length} tracks',
                             style: AppTheme.labelSmall,
                           ),
                           const SizedBox(height: 2),
-                          Row(children: [
-                            Text('Made for ', style: AppTheme.labelSmall),
-                            Flexible(
-                              child: Text(widget.ownerName,
+                          Row(
+                            children: [
+                              Text('Made for ', style: AppTheme.labelSmall),
+                              Flexible(
+                                child: Text(
+                                  widget.ownerName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTheme.labelSmall.copyWith(
-                                      color: AppTheme.textPrimary,
-                                      fontWeight: FontWeight.w600)),
-                            ),
-                          ]),
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -201,14 +212,20 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                       onPressed: _toggleLike,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.more_horiz,
-                          color: AppTheme.textPrimary, size: 24),
+                      icon: const Icon(
+                        Icons.more_horiz,
+                        color: AppTheme.textPrimary,
+                        size: 24,
+                      ),
                       onPressed: () => _showOptions(context),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.shuffle,
-                          color: AppTheme.textSecondary, size: 24),
+                      icon: const Icon(
+                        Icons.shuffle,
+                        color: AppTheme.textSecondary,
+                        size: 24,
+                      ),
                       onPressed: () {
                         final shuffled = List<Track>.from(tracks)..shuffle();
                         _play(shuffled, 0);
@@ -220,10 +237,14 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                         width: 52,
                         height: 52,
                         decoration: const BoxDecoration(
-                            color: AppTheme.lighterSurface,
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow,
-                            color: AppTheme.textPrimary, size: 28),
+                          color: AppTheme.lighterSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: AppTheme.textPrimary,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ],
@@ -236,8 +257,11 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               Expanded(
                 child: tracks.isEmpty
                     ? Center(
-                        child: Text('No tracks in this mix yet',
-                            style: AppTheme.bodyMedium))
+                        child: Text(
+                          'No tracks in this mix yet',
+                          style: AppTheme.bodyMedium,
+                        ),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.only(bottom: 140),
                         itemCount: tracks.length,
@@ -269,7 +293,8 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom + 90),
+          bottom: MediaQuery.of(context).padding.bottom + 90,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -278,15 +303,21 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(url: widget.coverUrl, label: widget.mixTitle, size: 56),
+                  _Cover(
+                    url: widget.coverUrl,
+                    label: widget.mixTitle,
+                    size: 56,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(widget.mixTitle, style: AppTheme.bodyNormal),
-                        Text('Made for ${widget.ownerName}',
-                            style: AppTheme.artistTitle),
+                        Text(
+                          'Made for ${widget.ownerName}',
+                          style: AppTheme.artistTitle,
+                        ),
                       ],
                     ),
                   ),
@@ -295,13 +326,15 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
             ),
             const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
-                icon: Icons.queue_play_next,
-                label: 'Play next',
-                onTap: () => Navigator.of(context).pop()),
+              icon: Icons.queue_play_next,
+              label: 'Play next',
+              onTap: () => Navigator.of(context).pop(),
+            ),
             OptionSheetTile(
-                icon: Icons.add_to_queue,
-                label: 'Play last',
-                onTap: () => Navigator.of(context).pop()),
+              icon: Icons.add_to_queue,
+              label: 'Play last',
+              onTap: () => Navigator.of(context).pop(),
+            ),
             OptionSheetTile(
               icon: _isSaved ? Icons.favorite : Icons.favorite_border,
               label: _isSaved ? 'Remove from library' : 'Save to library',
@@ -332,23 +365,27 @@ class _Cover extends StatelessWidget {
         width: size,
         height: size,
         child: url != null && url!.isNotEmpty && url!.startsWith('http')
-            ? Image.network(url!, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder())
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
             : _placeholder(),
       ),
     );
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            label.isNotEmpty ? label[0].toUpperCase() : 'M',
-            style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 22,
-                fontWeight: FontWeight.w700),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'M',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

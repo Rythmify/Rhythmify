@@ -40,7 +40,9 @@ class SavedStationsNotifier extends AsyncNotifier<List<SavedStation>> {
   }
 
   Future<void> toggle(SavedStation station) async {
-    final saved = await LocalSavedStore.instance.isStationSaved(station.artistId);
+    final saved = await LocalSavedStore.instance.isStationSaved(
+      station.artistId,
+    );
     if (saved) {
       await remove(station.artistId);
     } else {
@@ -51,8 +53,8 @@ class SavedStationsNotifier extends AsyncNotifier<List<SavedStation>> {
 
 final savedStationsProvider =
     AsyncNotifierProvider<SavedStationsNotifier, List<SavedStation>>(
-  SavedStationsNotifier.new,
-);
+      SavedStationsNotifier.new,
+    );
 
 // ── Saved Mixes ───────────────────────────────────────────────────────────────
 
@@ -93,5 +95,5 @@ class SavedMixesNotifier extends AsyncNotifier<List<SavedMix>> {
 
 final savedMixesProvider =
     AsyncNotifierProvider<SavedMixesNotifier, List<SavedMix>>(
-  SavedMixesNotifier.new,
-);
+      SavedMixesNotifier.new,
+    );

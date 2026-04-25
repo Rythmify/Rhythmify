@@ -42,8 +42,6 @@ class PlaylistOptionsSheet extends ConsumerWidget {
     return 'https://rythmify.com/playlists/${playlist.id}';
   }
 
-
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailState = ref.watch(playlistDetailProvider);
@@ -72,7 +70,11 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  PlaylistCoverImage(playlist: playlist, size: 56, borderRadius: 4),
+                  PlaylistCoverImage(
+                    playlist: playlist,
+                    size: 56,
+                    borderRadius: 4,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -88,7 +90,10 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                         ),
                         Text(
                           playlist.ownerName,
-                          style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -107,9 +112,13 @@ class PlaylistOptionsSheet extends ConsumerWidget {
             // ── Like ──────────────────────────────────────────────────────
             OptionSheetTile(
               key: const Key('options_like'),
-              icon: detailState.isLiked ? Icons.favorite : Icons.favorite_border,
+              icon: detailState.isLiked
+                  ? Icons.favorite
+                  : Icons.favorite_border,
               label: detailState.isLiked ? 'Liked' : 'Like',
-              color: detailState.isLiked ? const Color(0xFFFF5500) : Colors.white,
+              color: detailState.isLiked
+                  ? const Color(0xFFFF5500)
+                  : Colors.white,
               onTap: () async {
                 Navigator.of(context).pop();
                 await ref.read(playlistDetailProvider.notifier).toggleLike();
@@ -130,7 +139,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   final t = await ref
                       .read(getTrackDetailsUseCaseProvider)
                       .call(tracks.first.id);
-                  await ref.read(playerStateProvider.notifier).addToQueueNext(t);
+                  await ref
+                      .read(playerStateProvider.notifier)
+                      .addToQueueNext(t);
                 } catch (_) {}
               },
             ),
@@ -148,7 +159,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   final t = await ref
                       .read(getTrackDetailsUseCaseProvider)
                       .call(tracks.first.id);
-                  await ref.read(playerStateProvider.notifier).addToQueueLast(t);
+                  await ref
+                      .read(playerStateProvider.notifier)
+                      .addToQueueLast(t);
                 } catch (_) {}
               },
             ),
@@ -194,7 +207,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               // ── Toggle privacy ─────────────────────────────────────────
               OptionSheetTile(
                 key: const Key('options_toggle_privacy'),
-                icon: playlist.isPublic ? Icons.lock_outline : Icons.lock_open_outlined,
+                icon: playlist.isPublic
+                    ? Icons.lock_outline
+                    : Icons.lock_open_outlined,
                 label: playlist.isPublic
                     ? 'Make ${playlist.typeLabel.toLowerCase()} private'
                     : 'Make ${playlist.typeLabel.toLowerCase()} public',
@@ -282,10 +297,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
 // ════════════════════════════════════════════════════════════════════════════
 
 class _ShareRow extends StatelessWidget {
-  const _ShareRow({
-    required this.shareUrl,
-    required this.playlist,
-  });
+  const _ShareRow({required this.shareUrl, required this.playlist});
 
   final String shareUrl;
   final PlaylistEntity playlist;
@@ -508,9 +520,9 @@ class _QrCodeSheet extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: url));
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white30),

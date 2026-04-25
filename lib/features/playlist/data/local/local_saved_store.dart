@@ -31,23 +31,22 @@ class SavedMix {
   final DateTime savedAt;
 
   Map<String, dynamic> toJson() => {
-        'mixId': mixId,
-        'title': title,
-        'ownerName': ownerName,
-        'coverUrl': coverUrl,
-        'trackCount': trackCount,
-        'savedAt': savedAt.toIso8601String(),
-      };
+    'mixId': mixId,
+    'title': title,
+    'ownerName': ownerName,
+    'coverUrl': coverUrl,
+    'trackCount': trackCount,
+    'savedAt': savedAt.toIso8601String(),
+  };
 
   factory SavedMix.fromJson(Map<String, dynamic> j) => SavedMix(
-        mixId: j['mixId'] as String,
-        title: j['title'] as String,
-        ownerName: j['ownerName'] as String,
-        coverUrl: j['coverUrl'] as String?,
-        trackCount: (j['trackCount'] as num?)?.toInt() ?? 0,
-        savedAt: DateTime.tryParse(j['savedAt'] as String? ?? '') ??
-            DateTime.now(),
-      );
+    mixId: j['mixId'] as String,
+    title: j['title'] as String,
+    ownerName: j['ownerName'] as String,
+    coverUrl: j['coverUrl'] as String?,
+    trackCount: (j['trackCount'] as num?)?.toInt() ?? 0,
+    savedAt: DateTime.tryParse(j['savedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 // ── SavedStation ──────────────────────────────────────────────────────────────
@@ -69,23 +68,22 @@ class SavedStation {
   final DateTime savedAt;
 
   Map<String, dynamic> toJson() => {
-        'artistId': artistId,
-        'artistName': artistName,
-        'stationName': stationName,
-        'coverUrl': coverUrl,
-        'trackCount': trackCount,
-        'savedAt': savedAt.toIso8601String(),
-      };
+    'artistId': artistId,
+    'artistName': artistName,
+    'stationName': stationName,
+    'coverUrl': coverUrl,
+    'trackCount': trackCount,
+    'savedAt': savedAt.toIso8601String(),
+  };
 
   factory SavedStation.fromJson(Map<String, dynamic> j) => SavedStation(
-        artistId: j['artistId'] as String,
-        artistName: j['artistName'] as String,
-        stationName: j['stationName'] as String,
-        coverUrl: j['coverUrl'] as String?,
-        trackCount: (j['trackCount'] as num?)?.toInt() ?? 0,
-        savedAt: DateTime.tryParse(j['savedAt'] as String? ?? '') ??
-            DateTime.now(),
-      );
+    artistId: j['artistId'] as String,
+    artistName: j['artistName'] as String,
+    stationName: j['stationName'] as String,
+    coverUrl: j['coverUrl'] as String?,
+    trackCount: (j['trackCount'] as num?)?.toInt() ?? 0,
+    savedAt: DateTime.tryParse(j['savedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 // ── Store ─────────────────────────────────────────────────────────────────────
@@ -123,14 +121,20 @@ class LocalSavedStore {
     mixes.removeWhere((m) => m.mixId == mix.mixId);
     mixes.insert(0, mix);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_mixKey, jsonEncode(mixes.map((m) => m.toJson()).toList()));
+    await prefs.setString(
+      _mixKey,
+      jsonEncode(mixes.map((m) => m.toJson()).toList()),
+    );
   }
 
   Future<void> removeMix(String mixId) async {
     final mixes = await getMixes();
     mixes.removeWhere((m) => m.mixId == mixId);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_mixKey, jsonEncode(mixes.map((m) => m.toJson()).toList()));
+    await prefs.setString(
+      _mixKey,
+      jsonEncode(mixes.map((m) => m.toJson()).toList()),
+    );
   }
 
   // ── STATIONS ───────────────────────────────────────────────────────────────
@@ -160,7 +164,9 @@ class LocalSavedStore {
     stations.insert(0, station);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        _stationKey, jsonEncode(stations.map((s) => s.toJson()).toList()));
+      _stationKey,
+      jsonEncode(stations.map((s) => s.toJson()).toList()),
+    );
   }
 
   Future<void> removeStation(String artistId) async {
@@ -168,6 +174,8 @@ class LocalSavedStore {
     stations.removeWhere((s) => s.artistId == artistId);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        _stationKey, jsonEncode(stations.map((s) => s.toJson()).toList()));
+      _stationKey,
+      jsonEncode(stations.map((s) => s.toJson()).toList()),
+    );
   }
 }
