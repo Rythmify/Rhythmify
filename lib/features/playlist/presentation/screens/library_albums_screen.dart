@@ -229,35 +229,35 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                       ),
                     )
                   : filtered.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Text(
-                              _searchQuery.isEmpty
-                                  ? 'No albums yet'
-                                  : 'No results for "$_searchQuery"',
-                              style: AppTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 140),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final album = filtered[index];
-                            final isOwner = album.ownerId == _currentUserId();
-                            return _AlbumTile(
-                              album: album,
-                              onTap: () => context.push(
-                                '/home/playlist/${album.id}',
-                                extra: isOwner,
-                              ),
-                              onMoreTap: () =>
-                                  _showOptions(context, album, isOwner),
-                            );
-                          },
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? 'No albums yet'
+                              : 'No results for "$_searchQuery"',
+                          style: AppTheme.bodyMedium,
+                          textAlign: TextAlign.center,
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 140),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final album = filtered[index];
+                        final isOwner = album.ownerId == _currentUserId();
+                        return _AlbumTile(
+                          album: album,
+                          onTap: () => context.push(
+                            '/home/playlist/${album.id}',
+                            extra: isOwner,
+                          ),
+                          onMoreTap: () =>
+                              _showOptions(context, album, isOwner),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
