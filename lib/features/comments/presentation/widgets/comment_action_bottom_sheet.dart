@@ -185,19 +185,21 @@ class CommentActionBottomSheet extends ConsumerWidget {
       }
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(
-          content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
+          ),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(
-          content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e',
+            ),
+          ),
+        );
       }
     }
   }

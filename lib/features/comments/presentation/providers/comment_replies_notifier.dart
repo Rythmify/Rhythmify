@@ -226,7 +226,10 @@ class CommentRepliesNotifier extends StateNotifier<TrackCommentsState> {
   ///
   /// Optimistically updates the `isAuthorBlocked` flag for every reply authored
   /// by the target [userId]. Reverts if the backend request fails.
-  Future<void> toggleBlockUser(String userId, {required bool shouldBlock}) async {
+  Future<void> toggleBlockUser(
+    String userId, {
+    required bool shouldBlock,
+  }) async {
     final originalComments = [...state.comments];
     final originalBlockedUsers = ref.read(blockedUserIdsProvider);
 

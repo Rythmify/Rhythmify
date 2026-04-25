@@ -155,6 +155,7 @@ class BlockedUserIdsNotifier extends Notifier<Set<String>> {
   }
 }
 
-final blockedUserIdsProvider = NotifierProvider<BlockedUserIdsNotifier, Set<String>>(() {
-  return BlockedUserIdsNotifier();
-});
+final blockedUserIdsProvider =
+    NotifierProvider<BlockedUserIdsNotifier, Set<String>>(() {
+      return BlockedUserIdsNotifier();
+    });

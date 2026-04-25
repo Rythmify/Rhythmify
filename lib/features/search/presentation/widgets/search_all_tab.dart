@@ -349,7 +349,8 @@ class _TopResultCard extends StatelessWidget {
           style: TextStyle(color: Colors.grey[400]),
         ),
         trailing: const Icon(Icons.more_vert),
-        onTap: () => context.push('/home/playlist/${playlist['id']}', extra: false),
+        onTap: () =>
+            context.push('/home/playlist/${playlist['id']}', extra: false),
       ),
 
       TopResultAlbum(:final album) => ListTile(
@@ -375,7 +376,8 @@ class _TopResultCard extends StatelessWidget {
           style: TextStyle(color: Colors.grey[400]),
         ),
         trailing: const Icon(Icons.more_vert),
-        onTap: () => context.push('/home/playlist/${album['id']}', extra: false),
+        onTap: () =>
+            context.push('/home/playlist/${album['id']}', extra: false),
       ),
     };
   }

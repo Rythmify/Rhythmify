@@ -60,7 +60,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   Widget build(BuildContext context) {
     ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
-    
+
     // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -72,9 +72,11 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Use string matching directly on the shell's current location if possible, 
+    // Use string matching directly on the shell's current location if possible,
     // or keep this light.
-    final location = GoRouter.of(context).routeInformationProvider.value.uri.path;
+    final location = GoRouter.of(
+      context,
+    ).routeInformationProvider.value.uri.path;
     final isChatRoute = location.contains('/chat');
     final isFeedRoute = location == '/feed';
     final isVisible = !isChatRoute;

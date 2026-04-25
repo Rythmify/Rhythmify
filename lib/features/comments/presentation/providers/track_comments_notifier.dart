@@ -50,7 +50,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     : _initialTrack = initialTrack,
       super(TrackCommentsState.initial()) {
     fetchComments();
-    
+
     if (initialTrack != null) {
       setInitialCount(initialTrack.commentCount);
     }
@@ -69,7 +69,9 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
   /// Helper to sync comment count globally
   void _syncGlobalCount(int newCount) {
-    ref.read(trackSyncProvider.notifier).updateCommentCount(trackId, newCount, _initialTrack);
+    ref
+        .read(trackSyncProvider.notifier)
+        .updateCommentCount(trackId, newCount, _initialTrack);
   }
 
   /// Sets the initial track metadata and count.
@@ -194,7 +196,9 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
 
     // The total count should decrease by the parent comment AND all its replies
     final decrementAmount = 1 + commentToDelete.replyCount;
-    final newCount = originalCount >= decrementAmount ? originalCount - decrementAmount : 0;
+    final newCount = originalCount >= decrementAmount
+        ? originalCount - decrementAmount
+        : 0;
 
     if (mounted) {
       state = state.copyWith(
@@ -303,7 +307,10 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   ///
   /// Optimistically updates the `isAuthorBlocked` flag for every comment authored
   /// by the target [userId]. Reverts if the backend request fails.
-  Future<void> toggleBlockUser(String userId, {required bool shouldBlock}) async {
+  Future<void> toggleBlockUser(
+    String userId, {
+    required bool shouldBlock,
+  }) async {
     final originalComments = [...state.comments];
     final originalBlockedUsers = ref.read(blockedUserIdsProvider);
 

@@ -26,7 +26,7 @@ class FeedCardSideActions extends ConsumerWidget {
       createdAt: item.createdAt,
       playCount: item.track.playCount,
       likeCount: item.track.likeCount,
-      // Note: FeedTrackEntity doesn't have commentCount or repostCount, 
+      // Note: FeedTrackEntity doesn't have commentCount or repostCount,
       // they will be 0 until synced or fetched.
       commentCount: 0,
       repostCount: 0,
@@ -48,7 +48,9 @@ class FeedCardSideActions extends ConsumerWidget {
           label: Formatters.formatCount(syncedTrack.likeCount),
           color: syncedTrack.isLiked ? AppTheme.primaryBrand : Colors.white,
           onTap: () {
-            ref.read(trackInteractionProvider).handleToggleLike(
+            ref
+                .read(trackInteractionProvider)
+                .handleToggleLike(
                   syncedTrack.id,
                   syncedTrack.isLiked,
                   currentTrack: syncedTrack,

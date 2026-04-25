@@ -180,7 +180,7 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
     } else {
       items = [];
     }
-    
+
     return items.map((json) => CommentDto.fromJson(json)).toList();
   }
 

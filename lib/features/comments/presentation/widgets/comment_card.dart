@@ -61,11 +61,13 @@ class CommentCard extends StatelessWidget {
           Opacity(
             opacity: isBlocked ? 0.4 : 1.0,
             child: InkWell(
-              onTap: isBlocked ? null : () {
-                playerCollapseNotifier.value?.call(); // Collapse player
-                context.pop(); // Close comments
-                context.push('/home/profile/${comment.userId}');
-              },
+              onTap: isBlocked
+                  ? null
+                  : () {
+                      playerCollapseNotifier.value?.call(); // Collapse player
+                      context.pop(); // Close comments
+                      context.push('/home/profile/${comment.userId}');
+                    },
               borderRadius: BorderRadius.circular(isReply ? 16 : 20),
               child: Container(
                 width: isReply ? 32 : 40,
@@ -117,11 +119,14 @@ class CommentCard extends StatelessWidget {
                     Opacity(
                       opacity: isBlocked ? 0.4 : 1.0,
                       child: InkWell(
-                        onTap: isBlocked ? null : () {
-                playerCollapseNotifier.value?.call(); // Collapse player
-                context.pop(); // Close comments
-                context.push('/home/profile/${comment.userId}');
-              },
+                        onTap: isBlocked
+                            ? null
+                            : () {
+                                playerCollapseNotifier.value
+                                    ?.call(); // Collapse player
+                                context.pop(); // Close comments
+                                context.push('/home/profile/${comment.userId}');
+                              },
                         borderRadius: BorderRadius.circular(
                           4,
                         ), // Gives the ripple a nice rounded edge
@@ -188,11 +193,16 @@ class CommentCard extends StatelessWidget {
                 if (isBlocked)
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Text(
                       'You blocked this user',
@@ -286,7 +296,9 @@ class CommentCard extends StatelessWidget {
                 IconButton(
                   onPressed: onLike,
                   icon: Icon(
-                    comment.isLikedByMe ? Icons.favorite : Icons.favorite_border,
+                    comment.isLikedByMe
+                        ? Icons.favorite
+                        : Icons.favorite_border,
                     size: 16,
                     color: comment.isLikedByMe ? Colors.red : Colors.white70,
                   ),
