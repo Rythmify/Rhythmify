@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 /// A reusable track row showing artwork, title, artist, and formatted duration.
 /// Used across the search results tabs (Tracks, All) and any other feature that lists tracks.
 /// [onTap] is a placeholder — will trigger the player once routing is set up.
 class TrackTile extends ConsumerWidget {
-  const TrackTile({super.key, required this.track});
+  const TrackTile({super.key, required this.track, this.onTap});
   final Track track;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,13 +78,20 @@ class TrackTile extends ConsumerWidget {
         ),
       ),
       onTap: () {
+        if (onTap != null) {
+          onTap!();
+          return;
+        }
         final playerState = ref.read(playerStateProvider);
         final isThisTrackLoaded = playerState.currentTrack?.id == track.id;
 
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {
-          ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+          ref.read(queueStateProvider.notifier).playQueue(
+                tracks: [track],
+                initialIndex: 0,
+              );
         }
       },
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/genre_tab.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
@@ -350,9 +351,10 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     if (isThisTrackLoaded) {
                       ref.read(playerStateProvider.notifier).togglePlayPause();
                     } else {
-                      ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-                        track,
-                      ]);
+                      ref.read(queueStateProvider.notifier).playQueue(
+                            tracks: tracks,
+                            initialIndex: tracks.indexOf(track),
+                          );
                     }
                   },
                 ),

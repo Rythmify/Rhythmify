@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import 'track_tile.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 /// Search results tab displaying the tracks list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [TrackTile].
@@ -34,8 +35,16 @@ class TracksTab extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           itemCount: data.tracks.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (_, i) =>
-              TrackTile(key: Key('track_tile_$i'), track: data.tracks[i]),
+          itemBuilder: (context, i) => TrackTile(
+            key: Key('track_tile_$i'),
+            track: data.tracks[i],
+            onTap: () {
+              ref.read(queueStateProvider.notifier).playQueue(
+                    tracks: data.tracks,
+                    initialIndex: i,
+                  );
+            },
+          ),
         );
       },
     );
