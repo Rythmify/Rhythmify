@@ -7,13 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../data/local/local_saved_store.dart';
+import '../providers/saved_content_provider.dart';
+import '../widgets/playlist_screen_scaffold.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
 enum MixType { genre, daily, weekly }
 
-// ── Screen ────────────────────────────────────────────────────────────────────
 class MixDetailScreen extends ConsumerWidget {
   const MixDetailScreen({
     super.key,
@@ -34,19 +37,19 @@ class MixDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use Sohaila's provider — already fetches & parses correctly
     final asyncTracks = ref.watch(mixTracksProvider(mixId));
 
     return asyncTracks.when(
       loading: () => const Scaffold(
-        backgroundColor: Color(0xFF111111),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFFF5500))),
+        backgroundColor: AppTheme.background,
+        body: Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
       ),
       error: (e, _) => Scaffold(
-        backgroundColor: const Color(0xFF111111),
+        backgroundColor: AppTheme.background,
         body: Center(
-          child: Text('Could not load mix\n$e',
-              style: const TextStyle(color: Colors.white)),
+          child: Text('Could not load mix',
+              style: const TextStyle(color: AppTheme.textSecondary)),
         ),
       ),
       data: (tracks) => _MixDetailBody(
@@ -60,7 +63,8 @@ class MixDetailScreen extends ConsumerWidget {
   }
 }
 
-class _MixDetailBody extends ConsumerWidget {
+// ── Body — ConsumerStatefulWidget so it can hold _isSaved state ───────────────
+class _MixDetailBody extends ConsumerStatefulWidget {
   const _MixDetailBody({
     required this.mixId,
     required this.mixTitle,
@@ -75,32 +79,54 @@ class _MixDetailBody extends ConsumerWidget {
   final String? coverUrl;
   final List<Track> tracks;
 
-  Future<void> _play(WidgetRef ref, int index) async {
-    if (tracks.isEmpty || index >= tracks.length) return;
+  @override
+  ConsumerState<_MixDetailBody> createState() => _MixDetailBodyState();
+}
+
+class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSaved();
+  }
+
+  Future<void> _checkSaved() async {
+    final saved =
+        await LocalSavedStore.instance.isMixSaved(widget.mixId);
+    if (mounted) setState(() => _isSaved = saved);
+  }
+
+  Future<void> _toggleLike() async {
+    final mix = SavedMix(
+      mixId: widget.mixId,
+      title: widget.mixTitle,
+      ownerName: widget.ownerName,
+      coverUrl: widget.coverUrl,
+      trackCount: widget.tracks.length,
+      savedAt: DateTime.now(),
+    );
+    await ref.read(savedMixesProvider.notifier).toggle(mix);
+    if (mounted) setState(() => _isSaved = !_isSaved);
+  }
+
+  Future<void> _play(List<Track> list, int index) async {
+    if (list.isEmpty || index >= list.length) return;
     try {
-      await ref.read(playerStateProvider.notifier)
-          .loadAndPlayQueue(tracks, initialIndex: index);
+      await ref
+          .read(playerStateProvider.notifier)
+          .loadAndPlayQueue(list, initialIndex: index);
     } catch (e) {
       debugPrint('[MixDetail] play failed: $e');
     }
   }
 
-  Future<void> _playAll(WidgetRef ref) => _play(ref, 0);
-
-  Future<void> _shuffle(WidgetRef ref) async {
-    if (tracks.isEmpty) return;
-    final shuffled = List<Track>.from(tracks)..shuffle();
-    try {
-      await ref.read(playerStateProvider.notifier)
-          .loadAndPlayQueue(shuffled, initialIndex: 0);
-    } catch (e) {
-      debugPrint('[MixDetail] shuffle failed: $e');
-    }
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
+  Widget build(BuildContext context) {
+    final tracks = widget.tracks;
+    final totalDuration =
+        tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -108,123 +134,138 @@ class _MixDetailBody extends ConsumerWidget {
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-                    onPressed: () => context.pop(),
-                  ),
-                  _Cover(url: coverUrl, label: mixTitle),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(mixTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 2),
-                        Text('Private · $durStr · ${tracks.length} tracks',
-                            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                        const SizedBox(height: 2),
-                        Row(children: [
-                          Text('Made for ',
-                              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                          Flexible(
-                            child: Text(ownerName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600)),
+    return PlaylistScreenScaffold(
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ─────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left,
+                          color: AppTheme.textPrimary, size: 28),
+                      onPressed: () => context.pop(),
+                    ),
+                    _Cover(url: widget.coverUrl, label: widget.mixTitle),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.mixTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.titleLarge),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Private · $durStr · ${tracks.length} tracks',
+                            style: AppTheme.labelSmall,
                           ),
-                        ]),
-                      ],
+                          const SizedBox(height: 2),
+                          Row(children: [
+                            Text('Made for ', style: AppTheme.labelSmall),
+                            Flexible(
+                              child: Text(widget.ownerName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTheme.labelSmall.copyWith(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w600)),
+                            ),
+                          ]),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Action bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: Row(
-                children: [
-                  const IconButton(
-                    icon: Icon(Icons.favorite_border, color: Colors.white, size: 24),
-                    onPressed: null,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
-                    onPressed: () => _showOptions(context, ref),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.shuffle, color: Colors.white60, size: 24),
-                    onPressed: () => _shuffle(ref),
-                  ),
-                  GestureDetector(
-                    onTap: () => _playAll(ref),
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF3A3A3A), shape: BoxShape.circle),
-                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 28),
+              // ── Action bar ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                child: Row(
+                  children: [
+                    // ✅ Wired like button
+                    IconButton(
+                      icon: Icon(
+                        _isSaved ? Icons.favorite : Icons.favorite_border,
+                        color: _isSaved
+                            ? AppTheme.primaryBrand
+                            : AppTheme.textPrimary,
+                        size: 24,
+                      ),
+                      onPressed: _toggleLike,
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(color: Colors.white12, height: 1),
-
-            // Track list — uses Track directly, no second fetch
-            Expanded(
-              child: tracks.isEmpty
-                  ? Center(
-                      child: Text('No tracks in this mix yet',
-                          style: TextStyle(color: Colors.grey[500])))
-                  : ListView.builder(
-                      itemCount: tracks.length,
-                      itemBuilder: (context, index) {
-                        final t = tracks[index];
-                        return TrackTileFromTrack(
-                          key: Key('mix_track_${t.id}'),
-                          track: t,
-                          onTap: () => _play(ref, index),
-                        );
+                    IconButton(
+                      icon: const Icon(Icons.more_horiz,
+                          color: AppTheme.textPrimary, size: 24),
+                      onPressed: () => _showOptions(context),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.shuffle,
+                          color: AppTheme.textSecondary, size: 24),
+                      onPressed: () {
+                        final shuffled = List<Track>.from(tracks)..shuffle();
+                        _play(shuffled, 0);
                       },
                     ),
-            ),
-          ],
+                    GestureDetector(
+                      onTap: () => _play(tracks, 0),
+                      child: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                            color: AppTheme.lighterSurface,
+                            shape: BoxShape.circle),
+                        child: const Icon(Icons.play_arrow,
+                            color: AppTheme.textPrimary, size: 28),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(color: AppTheme.lighterSurface, height: 1),
+
+              // ── Track list ──────────────────────────────────────────────
+              Expanded(
+                child: tracks.isEmpty
+                    ? Center(
+                        child: Text('No tracks in this mix yet',
+                            style: AppTheme.bodyMedium))
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 140),
+                        itemCount: tracks.length,
+                        itemBuilder: (context, index) {
+                          final t = tracks[index];
+                          return TrackTileFromTrack(
+                            key: Key('mix_track_${t.id}'),
+                            track: t,
+                            onTap: () => _play(tracks, index),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
+  void _showOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1C),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
@@ -237,26 +278,22 @@ class _MixDetailBody extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(url: coverUrl, label: mixTitle, size: 56),
+                  _Cover(url: widget.coverUrl, label: widget.mixTitle, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(mixTitle,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
-                        Text('Made for $ownerName',
-                            style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+                        Text(widget.mixTitle, style: AppTheme.bodyNormal),
+                        Text('Made for ${widget.ownerName}',
+                            style: AppTheme.artistTitle),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
                 icon: Icons.queue_play_next,
                 label: 'Play next',
@@ -266,9 +303,13 @@ class _MixDetailBody extends ConsumerWidget {
                 label: 'Play last',
                 onTap: () => Navigator.of(context).pop()),
             OptionSheetTile(
-                icon: Icons.copy_all,
-                label: 'Copy mix',
-                onTap: () => Navigator.of(context).pop()),
+              icon: _isSaved ? Icons.favorite : Icons.favorite_border,
+              label: _isSaved ? 'Remove from library' : 'Save to library',
+              onTap: () {
+                Navigator.of(context).pop();
+                _toggleLike();
+              },
+            ),
             const SizedBox(height: 40),
           ],
         ),
@@ -277,7 +318,6 @@ class _MixDetailBody extends ConsumerWidget {
   }
 }
 
-// ── Small helpers ─────────────────────────────────────────────────────────────
 class _Cover extends StatelessWidget {
   const _Cover({required this.url, required this.label, this.size = 56});
   final String? url;
@@ -300,12 +340,14 @@ class _Cover extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: const Color(0xFF2A2A2A),
+        color: AppTheme.surface,
         child: Center(
           child: Text(
             label.isNotEmpty ? label[0].toUpperCase() : 'M',
             style: const TextStyle(
-                color: Colors.white54, fontSize: 22, fontWeight: FontWeight.w700),
+                color: AppTheme.textSecondary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700),
           ),
         ),
       );

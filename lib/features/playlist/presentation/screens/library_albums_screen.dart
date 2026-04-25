@@ -23,6 +23,7 @@ class LibraryAlbumsScreen extends ConsumerStatefulWidget {
 
 class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   String _searchQuery = '';
+  bool _showLiked = false;
 
   @override
   void initState() {
@@ -37,6 +38,15 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
     return authState is AuthAuthenticated ? authState.user.id : '';
   }
 
+  void _onFilterChanged(bool liked) {
+    setState(() => _showLiked = liked);
+    if (liked) {
+      ref.read(playlistListProvider.notifier).loadLikedAlbums();
+    } else {
+      ref.read(playlistListProvider.notifier).loadPlaylists();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
@@ -44,13 +54,14 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
         .where((p) => p.type == PlaylistType.album)
         .toList();
     final filtered = allAlbums
-        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((p) =>
+            p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.background, // ✅ changed
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.background, // ✅ changed
+        backgroundColor: AppTheme.background,
         elevation: 0,
         leading: IconButton(
           key: const Key('library_albums_back_button'),
@@ -71,42 +82,48 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
         children: [
           // ── Search bar ──────────────────────────────────────────────────
           Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Container(
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TextField(
+                key: const Key('library_albums_search_field'),
+                onChanged: (v) => setState(() => _searchQuery = v),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText:
+                      'Search ${allAlbums.length} album${allAlbums.length == 1 ? '' : 's'}',
+                  hintStyle:
+                      TextStyle(color: Colors.grey[600], fontSize: 14),
+                  prefixIcon:
+                      const Icon(Icons.search, color: Colors.grey, size: 18),
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+          ),
+
+          // ── My Albums / Liked toggle ─────────────────────────────────────
+          Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
             child: Row(
               children: [
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: TextField(
-                      key: const Key('library_albums_search_field'),
-                      onChanged: (v) => setState(() => _searchQuery = v),
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Search ${allAlbums.length} album${allAlbums.length == 1 ? '' : 's'}',
-                        hintStyle: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                          size: 18,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                  ),
+                _FilterChip(
+                  label: 'My Albums',
+                  selected: !_showLiked,
+                  onTap: () => _onFilterChanged(false),
                 ),
                 const SizedBox(width: 8),
-                Icon(Icons.tune, color: Colors.grey[400], size: 22),
+                _FilterChip(
+                  label: 'Liked',
+                  selected: _showLiked,
+                  onTap: () => _onFilterChanged(true),
+                ),
               ],
             ),
           ),
@@ -115,43 +132,50 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
           Expanded(
             child: state.isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFFF5500)),
+                    child:
+                        CircularProgressIndicator(color: Color(0xFFFF5500)),
                   )
                 : filtered.isEmpty
-                ? Center(
-                    child: Text(
-                      _searchQuery.isEmpty
-                          ? 'No albums yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Album.'
-                          : 'No results for "$_searchQuery"',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final album = filtered[index];
-                      final isOwner = album.ownerId == _currentUserId();
-                      return _AlbumTile(
-                        key: Key('library_album_tile_${album.id}'),
-                        album: album,
-                        onTap: () => context.push(
-                          '/library/albums/${album.id}',
-                          extra: isOwner,
+                    ? Center(
+                        child: Text(
+                          _showLiked
+                              ? 'No liked albums yet.\n\nLike an album to see it here.'
+                              : _searchQuery.isEmpty
+                                  ? 'No albums yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Album.'
+                                  : 'No results for "$_searchQuery"',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.grey[500], fontSize: 14),
                         ),
-                        onMoreTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => PlaylistOptionsSheet(
-                            playlistId: album.id,
-                            isOwner: isOwner,
-                            onConverted: (t) => _onConverted(context, t),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 140),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final album = filtered[index];
+                          final isOwner =
+                              album.ownerId == _currentUserId();
+                          return _AlbumTile(
+                            key: Key('library_album_tile_${album.id}'),
+                            album: album,
+                            onTap: () => context.push(
+                              '/playlist/${album.id}', // ✅ FIXED: was /library/albums/
+                              extra: isOwner,
+                            ),
+                            onMoreTap: () => showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => PlaylistOptionsSheet(
+                                playlistId: album.id,
+                                isOwner: isOwner,
+                                onConverted: (t) =>
+                                    _onConverted(context, t),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -170,6 +194,52 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
   }
 }
 
+// ── Filter chip ───────────────────────────────────────────────────────────────
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color:
+              selected ? AppTheme.primaryBrand : AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? AppTheme.primaryBrand
+                : AppTheme.lighterSurface,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTheme.labelSmall.copyWith(
+            color: selected
+                ? Colors.white
+                : AppTheme.textSecondary,
+            fontWeight: selected
+                ? FontWeight.w700
+                : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Album tile ────────────────────────────────────────────────────────────────
 class _AlbumTile extends StatelessWidget {
   const _AlbumTile({
     super.key,
@@ -187,13 +257,14 @@ class _AlbumTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
             PlaylistCoverImage(
               playlist: album,
               size: 65,
-              borderRadius: 0, // ✅ sharp edges
+              borderRadius: 0,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -213,19 +284,22 @@ class _AlbumTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     album.ownerName,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                    style: TextStyle(
+                        color: Colors.grey[500], fontSize: 13),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     '${album.releaseYear ?? album.createdAt.year} · Album',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(
+                        color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
             ),
             IconButton(
               key: Key('album_tile_more_${album.id}'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert,
+                  color: Colors.grey, size: 20),
               onPressed: onMoreTap,
             ),
           ],

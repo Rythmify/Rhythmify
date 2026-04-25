@@ -134,6 +134,24 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     }
   }
 
+  /// Loads albums the user has liked — used by library albums "Liked" filter.
+  /// Calls GET /playlists?mine=true&filter=liked&is_album_view=true
+  Future<void> loadLikedAlbums() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      // fetchMyPlaylists with filter=liked fetches all liked collections.
+      // We pass no subtype so the backend returns everything liked,
+      // then the screen filters by PlaylistType.album client-side.
+      final liked = await _ds.fetchMyPlaylists(filter: 'liked');
+      state = PlaylistListState(playlists: liked);
+    } on DioException catch (_) {
+      state = PlaylistListState(
+        playlists: [],
+        error: 'Could not load liked albums',
+      );
+    }
+  }
+
   // ── CREATE ────────────────────────────────────────────────────────────────
   Future<PlaylistEntity?> createPlaylist({
     required String name,
@@ -441,75 +459,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     }
   }
 
-  // ── LIKE / UNLIKE ─────────────────────────────────────────────────────────
-  /// Optimistically toggles like state + likeCount, rolls back on failure.
-  // Future<void> toggleLike() async {
-  //   final playlist = state.playlist;
-  //   if (playlist == null) return;
 
-  //   final wasLiked = state.isLiked;
-  //   final previousCount = playlist.likeCount;
-
-  //   // Optimistic update — rebuild entity manually since copyWith has no likeCount
-  //   final optimisticPlaylist = PlaylistEntity(
-  //     id: playlist.id,
-  //     name: playlist.name,
-  //     ownerName: playlist.ownerName,
-  //     ownerId: playlist.ownerId,
-  //     isPublic: playlist.isPublic,
-  //     type: playlist.type,
-  //     trackCount: playlist.trackCount,
-  //     totalDuration: playlist.totalDuration,
-  //     createdAt: playlist.createdAt,
-  //     coverUrl: playlist.coverUrl,
-  //     description: playlist.description,
-  //     likeCount: wasLiked
-  //         ? (previousCount - 1).clamp(0, 999999999)
-  //         : previousCount + 1,
-  //     repostCount: playlist.repostCount,
-  //     isLiked: !wasLiked,
-  //     seedTrackTitle: playlist.seedTrackTitle,
-  //     seedArtistName: playlist.seedArtistName,
-  //     releaseYear: playlist.releaseYear,
-  //   );
-  //   state = state.copyWith(isLiked: !wasLiked, playlist: optimisticPlaylist);
-
-  //   try {
-  //     if (wasLiked) {
-  //       await _ds.unlikePlaylist(playlist.id);
-  //       debugPrint('[DETAIL] ✅ Unliked ${playlist.id}');
-  //     } else {
-  //       await _ds.likePlaylist(playlist.id);
-  //       debugPrint('[DETAIL] ✅ Liked ${playlist.id}');
-  //     }
-
-  //     // Also update the list provider so library shows correct liked state
-  //     ref.read(playlistListProvider.notifier).loadPlaylists();
-  //   } on DioException catch (e) {
-  //     debugPrint('[DETAIL] ❌ toggleLike ${e.response?.statusCode}');
-  //     // Rollback — rebuild entity since copyWith has no likeCount param
-  //     final rollbackPlaylist = PlaylistEntity(
-  //       id: playlist.id,
-  //       name: playlist.name,
-  //       ownerName: playlist.ownerName,
-  //       ownerId: playlist.ownerId,
-  //       isPublic: playlist.isPublic,
-  //       type: playlist.type,
-  //       trackCount: playlist.trackCount,
-  //       totalDuration: playlist.totalDuration,
-  //       createdAt: playlist.createdAt,
-  //       coverUrl: playlist.coverUrl,
-  //       description: playlist.description,
-  //       likeCount: previousCount,
-  //       repostCount: playlist.repostCount,
-  //       isLiked: wasLiked,
-  //       seedTrackTitle: playlist.seedTrackTitle,
-  //       seedArtistName: playlist.seedArtistName,
-  //       releaseYear: playlist.releaseYear,
-  //     );
-  //     state = state.copyWith(isLiked: wasLiked, playlist: rollbackPlaylist);
-  //   }
-  // }
    
   Future<void> toggleLike() async {
     if (_currentPlaylistId == null) return;

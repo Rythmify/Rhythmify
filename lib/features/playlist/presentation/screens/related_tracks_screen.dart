@@ -7,25 +7,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../widgets/playlist_shared_widgets.dart';
 import '../../data/datasources/playlist_remote_datasource.dart';
+import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
+import '../providers/saved_content_provider.dart';
+import '../widgets/playlist_screen_scaffold.dart';
+import '../widgets/playlist_shared_widgets.dart';
 
-// ── Source type ───────────────────────────────────────────────────────────────
 enum RelatedTracksSource {
-  track,   // GET /tracks/{id}/related  — "more of what you like"
+  track,   // GET /tracks/{id}/related — "more of what you like"
   station, // GET /home/stations/{artist_id}/tracks
 }
 
-// ── Station tracks provider (wraps datasource, returns Track list) ────────────
+// ── Station tracks provider ───────────────────────────────────────────────────
 final _stationTracksProvider =
-    FutureProvider.autoDispose.family<List<Track>, String>((ref, artistId) async {
+    FutureProvider.autoDispose.family<List<Track>, String>(
+        (ref, artistId) async {
   final ds = ref.read(playlistDatasourceProvider);
-  final playlistTracks = await ds.fetchStationTracks(artistId, limit: 50);
-  return playlistTracks.map(_toTrack).toList();
+  final pts = await ds.fetchStationTracks(artistId, limit: 50);
+  return pts.map(_toTrack).toList();
 });
 
 Track _toTrack(PlaylistTrack pt) => Track(
@@ -33,7 +37,7 @@ Track _toTrack(PlaylistTrack pt) => Track(
       userId: '',
       title: pt.title,
       artist: pt.artistName,
-      audioUrl: pt.id, // player resolves via stream endpoint using id
+      audioUrl: pt.id,
       coverImage: pt.coverUrl,
       duration: pt.duration,
       playCount: pt.playCount,
@@ -65,18 +69,19 @@ class RelatedTracksScreen extends ConsumerWidget {
 
     return asyncTracks.when(
       loading: () => const Scaffold(
-        backgroundColor: Color(0xFF111111),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFFF5500))),
+        backgroundColor: AppTheme.background,
+        body: Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand)),
       ),
       error: (e, _) => Scaffold(
-        backgroundColor: const Color(0xFF111111),
+        backgroundColor: AppTheme.background,
         body: Center(
-          child: Text('Could not load tracks\n$e',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white)),
+          child: Text('Could not load tracks',
+              style: const TextStyle(color: AppTheme.textSecondary)),
         ),
       ),
       data: (tracks) => _Body(
+        sourceId: sourceId,
         source: source,
         title: title,
         basedOnName: basedOnName,
@@ -87,9 +92,10 @@ class RelatedTracksScreen extends ConsumerWidget {
   }
 }
 
-// ── Body ──────────────────────────────────────────────────────────────────────
-class _Body extends ConsumerWidget {
+// ── Body — ConsumerStatefulWidget for _isSaved state ─────────────────────────
+class _Body extends ConsumerStatefulWidget {
   const _Body({
+    required this.sourceId,
     required this.source,
     required this.title,
     required this.basedOnName,
@@ -97,16 +103,54 @@ class _Body extends ConsumerWidget {
     this.coverUrl,
   });
 
+  final String sourceId;
   final RelatedTracksSource source;
   final String title;
   final String basedOnName;
   final String? coverUrl;
   final List<Track> tracks;
 
-  Future<void> _play(WidgetRef ref, List<Track> list, int index) async {
+  @override
+  ConsumerState<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends ConsumerState<_Body> {
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only stations can be saved
+    if (widget.source == RelatedTracksSource.station) {
+      _checkSaved();
+    }
+  }
+
+  Future<void> _checkSaved() async {
+    final saved =
+        await LocalSavedStore.instance.isStationSaved(widget.sourceId);
+    if (mounted) setState(() => _isSaved = saved);
+  }
+
+  Future<void> _toggleLike() async {
+    if (widget.source != RelatedTracksSource.station) return;
+    final station = SavedStation(
+      artistId: widget.sourceId,
+      artistName: widget.basedOnName,
+      stationName: widget.title,
+      coverUrl: widget.coverUrl,
+      trackCount: widget.tracks.length,
+      savedAt: DateTime.now(),
+    );
+    await ref.read(savedStationsProvider.notifier).toggle(station);
+    if (mounted) setState(() => _isSaved = !_isSaved);
+  }
+
+  Future<void> _play(List<Track> list, int index) async {
     if (list.isEmpty || index >= list.length) return;
     try {
-      await ref.read(playerStateProvider.notifier)
+      await ref
+          .read(playerStateProvider.notifier)
           .loadAndPlayQueue(list, initialIndex: index);
     } catch (e) {
       debugPrint('[RelatedTracks] play failed: $e');
@@ -114,8 +158,10 @@ class _Body extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
+  Widget build(BuildContext context) {
+    final tracks = widget.tracks;
+    final totalDuration =
+        tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -123,165 +169,168 @@ class _Body extends ConsumerWidget {
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
-    // ── UI differs per source ─────────────────────────────────────────────────
-    // Track (more of what you like): "Related Tracks · duration · N tracks" / "Based on [track title]"
-    // Station:                        "Artist Station · (•) · duration · N tracks" / "Based on [artist]"
-    final isStation = source == RelatedTracksSource.station;
+    final isStation = widget.source == RelatedTracksSource.station;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ────────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-                    onPressed: () => context.pop(),
-                  ),
-                  _Cover(url: coverUrl, label: title),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 2),
-
-                        // Subtitle row — station gets a radio icon
-                        Row(
-                          children: [
-                            if (isStation) ...[
-                              const Icon(Icons.sensors,
-                                  size: 13, color: Colors.white54),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Artist Station · $durStr · ${tracks.length} tracks',
-                                style: TextStyle(
-                                    color: Colors.grey[500], fontSize: 12),
-                              ),
-                            ] else
-                              Text(
-                                'Related Tracks · $durStr · ${tracks.length} tracks',
-                                style: TextStyle(
-                                    color: Colors.grey[500], fontSize: 12),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-
-                        // Attribution
-                        Row(
-                          children: [
-                            Text(
-                              'Based on ',
-                              style: TextStyle(
-                                  color: Colors.grey[500], fontSize: 12),
-                            ),
-                            Flexible(
-                              child: Text(
-                                basedOnName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+    return PlaylistScreenScaffold(
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ─────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left,
+                          color: AppTheme.textPrimary, size: 28),
+                      onPressed: () => context.pop(),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Action bar ────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: Row(
-                children: [
-                  const IconButton(
-                    icon: Icon(Icons.favorite_border,
-                        color: Colors.white, size: 24),
-                    onPressed: null,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz,
-                        color: Colors.white, size: 24),
-                    onPressed: () => _showOptions(context, ref),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.shuffle,
-                        color: Colors.white60, size: 24),
-                    onPressed: () {
-                      final shuffled = List<Track>.from(tracks)..shuffle();
-                      _play(ref, shuffled, 0);
-                    },
-                  ),
-                  GestureDetector(
-                    onTap: () => _play(ref, tracks, 0),
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF3A3A3A), shape: BoxShape.circle),
-                      child: const Icon(Icons.play_arrow,
-                          color: Colors.white, size: 28),
+                    _Cover(url: widget.coverUrl, label: widget.title),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.titleLarge),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (isStation) ...[
+                                const Icon(Icons.sensors,
+                                    size: 13,
+                                    color: AppTheme.textSecondary),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Artist Station · $durStr · ${tracks.length} tracks',
+                                    style: AppTheme.labelSmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ] else
+                                Flexible(
+                                  child: Text(
+                                    'Related Tracks · $durStr · ${tracks.length} tracks',
+                                    style: AppTheme.labelSmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Text('Based on ',
+                                  style: AppTheme.labelSmall),
+                              Flexible(
+                                child: Text(
+                                  widget.basedOnName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTheme.labelSmall.copyWith(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const Divider(color: Colors.white12, height: 1),
-
-            // ── Track list ────────────────────────────────────────────────────
-            Expanded(
-              child: tracks.isEmpty
-                  ? Center(
-                      child: Text('No tracks found',
-                          style: TextStyle(color: Colors.grey[500])))
-                  : ListView.builder(
-                      itemCount: tracks.length,
-                      itemBuilder: (context, index) {
-                        final t = tracks[index];
-                        return TrackTileFromTrack(
-                          key: Key('related_${t.id}_$index'),
-                          track: t,
-                          onTap: () => _play(ref, tracks, index),
-                        );
+              // ── Action bar ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                child: Row(
+                  children: [
+                    // ✅ Like button — active only for stations
+                    IconButton(
+                      icon: Icon(
+                        _isSaved ? Icons.favorite : Icons.favorite_border,
+                        color: _isSaved
+                            ? AppTheme.primaryBrand
+                            : AppTheme.textPrimary,
+                        size: 24,
+                      ),
+                      onPressed:
+                          isStation ? _toggleLike : null,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.more_horiz,
+                          color: AppTheme.textPrimary, size: 24),
+                      onPressed: () => _showOptions(context),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.shuffle,
+                          color: AppTheme.textSecondary, size: 24),
+                      onPressed: () {
+                        final shuffled =
+                            List<Track>.from(tracks)..shuffle();
+                        _play(shuffled, 0);
                       },
                     ),
-            ),
-          ],
+                    GestureDetector(
+                      onTap: () => _play(tracks, 0),
+                      child: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                            color: AppTheme.lighterSurface,
+                            shape: BoxShape.circle),
+                        child: const Icon(Icons.play_arrow,
+                            color: AppTheme.textPrimary, size: 28),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(color: AppTheme.lighterSurface, height: 1),
+
+              // ── Track list ──────────────────────────────────────────────
+              Expanded(
+                child: tracks.isEmpty
+                    ? Center(
+                        child: Text('No tracks found',
+                            style: AppTheme.bodyMedium))
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 140),
+                        itemCount: tracks.length,
+                        itemBuilder: (context, index) {
+                          final t = tracks[index];
+                          return TrackTileFromTrack(
+                            key: Key('related_${t.id}_$index'),
+                            track: t,
+                            onTap: () => _play(tracks, index),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showOptions(BuildContext context, WidgetRef ref) {
+  void _showOptions(BuildContext context) {
+    final isStation = widget.source == RelatedTracksSource.station;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1C),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
@@ -294,27 +343,22 @@ class _Body extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(url: coverUrl, label: title, size: 56),
+                  _Cover(url: widget.coverUrl, label: widget.title, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
-                        Text('Based on $basedOnName',
-                            style: TextStyle(
-                                color: Colors.grey[500], fontSize: 13)),
+                        Text(widget.title, style: AppTheme.bodyNormal),
+                        Text('Based on ${widget.basedOnName}',
+                            style: AppTheme.artistTitle),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
                 icon: Icons.queue_play_next,
                 label: 'Play next',
@@ -323,6 +367,20 @@ class _Body extends ConsumerWidget {
                 icon: Icons.add_to_queue,
                 label: 'Play last',
                 onTap: () => Navigator.of(context).pop()),
+            // Save option only for stations
+            if (isStation)
+              OptionSheetTile(
+                icon: _isSaved
+                    ? Icons.sensors_off
+                    : Icons.sensors,
+                label: _isSaved
+                    ? 'Remove from Saved Stations'
+                    : 'Save Station',
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _toggleLike();
+                },
+              ),
             const SizedBox(height: 40),
           ],
         ),
@@ -331,7 +389,6 @@ class _Body extends ConsumerWidget {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 class _Cover extends StatelessWidget {
   const _Cover({required this.url, required this.label, this.size = 56});
   final String? url;
@@ -354,12 +411,12 @@ class _Cover extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: const Color(0xFF2A2A2A),
+        color: AppTheme.surface,
         child: Center(
           child: Text(
             label.isNotEmpty ? label[0].toUpperCase() : 'S',
             style: const TextStyle(
-                color: Colors.white54,
+                color: AppTheme.textSecondary,
                 fontSize: 22,
                 fontWeight: FontWeight.w700),
           ),
