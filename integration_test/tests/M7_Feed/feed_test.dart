@@ -5,7 +5,6 @@ import 'package:rythmify/main.dart' as app;
 import '../../pages/M1_Authentication/login_page.dart';
 import '../../pages/M7_Feed/home_page.dart';
 import '../../pages/M7_Feed/feed_page.dart';
-import '../../pages/M8_Search/search_page.dart';
 import '../../fixtures/test_data.dart';
 import '../../selectors/selectors.dart';
 
