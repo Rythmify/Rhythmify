@@ -63,6 +63,7 @@ import 'package:rythmify/features/track_upload/presentation/screens/upload_track
 import '../../features/playlist/presentation/screens/library_playlists_screen.dart';
 import '../../features/playlist/presentation/screens/playlist_detail_screen.dart';
 import '../../features/playlist/presentation/screens/mix_detail_screen.dart';
+import '../../features/playlist/presentation/screens/related_tracks_screen.dart';
 
 //  Settings imports
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -79,7 +80,7 @@ import '../../features/library/presentation/pages/library_screen.dart';
 import '../../features/library/presentation/pages/following_page.dart';
 import '../../features/library/presentation/pages/uploads_page.dart';
 import '../../features/library/presentation/pages/stations_page.dart';
-import '../../features/library/presentation/pages/albums_page.dart'; // NEW
+import '../../features/library/presentation/pages/albums_page.dart';
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
 import '../../features/library/presentation/pages/likes_page.dart';
@@ -325,6 +326,80 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'notifications',
                     builder: (context, state) => const NotificationsScreen(),
                   ),
+
+                  // ── M14: Playlist/Album/Station/Mix/Related ────────────
+                  // These are sub-routes of /home so they render INSIDE the
+                  // shell — getting the real mini-player and real nav bar
+                  // from MainAppScaffold automatically.
+                  //
+                  // Call with: context.push('/home/playlist/$id', extra: bool)
+                  // Call with: context.push('/home/mix/$id', extra: {...})
+                  // Call with: context.push('/home/station/$id', extra: {...})
+                  // Call with: context.push('/home/related-tracks/$id', extra: {...})
+                  GoRoute(
+                    path: 'playlist/:playlistId',
+                    builder: (context, state) {
+                      final playlistId = state.pathParameters['playlistId']!;
+                      final isOwner = state.extra as bool? ?? false;
+                      return PlaylistDetailScreen(
+                        playlistId: playlistId,
+                        isOwner: isOwner,
+                      );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'mix/:mixId',
+                    builder: (context, state) {
+                      final mixId = state.pathParameters['mixId']!;
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      final mixTypeStr = extra['mixType'] as String? ?? 'genre';
+                      final mixType = switch (mixTypeStr) {
+                        'daily' => MixType.daily,
+                        'weekly' => MixType.weekly,
+                        _ => MixType.genre,
+                      };
+                      return MixDetailScreen(
+                        mixId: mixId,
+                        mixTitle: extra['title'] as String? ?? 'Your Mix',
+                        ownerName: extra['ownerName'] as String? ?? 'You',
+                        mixType: mixType,
+                        coverUrl: extra['coverUrl'] as String?,
+                        trackCount: extra['trackCount'] as int?,
+                      );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'related-tracks/:sourceId',
+                    builder: (context, state) {
+                      final sourceId = state.pathParameters['sourceId']!;
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      return RelatedTracksScreen(
+                        sourceId: sourceId,
+                        source: RelatedTracksSource.track,
+                        basedOnName: extra['basedOnName'] as String? ?? '',
+                        title: extra['title'] as String? ?? 'Related Tracks',
+                        coverUrl: extra['coverUrl'] as String?,
+                      );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'station/:sourceId',
+                    builder: (context, state) {
+                      final sourceId = state.pathParameters['sourceId']!;
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      final artistName = extra['artistName'] as String? ?? '';
+                      return RelatedTracksScreen(
+                        sourceId: sourceId,
+                        source: RelatedTracksSource.station,
+                        basedOnName: artistName,
+                        title: extra['stationName'] as String? ?? artistName,
+                        coverUrl: extra['coverUrl'] as String?,
+                      );
+                    },
+                  ),
                 ],
               ),
             ],
@@ -365,13 +440,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const SettingsScreen(),
                     routes: [
                       GoRoute(
-                        //1- import music
                         path: 'import-my-music',
                         builder: (context, state) =>
                             const ImportMyMusicScreen(),
                         routes: [
                           GoRoute(
-                            //2- Account
                             path: 'music-providers',
                             builder: (context, state) =>
                                 ImportedMusicProvidersScreen(
@@ -381,12 +454,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ],
                       ),
                       GoRoute(
-                        //2- Account
                         path: 'account',
                         builder: (context, state) => const AccountScreen(),
                       ),
                       GoRoute(
-                        //4- Basic settings
                         path: 'basic-settings',
                         builder: (context, state) =>
                             const BasicSettingsScreen(),
@@ -398,48 +469,40 @@ final routerProvider = Provider<GoRouter>((ref) {
                         ],
                       ),
                       GoRoute(
-                        //5- Social settings
                         path: 'social-settings',
                         builder: (context, state) =>
                             const SocialSettingsScreen(),
                       ),
                       GoRoute(
-                        //6- Inbox
                         path: 'inbox-settings',
                         builder: (context, state) =>
                             const InboxSettingsScreen(),
                       ),
                       GoRoute(
-                        //7- Notifications
                         path: 'notifications',
                         builder: (context, state) =>
                             const NotificationsSettingsScreen(),
                       ),
                       GoRoute(
-                        //8- Add widgets
                         path: 'add-widget',
                         builder: (context, state) => const AddWidgetScreen(),
                       ),
                       GoRoute(
-                        //9- Analytics
                         path: 'analytics',
                         builder: (context, state) =>
                             const AnalyticsSettingsScreen(),
                       ),
                       GoRoute(
-                        //10- Communications
                         path: 'Communications',
                         builder: (context, state) =>
                             const CommunicationSettingsScreen(),
                       ),
                       GoRoute(
-                        //11- Advesrtising
                         path: 'Advesrtising',
                         builder: (context, state) =>
                             const AdvertisingSettingsScreen(),
                       ),
                       GoRoute(
-                        //13- Legal
                         path: 'Legal',
                         builder: (context, state) =>
                             const LegalSettingsScreen(),
@@ -454,31 +517,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'following',
                     builder: (context, state) => const FollowingPage(),
                   ),
-
-                  // ── Playlists ──────────────────────────────────────────
                   GoRoute(
                     name: 'library-playlists',
                     path: 'playlists',
                     builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
-
-                  // ── Albums ─────────────────────────────────────────────
-                  // AlbumsPage re-exports LibraryAlbumsScreen
                   GoRoute(
                     name: 'library-albums',
                     path: 'albums',
                     builder: (context, state) => const LibraryAlbumsScreen(),
                   ),
-
-                  // ── Stations ───────────────────────────────────────────
-                  // StationsPage re-exports LibraryStationsScreen
                   GoRoute(
                     name: 'library-stations',
                     path: 'stations',
                     builder: (context, state) => const LibraryStationsScreen(),
                   ),
-
-                  // ── Detail route for playlists/albums/stations ────────
                   GoRoute(
                     name: 'library-detail',
                     path: ':type/:playlistId',
@@ -495,7 +548,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                       );
                     },
                   ),
-
                   GoRoute(
                     path: 'uploads',
                     builder: (context, state) => const UploadsPage(),
@@ -536,7 +588,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Root Level Pages (Renders ON TOP of Navigation Bar) ─────────
+      // ── Root Level Pages (render ON TOP of nav bar — intentional) ────────
       GoRoute(
         path: '/behind-the-track/:trackId',
         name: 'behindTheTrack',
@@ -582,41 +634,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
-      ),
-
-      // ── Playlist/Album/Station — accessible from ANY tab ────────────────
-      GoRoute(
-        path: '/playlist/:playlistId',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final playlistId = state.pathParameters['playlistId']!;
-          final isOwner = state.extra as bool? ?? false;
-          return PlaylistDetailScreen(playlistId: playlistId, isOwner: isOwner);
-        },
-      ),
-
-      // ── Mix detail — mixed_for_you and made_for_you ─────────────────────
-      GoRoute(
-        path: '/mix/:mixId',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final mixId = state.pathParameters['mixId']!;
-          final extra = state.extra as Map<String, dynamic>? ?? {};
-          final mixTypeStr = extra['mixType'] as String? ?? 'genre';
-          final mixType = switch (mixTypeStr) {
-            'daily' => MixType.daily,
-            'weekly' => MixType.weekly,
-            _ => MixType.genre,
-          };
-          return MixDetailScreen(
-            mixId: mixId,
-            mixTitle: extra['title'] as String? ?? 'Your Mix',
-            ownerName: extra['ownerName'] as String? ?? 'You',
-            mixType: mixType,
-            coverUrl: extra['coverUrl'] as String?,
-            trackCount: extra['trackCount'] as int?,
-          );
-        },
       ),
     ],
   );

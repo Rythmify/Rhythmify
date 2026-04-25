@@ -17,7 +17,10 @@ class FeedCardCover extends StatelessWidget {
           key: const Key('feed_card_cover_fullscreen_container'),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1,
+            ),
           ),
           child: ClipRRect(
             key: const Key('feed_card_cover_fullscreen_clip'),
@@ -42,7 +45,10 @@ class FeedCardCover extends StatelessWidget {
         key: const Key('feed_card_cover_container'),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.7), width: 1),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.7),
+            width: 1,
+          ),
         ),
         child: ClipRRect(
           key: const Key('feed_card_cover_clip'),
@@ -61,7 +67,7 @@ class FeedCardCover extends StatelessWidget {
                 const _PlaceholderCover(),
               Container(
                 key: const Key('feed_card_cover_overlay'),
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
               ),
               Align(
                 key: const Key('feed_card_cover_align'),
@@ -79,7 +85,7 @@ class FeedCardCover extends StatelessWidget {
                             key: const Key('feed_card_cover_inner_image'),
                             coverUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (_, _, _) =>
                                 const _PlaceholderCover(),
                           )
                         : const _PlaceholderCover(),

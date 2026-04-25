@@ -10,7 +10,7 @@ import '../../data/datasources/search_mock_datasource.dart'; // now has Impl
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
 
-const bool _useSearchMock = true;
+const bool _useSearchMock = false;
 
 final searchRemoteSourceProvider = Provider<SearchRemoteSource>(
   (_) => _useSearchMock ? SearchRemoteSourceMock() : SearchRemoteSourceImpl(),

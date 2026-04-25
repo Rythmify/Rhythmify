@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 /// A horizontally scrollable list of trending tracks shown in the All tab.
@@ -108,9 +109,12 @@ class TrendingTracks extends ConsumerWidget {
                             .read(playerStateProvider.notifier)
                             .togglePlayPause();
                       } else {
-                        ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-                          [track],
-                        );
+                        ref
+                            .read(queueStateProvider.notifier)
+                            .playQueue(
+                              tracks: tracks,
+                              initialIndex: tracks.indexOf(track),
+                            );
                       }
                     },
                   ),

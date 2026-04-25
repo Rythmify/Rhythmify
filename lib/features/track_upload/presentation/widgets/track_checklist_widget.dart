@@ -99,14 +99,14 @@ class TrackChecklistBadge extends ConsumerWidget {
               children: [
                 // Big circle
                 SizedBox(
-                  width: 90,
-                  height: 90,
+                  width: 150,
+                  height: 150,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       CircularProgressIndicator(
                         value: (draft?.checklistCount ?? 0) / 4,
-                        strokeWidth: 6,
+                        strokeWidth: 5,
                         backgroundColor: Colors.white12,
                         color: Colors.white,
                       ),
@@ -125,7 +125,7 @@ class TrackChecklistBadge extends ConsumerWidget {
                               text: '/4',
                               style: TextStyle(
                                 color: Colors.grey,
-                                fontSize: 16,
+                                fontSize: 28,
                               ),
                             ),
                           ],

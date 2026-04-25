@@ -51,7 +51,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   late String _resolvedUserId;
 
   // ── Player sheet constants (same values as MainAppScaffold) ─────────────
-  static const double _navBarHeight = 0.0; // no nav bar on this page
   static const double _miniPlayerHeight = 65.0;
   static const double _maxSize = 1.0;
 
@@ -692,8 +691,8 @@ class _PlaylistGridCard extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: playlist.coverUrl!,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => _coverPlaceholder(),
-                    errorWidget: (_, __, ___) => _coverPlaceholder(),
+                    placeholder: (_, _) => _coverPlaceholder(),
+                    errorWidget: (_, _, _) => _coverPlaceholder(),
                   )
                 : _coverPlaceholder(),
           ),
@@ -712,9 +711,9 @@ class _PlaylistGridCard extends StatelessWidget {
         const SizedBox(height: 2),
 
         // ── Owner name ───────────────────────────────────────────────────
-        if (playlist.ownerName != null && playlist.ownerName!.isNotEmpty)
+        if (playlist.ownerName.isNotEmpty)
           Text(
-            playlist.ownerName!,
+            playlist.ownerName,
             style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

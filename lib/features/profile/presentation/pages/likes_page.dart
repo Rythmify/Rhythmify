@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 /// Likes page matching SoundCloud's layout.
 ///
@@ -183,13 +184,26 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               IconButton(
                 key: const Key('likes_shuffle_icon_button'),
                 icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
-                onPressed: () {},
+                onPressed: () {
+                  if (filtered.isNotEmpty) {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: 0);
+                    ref.read(queueStateProvider.notifier).toggleShuffle();
+                  }
+                },
               ),
               FloatingActionButton.small(
                 key: const Key('likes_play_all_fab'),
                 heroTag: 'likes_play',
                 backgroundColor: Colors.white,
-                onPressed: () {},
+                onPressed: () {
+                  if (filtered.isNotEmpty) {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: 0);
+                  }
+                },
                 child: const Icon(
                   Icons.play_arrow,
                   color: Colors.black,
@@ -226,6 +240,11 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               return TrackCard(
                 key: Key('item_${filtered[index].id}'),
                 track: filtered[index],
+                onTap: () {
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .playQueue(tracks: filtered, initialIndex: index);
+                },
               );
             },
           ),

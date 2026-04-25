@@ -30,7 +30,7 @@ class TrackInfoBox extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(4),
             ),
             child: ConstrainedBox(
@@ -52,7 +52,7 @@ class TrackInfoBox extends StatelessWidget {
                     trackInfo.artist,
                     style: AppTheme.titleMedium.copyWith(
                       fontSize: 16,
-                      color: AppTheme.semiWhite,
+                      color: AppTheme.fadedWhite,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -69,18 +69,18 @@ class TrackInfoBox extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.music_note, color: AppTheme.semiWhite, size: 16),
+                Icon(Icons.music_note, color: AppTheme.fadedWhite, size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Behind this track',
                   style: TextStyle(
-                    color: AppTheme.semiWhite,
+                    color: AppTheme.fadedWhite,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
