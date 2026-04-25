@@ -41,6 +41,9 @@ class CommentDto {
   /// The parent comment ID if this comment is a reply, otherwise null.
   final String? parentCommentId;
 
+  /// Whether the author of this comment is blocked by the current user.
+  final bool isAuthorBlocked;
+
   /// Creates a new [CommentDto] instance.
   const CommentDto({
     required this.id,
@@ -55,6 +58,7 @@ class CommentDto {
     required this.isLikedByMe,
     required this.replyCount,
     this.parentCommentId,
+    this.isAuthorBlocked = false,
   });
 
   /// Factory constructor to create a [CommentDto] from a JSON map.
@@ -76,6 +80,7 @@ class CommentDto {
       isLikedByMe: json['is_liked_by_me'] as bool? ?? false,
       replyCount: json['reply_count'] as int? ?? 0,
       parentCommentId: json['parent_comment_id'] as String?,
+      isAuthorBlocked: json['is_author_blocked'] as bool? ?? false,
     );
   }
 
@@ -97,6 +102,7 @@ class CommentDto {
       isLikedByMe: isLikedByMe,
       replyCount: replyCount,
       parentId: parentCommentId,
+      isAuthorBlocked: isAuthorBlocked,
     );
   }
 }

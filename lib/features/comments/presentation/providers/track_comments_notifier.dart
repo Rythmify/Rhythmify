@@ -3,9 +3,12 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/repositories/comment_repository.dart';
+import '../../../../core/domain/entities/track.dart';
 import 'track_comments_state.dart';
 import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
+import '../../../track/presentation/providers/track_sync_provider.dart';
 
 /// A Riverpod [StateNotifierProvider] that provides a [TrackCommentsNotifier] for a specific track.
 ///
@@ -28,6 +31,7 @@ final trackCommentsProvider =
 class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   final Ref ref;
   bool _mounted = true;
+  Track? _initialTrack;
 
   @override
   bool get mounted => _mounted;
@@ -42,22 +46,55 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   final String trackId;
 
   /// Creates a [TrackCommentsNotifier] and triggers an initial fetch of root comments.
-  TrackCommentsNotifier(this.ref, this.trackId)
-    : super(TrackCommentsState.initial()) {
+  TrackCommentsNotifier(this.ref, this.trackId, {Track? initialTrack})
+    : _initialTrack = initialTrack,
+      super(TrackCommentsState.initial()) {
     fetchComments();
+
+    if (initialTrack != null) {
+      setInitialCount(initialTrack.commentCount);
+    }
+
+    // Listen to the global blocked users set to synchronize UI across different notifiers
+    ref.listen<Set<String>>(blockedUserIdsProvider, (previous, next) {
+      if (mounted) {
+        state = state.copyWith(
+          comments: state.comments.map((c) {
+            return c.copyWith(isAuthorBlocked: next.contains(c.userId));
+          }).toList(),
+        );
+      }
+    }, fireImmediately: true);
+  }
+
+  /// Helper to sync comment count globally
+  void _syncGlobalCount(int newCount) {
+    ref
+        .read(trackSyncProvider.notifier)
+        .updateCommentCount(trackId, newCount, _initialTrack);
+  }
+
+  /// Sets the initial track metadata and count.
+  void setInitialTrack(Track track) {
+    _initialTrack = track;
+    setInitialCount(track.commentCount);
   }
 
   /// Increments the total comment count displayed on the track UI.
   void incrementTotalCount() {
     if (mounted) {
-      state = state.copyWith(totalCommentCount: state.totalCommentCount + 1);
+      final newCount = state.totalCommentCount + 1;
+      state = state.copyWith(totalCommentCount: newCount);
+      _syncGlobalCount(newCount);
     }
   }
 
   /// Decrements the total comment count displayed on the track UI safely above 0.
   void decrementTotalCount() {
     if (mounted && state.totalCommentCount > 0) {
-      state = state.copyWith(totalCommentCount: state.totalCommentCount - 1);
+      final newCount = state.totalCommentCount - 1;
+      state = state.copyWith(totalCommentCount: newCount);
+      _syncGlobalCount(newCount);
     }
   }
 
@@ -139,6 +176,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
   void setInitialCount(int initialCount) {
     if (mounted && state.totalCommentCount == 0) {
       state = state.copyWith(totalCommentCount: initialCount);
+      _syncGlobalCount(initialCount);
     }
   }
 
@@ -150,11 +188,24 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     final originalComments = [...state.comments];
     final originalCount = state.totalCommentCount;
 
+    final commentToDelete = state.comments.cast<Comment?>().firstWhere(
+      (c) => c?.id == commentId,
+      orElse: () => null,
+    );
+    if (commentToDelete == null) return;
+
+    // The total count should decrease by the parent comment AND all its replies
+    final decrementAmount = 1 + commentToDelete.replyCount;
+    final newCount = originalCount >= decrementAmount
+        ? originalCount - decrementAmount
+        : 0;
+
     if (mounted) {
       state = state.copyWith(
         comments: state.comments.where((c) => c.id != commentId).toList(),
-        totalCommentCount: originalCount > 0 ? originalCount - 1 : 0,
+        totalCommentCount: newCount,
       );
+      _syncGlobalCount(newCount);
     }
     try {
       final deleteCommentUseCase = ref.read(deleteCommentProvider);
@@ -165,6 +216,7 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
           comments: originalComments,
           totalCommentCount: originalCount,
         );
+        _syncGlobalCount(originalCount);
       }
       rethrow;
     }
@@ -208,12 +260,14 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
     );
 
     final originalCount = state.totalCommentCount;
+    final newCount = originalCount + 1;
 
     if (mounted) {
       state = state.copyWith(
         comments: [tempComment, ...state.comments],
-        totalCommentCount: originalCount + 1,
+        totalCommentCount: newCount,
       );
+      _syncGlobalCount(newCount);
     }
 
     try {
@@ -244,7 +298,51 @@ class TrackCommentsNotifier extends StateNotifier<TrackCommentsState> {
               .toList(),
           totalCommentCount: originalCount,
         );
+        _syncGlobalCount(originalCount);
       }
+    }
+  }
+
+  /// Toggles the blocked status for a specific user across all comments in the current state.
+  ///
+  /// Optimistically updates the `isAuthorBlocked` flag for every comment authored
+  /// by the target [userId]. Reverts if the backend request fails.
+  Future<void> toggleBlockUser(
+    String userId, {
+    required bool shouldBlock,
+  }) async {
+    final originalComments = [...state.comments];
+    final originalBlockedUsers = ref.read(blockedUserIdsProvider);
+
+    if (mounted) {
+      // 1. Update local state for immediate feedback
+      state = state.copyWith(
+        comments: state.comments.map((c) {
+          if (c.userId == userId) {
+            return c.copyWith(isAuthorBlocked: shouldBlock);
+          }
+          return c;
+        }).toList(),
+      );
+
+      // 2. Update global provider to sync with other notifiers (replies)
+      ref.read(blockedUserIdsProvider.notifier).toggle(userId, shouldBlock);
+    }
+
+    try {
+      if (shouldBlock) {
+        final blockUserUseCase = ref.read(blockUserProvider);
+        await blockUserUseCase(userId);
+      } else {
+        final unblockUserUseCase = ref.read(unblockUserProvider);
+        await unblockUserUseCase(userId);
+      }
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(comments: originalComments);
+        ref.read(blockedUserIdsProvider.notifier).setAll(originalBlockedUsers);
+      }
+      rethrow;
     }
   }
 

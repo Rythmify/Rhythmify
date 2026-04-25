@@ -14,7 +14,7 @@ class SearchProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () => context.push('/profile/${profile.id}'),
+      onTap: () => context.push('/home/profile/${profile.id}'),
 
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(

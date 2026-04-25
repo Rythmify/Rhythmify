@@ -185,7 +185,7 @@ class _UserTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       key: Key('following_item_${user.id}_list_tile'),
-      onTap: () => context.push('/profile/${user.id}'),
+      onTap: () => context.push('/home/profile/${user.id}'),
       onLongPress: () => _showUnfollowDialog(context, ref),
       leading: CircleAvatar(
         radius: 24,
