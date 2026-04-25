@@ -1,6 +1,9 @@
-// ============================================================
-// FILE: lib/features/playlist/data/models/playlist_model.dart
-// ============================================================
+// lib/features/playlist/data/models/playlist_model.dart
+//
+// FIX: _typeFromSubtype now handles all generated playlist subtypes from the
+// backend (auto_generated, curated_daily, curated_weekly, genre_trending,
+// track_radio). These all map to PlaylistType.playlist so they render
+// correctly in LibraryPlaylistsScreen.
 
 import '../../domain/entities/playlist_entity.dart';
 
@@ -13,46 +16,29 @@ class PlaylistModel {
     final releaseYear = (json['release_date'] as String?)?.substring(0, 4);
 
     final entity = PlaylistEntity(
-      // The API sends "playlist_id" — we read that key and put it in "id"
       id: json['playlist_id'] as String,
-
       name: json['name'] as String,
-
-      // The API doesn't return the owner's display name inside the playlist
-      // object, so we leave ownerName empty for now.
-      // If you need it displayed, fetch it separately from the auth provider.
       ownerName: '',
-
-      // Your entity calls this "ownerId" — the API calls it "owner_user_id"
       ownerId: json['owner_user_id'] as String,
-
       isPublic: json['is_public'] as bool? ?? true,
-
       type: playlistType,
-
       trackCount: json['track_count'] as int? ?? 0,
-
-      // Not returned by the API — computed on the client from the track list
       totalDuration: Duration.zero,
-
       createdAt: DateTime.parse(json['created_at'] as String),
-
-      // Optional fields — null-safe reads
       coverUrl: json['cover_image'] as String?,
       description: json['description'] as String?,
       likeCount: json['like_count'] as int? ?? 0,
       isLiked: json['is_liked_by_me'] as bool? ?? false,
       repostCount: json['repost_count'] as int? ?? 0,
       releaseYear: releaseYear,
-
-      // NOTE: "slug" exists in the API response but NOT on your entity.
-      // We simply ignore it — no field to map it to.
     );
 
     debugPrintPlaylist(
       'Parsed → name: "${entity.name}"  '
       'id: ${entity.id}  '
       'type: ${entity.type}  '
+      'subtype: $subtype  '
+      'isLiked: ${entity.isLiked}  '
       'tracks: ${entity.trackCount}  '
       'cover: ${entity.coverUrl ?? "none"}',
     );
@@ -60,7 +46,11 @@ class PlaylistModel {
     return entity;
   }
 
-  // Maps the API's subtype string to your PlaylistType enum
+  /// Maps the API's subtype string to PlaylistType.
+  ///
+  /// Generated playlist types (auto_generated, curated_daily, curated_weekly,
+  /// genre_trending, track_radio) all map to PlaylistType.playlist so they
+  /// appear in the playlist library screen's Liked tab.
   static PlaylistType _typeFromSubtype(String subtype) {
     switch (subtype) {
       case 'album':
@@ -68,6 +58,12 @@ class PlaylistModel {
       case 'single':
       case 'compilation':
         return PlaylistType.album;
+      // Generated types — render as playlist in library
+      case 'auto_generated':
+      case 'curated_daily':
+      case 'curated_weekly':
+      case 'genre_trending':
+      case 'track_radio':
       case 'playlist':
       default:
         return PlaylistType.playlist;

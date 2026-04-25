@@ -56,15 +56,24 @@ class _LibraryPlaylistsScreenState
     return authState is AuthAuthenticated ? authState.user.id : '';
   }
 
+  
   List<PlaylistEntity> _applySortAndFilter(List<PlaylistEntity> input) {
-    var result = input.where((p) => p.type == PlaylistType.playlist).toList();
-
+    List<PlaylistEntity> result;
+ 
+    if (_filter == _FilterOption.liked) {
+      // Liked tab: show everything the backend returned from filter=liked.
+      // No type guard — the backend already scoped the results correctly.
+      result = List<PlaylistEntity>.from(input);
+    } else {
+      // All / Created tabs: only show playlists (not albums or stations)
+      result = input.where((p) => p.type == PlaylistType.playlist).toList();
+    }
+ 
     if (_filter == _FilterOption.owned) {
       final uid = _currentUserId();
       result = result.where((p) => p.ownerId == uid).toList();
     }
-    // liked: backend already returns only liked items via loadLikedPlaylists()
-
+ 
     if (_searchQuery.isNotEmpty) {
       result = result
           .where(
@@ -72,7 +81,7 @@ class _LibraryPlaylistsScreenState
           )
           .toList();
     }
-
+ 
     switch (_sort) {
       case _SortOption.recentlyAdded:
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -85,7 +94,7 @@ class _LibraryPlaylistsScreenState
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
         );
     }
-
+ 
     return result;
   }
 
