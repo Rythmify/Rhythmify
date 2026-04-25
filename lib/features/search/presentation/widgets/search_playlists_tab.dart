@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../../../../core/utils/formatters.dart';
-import 'package:go_router/go_router.dart';
 
 /// Search results tab displaying the playlists list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [_PlaylistTile].
@@ -53,26 +52,21 @@ class _PlaylistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final artworkUrl = playlist['artworkUrl'] ?? '';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        onTap: () {
-          context.push('/playlist/${playlist['id']}', extra: false);
-        },
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: artworkUrl.isNotEmpty && artworkUrl.startsWith('http')
-              ? Image.network(
-                  artworkUrl,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      Container(width: 50, height: 50, color: Colors.grey[800]),
-                )
-              : Container(width: 50, height: 50, color: Colors.grey[800]),
+          child: Image.asset(
+            playlist['artworkUrl']!,
+            key: Key('playlist_artwork_${playlist['id']}'),
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                Container(width: 50, height: 50, color: Colors.grey[800]),
+          ),
         ),
         title: Text(
           playlist['title']!,

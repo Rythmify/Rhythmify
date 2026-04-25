@@ -4,18 +4,19 @@ import '../../../../core/data/models/track_dto.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_results.dart';
-import 'dart:developer' as dev;
 
 /// Contract for the search remote data source.
 abstract class SearchRemoteSource {
+  /// Returns autocomplete suggestions matching [query].
   Future<List<SearchSuggestion>> getSuggestions(String query);
+
+  /// Returns full search results across all content types for [query].
   Future<SearchResults> getSearchResults(String query);
 }
 
 /// Real HTTP implementation of [SearchRemoteSource].
-class SearchRemoteSourceImpl implements SearchRemoteSource {
-  final _dio = apiClient.dio;
 
+class SearchRemoteSourceImpl implements SearchRemoteSource {
   @override
   Future<List<SearchSuggestion>> getSuggestions(String query) async {
     final response = await _dio.get(

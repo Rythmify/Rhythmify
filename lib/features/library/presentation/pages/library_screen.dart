@@ -8,6 +8,8 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../profile/presentation/widgets/profile_avatar.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
+import '../../../player/presentation/providers/player_provider.dart';
+import '../../../../core/domain/entities/track.dart';
 
 /// The Library main screen — a navigation hub matching SoundCloud's layout.
 ///
@@ -326,7 +328,11 @@ class _RecentlyPlayedSection extends StatelessWidget {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final entry = entries[index];
-              return _RecentlyPlayedItem(entry: entry);
+              return _RecentlyPlayedItem(
+                entry: entry,
+                allEntries: entries,
+                index: index,
+              );
             },
           ),
         ),
@@ -335,16 +341,60 @@ class _RecentlyPlayedSection extends StatelessWidget {
   }
 }
 
-class _RecentlyPlayedItem extends StatelessWidget {
+class _RecentlyPlayedItem extends ConsumerWidget {
   final RecentlyPlayedEntry entry;
+  final List<RecentlyPlayedEntry> allEntries;
+  final int index;
 
-  const _RecentlyPlayedItem({required this.entry});
+  const _RecentlyPlayedItem({
+    required this.entry,
+    required this.allEntries,
+    required this.index,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Build Track from entry
+    final track = Track(
+      id: entry.trackId,
+      userId: entry.userId,
+      title: entry.title,
+      artist: entry.artistName,
+      audioUrl: entry.audioUrl ?? '',
+      streamUrl: entry.streamUrl,
+      duration: Duration(seconds: entry.durationSeconds),
+      playCount: entry.playCount,
+      isLiked: entry.isLiked,
+      isArtistFollowed: entry.isArtistFollowed,
+      createdAt: entry.playedAt,
+      coverImage: entry.artworkUrl,
+    );
+
+    // Build all tracks for queue
+    final allTracks = allEntries.map((e) {
+      return Track(
+        id: e.trackId,
+        userId: e.userId,
+        title: e.title,
+        artist: e.artistName,
+        audioUrl: e.audioUrl ?? '',
+        streamUrl: e.streamUrl,
+        duration: Duration(seconds: e.durationSeconds),
+        playCount: e.playCount,
+        isLiked: e.isLiked,
+        isArtistFollowed: e.isArtistFollowed,
+        createdAt: e.playedAt,
+        coverImage: e.artworkUrl,
+      );
+    }).toList();
+
     return GestureDetector(
       key: Key('library_recently_played_item_${entry.trackId}_gesture'),
-      onTap: () {},
+      onTap: () {
+        ref
+            .read(playerStateProvider.notifier)
+            .loadAndPlayQueue(allTracks, initialIndex: index);
+      },
       child: Container(
         width: 75,
         margin: const EdgeInsets.only(right: 12),
