@@ -97,13 +97,15 @@ class PlaylistRemoteDatasource {
 
     // Backend returns null cover for generated playlists — fall back to local
     final backendCover = json['cover_image'] as String?;
-    final coverUrl =
-        (backendCover != null && backendCover.isNotEmpty) ? backendCover : local?.coverUrl;
+    final coverUrl = (backendCover != null && backendCover.isNotEmpty)
+        ? backendCover
+        : local?.coverUrl;
 
     // Backend returns 0 tracks for generated playlists — fall back to local
     final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
-    final trackCount =
-        backendTrackCount > 0 ? backendTrackCount : (local?.trackCount ?? 0);
+    final trackCount = backendTrackCount > 0
+        ? backendTrackCount
+        : (local?.trackCount ?? 0);
 
     return PlaylistEntity(
       id: id,
@@ -120,8 +122,8 @@ class PlaylistRemoteDatasource {
       coverUrl: coverUrl,
       description: json['description'] as String?,
       likeCount: (json['like_count'] as num?)?.toInt() ?? 0,
-      isLiked: true,   // always true — endpoint only returns liked items
-      isOwned: false,  // always false — liked ≠ owned
+      isLiked: true, // always true — endpoint only returns liked items
+      isOwned: false, // always false — liked ≠ owned
     );
   }
 
@@ -318,13 +320,17 @@ class PlaylistRemoteDatasource {
   }) async {
     final body = <String, dynamic>{'track_id': trackId};
     if (position != null) body['position'] = position;
-    _log('→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position');
+    _log(
+      '→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position',
+    );
     try {
       final response = await _dio.post<dynamic>(
         '/playlists/$playlistId/tracks',
         data: body,
       );
-      _log('← ${response.statusCode}  ✅ Track $trackId added to playlist $playlistId');
+      _log(
+        '← ${response.statusCode}  ✅ Track $trackId added to playlist $playlistId',
+      );
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {
         _log('⚠️ Track $trackId already exists in playlist $playlistId (409)');
@@ -366,7 +372,9 @@ class PlaylistRemoteDatasource {
         .entries
         .map((entry) => {'track_id': entry.value, 'position': entry.key + 1})
         .toList();
-    _log('→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks');
+    _log(
+      '→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks',
+    );
     try {
       final response = await _dio.patch<dynamic>(
         '/playlists/$playlistId/tracks/reorder',
@@ -592,7 +600,9 @@ class PlaylistRemoteDatasource {
 
       _log('← Got ${trackList.length} station tracks');
       if (trackList.isNotEmpty) {
-        _log('← First track keys: ${(trackList.first as Map<String, dynamic>).keys}');
+        _log(
+          '← First track keys: ${(trackList.first as Map<String, dynamic>).keys}',
+        );
       }
 
       return _mapDiscoveryTracksToPlaylistTracks(trackList);
@@ -770,7 +780,9 @@ class PlaylistRemoteDatasource {
       _log('← Got ${allTracks.length} unique real tracks across all genres');
       if (allTracks.isEmpty) return [];
       allTracks.shuffle();
-      return _mapDiscoveryTracksToPlaylistTracks(allTracks.take(limit).toList());
+      return _mapDiscoveryTracksToPlaylistTracks(
+        allTracks.take(limit).toList(),
+      );
     } on DioException catch (e) {
       _logError('fetchRecommendedTracks() failed', e);
       return [];
@@ -825,20 +837,26 @@ class PlaylistRemoteDatasource {
         final json = rawList[i] as Map<String, dynamic>;
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) {
-          _log('  Skipping track at index $i — no id field. Keys: ${json.keys}');
+          _log(
+            '  Skipping track at index $i — no id field. Keys: ${json.keys}',
+          );
           continue;
         }
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration: Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('  Error mapping mix track at index $i: $e');
       }
@@ -858,17 +876,21 @@ class PlaylistRemoteDatasource {
         final json = rawList[i] as Map<String, dynamic>;
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) continue;
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration: Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('Error mapping track at index $i: $e');
       }

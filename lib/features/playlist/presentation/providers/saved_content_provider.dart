@@ -57,8 +57,8 @@ class SavedMixesNotifier extends AsyncNotifier<List<SavedMix>> {
 
 final savedMixesProvider =
     AsyncNotifierProvider<SavedMixesNotifier, List<SavedMix>>(
-  SavedMixesNotifier.new,
-);
+      SavedMixesNotifier.new,
+    );
 
 // ════════════════════════════════════════════════════════════════════════════
 // TRACK RADIO  (more_of_what_you_like)
@@ -100,8 +100,8 @@ class SavedTrackRadiosNotifier extends AsyncNotifier<Set<String>> {
 
 final savedTrackRadiosProvider =
     AsyncNotifierProvider<SavedTrackRadiosNotifier, Set<String>>(
-  SavedTrackRadiosNotifier.new,
-);
+      SavedTrackRadiosNotifier.new,
+    );
 
 // ════════════════════════════════════════════════════════════════════════════
 // SAVED STATIONS  (discover_with_stations)
@@ -124,7 +124,8 @@ class SavedStationsNotifier extends AsyncNotifier<List<SavedStation>> {
 
     state = isSaved
         ? AsyncData(
-            current.where((s) => s.artistId != station.artistId).toList())
+            current.where((s) => s.artistId != station.artistId).toList(),
+          )
         : AsyncData([...current, station]);
 
     try {
@@ -142,5 +143,5 @@ class SavedStationsNotifier extends AsyncNotifier<List<SavedStation>> {
 
 final savedStationsProvider =
     AsyncNotifierProvider<SavedStationsNotifier, List<SavedStation>>(
-  SavedStationsNotifier.new,
-);
+      SavedStationsNotifier.new,
+    );

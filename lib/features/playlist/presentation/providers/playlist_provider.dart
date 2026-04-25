@@ -383,8 +383,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         }
 
         if (playlist.seedArtistName != null) {
-          final stationTracks =
-              await _fetchStationTracks(playlist.seedArtistName!);
+          final stationTracks = await _fetchStationTracks(
+            playlist.seedArtistName!,
+          );
           state = PlaylistDetailState(
             playlist: playlist,
             tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
@@ -462,8 +463,9 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<void> addSuggestion(PlaylistTrack suggestion) async {
     if (_currentPlaylistId == null) return;
 
-    final optimistic =
-        state.suggestions.where((s) => s.id != suggestion.id).toList();
+    final optimistic = state.suggestions
+        .where((s) => s.id != suggestion.id)
+        .toList();
     state = state.copyWith(suggestions: optimistic);
 
     try {
@@ -473,8 +475,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       );
       debugPrint('[DETAIL] ✅ Added "${suggestion.title}"');
 
-      final updatedTracks =
-          await _ds.fetchPlaylistTracks(_currentPlaylistId!);
+      final updatedTracks = await _ds.fetchPlaylistTracks(_currentPlaylistId!);
       _cache.clearTracks(_currentPlaylistId!);
       for (final t in updatedTracks) {
         _cache.addTrack(playlistId: _currentPlaylistId!, track: t);
@@ -507,21 +508,18 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         playlistId: _currentPlaylistId!,
         trackId: trackId,
       );
-      _cache.removeTrack(
-          playlistId: _currentPlaylistId!, trackId: trackId);
+      _cache.removeTrack(playlistId: _currentPlaylistId!, trackId: trackId);
       debugPrint('[DETAIL] ✅ Removed track $trackId');
     } on DioException catch (e) {
       debugPrint('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
-      state =
-          state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
+      state = state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
     }
   }
 
   Future<void> refreshSuggestions() async {
     state = state.copyWith(isSuggestionsLoading: true);
     final fresh = await _fetchSuggestionsExcluding(state.tracks);
-    state =
-        state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
+    state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
   }
 
   void reload() {
@@ -529,7 +527,8 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 
   Future<List<PlaylistTrack>> _fetchSuggestionsExcluding(
-      List<PlaylistTrack> existing) async {
+    List<PlaylistTrack> existing,
+  ) async {
     try {
       return await _ds.fetchRecommendedTracksExcluding(
         excludeIds: existing.map((t) => t.id).toList(),
@@ -555,10 +554,10 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
 final playlistListProvider =
     NotifierProvider<PlaylistListNotifier, PlaylistListState>(
-  PlaylistListNotifier.new,
-);
+      PlaylistListNotifier.new,
+    );
 
 final playlistDetailProvider =
     NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
-  PlaylistDetailNotifier.new,
-);
+      PlaylistDetailNotifier.new,
+    );

@@ -121,9 +121,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
           children: [
             Positioned(
               top: offset.dy + size.height + 4,
-              right: MediaQuery.of(context).size.width -
-                  offset.dx -
-                  size.width,
+              right: MediaQuery.of(context).size.width - offset.dx - size.width,
               child: GestureDetector(
                 onTap: () {},
                 child: Material(
@@ -166,8 +164,10 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left,
-                        color: AppTheme.textPrimary),
+                    icon: const Icon(
+                      Icons.chevron_left,
+                      color: AppTheme.textPrimary,
+                    ),
                     onPressed: () => context.pop(),
                   ),
                   Expanded(
@@ -184,11 +184,14 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                           hintText:
                               'Search ${filtered.length} album${filtered.length == 1 ? '' : 's'}',
                           hintStyle: AppTheme.bodyMedium,
-                          prefixIcon: const Icon(Icons.search,
-                              color: AppTheme.textSecondary),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppTheme.textSecondary,
+                          ),
                           border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
                         ),
                       ),
                     ),
@@ -219,41 +222,41 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               child: state.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppTheme.primaryBrand),
+                        color: AppTheme.primaryBrand,
+                      ),
                     )
                   : filtered.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Text(
-                              _searchQuery.isEmpty
-                                  ? 'No albums yet'
-                                  : 'No results for "$_searchQuery"',
-                              style: AppTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 140),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final album = filtered[index];
-                            final isOwner =
-                                album.ownerId == _currentUserId();
-                            return _AlbumTile(
-                              album: album,
-                              // FIX: was '/playlist/:id' which doesn't exist.
-                              // Use '/home/playlist/:id' — exists in router.
-                              onTap: () => context.push(
-                                '/home/playlist/${album.id}',
-                                extra: isOwner,
-                              ),
-                              onMoreTap: () =>
-                                  _showOptions(context, album, isOwner),
-                            );
-                          },
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? 'No albums yet'
+                              : 'No results for "$_searchQuery"',
+                          style: AppTheme.bodyMedium,
+                          textAlign: TextAlign.center,
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 140),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final album = filtered[index];
+                        final isOwner = album.ownerId == _currentUserId();
+                        return _AlbumTile(
+                          album: album,
+                          // FIX: was '/playlist/:id' which doesn't exist.
+                          // Use '/home/playlist/:id' — exists in router.
+                          onTap: () => context.push(
+                            '/home/playlist/${album.id}',
+                            extra: isOwner,
+                          ),
+                          onMoreTap: () =>
+                              _showOptions(context, album, isOwner),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -261,8 +264,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
     );
   }
 
-  void _showOptions(
-      BuildContext context, PlaylistEntity album, bool isOwner) {
+  void _showOptions(BuildContext context, PlaylistEntity album, bool isOwner) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -348,8 +350,7 @@ class _AlbumFilterDropdown extends StatelessWidget {
             _DropdownItem(
               label: 'Compilation',
               checked: typeFilter == _AlbumTypeFilter.compilation,
-              onTap: () =>
-                  onTypeFilterChanged(_AlbumTypeFilter.compilation),
+              onTap: () => onTypeFilterChanged(_AlbumTypeFilter.compilation),
             ),
             _DropdownItem(
               label: 'EP',
@@ -390,8 +391,11 @@ class _DropdownItem extends StatelessWidget {
             SizedBox(
               width: 20,
               child: checked
-                  ? const Icon(Icons.check,
-                      color: AppTheme.textPrimary, size: 16)
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
                   : null,
             ),
             const SizedBox(width: 8),
@@ -403,8 +407,7 @@ class _DropdownItem extends StatelessWidget {
                       ? AppTheme.textPrimary
                       : AppTheme.textSecondary,
                   fontSize: 15,
-                  fontWeight:
-                      checked ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ),
@@ -459,8 +462,7 @@ class _AlbumTile extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.more_vert,
-                  color: AppTheme.textSecondary),
+              icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],

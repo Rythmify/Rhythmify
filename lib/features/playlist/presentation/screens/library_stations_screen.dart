@@ -20,8 +20,7 @@ class LibraryStationsScreen extends ConsumerStatefulWidget {
       _LibraryStationsScreenState();
 }
 
-class _LibraryStationsScreenState
-    extends ConsumerState<LibraryStationsScreen> {
+class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
   String _searchQuery = '';
   _StationSort _sort = _StationSort.recentlyAdded;
 
@@ -40,9 +39,9 @@ class _LibraryStationsScreenState
     if (_searchQuery.isNotEmpty) {
       result = result
           .where(
-            (s) => s.stationName
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()),
+            (s) => s.stationName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ),
           )
           .toList();
     }
@@ -53,9 +52,11 @@ class _LibraryStationsScreenState
       case _StationSort.firstAdded:
         result.sort((a, b) => a.savedAt.compareTo(b.savedAt));
       case _StationSort.stationName:
-        result.sort((a, b) => a.stationName
-            .toLowerCase()
-            .compareTo(b.stationName.toLowerCase()));
+        result.sort(
+          (a, b) => a.stationName.toLowerCase().compareTo(
+            b.stationName.toLowerCase(),
+          ),
+        );
     }
 
     return result;
@@ -91,9 +92,7 @@ class _LibraryStationsScreenState
           children: [
             Positioned(
               top: offset.dy + size.height + 4,
-              right: MediaQuery.of(context).size.width -
-                  offset.dx -
-                  size.width,
+              right: MediaQuery.of(context).size.width - offset.dx - size.width,
               child: GestureDetector(
                 onTap: () {},
                 child: Material(
@@ -125,23 +124,22 @@ class _LibraryStationsScreenState
       body: SafeArea(
         child: asyncStations.when(
           loading: () => const Center(
-            child:
-                CircularProgressIndicator(color: AppTheme.primaryBrand),
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
           error: (e, _) => Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Could not load stations',
-                    style: AppTheme.bodyMedium),
+                Text('Could not load stations', style: AppTheme.bodyMedium),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () =>
                       ref.read(savedStationsProvider.notifier).refresh(),
                   child: Text(
                     'Retry',
-                    style: AppTheme.bodyMedium
-                        .copyWith(color: AppTheme.primaryBrand),
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.primaryBrand,
+                    ),
                   ),
                 ),
               ],
@@ -157,31 +155,34 @@ class _LibraryStationsScreenState
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.chevron_left,
-                            color: AppTheme.textPrimary),
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
+                        ),
                         onPressed: () => context.pop(),
                       ),
                       Expanded(
                         child: Container(
                           height: 40,
                           decoration: BoxDecoration(
-                            color:
-                                AppTheme.surface.withValues(alpha: 0.9),
+                            color: AppTheme.surface.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(
-                            onChanged: (v) =>
-                                setState(() => _searchQuery = v),
+                            onChanged: (v) => setState(() => _searchQuery = v),
                             style: AppTheme.bodyNormal,
                             decoration: InputDecoration(
                               hintText:
                                   'Search ${stations.length} station${stations.length == 1 ? '' : 's'}',
                               hintStyle: AppTheme.bodyMedium,
-                              prefixIcon: const Icon(Icons.search,
-                                  color: AppTheme.textSecondary),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 10),
+                                vertical: 10,
+                              ),
                             ),
                           ),
                         ),
@@ -205,8 +206,7 @@ class _LibraryStationsScreenState
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child:
-                        Text('Stations', style: AppTheme.headlineLarge),
+                    child: Text('Stations', style: AppTheme.headlineLarge),
                   ),
                 ),
 
@@ -219,9 +219,11 @@ class _LibraryStationsScreenState
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.sensors_off,
-                                    color: AppTheme.textSecondary,
-                                    size: 48),
+                                const Icon(
+                                  Icons.sensors_off,
+                                  color: AppTheme.textSecondary,
+                                  size: 48,
+                                ),
                                 const SizedBox(height: 12),
                                 Text(
                                   stations.isEmpty
@@ -241,8 +243,7 @@ class _LibraryStationsScreenState
                               .read(savedStationsProvider.notifier)
                               .refresh(),
                           child: ListView.builder(
-                            padding:
-                                const EdgeInsets.only(bottom: 140),
+                            padding: const EdgeInsets.only(bottom: 140),
                             itemCount: filtered.length,
                             itemBuilder: (context, i) {
                               final s = filtered[i];
@@ -348,8 +349,11 @@ class _DropdownItem extends StatelessWidget {
             SizedBox(
               width: 20,
               child: checked
-                  ? const Icon(Icons.check,
-                      color: AppTheme.textPrimary, size: 16)
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
                   : null,
             ),
             const SizedBox(width: 8),
@@ -361,8 +365,7 @@ class _DropdownItem extends StatelessWidget {
                       ? AppTheme.textPrimary
                       : AppTheme.textSecondary,
                   fontSize: 15,
-                  fontWeight:
-                      checked ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ),
@@ -398,7 +401,8 @@ class _StationTile extends StatelessWidget {
               child: SizedBox(
                 width: 60,
                 height: 60,
-                child: station.coverUrl != null &&
+                child:
+                    station.coverUrl != null &&
                         station.coverUrl!.startsWith('http')
                     ? Image.network(
                         station.coverUrl!,
@@ -419,14 +423,14 @@ class _StationTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    station.artistName,
-                    style: AppTheme.artistTitle,
-                  ),
+                  Text(station.artistName, style: AppTheme.artistTitle),
                   Row(
                     children: [
-                      const Icon(Icons.sensors,
-                          size: 11, color: AppTheme.textSecondary),
+                      const Icon(
+                        Icons.sensors,
+                        size: 11,
+                        color: AppTheme.textSecondary,
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         'Artist Station · ${station.trackCount} tracks',
@@ -438,8 +442,11 @@ class _StationTile extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.sensors_off,
-                  color: AppTheme.textSecondary, size: 20),
+              icon: const Icon(
+                Icons.sensors_off,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
               tooltip: 'Remove station',
               onPressed: onUnsave,
             ),
@@ -450,18 +457,18 @@ class _StationTile extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            station.stationName.isNotEmpty
-                ? station.stationName[0].toUpperCase()
-                : 'S',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        station.stationName.isNotEmpty
+            ? station.stationName[0].toUpperCase()
+            : 'S',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

@@ -109,7 +109,6 @@ class _Body extends ConsumerStatefulWidget {
 }
 
 class _BodyState extends ConsumerState<_Body> {
-
   // ── Station: read isSaved from provider (not LocalSavedStore) ─────────────
   // FIX: LocalSavedStore.isStationSaved() was always false because
   // SavedStationsNotifier no longer writes to LocalSavedStore — it calls the
@@ -121,7 +120,10 @@ class _BodyState extends ConsumerState<_Body> {
 
   // ── Track radio: read isSaved from provider ────────────────────────────────
   bool get _isTrackRadioSaved {
-    return ref.watch(savedTrackRadiosProvider).asData?.value
+    return ref
+            .watch(savedTrackRadiosProvider)
+            .asData
+            ?.value
             ?.contains(widget.sourceId) ??
         false;
   }
@@ -399,7 +401,9 @@ class _BodyState extends ConsumerState<_Body> {
                   ? (isStation ? Icons.sensors_off : Icons.favorite)
                   : (isStation ? Icons.sensors : Icons.favorite_border),
               label: _isSaved
-                  ? (isStation ? 'Remove from Saved Stations' : 'Remove from library')
+                  ? (isStation
+                        ? 'Remove from Saved Stations'
+                        : 'Remove from library')
                   : (isStation ? 'Save Station' : 'Save to library'),
               onTap: () {
                 Navigator.of(context).pop();

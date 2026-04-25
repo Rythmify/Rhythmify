@@ -14,6 +14,7 @@ import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
 enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
+
 enum _FilterOption { all, liked, owned }
 
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
@@ -32,10 +33,7 @@ class _LibraryPlaylistsScreenState
 
   final List<PlaylistEntity> _allPlaylists = [];
   final List<PlaylistEntity> _likedPlaylists = [];
-
-  // Set of mix IDs saved locally — used to distinguish mixes from playlists
   Set<String> _savedMixIds = {};
-
   bool _loading = true;
 
   OverlayEntry? _overlayEntry;
@@ -57,7 +55,6 @@ class _LibraryPlaylistsScreenState
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
 
-    // Load locally saved mix IDs so we can distinguish mixes from playlists
     final savedMixes = await LocalSavedStore.instance.getMixes();
     _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
 
@@ -119,14 +116,17 @@ class _LibraryPlaylistsScreenState
 
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
     var result = input
-        .where((p) =>
-            _filter == _FilterOption.liked || p.type == PlaylistType.playlist)
+        .where(
+          (p) =>
+              _filter == _FilterOption.liked || p.type == PlaylistType.playlist,
+        )
         .toList();
 
     if (_searchQuery.isNotEmpty) {
       result = result
           .where(
-              (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
           .toList();
     }
 
@@ -139,37 +139,32 @@ class _LibraryPlaylistsScreenState
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       case _SortOption.playlistName:
         result.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
 
     return result;
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────────
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
     if (playlist.isOwned) {
-      // Owned playlist → PlaylistDetailScreen with full edit access
       context.push('/library/playlists/${playlist.id}', extra: true);
       return;
     }
-
-    // Non-owned: check if it was locally saved as a mix
-    // If yes → MixDetailScreen (loads tracks from /home/mixes/:id)
-    // If no  → PlaylistDetailScreen as non-owner (loads from /playlists/:id)
     if (_savedMixIds.contains(playlist.id)) {
       context.push(
         '/home/mix/${playlist.id}',
         extra: {
           'title': playlist.name,
-          'ownerName':
-              playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+          'ownerName': playlist.ownerName.isNotEmpty
+              ? playlist.ownerName
+              : 'You',
           'coverUrl': playlist.coverUrl,
           'trackCount': playlist.trackCount,
           'mixType': 'genre',
         },
       );
     } else {
-      // Regular playlist liked from another user → open as non-owner
       context.push('/home/playlist/${playlist.id}', extra: false);
     }
   }
@@ -238,118 +233,184 @@ class _LibraryPlaylistsScreenState
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left,
-                        color: AppTheme.textPrimary),
-                    onPressed: () => context.pop(),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppTheme.surface.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(30),
+      body: Stack(
+        children: [
+          // ── Decorative orange background ─────────────────────────
+          Positioned(
+            top: -60,
+            right: -80,
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..rotateZ(0.45)
+                ..setEntry(0, 1, 0.2),
+              child: Column(
+                children: List.generate(12, (i) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    width: 320,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFFF7700).withValues(alpha: 0.8),
+                          const Color(0xFFFF7700).withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: TextField(
-                        onChanged: (v) => setState(() => _searchQuery = v),
-                        style: AppTheme.bodyNormal,
-                        decoration: InputDecoration(
-                          hintText: 'Search $totalCount playlists',
-                          hintStyle: AppTheme.bodyMedium,
-                          prefixIcon: const Icon(Icons.search,
-                              color: AppTheme.textSecondary),
-                          border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.all(1.2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.background,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Search row ────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
+                        ),
+                        onPressed: () => context.pop(),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: TextField(
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                            style: AppTheme.bodyNormal,
+                            decoration: InputDecoration(
+                              hintText: 'Search $totalCount playlists',
+                              hintStyle: AppTheme.bodyMedium,
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.pop(),
-                    child: Text(
-                      'Cancel',
-                      style: AppTheme.bodyNormal
-                          .copyWith(color: AppTheme.textPrimary),
-                    ),
-                  ),
-                  IconButton(
-                    key: _filterIconKey,
-                    icon: Icon(
-                      Icons.tune,
-                      color: (_sort != _SortOption.recentlyAdded ||
-                              _filter != _FilterOption.all)
-                          ? AppTheme.primaryBrand
-                          : AppTheme.textSecondary,
-                    ),
-                    onPressed: _toggleOverlay,
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Playlists', style: AppTheme.headlineLarge),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Import not available yet')),
-                        );
-                      },
-                      icon: const Icon(Icons.download_outlined,
-                          color: AppTheme.textPrimary),
-                      label: Text('Import', style: AppTheme.labelLarge),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: AppTheme.surface,
-                        side: const BorderSide(color: AppTheme.lighterSurface),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                      TextButton(
+                        onPressed: () => context.pop(),
+                        child: Text(
+                          'Cancel',
+                          style: AppTheme.bodyNormal.copyWith(
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showCreateSheet(context),
-                      icon: const Icon(Icons.add, color: AppTheme.textPrimary),
-                      label: Text('Create', style: AppTheme.labelLarge),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: AppTheme.surface,
-                        side: const BorderSide(color: AppTheme.lighterSurface),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                      IconButton(
+                        key: _filterIconKey,
+                        icon: Icon(
+                          Icons.tune,
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
+                                  _filter != _FilterOption.all)
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
+                        onPressed: _toggleOverlay,
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            Expanded(
-              child: _loading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                          color: AppTheme.primaryBrand))
-                  : filtered.isEmpty
+                // ── Title ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Playlists', style: AppTheme.headlineLarge),
+                  ),
+                ),
+
+                // ── Import + Create ───────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Import not available yet'),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.download_outlined,
+                            color: AppTheme.textPrimary,
+                          ),
+                          label: Text('Import', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: const BorderSide(
+                              color: AppTheme.lighterSurface,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showCreateSheet(context),
+                          icon: const Icon(
+                            Icons.add,
+                            color: AppTheme.textPrimary,
+                          ),
+                          label: Text('Create', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: const BorderSide(
+                              color: AppTheme.lighterSurface,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── List ─────────────────────────────────────────
+                Expanded(
+                  child: _loading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                          ),
+                        )
+                      : filtered.isEmpty
                       ? _emptyState()
                       : ListView.builder(
                           padding: const EdgeInsets.only(bottom: 140),
@@ -365,9 +426,11 @@ class _LibraryPlaylistsScreenState
                             );
                           },
                         ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -382,8 +445,11 @@ class _LibraryPlaylistsScreenState
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Text(message,
-            style: AppTheme.bodyMedium, textAlign: TextAlign.center),
+        child: Text(
+          message,
+          style: AppTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -394,14 +460,16 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) =>
-            context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
 
   void _showOptions(
-      BuildContext context, PlaylistEntity playlist, bool isOwner) {
+    BuildContext context,
+    PlaylistEntity playlist,
+    bool isOwner,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -511,8 +579,11 @@ class _DropdownItem extends StatelessWidget {
             SizedBox(
               width: 20,
               child: checked
-                  ? const Icon(Icons.check,
-                      color: AppTheme.textPrimary, size: 16)
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
                   : null,
             ),
             const SizedBox(width: 8),
@@ -520,8 +591,9 @@ class _DropdownItem extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color:
-                      checked ? AppTheme.textPrimary : AppTheme.textSecondary,
+                  color: checked
+                      ? AppTheme.textPrimary
+                      : AppTheme.textSecondary,
                   fontSize: 15,
                   fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
                 ),
