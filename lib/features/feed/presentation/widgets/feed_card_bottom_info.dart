@@ -7,7 +7,6 @@ import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/feed_providers.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:developer' as dev;
 
 class FeedCardBottomInfo extends ConsumerWidget {
   final FeedItemEntity item;
@@ -65,9 +64,9 @@ class FeedCardBottomInfo extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white.withOpacity(0.12),
+            color: Colors.white.withValues(alpha: 0.12),
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1),
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
             ),
           ),
           child: Row(

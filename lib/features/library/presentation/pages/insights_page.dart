@@ -108,6 +108,8 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
 class _SoundCloudTab extends ConsumerWidget {
   /// Creates a [_SoundCloudTab].
   const _SoundCloudTab();
+  
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(insightsProvider);
 
