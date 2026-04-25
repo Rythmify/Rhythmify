@@ -14,7 +14,7 @@ class GenrePlaylistCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         dev.log('playlist id: ${playlist.id}');
-        context.push('/playlist/${playlist.id}', extra: false);
+        context.push('/home/playlist/${playlist.id}', extra: false);
       },
       child: Column(
         key: Key('genre_playlist_card_${playlist.id}'),
