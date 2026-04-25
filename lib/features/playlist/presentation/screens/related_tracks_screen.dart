@@ -1,4 +1,4 @@
-// lib/features/playlist/presentation/screens/mix_detail_screen.dart
+// lib/features/playlist/presentation/screens/related_tracks_screen.dart
 // ignore_for_file: avoid_print
 library;
 
@@ -10,34 +10,61 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/local/local_saved_store.dart';
+import '../../domain/entities/playlist_track.dart';
+import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_screen_scaffold.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-enum MixType { genre, daily, weekly }
+enum RelatedTracksSource {
+  track, // GET /tracks/{id}/related — "more of what you like"
+  station, // GET /home/stations/{artist_id}/tracks
+}
 
-class MixDetailScreen extends ConsumerWidget {
-  const MixDetailScreen({
+// ── Station tracks provider ───────────────────────────────────────────────────
+final _stationTracksProvider = FutureProvider.autoDispose
+    .family<List<Track>, String>((ref, artistId) async {
+      final ds = ref.read(playlistDatasourceProvider);
+      final pts = await ds.fetchStationTracks(artistId, limit: 50);
+      return pts.map(_toTrack).toList();
+    });
+
+Track _toTrack(PlaylistTrack pt) => Track(
+  id: pt.id,
+  userId: '',
+  title: pt.title,
+  artist: pt.artistName,
+  audioUrl: pt.id,
+  coverImage: pt.coverUrl,
+  duration: pt.duration,
+  playCount: pt.playCount,
+  createdAt: DateTime.now(),
+);
+
+// ── Screen ────────────────────────────────────────────────────────────────────
+class RelatedTracksScreen extends ConsumerWidget {
+  const RelatedTracksScreen({
     super.key,
-    required this.mixId,
-    required this.mixTitle,
-    required this.ownerName,
-    this.mixType = MixType.genre,
+    required this.sourceId,
+    required this.source,
+    required this.basedOnName,
+    required this.title,
     this.coverUrl,
-    this.trackCount,
   });
 
-  final String mixId;
-  final String mixTitle;
-  final String ownerName;
-  final MixType mixType;
+  final String sourceId;
+  final RelatedTracksSource source;
+  final String basedOnName;
+  final String title;
   final String? coverUrl;
-  final int? trackCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncTracks = ref.watch(mixTracksProvider(mixId));
+    final asyncTracks = source == RelatedTracksSource.track
+        ? ref.watch(relatedTracksProvider(sourceId))
+        : ref.watch(_stationTracksProvider(sourceId));
 
     return asyncTracks.when(
       loading: () => const Scaffold(
@@ -50,15 +77,16 @@ class MixDetailScreen extends ConsumerWidget {
         backgroundColor: AppTheme.background,
         body: Center(
           child: Text(
-            'Could not load mix',
+            'Could not load tracks',
             style: const TextStyle(color: AppTheme.textSecondary),
           ),
         ),
       ),
-      data: (tracks) => _MixDetailBody(
-        mixId: mixId,
-        mixTitle: mixTitle,
-        ownerName: ownerName,
+      data: (tracks) => _Body(
+        sourceId: sourceId,
+        source: source,
+        title: title,
+        basedOnName: basedOnName,
         coverUrl: coverUrl,
         tracks: tracks,
       ),
@@ -66,50 +94,58 @@ class MixDetailScreen extends ConsumerWidget {
   }
 }
 
-// ── Body — ConsumerStatefulWidget so it can hold _isSaved state ───────────────
-class _MixDetailBody extends ConsumerStatefulWidget {
-  const _MixDetailBody({
-    required this.mixId,
-    required this.mixTitle,
-    required this.ownerName,
+// ── Body — ConsumerStatefulWidget for _isSaved state ─────────────────────────
+class _Body extends ConsumerStatefulWidget {
+  const _Body({
+    required this.sourceId,
+    required this.source,
+    required this.title,
+    required this.basedOnName,
     required this.tracks,
     this.coverUrl,
   });
 
-  final String mixId;
-  final String mixTitle;
-  final String ownerName;
+  final String sourceId;
+  final RelatedTracksSource source;
+  final String title;
+  final String basedOnName;
   final String? coverUrl;
   final List<Track> tracks;
 
   @override
-  ConsumerState<_MixDetailBody> createState() => _MixDetailBodyState();
+  ConsumerState<_Body> createState() => _BodyState();
 }
 
-class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
+class _BodyState extends ConsumerState<_Body> {
   bool _isSaved = false;
 
   @override
   void initState() {
     super.initState();
-    _checkSaved();
+    // Only stations can be saved
+    if (widget.source == RelatedTracksSource.station) {
+      _checkSaved();
+    }
   }
 
   Future<void> _checkSaved() async {
-    final saved = await LocalSavedStore.instance.isMixSaved(widget.mixId);
+    final saved = await LocalSavedStore.instance.isStationSaved(
+      widget.sourceId,
+    );
     if (mounted) setState(() => _isSaved = saved);
   }
 
   Future<void> _toggleLike() async {
-    final mix = SavedMix(
-      mixId: widget.mixId,
-      title: widget.mixTitle,
-      ownerName: widget.ownerName,
+    if (widget.source != RelatedTracksSource.station) return;
+    final station = SavedStation(
+      artistId: widget.sourceId,
+      artistName: widget.basedOnName,
+      stationName: widget.title,
       coverUrl: widget.coverUrl,
       trackCount: widget.tracks.length,
       savedAt: DateTime.now(),
     );
-    await ref.read(savedMixesProvider.notifier).toggle(mix);
+    await ref.read(savedStationsProvider.notifier).toggle(station);
     if (mounted) setState(() => _isSaved = !_isSaved);
   }
 
@@ -120,7 +156,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
           .read(playerStateProvider.notifier)
           .loadAndPlayQueue(list, initialIndex: index);
     } catch (e) {
-      debugPrint('[MixDetail] play failed: $e');
+      debugPrint('[RelatedTracks] play failed: $e');
     }
   }
 
@@ -134,6 +170,8 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
     final durStr = h > 0
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+
+    final isStation = widget.source == RelatedTracksSource.station;
 
     return PlaylistScreenScaffold(
       child: Scaffold(
@@ -154,30 +192,52 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                       ),
                       onPressed: () => context.pop(),
                     ),
-                    _Cover(url: widget.coverUrl, label: widget.mixTitle),
+                    _Cover(url: widget.coverUrl, label: widget.title),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.mixTitle,
-                            maxLines: 1,
+                            widget.title,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: AppTheme.titleLarge,
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            'Private · $durStr · ${tracks.length} tracks',
-                            style: AppTheme.labelSmall,
+                          Row(
+                            children: [
+                              if (isStation) ...[
+                                const Icon(
+                                  Icons.sensors,
+                                  size: 13,
+                                  color: AppTheme.textSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Artist Station · $durStr · ${tracks.length} tracks',
+                                    style: AppTheme.labelSmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ] else
+                                Flexible(
+                                  child: Text(
+                                    'Related Tracks · $durStr · ${tracks.length} tracks',
+                                    style: AppTheme.labelSmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
                           ),
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              Text('Made for ', style: AppTheme.labelSmall),
+                              Text('Based on ', style: AppTheme.labelSmall),
                               Flexible(
                                 child: Text(
-                                  widget.ownerName,
+                                  widget.basedOnName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTheme.labelSmall.copyWith(
@@ -200,7 +260,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 child: Row(
                   children: [
-                    // ✅ Wired like button
+                    // ✅ Like button — active only for stations
                     IconButton(
                       icon: Icon(
                         _isSaved ? Icons.favorite : Icons.favorite_border,
@@ -209,7 +269,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                             : AppTheme.textPrimary,
                         size: 24,
                       ),
-                      onPressed: _toggleLike,
+                      onPressed: isStation ? _toggleLike : null,
                     ),
                     IconButton(
                       icon: const Icon(
@@ -258,7 +318,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                 child: tracks.isEmpty
                     ? Center(
                         child: Text(
-                          'No tracks in this mix yet',
+                          'No tracks found',
                           style: AppTheme.bodyMedium,
                         ),
                       )
@@ -268,7 +328,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                         itemBuilder: (context, index) {
                           final t = tracks[index];
                           return TrackTileFromTrack(
-                            key: Key('mix_track_${t.id}'),
+                            key: Key('related_${t.id}_$index'),
                             track: t,
                             onTap: () => _play(tracks, index),
                           );
@@ -283,6 +343,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
   }
 
   void _showOptions(BuildContext context) {
+    final isStation = widget.source == RelatedTracksSource.station;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -303,19 +364,15 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(
-                    url: widget.coverUrl,
-                    label: widget.mixTitle,
-                    size: 56,
-                  ),
+                  _Cover(url: widget.coverUrl, label: widget.title, size: 56),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.mixTitle, style: AppTheme.bodyNormal),
+                        Text(widget.title, style: AppTheme.bodyNormal),
                         Text(
-                          'Made for ${widget.ownerName}',
+                          'Based on ${widget.basedOnName}',
                           style: AppTheme.artistTitle,
                         ),
                       ],
@@ -335,14 +392,16 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               label: 'Play last',
               onTap: () => Navigator.of(context).pop(),
             ),
-            OptionSheetTile(
-              icon: _isSaved ? Icons.favorite : Icons.favorite_border,
-              label: _isSaved ? 'Remove from library' : 'Save to library',
-              onTap: () {
-                Navigator.of(context).pop();
-                _toggleLike();
-              },
-            ),
+            // Save option only for stations
+            if (isStation)
+              OptionSheetTile(
+                icon: _isSaved ? Icons.sensors_off : Icons.sensors,
+                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _toggleLike();
+                },
+              ),
             const SizedBox(height: 40),
           ],
         ),
@@ -379,7 +438,7 @@ class _Cover extends StatelessWidget {
     color: AppTheme.surface,
     child: Center(
       child: Text(
-        label.isNotEmpty ? label[0].toUpperCase() : 'M',
+        label.isNotEmpty ? label[0].toUpperCase() : 'S',
         style: const TextStyle(
           color: AppTheme.textSecondary,
           fontSize: 22,
