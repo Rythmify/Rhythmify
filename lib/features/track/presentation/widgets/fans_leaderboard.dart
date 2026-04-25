@@ -229,10 +229,6 @@ class FansLeaderboard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (item.isVerified) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.verified, size: 14, color: Colors.blue),
-                  ],
                 ],
               ),
             ),

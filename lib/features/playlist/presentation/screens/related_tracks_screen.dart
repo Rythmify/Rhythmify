@@ -10,7 +10,6 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
@@ -18,6 +17,7 @@ import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_screen_scaffold.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
+// ── Source type ───────────────────────────────────────────────────────────────
 enum RelatedTracksSource {
   track, // GET /tracks/{id}/related — "more of what you like"
   station, // GET /home/stations/{artist_id}/tracks
@@ -94,7 +94,7 @@ class RelatedTracksScreen extends ConsumerWidget {
   }
 }
 
-// ── Body — ConsumerStatefulWidget for _isSaved state ─────────────────────────
+// ── Body ──────────────────────────────────────────────────────────────────────
 class _Body extends ConsumerStatefulWidget {
   const _Body({
     required this.sourceId,
@@ -122,7 +122,6 @@ class _BodyState extends ConsumerState<_Body> {
   @override
   void initState() {
     super.initState();
-    // Only stations can be saved
     if (widget.source == RelatedTracksSource.station) {
       _checkSaved();
     }
@@ -260,7 +259,6 @@ class _BodyState extends ConsumerState<_Body> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 child: Row(
                   children: [
-                    // ✅ Like button — active only for stations
                     IconButton(
                       icon: Icon(
                         _isSaved ? Icons.favorite : Icons.favorite_border,
@@ -392,7 +390,6 @@ class _BodyState extends ConsumerState<_Body> {
               label: 'Play last',
               onTap: () => Navigator.of(context).pop(),
             ),
-            // Save option only for stations
             if (isStation)
               OptionSheetTile(
                 icon: _isSaved ? Icons.sensors_off : Icons.sensors,
@@ -410,6 +407,7 @@ class _BodyState extends ConsumerState<_Body> {
   }
 }
 
+// ── Cover widget ──────────────────────────────────────────────────────────────
 class _Cover extends StatelessWidget {
   const _Cover({required this.url, required this.label, this.size = 56});
   final String? url;
@@ -427,7 +425,7 @@ class _Cover extends StatelessWidget {
             ? Image.network(
                 url!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder(),
+                errorBuilder: (_, _, _) => _placeholder(),
               )
             : _placeholder(),
       ),

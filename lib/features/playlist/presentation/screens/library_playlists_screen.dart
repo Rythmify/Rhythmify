@@ -19,35 +19,7 @@ import '../widgets/playlist_shared_widgets.dart';
 // ── Filter enums ──────────────────────────────────────────────────────────
 enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
 
-enum _FilterOption { all, liked, owned }
-
-extension _SortLabel on _SortOption {
-  String get label {
-    switch (this) {
-      case _SortOption.recentlyAdded:
-        return 'Recently added';
-      case _SortOption.firstAdded:
-        return 'First added';
-      case _SortOption.recentlyUpdated:
-        return 'Recently updated';
-      case _SortOption.playlistName:
-        return 'Playlist name';
-    }
-  }
-}
-
-extension _FilterLabel on _FilterOption {
-  String get label {
-    switch (this) {
-      case _FilterOption.all:
-        return 'All playlists';
-      case _FilterOption.liked:
-        return 'Liked playlists';
-      case _FilterOption.owned:
-        return 'Owned playlists';
-    }
-  }
-}
+enum _FilterOption { all, owned }
 
 // ════════════════════════════════════════════════════════════════════════════
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
@@ -61,8 +33,8 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
 class _LibraryPlaylistsScreenState
     extends ConsumerState<LibraryPlaylistsScreen> {
   String _searchQuery = '';
-  _SortOption _sort = _SortOption.recentlyAdded;
-  _FilterOption _filter = _FilterOption.all;
+  final _SortOption _sort = _SortOption.recentlyAdded;
+  final _FilterOption _filter = _FilterOption.all;
 
   @override
   void initState() {
@@ -109,15 +81,6 @@ class _LibraryPlaylistsScreenState
     return result;
   }
 
-  void _onFilterChanged(_FilterOption newFilter) {
-    setState(() => _filter = newFilter);
-    if (newFilter == _FilterOption.liked) {
-      ref.read(playlistListProvider.notifier).loadLikedPlaylists();
-    } else {
-      ref.read(playlistListProvider.notifier).loadPlaylists();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
@@ -147,8 +110,8 @@ class _LibraryPlaylistsScreenState
                       borderRadius: BorderRadius.circular(4),
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFFFF7700).withOpacity(0.8),
-                          const Color(0xFFFF7700).withOpacity(0.0),
+                          const Color(0xFFFF7700).withValues(alpha: 0.8),
+                          const Color(0xFFFF7700).withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -186,7 +149,7 @@ class _LibraryPlaylistsScreenState
                         child: Container(
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppTheme.surface.withOpacity(0.9),
+                            color: AppTheme.surface.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(

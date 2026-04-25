@@ -24,10 +24,10 @@ class _TrackWaveformVisualizerState
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 150),
     );
     _heightAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
   }
 
@@ -72,6 +72,7 @@ class _TrackWaveformVisualizerState
                 activePosition: dragPosition ?? playerState.position,
                 actualPosition: playerState.position,
                 heightMultiplier: _heightAnimation.value,
+                showTimeBox: !isPaused,
               ),
             );
           },
