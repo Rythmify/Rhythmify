@@ -1,8 +1,6 @@
-// feed_card_play_circle.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../player/domain/entities/player_state.dart';
 
 class FeedCardPlayCircle extends ConsumerWidget {
   final bool showProgress;
@@ -16,11 +14,8 @@ class FeedCardPlayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(playerStateProvider.select((s) => s.status));
     final position = ref.watch(playerStateProvider.select((s) => s.position));
     final duration = ref.watch(playerStateProvider.select((s) => s.duration));
-
-    final isPlaying = status == PlayerStatus.playing;
 
     double progress = 0.0;
     if (showProgress && duration.inMilliseconds > 0) {
@@ -28,19 +23,24 @@ class FeedCardPlayCircle extends ConsumerWidget {
     }
 
     return SizedBox(
+      key: const Key('feed_card_play_circle_sizedbox'),
       width: size,
       height: size,
       child: Stack(
+        key: const Key('feed_card_play_circle_stack'),
         fit: StackFit.expand,
         children: [
           CircularProgressIndicator(
+            key: const Key('feed_card_play_circle_progress'),
             value: showProgress ? progress : 0,
             strokeWidth: 2,
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
             backgroundColor: Colors.white24,
           ),
           Center(
+            key: const Key('feed_card_play_circle_center'),
             child: Icon(
+              key: const Key('feed_card_play_circle_icon'),
               Icons.play_arrow,
               color: Colors.white,
               size: size * 0.5,

@@ -33,10 +33,21 @@ class SeekDragNotifier extends Notifier<Duration?> {
 class PlayerNotifier extends Notifier<AppPlayerState> {
   bool _isDragging = false;
 
+  // When a local (optimistic) seek is applied we set this timestamp. For a
+  // short grace window we suppress stream updates that would otherwise
+  // overwrite our optimistic position and cause a visual snap-back.
+  DateTime? _recentLocalSeek;
+
   // Tracking for listening history
   final Stopwatch _sessionStopwatch = Stopwatch();
   String? _sessionTrackId;
   DateTime? _sessionStartTime;
+
+  // ── [Playlist Module] Internal queue mirror for addToQueueNext/Last ────────
+  // These track the queue locally since AppPlayerState has no queue field.
+  final List<Track> _queue = [];
+  int _currentIndex = 0;
+  // ── [Playlist Module] end ──────────────────────────────────────────────────
 
   @override
   AppPlayerState build() {
@@ -50,10 +61,26 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       final oldTrackId = state.currentTrack?.id;
       final newTrackId = newState.currentTrack?.id;
 
+      // If the UI is actively dragging, preserve the frozen position in state.
       if (_isDragging) {
         state = newState.copyWith(position: state.position);
       } else {
-        state = newState;
+        // If we recently applied an optimistic local position update (a seek
+        // initiated from the UI), the audio backend may still be reporting the
+        // previous position for a short time. In that window avoid clobbering
+        // our optimistic position with the stale stream value to prevent the
+        // visual "snap back" effect. After the grace period the stream will
+        // be accepted as authoritative.
+        final bool suppressRecentLocalSeek =
+            _recentLocalSeek != null &&
+            DateTime.now().difference(_recentLocalSeek!) <
+                const Duration(milliseconds: 600);
+
+        if (suppressRecentLocalSeek) {
+          state = newState.copyWith(position: state.position);
+        } else {
+          state = newState;
+        }
       }
 
       // Handle track changes for history recording
@@ -75,6 +102,14 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       if (newTrackId != null && newTrackId != oldTrackId) {
         if (newState.currentTrack?.waveformData == null) {
           _updateTrackInBackground(newTrackId);
+        }
+      }
+
+      // Clear the local seek suppression if stream position has caught up
+      if (_recentLocalSeek != null) {
+        if (newState.position.inMilliseconds >=
+            (state.position.inMilliseconds)) {
+          _recentLocalSeek = null;
         }
       }
     });
@@ -125,11 +160,62 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Fallback to existing URL if API fails, or let it throw if critical
     }
 
+    // ── [Playlist Module] Mirror queue for addToQueueNext/Last ────────────
+    _queue
+      ..clear()
+      ..addAll(updatedTracks);
+    _currentIndex = initialIndex;
+    // ── [Playlist Module] end ─────────────────────────────────────────────
+
     await ref
         .read(loadQueueUseCaseProvider)
         .call(updatedTracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }
+
+  // ── [Playlist Module] Queue insertion methods ──────────────────────────────
+
+  /// Inserts [track] immediately after the currently playing track.
+  /// If nothing is playing, starts a new queue with this track.
+  Future<void> addToQueueNext(Track track) async {
+    if (state.currentTrack == null) {
+      await loadAndPlayQueue([track]);
+      return;
+    }
+    Track resolved = track;
+    try {
+      final url = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(track.id);
+      resolved = track.copyWith(streamUrl: url);
+    } catch (_) {}
+    _queue.insert(_currentIndex + 1, resolved);
+    await ref
+        .read(loadQueueUseCaseProvider)
+        .call(List<Track>.from(_queue), initialIndex: _currentIndex);
+  }
+
+  /// Appends [track] to the end of the current queue.
+  /// If nothing is playing, starts a new queue with this track.
+  Future<void> addToQueueLast(Track track) async {
+    if (state.currentTrack == null) {
+      await loadAndPlayQueue([track]);
+      return;
+    }
+    Track resolved = track;
+    try {
+      final url = await ref
+          .read(initiatePlaybackUseCaseProvider)
+          .call(track.id);
+      resolved = track.copyWith(streamUrl: url);
+    } catch (_) {}
+    _queue.add(resolved);
+    await ref
+        .read(loadQueueUseCaseProvider)
+        .call(List<Track>.from(_queue), initialIndex: _currentIndex);
+  }
+
+  // ── [Playlist Module] end ──────────────────────────────────────────────────
 
   /// Starts playback immediately with partial info and fetches full details in the background.
   Future<void> playOptimistic(Track initialTrack) async {
@@ -189,6 +275,25 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// This updates the Riverpod state so the artwork moves instantly.
   void updatePosition(Duration position) {
     state = state.copyWith(position: position);
+    // Record the time of optimistic local seek so the stream listener can
+    // avoid immediately overriding this value with stale stream data.
+    // This timestamp is used as a short grace period after which stream
+    // updates are accepted normally.
+    // Note: The listener defines the suppression duration.
+    // Accessing a top-level variable declared in build via assignment; using
+    // a simple workaround by setting a private field via method call below.
+    _markLocalSeekTime();
+  }
+
+  void _markLocalSeekTime() {
+    // This method exists to mutate the _lastLocalSeekTime declared inside
+    // the build() listener scope. We store the time on the instance instead.
+    // If multiple seeks happen, this simply updates the timestamp.
+    // Using 600ms similar to the suppression window in the listener.
+    // (Accessible to the listener via closure is not available here, so we
+    // mirror the logic by using an instance field.)
+    // Declare field if absent.
+    _recentLocalSeek = DateTime.now();
   }
 
   /// This tells whether i am moving the slider or not

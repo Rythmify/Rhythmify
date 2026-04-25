@@ -1,10 +1,13 @@
 // lib/features/playlist/presentation/screens/library_playlists_screen.dart
+
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/time_ago.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../domain/entities/playlist_entity.dart';
@@ -13,6 +16,12 @@ import '../widgets/create_playlist_sheet.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
+// ── Filter enums ──────────────────────────────────────────────────────────
+enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
+
+enum _FilterOption { all, owned }
+
+// ════════════════════════════════════════════════════════════════════════════
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
   const LibraryPlaylistsScreen({super.key});
 
@@ -24,221 +33,253 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
 class _LibraryPlaylistsScreenState
     extends ConsumerState<LibraryPlaylistsScreen> {
   String _searchQuery = '';
+  final _SortOption _sort = _SortOption.recentlyAdded;
+  final _FilterOption _filter = _FilterOption.all;
 
   @override
   void initState() {
     super.initState();
-    // Trigger the real API call after the first frame.
-    // This replaces the old mock seeder.
-    // You will see in the console:
-    //   [LIST] loadPlaylists()
-    //   [DATASOURCE] → GET /playlists  filter=created
-    //   [DATASOURCE] ← 200  Got 3 playlists from server
-    //   [LIST] loaded 3 items ✅
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(playlistListProvider.notifier).loadPlaylists();
     });
   }
 
-  // Returns the logged-in user's ID, or empty string if not authenticated.
   String _currentUserId() {
     final authState = ref.read(authProvider);
     return authState is AuthAuthenticated ? authState.user.id : '';
   }
 
+  List<PlaylistEntity> _applySortAndFilter(List<PlaylistEntity> input) {
+    var result = input.where((p) => p.type == PlaylistType.playlist).toList();
+
+    if (_filter == _FilterOption.owned) {
+      final uid = _currentUserId();
+      result = result.where((p) => p.ownerId == uid).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      result = result
+          .where(
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
+    }
+
+    switch (_sort) {
+      case _SortOption.recentlyAdded:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case _SortOption.firstAdded:
+        result.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      case _SortOption.recentlyUpdated:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case _SortOption.playlistName:
+        result.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+    }
+
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistListProvider);
-
-    // Filter to playlists only (albums and stations are in separate screens)
-    final allPlaylists = state.playlists
-        .where((p) => p.type == PlaylistType.playlist)
-        .toList();
-    final filtered = allPlaylists
-        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    final filtered = _applySortAndFilter(state.playlists);
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Search bar ──────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    key: const Key('library_playlists_back_button'),
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: Colors.white,
-                      size: 26,
+      backgroundColor: AppTheme.background,
+      body: Stack(
+        children: [
+          // 🔶 TOP BACKGROUND (Refined positioning to match small tilted layers)
+          Positioned(
+            top: -60,
+            right: -80,
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..rotateZ(0.45) // Steeper angle
+                ..setEntry(0, 1, 0.2), // Skew to match the perspective
+              child: Column(
+                children: List.generate(12, (i) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    width:
+                        320, // Reduced width so it doesn't cross the whole screen
+                    height: 80, // More compact height
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFFF7700).withValues(alpha: 0.8),
+                          const Color(0xFFFF7700).withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                    onPressed: () => context.pop(),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
                     child: Container(
-                      height: 38,
+                      margin: const EdgeInsets.all(1.2), // Thin border
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: TextField(
-                        key: const Key('library_playlists_search_field'),
-                        onChanged: (v) => setState(() => _searchQuery = v),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search ${allPlaylists.length} playlists',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.grey,
-                            size: 18,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                          ),
-                        ),
+                        color: AppTheme.background,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.tune, color: Colors.grey[400], size: 22),
-                ],
+                  );
+                }),
               ),
             ),
+          ),
 
-            // ── Title ───────────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Playlists',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Search ──────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
+                        ),
+                        onPressed: () => context.pop(),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: TextField(
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                            style: AppTheme.bodyNormal,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Search ${state.playlists.length} playlists',
+                              hintStyle: AppTheme.bodyMedium,
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
+                                  _filter != _FilterOption.all)
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
+                        onPressed: () => _showFilterSheet(context),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
 
-            // ── Import / Create buttons ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('library_playlists_import_button'),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Import not available yet'),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.download_outlined,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Import',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
+                // ── Title ───────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Playlists', style: AppTheme.headlineLarge),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('library_playlists_create_button'),
-                      onPressed: () => _showCreateSheet(context),
-                      icon: const Icon(
-                        Icons.add,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Create',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            // ── Playlist list ────────────────────────────────────────────
-            Expanded(
-              child: state.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFF5500),
-                      ),
-                    )
-                  : filtered.isEmpty
-                  ? Center(
-                      child: Text(
-                        _searchQuery.isEmpty
-                            ? 'No playlists yet.\nTap Create to make one!'
-                            : 'No results for "$_searchQuery"',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey[500]),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final playlist = filtered[index];
-                        // Real ownership check using the auth provider
-                        final isOwner = playlist.ownerId == _currentUserId();
-                        return _PlaylistListTile(
-                          key: Key('library_playlist_tile_${playlist.id}'),
-                          playlist: playlist,
-                          onTap: () => context.pushNamed(
-                            'library-detail',
-                            pathParameters: {
-                              'type': 'playlists',
-                              'playlistId': playlist.id,
-                            },
-                            extra: isOwner,
+                // ── Buttons ─────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Import not available yet'),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.download_outlined,
+                            color: AppTheme.textPrimary,
                           ),
-                          onMoreTap: () =>
-                              _showOptions(context, playlist, isOwner),
-                        );
-                      },
-                    ),
+                          label: Text('Import', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: BorderSide(color: AppTheme.lighterSurface),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showCreateSheet(context),
+                          icon: Icon(Icons.add, color: AppTheme.textPrimary),
+                          label: Text('Create', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: BorderSide(color: AppTheme.lighterSurface),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── List ────────────────────────────────
+                Expanded(
+                  child: state.isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 140),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final playlist = filtered[index];
+                            final isOwner =
+                                playlist.ownerId == _currentUserId();
+
+                            return _PlaylistListTile(
+                              playlist: playlist,
+                              onTap: () => context.push(
+                                '/library/playlists/${playlist.id}',
+                                extra: isOwner,
+                              ),
+                              onMoreTap: () =>
+                                  _showOptions(context, playlist, isOwner),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      builder: (_) => const SizedBox(),
     );
   }
 
@@ -248,11 +289,7 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) => context.pushNamed(
-          'library-detail',
-          pathParameters: {'type': 'playlists', 'playlistId': id},
-          extra: true,
-        ),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
@@ -272,9 +309,9 @@ class _LibraryPlaylistsScreenState
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
 class _PlaylistListTile extends StatelessWidget {
   const _PlaylistListTile({
-    super.key,
     required this.playlist,
     required this.onTap,
     required this.onMoreTap,
@@ -292,38 +329,23 @@ class _PlaylistListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 4),
+            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 0),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(playlist.name, style: AppTheme.bodyNormal),
+                  Text(playlist.ownerName, style: AppTheme.artistTitle),
                   Text(
-                    playlist.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    playlist.ownerName,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    playlist.subtitleLine,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    '${playlist.subtitleLine} · ${timeAgo(playlist.createdAt)}',
+                    style: AppTheme.labelSmall,
                   ),
                 ],
               ),
             ),
             IconButton(
-              key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+              icon: Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],

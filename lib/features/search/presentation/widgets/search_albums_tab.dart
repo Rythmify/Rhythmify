@@ -50,52 +50,52 @@ class _AlbumTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final artworkUrl = album['artworkUrl'] ?? '';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        onTap: () {
-          context.push('/playlist/${album['id']}', extra: false);
-        },
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: artworkUrl.isNotEmpty && artworkUrl.startsWith('http')
-              ? Image.network(
-                  artworkUrl,
-                  key: Key('album_artwork_${album['id']}'),
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      Container(width: 50, height: 50, color: Colors.grey[800]),
-                )
-              : Container(width: 50, height: 50, color: Colors.grey[800]),
-        ),
-        title: Text(
-          album['title'] ?? '',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              album['artist'] ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+    return GestureDetector(
+      onTap: () {
+        context.push('/home/playlist/${album['id']}', extra: false);
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.network(
+              album['artworkUrl'] ?? '',
+
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) =>
+                  Container(width: 50, height: 50, color: Colors.grey[800]),
             ),
-            Text(
-              '${album['year']} · ${album['type']}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[500], fontSize: 11),
-            ),
-          ],
+          ),
+          title: Text(
+            album['title']!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                album['artist']!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              ),
+              // Shows release year and album type (e.g. "2020 · Album").
+              Text(
+                '${album['year']} · ${album['type']}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey[500], fontSize: 11),
+              ),
+            ],
+          ),
+          trailing: const Icon(Icons.more_vert),
+          isThreeLine: true,
         ),
-        trailing: const Icon(Icons.more_vert),
-        isThreeLine: true,
       ),
     );
   }

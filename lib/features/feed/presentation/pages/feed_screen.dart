@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/feed_tab_bar.dart';
 import '../widgets/feed_list.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -12,12 +13,22 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen>
     with SingleTickerProviderStateMixin {
+  final _discoverKey = GlobalKey<FeedListState>();
+  final _followingKey = GlobalKey<FeedListState>();
   late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        ref.read(playerStateProvider.notifier).stopPlayback();
+        _discoverKey.currentState?.resetPreview();
+        _followingKey.currentState?.resetPreview();
+      }
+    });
   }
 
   @override
@@ -36,9 +47,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             // Feed content fills the whole screen
             TabBarView(
               controller: _tabController,
-              children: const [
-                FeedList(tab: FeedTab.discover),
-                FeedList(tab: FeedTab.following),
+              children: [
+                FeedList(key: _discoverKey, tab: FeedTab.discover),
+                FeedList(key: _followingKey, tab: FeedTab.following),
               ],
             ),
             // TabBar floats on top, centered, constrained width

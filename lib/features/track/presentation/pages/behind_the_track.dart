@@ -29,65 +29,73 @@ class BehindTheTrackPage extends ConsumerWidget {
       backgroundColor: AppTheme.background,
       body: trackAsync.when(
         data: (track) => SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        key: const Key('behind_the_track_back_icon_button'),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: AppTheme.appBarItems,
-                        ),
+          child: RefreshIndicator(
+            color: AppTheme.primaryBrand,
+            onRefresh: () async {
+              ref.invalidate(trackDetailsProvider(trackId));
+              await ref.read(trackDetailsProvider(trackId).future);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          key: const Key('behind_the_track_back_icon_button'),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: AppTheme.appBarItems,
+                          ),
 
-                        onPressed: () => Navigator.pop(context),
+                          onPressed: () => Navigator.pop(context),
 
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.surface,
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(8),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(8),
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        key: const Key('behind_the_track_cast_icon_button'),
-                        icon: const Icon(
-                          Icons.cast,
-                          color: AppTheme.appBarItems,
+                        IconButton(
+                          key: const Key('behind_the_track_cast_icon_button'),
+                          icon: const Icon(
+                            Icons.cast,
+                            color: AppTheme.appBarItems,
+                          ),
+                          onPressed: () => showCastMediaSheet(context, ref),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(8),
+                          ),
                         ),
-                        onPressed: () => showCastMediaSheet(context, ref),
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.surface,
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(8),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 15),
-                TrackInfoHeader(track: track),
+                  const SizedBox(height: 15),
+                  TrackInfoHeader(track: track),
 
-                const SizedBox(height: 16),
-                TrackActionBar(track: track),
+                  const SizedBox(height: 16),
+                  TrackActionBar(track: track),
 
-                const SizedBox(height: 14),
-                TrackDetailsSection(track: track),
+                  const SizedBox(height: 14),
+                  TrackDetailsSection(track: track),
 
-                const SizedBox(height: 35),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FansLeaderboard(trackId: trackId),
-                ),
-                const SizedBox(height: 155),
-              ],
+                  const SizedBox(height: 35),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FansLeaderboard(trackId: trackId),
+                  ),
+                  const SizedBox(height: 155),
+                ],
+              ),
             ),
           ),
         ),

@@ -69,6 +69,8 @@ class TrackInteractionNotifier {
       _ref
           .read(trackSyncProvider.notifier)
           .toggleRepost(trackId, !isCurrentlyReposted, null);
+      // Rethrow to let UI handle the visual error
+      rethrow;
     }
   }
 }

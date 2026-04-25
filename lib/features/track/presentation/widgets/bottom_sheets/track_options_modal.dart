@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/domain/entities/track.dart';
 import '../../../../../core/presentation/pages/report_page.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/error/error_handler.dart';
+import '../../../../../core/utils/ui_utils.dart';
 import '../../providers/track_interaction_provider.dart';
 import '../../providers/track_sync_provider.dart';
 import '../../../../messaging/presentation/providers/conversations_provider.dart';
@@ -232,7 +234,8 @@ class TrackOptionsModal extends ConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const UploadTrackScreen(),
+                            builder: (context) =>
+                                UploadTrackScreen(track: syncedTrack),
                           ),
                         );
                       },
@@ -313,15 +316,25 @@ class TrackOptionsModal extends ConsumerWidget {
                     labelColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
-                    onTap: () {
-                      ref
-                          .read(trackInteractionProvider)
-                          .handleToggleRepost(
-                            syncedTrack.id,
-                            syncedTrack.isReposted,
-                            currentTrack: syncedTrack,
-                          );
+                    onTap: () async {
+                      final ctx = context;
                       Navigator.pop(context);
+                      try {
+                        await ref
+                            .read(trackInteractionProvider)
+                            .handleToggleRepost(
+                              syncedTrack.id,
+                              syncedTrack.isReposted,
+                              currentTrack: syncedTrack,
+                            );
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          UIUtils.showErrorSnackBar(
+                            ctx,
+                            ErrorHandler.getFriendlyMessage(e),
+                          );
+                        }
+                      }
                     },
                   ),
                   _buildActionRow(

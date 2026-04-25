@@ -48,7 +48,7 @@ class IntroducingSectionWidget extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () =>
-          context.push('/playlist/${playlist.playlistId}', extra: false),
+          context.push('/home/playlist/${playlist.playlistId}', extra: false),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
