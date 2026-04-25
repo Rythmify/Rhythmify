@@ -298,7 +298,11 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  _Cover(url: widget.coverUrl, label: widget.mixTitle, size: 56),
+                  _Cover(
+                    url: widget.coverUrl,
+                    label: widget.mixTitle,
+                    size: 56,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -367,16 +371,16 @@ class _Cover extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            label.isNotEmpty ? label[0].toUpperCase() : 'M',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'M',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

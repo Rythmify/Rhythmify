@@ -16,29 +16,26 @@ import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-enum RelatedTracksSource {
-  track,
-  station,
-}
+enum RelatedTracksSource { track, station }
 
 final _stationTracksProvider = FutureProvider.autoDispose
     .family<List<Track>, String>((ref, artistId) async {
-  final ds = ref.read(playlistDatasourceProvider);
-  final pts = await ds.fetchStationTracks(artistId, limit: 50);
-  return pts.map(_toTrack).toList();
-});
+      final ds = ref.read(playlistDatasourceProvider);
+      final pts = await ds.fetchStationTracks(artistId, limit: 50);
+      return pts.map(_toTrack).toList();
+    });
 
 Track _toTrack(PlaylistTrack pt) => Track(
-      id: pt.id,
-      userId: '',
-      title: pt.title,
-      artist: pt.artistName,
-      audioUrl: pt.id,
-      coverImage: pt.coverUrl,
-      duration: pt.duration,
-      playCount: pt.playCount,
-      createdAt: DateTime.now(),
-    );
+  id: pt.id,
+  userId: '',
+  title: pt.title,
+  artist: pt.artistName,
+  audioUrl: pt.id,
+  coverImage: pt.coverUrl,
+  duration: pt.duration,
+  playCount: pt.playCount,
+  createdAt: DateTime.now(),
+);
 
 class RelatedTracksScreen extends ConsumerWidget {
   const RelatedTracksScreen({
@@ -123,8 +120,9 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   Future<void> _checkSaved() async {
-    final saved =
-        await LocalSavedStore.instance.isStationSaved(widget.sourceId);
+    final saved = await LocalSavedStore.instance.isStationSaved(
+      widget.sourceId,
+    );
     if (mounted) setState(() => _isSaved = saved);
   }
 
@@ -156,8 +154,7 @@ class _BodyState extends ConsumerState<_Body> {
   @override
   Widget build(BuildContext context) {
     final tracks = widget.tracks;
-    final totalDuration =
-        tracks.fold(Duration.zero, (s, t) => s + t.duration);
+    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
@@ -386,9 +383,7 @@ class _BodyState extends ConsumerState<_Body> {
             if (isStation)
               OptionSheetTile(
                 icon: _isSaved ? Icons.sensors_off : Icons.sensors,
-                label: _isSaved
-                    ? 'Remove from Saved Stations'
-                    : 'Save Station',
+                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
                 onTap: () {
                   Navigator.of(context).pop();
                   _toggleLike();
@@ -427,16 +422,16 @@ class _Cover extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            label.isNotEmpty ? label[0].toUpperCase() : 'S',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'S',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

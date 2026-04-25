@@ -336,7 +336,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   // Call with: context.push('/home/mix/$id', extra: {...})
                   // Call with: context.push('/home/station/$id', extra: {...})
                   // Call with: context.push('/home/related-tracks/$id', extra: {...})
-
                   GoRoute(
                     path: 'playlist/:playlistId',
                     builder: (context, state) {
@@ -375,8 +374,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'related-tracks/:sourceId',
                     builder: (context, state) {
                       final sourceId = state.pathParameters['sourceId']!;
-                      final extra =
-                          state.extra as Map<String, dynamic>? ?? {};
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
                       return RelatedTracksScreen(
                         sourceId: sourceId,
                         source: RelatedTracksSource.track,
@@ -391,15 +389,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'station/:sourceId',
                     builder: (context, state) {
                       final sourceId = state.pathParameters['sourceId']!;
-                      final extra =
-                          state.extra as Map<String, dynamic>? ?? {};
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
                       final artistName = extra['artistName'] as String? ?? '';
                       return RelatedTracksScreen(
                         sourceId: sourceId,
                         source: RelatedTracksSource.station,
                         basedOnName: artistName,
-                        title:
-                            extra['stationName'] as String? ?? artistName,
+                        title: extra['stationName'] as String? ?? artistName,
                         coverUrl: extra['coverUrl'] as String?,
                       );
                     },
@@ -524,8 +520,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-playlists',
                     path: 'playlists',
-                    builder: (context, state) =>
-                        const LibraryPlaylistsScreen(),
+                    builder: (context, state) => const LibraryPlaylistsScreen(),
                   ),
                   GoRoute(
                     name: 'library-albums',
@@ -535,8 +530,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     name: 'library-stations',
                     path: 'stations',
-                    builder: (context, state) =>
-                        const LibraryStationsScreen(),
+                    builder: (context, state) => const LibraryStationsScreen(),
                   ),
                   GoRoute(
                     name: 'library-detail',
@@ -626,15 +620,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const UploadTrackScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             );
           },

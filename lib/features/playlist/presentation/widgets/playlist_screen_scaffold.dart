@@ -43,9 +43,9 @@ class PlaylistScreenScaffold extends ConsumerWidget {
         Positioned.fill(
           child: MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              padding: MediaQuery.of(context).padding.copyWith(
-                bottom: bottomPadding,
-              ),
+              padding: MediaQuery.of(
+                context,
+              ).padding.copyWith(bottom: bottomPadding),
             ),
             child: child,
           ),
@@ -58,9 +58,7 @@ class PlaylistScreenScaffold extends ConsumerWidget {
             right: 0,
             bottom: _navBarHeight,
             height: _miniPlayerHeight,
-            child: MiniPlayer(
-              onTap: () => context.push('/player'),
-            ),
+            child: MiniPlayer(onTap: () => context.push('/player')),
           ),
 
         // ── Nav bar replica ───────────────────────────────────────────────
@@ -86,10 +84,14 @@ class _BottomNavBar extends StatelessWidget {
 
     // Determine active tab from current route
     int activeIndex = 0;
-    if (location.startsWith('/feed')) activeIndex = 1;
-    else if (location.startsWith('/search')) activeIndex = 2;
-    else if (location.startsWith('/library')) activeIndex = 3;
-    else if (location.startsWith('/upgrade')) activeIndex = 4;
+    if (location.startsWith('/feed'))
+      activeIndex = 1;
+    else if (location.startsWith('/search'))
+      activeIndex = 2;
+    else if (location.startsWith('/library'))
+      activeIndex = 3;
+    else if (location.startsWith('/upgrade'))
+      activeIndex = 4;
     // Playlist/mix/station routes don't match any tab — keep home highlighted
     // unless we came from library (not easily detectable, so default to home)
 
@@ -97,7 +99,10 @@ class _BottomNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF121212),
         border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 0.5,
+          ),
         ),
       ),
       child: SafeArea(
