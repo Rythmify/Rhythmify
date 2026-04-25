@@ -93,6 +93,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   final GetUnfollowUserUseCase _unfollow;
   final ToggleCommentLikeUseCase _toggleCommentLike;
   final FollowStateNotifier _followState;
+  String? _activeType;
 
   NotificationsNotifier({
     required GetNotificationsUsecase getNotifications,
@@ -112,10 +113,11 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   /// Loads page 1, replaces any existing items, and fires mark-read for all
   /// unread items. Also seeds [FollowStateNotifier] for follow-type actors.
-  Future<void> fetch() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+  Future<void> fetch({String? type}) async {
+    _activeType = type;
+    state = state.copyWith(isLoading: true, clearError: true,items: []);
     try {
-      final result = await _getNotifications(page: 1);
+      final result = await _getNotifications(page: 1,type: _activeType);
       final unread = result.items.where((n) => !n.isRead).toList();
 
       state = state.copyWith(
@@ -132,11 +134,15 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         _followState.fetchFollowState(n.actorId);
       }
 
-      if (unread.isNotEmpty) {
-        state = state.copyWith(unreadCount: 0);
-        for (final n in unread) {
-          _markRead(n.id).catchError((_) {});
-        }
+      // if (unread.isNotEmpty) {           //TODO:check
+      //   state = state.copyWith(unreadCount: 0);
+      //   for (final n in unread) {
+      //     _markRead(n.id).catchError((_) {});
+      //   }
+      // }
+
+      for(final n in unread){
+        _markRead(n.id).catchError((_) {});
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -145,11 +151,13 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   /// Keeps loading pages until [hasNext] is false.
   /// Used when a filter is applied that requires the full list client-side.
-  Future<void> loadAll() async {
-    while (state.hasNext) {
-      await loadMore();
-    }
-  }
+  // Future<void> loadAll() async { //TODO: check
+  //   while (state.hasNext) {
+  //     final prevPage=state.currentPage;
+  //     await loadMore();
+  //     if(state.currentPage==prevPage) break;
+  //   }
+  // }
 
   /// Appends the next page to [items]. Marks new unread items as read
   /// and seeds follow states for any follow-type actors in the page.
@@ -158,7 +166,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
-      final result = await _getNotifications(page: nextPage);
+      final result = await _getNotifications(page: nextPage, type: _activeType);
       state = state.copyWith(
         items: [...state.items, ...result.items],
         hasNext: result.hasNext,
@@ -184,29 +192,32 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   /// Reverts if the API call returns a failure.
   Future<void> toggleFollow(String actorId, bool currentlyFollowing) async {
     _followState.setFollowing(actorId, isFollowing: !currentlyFollowing);
-    final result = currentlyFollowing
+    try{
+      final result = currentlyFollowing
         ? await _unfollow(userId: actorId)
         : await _follow(userId: actorId);
-    result.fold(
-      (_) =>
-          _followState.setFollowing(actorId, isFollowing: currentlyFollowing),
-      (_) {},
-    );
+      result.fold(
+        (_) =>
+            _followState.setFollowing(actorId, isFollowing: currentlyFollowing),
+        (_) {},
+      );
+    }catch(_){
+      _followState.setFollowing(actorId, isFollowing: currentlyFollowing);
+    }
   }
 
   /// Toggles like on a comment with optimistic UI.
   ///
   /// Updates [likedCommentIds] immediately and reverts if the API call throws.
-  Future<void> toggleCommentLike(String commentId) async {
-    final isLiked = state.likedCommentIds.contains(commentId);
+  Future<void> toggleCommentLike(String commentId, bool currentIsLiked) async {
     final newSet = Set<String>.from(state.likedCommentIds);
-    isLiked ? newSet.remove(commentId) : newSet.add(commentId);
+    currentIsLiked ? newSet.remove(commentId) : newSet.add(commentId);
     state = state.copyWith(likedCommentIds: newSet);
     try {
-      await _toggleCommentLike(commentId, isCurrentlyLiked: isLiked);
+      await _toggleCommentLike(commentId, isCurrentlyLiked: currentIsLiked);
     } catch (_) {
       final revertSet = Set<String>.from(state.likedCommentIds);
-      isLiked ? revertSet.add(commentId) : revertSet.remove(commentId);
+      currentIsLiked ? revertSet.add(commentId) : revertSet.remove(commentId);
       state = state.copyWith(likedCommentIds: revertSet);
     }
   }

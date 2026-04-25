@@ -6,6 +6,7 @@ import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:rythmify/features/notifications/presentation/providers/track_by_comment_provider.dart';
 import 'package:rythmify/features/notifications/presentation/widgets/notification_tile.dart';
 
 enum Filter { all, comments, likes, followings, reposts, reactions }
@@ -67,10 +68,18 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
 
   void _setFilter(Filter f) {
     setState(() => _filter = f);
-    if (f != Filter.all) {
-      ref.read(notificationsProvider.notifier).loadAll();
-    }
+    if (f == Filter.reactions) return;
+    ref.read(notificationsProvider.notifier).fetch(type: _toApiType(f));
   }
+
+  String? _toApiType(Filter f) => switch (f) {
+    Filter.all        => null,
+    Filter.comments   => 'comment',
+    Filter.likes      => 'like',
+    Filter.followings => 'follow',
+    Filter.reposts    => 'repost',
+    Filter.reactions  => null,
+  };
 
   void _showFilterSheet() {
     showModalBottomSheet(
@@ -173,31 +182,9 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     return '${date.year}';
   }
 
-  List<NotificationEntity> _filterItems(
-    List<NotificationEntity> notifications,
-  ) {
-    switch (_filter) {
-      case Filter.all:
-        return notifications;
-      case Filter.comments:
-        return notifications
-            .where((n) => n.type == NotificationType.comment)
-            .toList();
-      case Filter.followings:
-        return notifications
-            .where((n) => n.type == NotificationType.follow)
-            .toList();
-      case Filter.likes:
-        return notifications
-            .where((n) => n.type == NotificationType.like)
-            .toList();
-      case Filter.reposts:
-        return notifications
-            .where((n) => n.type == NotificationType.repost)
-            .toList();
-      case Filter.reactions:
-        return [];
-    }
+  List<NotificationEntity> _filterItems(List<NotificationEntity> notifications) {
+    if (_filter == Filter.reactions) return [];
+    return notifications; // server already filtered by type
   }
 
   Widget _emptyListMessage() {
@@ -260,7 +247,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     return items;
   }
 
-  void _onTap(NotificationEntity notification) {
+  void _onTap(NotificationEntity notification,String? embedId) {
     switch (notification.type) {
       case NotificationType.follow:
         context.push('/profile/${notification.actorId}');
@@ -272,8 +259,9 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
         } else if (notification.resourceType == ResourceType.track) {
           context.push('/behind-the-track/${notification.resourceId}');
         }
-      case NotificationType.newPostByFollowed:
       case NotificationType.comment:
+        if(embedId!=null) context.push('/behind-the-track/$embedId');
+      case NotificationType.newPostByFollowed:
         return;
     }
   }
@@ -320,9 +308,9 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
       onRefresh: () => ref.read(notificationsProvider.notifier).fetch(),
       child: ListView.builder(
         controller: _scrollController,
-        itemCount: items.length + (state.isLoadingMore ? 1 : 0),
+        itemCount: items.length + (state.isLoadingMore ? 1 : 0)+1,
         itemBuilder: (context, index) {
-          if (index == items.length) {
+          if (state.isLoadingMore && index == items.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -330,6 +318,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
               ),
             );
           }
+          if(index>=items.length) return const SizedBox(height: 80);
           final item = items[index];
           if (item is String) {
             return Padding(
@@ -345,9 +334,17 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             );
           }
           final notification = item as NotificationEntity;
+          final commentData = notification.type == NotificationType.comment && notification.resourceId != null
+              ? ref.watch(trackByCommentProvider(notification.resourceId!)).value
+              : null;
+          final serverIsLiked = commentData?.isLikedByMe ?? false;
+          final isCommentLiked = state.likedCommentIds.contains(notification.resourceId)
+              ? !serverIsLiked
+              : serverIsLiked;
           return NotificationTile(
             notification: notification,
-            onTap: () => _onTap(notification),
+            onTap: () => _onTap(notification, commentData?.embed?.embedId),
+            trackEmbed: commentData?.embed,
             isFollowing: followState[notification.actorId] ?? false,
             onFollowTap: () {
               ref
@@ -360,11 +357,9 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             onLikeTap: notification.resourceId != null
                 ? () => ref
                       .read(notificationsProvider.notifier)
-                      .toggleCommentLike(notification.resourceId!)
+                      .toggleCommentLike(notification.resourceId!, isCommentLiked)
                 : null,
-            isCommentLiked: state.likedCommentIds.contains(
-              notification.resourceId,
-            ),
+            isCommentLiked: isCommentLiked,
           );
         },
       ),
