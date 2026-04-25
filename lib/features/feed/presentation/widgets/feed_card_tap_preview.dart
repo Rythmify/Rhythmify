@@ -22,7 +22,9 @@ class TapToPreviewState extends ConsumerState<TapToPreview> {
         playerState.currentTrack?.id == widget.item.track.id &&
         playerState.status == PlayerStatus.playing;
 
-    return isThisTrackPlaying ? const SizedBox.shrink() : _buildPrompt();
+    return isThisTrackPlaying
+        ? const SizedBox.shrink(key: Key('tap_to_preview_hidden'))
+        : _buildPrompt();
   }
 
   void toggle() {
@@ -52,9 +54,11 @@ class TapToPreviewState extends ConsumerState<TapToPreview> {
 
   Widget _buildPrompt() {
     return const Column(
+      key: Key('tap_to_preview_column'),
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
+          key: Key('tap_to_preview_text'),
           'Tap to preview',
           style: TextStyle(
             color: Color.fromARGB(255, 255, 255, 255),
@@ -63,7 +67,12 @@ class TapToPreviewState extends ConsumerState<TapToPreview> {
             letterSpacing: 0.5,
           ),
         ),
-        Icon(Icons.volume_off, color: Colors.white54, size: 36),
+        Icon(
+          key: Key('tap_to_preview_icon'),
+          Icons.volume_off,
+          color: Colors.white54,
+          size: 36,
+        ),
         SizedBox(height: 10),
       ],
     );

@@ -16,16 +16,23 @@ class _FeedCardSideActionsState extends State<FeedCardSideActions> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      key: const Key('feed_card_side_actions_column'),
       mainAxisSize: MainAxisSize.min,
       children: [
         _ActionButton(
+          key: const Key('feed_card_side_actions_like'),
           icon: _liked ? Icons.favorite : Icons.favorite_border,
           label: '${widget.item.track.likeCount + (_liked ? 1 : 0)}',
           color: _liked ? Colors.orange : Colors.white,
           onTap: () => setState(() => _liked = !_liked),
         ),
         const SizedBox(height: 20),
-        _ActionButton(icon: Icons.comment_outlined, label: '0', onTap: () {}),
+        _ActionButton(
+          key: const Key('feed_card_side_actions_comment'),
+          icon: Icons.comment_outlined,
+          label: '0',
+          onTap: () {},
+        ),
       ],
     );
   }
@@ -48,8 +55,10 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: const Key('action_button_gesture'),
       onTap: onTap,
       child: Column(
+        key: const Key('action_button_column'),
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 28),

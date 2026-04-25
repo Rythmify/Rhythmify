@@ -19,7 +19,7 @@ class FeedList extends ConsumerStatefulWidget {
 
 class _FeedListState extends ConsumerState<FeedList> {
   final _pageController = PageController();
-  bool _previewMode = false; // false = silent, true = auto-playing
+  bool _previewMode = false;
   String? _nowPlayingTrackId;
 
   @override
@@ -50,7 +50,7 @@ class _FeedListState extends ConsumerState<FeedList> {
   void _onBottomInfoPlay(String trackId) {
     setState(() {
       _nowPlayingTrackId = trackId;
-      _previewMode = false; // bottom info play does not activate preview mode
+      _previewMode = false;
     });
   }
 
@@ -80,15 +80,18 @@ class _FeedListState extends ConsumerState<FeedList> {
       final async = ref.watch(discoverFeedProvider);
       return async.when(
         loading: () => const Center(
+          key: Key('feed_list_discover_loading'),
           child: CircularProgressIndicator(color: Colors.orange),
         ),
         error: (e, _) => Center(
+          key: const Key('feed_list_discover_error'),
           child: Text(
             e.toString(),
             style: const TextStyle(color: Colors.white54),
           ),
         ),
         data: (items) => PageView.builder(
+          key: const Key('feed_list_discover_pageview'),
           controller: _pageController,
           scrollDirection: Axis.vertical,
           itemCount: items.length,
@@ -98,6 +101,7 @@ class _FeedListState extends ConsumerState<FeedList> {
             }
           },
           itemBuilder: (context, index) => GestureDetector(
+            key: Key('feed_list_discover_gesture_$index'),
             onTap: () {
               if (_previewMode) {
                 _deactivatePreviewMode();
@@ -106,6 +110,7 @@ class _FeedListState extends ConsumerState<FeedList> {
               }
             },
             child: FeedCard(
+              key: Key('feed_list_discover_card_$index'),
               item: items[index],
               tab: widget.tab,
               previewMode: _previewMode,
@@ -120,15 +125,19 @@ class _FeedListState extends ConsumerState<FeedList> {
 
     final async = ref.watch(followingFeedProvider);
     return async.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator(color: Colors.orange)),
+      loading: () => const Center(
+        key: Key('feed_list_following_loading'),
+        child: CircularProgressIndicator(color: Colors.orange),
+      ),
       error: (e, _) => Center(
+        key: const Key('feed_list_following_error'),
         child: Text(
           e.toString(),
           style: const TextStyle(color: Colors.white54),
         ),
       ),
       data: (items) => PageView.builder(
+        key: const Key('feed_list_following_pageview'),
         controller: _pageController,
         scrollDirection: Axis.vertical,
         itemCount: items.length,
@@ -138,6 +147,7 @@ class _FeedListState extends ConsumerState<FeedList> {
           }
         },
         itemBuilder: (context, index) => GestureDetector(
+          key: Key('feed_list_following_gesture_$index'),
           onTap: () {
             if (_previewMode) {
               _deactivatePreviewMode();
@@ -146,11 +156,12 @@ class _FeedListState extends ConsumerState<FeedList> {
             }
           },
           child: FeedCard(
+            key: Key('feed_list_following_card_$index'),
             item: items[index],
             tab: widget.tab,
             previewMode: _previewMode,
-            nowPlayingTrackId: _nowPlayingTrackId, // add
-            onPlay: () => _onBottomInfoPlay(items[index].track.id), // add
+            nowPlayingTrackId: _nowPlayingTrackId,
+            onPlay: () => _onBottomInfoPlay(items[index].track.id),
           ),
         ),
       ),

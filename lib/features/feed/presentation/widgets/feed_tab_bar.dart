@@ -8,9 +8,11 @@ class FeedTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      key: const Key('feed_tab_bar_sizedbox'),
       width: 200,
       height: 45,
       child: TabBar(
+        key: const Key('feed_tab_bar'),
         controller: controller,
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
@@ -22,8 +24,8 @@ class FeedTabBar extends StatelessWidget {
         unselectedLabelColor: Colors.white60,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         tabs: const [
-          Tab(text: 'Discover'),
-          Tab(text: 'Following'),
+          Tab(key: Key('feed_tab_discover'), text: 'Discover'),
+          Tab(key: Key('feed_tab_following'), text: 'Following'),
         ],
       ),
     );

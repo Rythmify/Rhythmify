@@ -8,7 +8,6 @@ import '../../../../core/domain/entities/track.dart';
 import '../providers/feed_providers.dart';
 
 class FeedCardBottomInfo extends ConsumerWidget {
-  // Changed to ConsumerWidget
   final FeedItemEntity item;
   final VoidCallback? onPlay;
   final bool showProgress;
@@ -22,8 +21,8 @@ class FeedCardBottomInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Added WidgetRef ref
     return GestureDetector(
+      key: const Key('feed_card_bottom_info_gesture'),
       onTap: () {
         final playerState = ref.read(playerStateProvider);
         final isThisTrackLoaded = playerState.currentTrack?.id == item.track.id;
@@ -46,7 +45,6 @@ class FeedCardBottomInfo extends ConsumerWidget {
           );
           ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
 
-          // Wait for sheet to mount before expanding
           Future.delayed(const Duration(milliseconds: 300), () {
             playerSheetNotifier.value?.call();
           });
@@ -58,9 +56,12 @@ class FeedCardBottomInfo extends ConsumerWidget {
         playerSheetNotifier.value?.call();
       },
       child: ClipRect(
+        key: const Key('feed_card_bottom_info_clip'),
         child: BackdropFilter(
+          key: const Key('feed_card_bottom_info_backdrop'),
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
+            key: const Key('feed_card_bottom_info_container'),
             padding: const EdgeInsets.only(
               left: 8,
               right: 8,
@@ -79,16 +80,19 @@ class FeedCardBottomInfo extends ConsumerWidget {
               ),
             ),
             child: Row(
+              key: const Key('feed_card_bottom_info_row'),
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
+                    key: const Key('feed_card_bottom_info_column'),
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const SizedBox(height: 2),
                       Text(
+                        key: const Key('feed_card_bottom_info_title'),
                         item.track.title,
                         style: const TextStyle(
                           color: Colors.white,
@@ -100,8 +104,10 @@ class FeedCardBottomInfo extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Row(
+                        key: const Key('feed_card_bottom_info_artist_row'),
                         children: [
                           CircleAvatar(
+                            key: const Key('feed_card_bottom_info_avatar'),
                             radius: 14,
                             backgroundColor: Colors.white24,
                             backgroundImage: item.user.avatar != null
@@ -109,6 +115,9 @@ class FeedCardBottomInfo extends ConsumerWidget {
                                 : null,
                             child: item.user.avatar == null
                                 ? const Icon(
+                                    key: Key(
+                                      'feed_card_bottom_info_avatar_icon',
+                                    ),
                                     Icons.person,
                                     color: Colors.white54,
                                     size: 14,
@@ -117,6 +126,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
+                            key: const Key('feed_card_bottom_info_username'),
                             item.track.uploaderUsername,
                             style: const TextStyle(
                               color: Colors.white70,
@@ -131,7 +141,11 @@ class FeedCardBottomInfo extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                FeedCardPlayCircle(showProgress: showProgress, size: 50),
+                FeedCardPlayCircle(
+                  key: const Key('feed_card_bottom_info_play_circle'),
+                  showProgress: showProgress,
+                  size: 50,
+                ),
               ],
             ),
           ),
@@ -145,6 +159,7 @@ class _FollowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
+      key: const Key('feed_card_bottom_info_follow_button'),
       onPressed: () {},
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white,
@@ -154,7 +169,11 @@ class _FollowButton extends StatelessWidget {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-      child: const Text('Follow', style: TextStyle(fontSize: 12)),
+      child: const Text(
+        key: Key('feed_card_bottom_info_follow_text'),
+        'Follow',
+        style: TextStyle(fontSize: 12),
+      ),
     );
   }
 }
