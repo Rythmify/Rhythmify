@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 class UploadedTracksPage extends ConsumerStatefulWidget {
   final String userId;
@@ -173,6 +174,11 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
               return TrackCard(
                 key: Key('upload_item_${filtered[index].id}'),
                 track: filtered[index],
+                onTap: () {
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .playQueue(tracks: filtered, initialIndex: index);
+                },
               );
             },
           ),

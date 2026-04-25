@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/search/presentation/widgets/search_albums_tab.dart';
-import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import '../widgets/track_tile.dart';
 import '../widgets/search_profiles_tab.dart';
@@ -9,7 +8,6 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
 import '../pages/search_seeall_page.dart';
 import '../widgets/search_tracks_tab.dart';
-import '../widgets/search_playlists_tab.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/top_result.dart';
 

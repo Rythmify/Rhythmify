@@ -410,7 +410,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       // 4. Exchange code — backend expects GET with query params
       final response = await client.dio.get(
         '/auth/oauth/github/callback',
-        queryParameters: {'code': code, if (state != null) 'state': state},
+        queryParameters: {'code': code, 'state': ?state},
       );
 
       // 5. Persist tokens

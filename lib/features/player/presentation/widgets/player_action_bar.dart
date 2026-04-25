@@ -200,7 +200,7 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 4. Playlist Action ------
             InkWell(
               onTap: () {
-                // Add playlist logic here
+                context.push('/queue');
               },
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
