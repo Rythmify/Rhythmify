@@ -11,12 +11,17 @@ class NotificationsRepoImpl implements NotificationsRepoInterface {
 
   @override
   Future<({List<NotificationEntity> items, int unreadCount, bool hasNext})>
-  getNotifications({int page = 1, int limit = 20, bool? unreadOnly}) =>
-      datasource.getNotifications(
-        page: page,
-        limit: limit,
-        unreadOnly: unreadOnly,
-      );
+  getNotifications({
+    int page = 1,
+    int limit = 20,
+    bool? unreadOnly,
+    String? type,
+  }) => datasource.getNotifications(
+    page: page,
+    limit: limit,
+    unreadOnly: unreadOnly,
+    type: type,
+  );
 
   @override
   Future<int> getUnreadCount() => datasource.getUnreadCount();
@@ -28,4 +33,9 @@ class NotificationsRepoImpl implements NotificationsRepoInterface {
   @override
   Future<bool> getFollowStatus(String userId) =>
       datasource.getFollowStatus(userId);
+
+  @override
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  ) => datasource.getTrackIdByCommentId(commentId);
 }
