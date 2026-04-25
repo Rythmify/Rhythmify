@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
 import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
+import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:rythmify/features/notifications/presentation/widgets/notification_tile.dart';
 
@@ -217,6 +218,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
   }
 
   Widget _buildBody(NotificationsState state){
+    final followState =ref.watch(followStateProvider);
     if(state.isLoading){
       return const Center(
         child: CircularProgressIndicator(color: AppTheme.primaryBrand),
@@ -284,11 +286,11 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen>{
           return NotificationTile(
             notification: notification,
             onTap: () => _onTap(notification),
+            isFollowing: followState[notification.actorId]??false,
             onFollowTap: (){
               ref.read(notificationsProvider.notifier).toggleFollow(
-                notification.id,
                 notification.actorId,
-                notification.isActorFollowed
+                followState[notification.actorId]??false
               );
             },
             onLikeTap: notification.resourceId!=null

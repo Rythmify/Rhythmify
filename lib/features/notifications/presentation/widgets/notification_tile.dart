@@ -9,6 +9,7 @@ class NotificationTile extends StatelessWidget {
   final VoidCallback? onLikeTap;
   final VoidCallback? onTap;
   final bool isCommentLiked;
+  final bool isFollowing;
 
   const NotificationTile({
     super.key,
@@ -16,7 +17,8 @@ class NotificationTile extends StatelessWidget {
     this.onFollowTap,
     this.onLikeTap,
     this.onTap,
-    this.isCommentLiked=false
+    this.isCommentLiked=false,
+    this.isFollowing=false
   });
 
   @override
@@ -159,9 +161,9 @@ class NotificationTile extends StatelessWidget {
 
   Widget _buildTrailing() {
     if (notification.type == NotificationType.follow) {
-      return _FollowButton(isFollowing: notification.isActorFollowed, onTap: onFollowTap);
+      return _FollowButton(isFollowing: isFollowing, onTap: onFollowTap);
     }
-    return const _ResourceThumbnail();
+    return _ResourceThumbnail(imageUrl: notification.resourceImageUrl);
   }
 
   String _timeAgo(DateTime dt) {
@@ -266,18 +268,34 @@ class _FollowButton extends StatelessWidget {
 }
 
 class _ResourceThumbnail extends StatelessWidget {
-  const _ResourceThumbnail();
+  final String? imageUrl;
+  const _ResourceThumbnail({this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: AppTheme.perfectGrey,
-        borderRadius: BorderRadius.circular(8),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 55,
+        height: 55,
+        child: imageUrl != null && imageUrl!.isNotEmpty
+            ? Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
+            : _placeholder(),
       ),
-      child: const Icon(Icons.graphic_eq_rounded, color: Colors.white54, size: 24),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      color: AppTheme.perfectGrey,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Image.asset('assets/icons/logo.png', color: Colors.white38),
+      ),
     );
   }
 }

@@ -15,6 +15,7 @@ class NotificationEntity extends Equatable {
   final String? resourceId;
   final String? resourceTitle;
   final String? resourceContent; // comment text, from resource_details.content
+  final String? resourceImageUrl;
   final bool isRead;
   final bool isActorFollowed;
   final DateTime createdAt;
@@ -30,6 +31,7 @@ class NotificationEntity extends Equatable {
     this.resourceId,
     this.resourceTitle,
     this.resourceContent,
+    this.resourceImageUrl,
     required this.isRead,
     this.isActorFollowed = false,
     required this.createdAt,
@@ -47,6 +49,7 @@ class NotificationEntity extends Equatable {
       resourceId: resourceId,
       resourceTitle: resourceTitle,
       resourceContent: resourceContent,
+      resourceImageUrl: resourceImageUrl,
       isRead: isRead ?? this.isRead,
       isActorFollowed: isActorFollowed ?? this.isActorFollowed,
       createdAt: createdAt,
@@ -65,6 +68,7 @@ class NotificationEntity extends Equatable {
     resourceId,
     resourceTitle,
     resourceContent,
+    resourceImageUrl,
     isRead,
     isActorFollowed,
     createdAt,

@@ -46,4 +46,10 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
   Future<void> markNotificationAsRead(String notificationId) async {
     await dio.patch('/notifications/$notificationId/read');
   }
+
+  @override
+  Future<bool> getFollowStatus(String userId) async{
+    final result = await dio.get('/users/$userId/follow-status');
+    return result.data['data']['is_following'] as bool? ?? false;
+  }
 }

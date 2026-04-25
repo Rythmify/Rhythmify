@@ -12,6 +12,7 @@ class NotificationModel extends NotificationEntity {
     super.resourceId,
     super.resourceTitle,
     super.resourceContent,
+    super.resourceImageUrl,
     required super.isRead,
     required super.createdAt,
   });
@@ -34,6 +35,7 @@ class NotificationModel extends NotificationEntity {
       resourceId: json['resource_id'] as String?,
       resourceTitle: resourceDetails?['title'] as String?,
       resourceContent: resourceDetails?['content'] as String?,
+      resourceImageUrl: resourceDetails?['cover_image'] as String? ?? resourceDetails?['cover_url'] as String?,
       isRead: json['is_read'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
     );

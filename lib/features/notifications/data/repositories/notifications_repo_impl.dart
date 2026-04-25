@@ -16,4 +16,7 @@ class NotificationsRepoImpl implements NotificationsRepoInterface {
 
   @override
   Future<void> markNotificationAsRead(String notificationId) => datasource.markNotificationAsRead(notificationId);
+
+  @override
+  Future<bool> getFollowStatus(String userId)=>datasource.getFollowStatus(userId);
 }

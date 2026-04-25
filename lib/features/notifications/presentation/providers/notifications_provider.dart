@@ -10,6 +10,7 @@ import 'package:rythmify/features/notifications/domain/entities/notification_ent
 import 'package:rythmify/features/notifications/domain/usecases/get_notifications_usecase.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import 'package:rythmify/features/notifications/domain/usecases/mark_notification_as_read_usecase.dart';
+import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/repo_provider.dart';
 import 'package:rythmify/features/profile/data/datasources/profile_remote_datasource_impl.dart';
 import 'package:rythmify/features/profile/data/repositories/profile_repository_impl.dart';
@@ -67,6 +68,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   final GetFollowUserUseCase _follow;
   final GetUnfollowUserUseCase _unfollow;
   final ToggleCommentLikeUseCase _toggleCommentLike;
+  final FollowStateNotifier _followState;
 
   NotificationsNotifier({
     required GetNotificationsUsecase getNotifications,
@@ -75,11 +77,13 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     required GetFollowUserUseCase followUser,
     required GetUnfollowUserUseCase unfollowUser,
     required ToggleCommentLikeUseCase toggleCommentLike,
+    required FollowStateNotifier followState,
   })  : _getNotifications = getNotifications,
         _markRead = markAllRead,
         _follow = followUser,
         _unfollow = unfollowUser,
         _toggleCommentLike = toggleCommentLike,
+        _followState = followState,
         super(const NotificationsState());
 
   Future<void> fetch() async {
@@ -95,6 +99,10 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         currentPage: 1,
         isLoading: false,
       );
+
+      for (final n in result.items.where((n) => n.type == NotificationType.follow)) {
+        _followState.fetchFollowState(n.actorId);
+      }
 
       if (unread.isNotEmpty) {
         state = state.copyWith(unreadCount: 0);
@@ -128,36 +136,21 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       for (final n in result.items.where((n) => !n.isRead)) {
         _markRead(n.id).catchError((_) {});
       }
+      for (final n in result.items.where((n) => n.type == NotificationType.follow)) {
+        _followState.fetchFollowState(n.actorId);
+      }
     } catch (_) {
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
-  Future<void> toggleFollow(
-    String notificationId,
-    String actorId,
-    bool currentlyFollowing,
-  ) async {
-    state = state.copyWith(
-      items: state.items
-          .map((n) => n.id == notificationId
-              ? n.copyWith(isActorFollowed: !currentlyFollowing)
-              : n)
-          .toList(),
-    );
+  Future<void> toggleFollow(String actorId, bool currentlyFollowing) async {
+    _followState.setFollowing(actorId, isFollowing: !currentlyFollowing);
     final result = currentlyFollowing
         ? await _unfollow(userId: actorId)
         : await _follow(userId: actorId);
     result.fold(
-      (_) {
-        state = state.copyWith(
-          items: state.items
-              .map((n) => n.id == notificationId
-                  ? n.copyWith(isActorFollowed: currentlyFollowing)
-                  : n)
-              .toList(),
-        );
-      },
+      (_) => _followState.setFollowing(actorId, isFollowing: currentlyFollowing),
       (_) {},
     );
   }
@@ -200,6 +193,7 @@ final notificationsProvider =
     followUser: GetFollowUserUseCase(profileRepo),
     unfollowUser: GetUnfollowUserUseCase(profileRepo),
     toggleCommentLike: ref.read(toggleCommentLikeProvider),
+    followState: ref.read(followStateProvider.notifier),
   );
 });
 

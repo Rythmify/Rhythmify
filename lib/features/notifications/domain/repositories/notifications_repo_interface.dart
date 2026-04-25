@@ -6,4 +6,5 @@ abstract class NotificationsRepoInterface {
 
   Future<int> getUnreadCount();
   Future<void> markNotificationAsRead(String notificationId);
+  Future<bool> getFollowStatus(String userId);
 }
