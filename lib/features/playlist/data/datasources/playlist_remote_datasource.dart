@@ -450,23 +450,48 @@ class PlaylistRemoteDatasource {
   }
 
   // ============================================================
-  // ADD these 3 methods to PlaylistRemoteDatasource
-  // Place them after fetchRelatedTracks and before fetchRecommendedTracks
+  // REPLACE fetchMixTracks, fetchDailyMixTracks, fetchWeeklyMixTracks
+  // in playlist_remote_datasource.dart
+  //
+  // Key fixes:
+  // 1. No c0000 filtering — mixes contain real tracks, filter was wrong here
+  // 2. Full debug logging so you can see what mixId arrives and what response comes back
+  // 3. Handles both { data: { tracks: [] } } and { data: [] } response shapes
   // ============================================================
 
   // ── MIX TRACKS: GET /home/mixes/{mixId} ──────────────────────────────────
-  // Used by MixDetailScreen for mixed_for_you genre mixes
   Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
     _log('→ GET /home/mixes/$mixId');
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/home/mixes/$mixId',
       );
-      _log('← ${response.statusCode}');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final tracks = data['tracks'] as List<dynamic>;
-      _log('← Got ${tracks.length} tracks for mix $mixId');
-      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+      _log('← ${response.statusCode}  keys: ${response.data?.keys}');
+
+      final rawData = response.data!['data'];
+      _log('← data type: ${rawData.runtimeType}');
+
+      List<dynamic> trackList;
+      if (rawData is Map<String, dynamic>) {
+        // Shape: { "data": { "tracks": [...], "mix_id": "...", ... } }
+        trackList = rawData['tracks'] as List<dynamic>? ?? [];
+      } else if (rawData is List) {
+        // Shape: { "data": [...] }
+        trackList = rawData;
+      } else {
+        _log('← Unexpected data shape, returning empty');
+        return [];
+      }
+
+      _log('← Raw track count: ${trackList.length}');
+
+      // Log first track to understand structure
+      if (trackList.isNotEmpty) {
+        _log('← First track raw: ${trackList.first}');
+      }
+
+      // NO c0000 filtering here — mixes contain real backend tracks
+      return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
       _logError('fetchMixTracks($mixId) failed', e);
       return [];
@@ -474,18 +499,26 @@ class PlaylistRemoteDatasource {
   }
 
   // ── DAILY MIX TRACKS: GET /home/made-for-you/daily ───────────────────────
-  // Used by MixDetailScreen for made_for_you daily mix
   Future<List<PlaylistTrack>> fetchDailyMixTracks() async {
     _log('→ GET /home/made-for-you/daily');
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/home/made-for-you/daily',
       );
-      _log('← ${response.statusCode}');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final tracks = data['tracks'] as List<dynamic>;
-      _log('← Got ${tracks.length} daily mix tracks');
-      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+      _log('← ${response.statusCode}  keys: ${response.data?.keys}');
+
+      final rawData = response.data!['data'];
+      List<dynamic> trackList;
+      if (rawData is Map<String, dynamic>) {
+        trackList = rawData['tracks'] as List<dynamic>? ?? [];
+      } else if (rawData is List) {
+        trackList = rawData;
+      } else {
+        return [];
+      }
+
+      _log('← Daily mix raw track count: ${trackList.length}');
+      return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
       _logError('fetchDailyMixTracks() failed', e);
       return [];
@@ -493,22 +526,74 @@ class PlaylistRemoteDatasource {
   }
 
   // ── WEEKLY MIX TRACKS: GET /home/made-for-you/weekly ─────────────────────
-  // Used by MixDetailScreen for made_for_you weekly mix
   Future<List<PlaylistTrack>> fetchWeeklyMixTracks() async {
     _log('→ GET /home/made-for-you/weekly');
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/home/made-for-you/weekly',
       );
-      _log('← ${response.statusCode}');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final tracks = data['tracks'] as List<dynamic>;
-      _log('← Got ${tracks.length} weekly mix tracks');
-      return _mapDiscoveryTracksToPlaylistTracks(tracks);
+      _log('← ${response.statusCode}  keys: ${response.data?.keys}');
+
+      final rawData = response.data!['data'];
+      List<dynamic> trackList;
+      if (rawData is Map<String, dynamic>) {
+        trackList = rawData['tracks'] as List<dynamic>? ?? [];
+      } else if (rawData is List) {
+        trackList = rawData;
+      } else {
+        return [];
+      }
+
+      _log('← Weekly mix raw track count: ${trackList.length}');
+      return _mapDiscoveryTracksToPlaylistTracksNoFilter(trackList);
     } on DioException catch (e) {
       _logError('fetchWeeklyMixTracks() failed', e);
       return [];
     }
+  }
+
+  // ── INTERNAL HELPER: Map without seed ID filtering ────────────────────────
+  // Used for mixes — these are real backend tracks, no filtering needed.
+  // The c0000 filter only applies to suggestion tracks added to user playlists.
+  List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracksNoFilter(
+    List<dynamic> rawList, {
+    int startPosition = 1,
+  }) {
+    final result = <PlaylistTrack>[];
+    for (int i = 0; i < rawList.length; i++) {
+      try {
+        final json = rawList[i] as Map<String, dynamic>;
+
+        // Try both 'id' and 'track_id' field names
+        final id = (json['id'] ?? json['track_id']) as String?;
+        if (id == null || id.isEmpty) {
+          _log(
+            '  Skipping track at index $i — no id field. Keys: ${json.keys}',
+          );
+          continue;
+        }
+
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
+      } catch (e) {
+        _log('  Error mapping mix track at index $i: $e');
+      }
+    }
+    _log('  Mapped ${result.length} mix tracks from ${rawList.length} raw');
+    return result;
   }
 
   // ============================================================
@@ -659,6 +744,15 @@ class PlaylistRemoteDatasource {
   //   "stream_url": "url"       ← nullable
   // }
   // ============================================================
+  // ============================================================
+  // REPLACE _mapDiscoveryTracksToPlaylistTracks in playlist_remote_datasource.dart
+  //
+  // Removed: id.startsWith('c0000') filter
+  // Reason: backend now blocks c0000 IDs on CREATE (adding to playlist)
+  // but still returns them on FETCH (display only).
+  // Filtering on fetch caused empty screens for mixes/stations/related tracks.
+  // ============================================================
+
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -667,8 +761,13 @@ class PlaylistRemoteDatasource {
     for (int i = 0; i < rawList.length; i++) {
       try {
         final json = rawList[i] as Map<String, dynamic>;
-        final id = json['id'] as String?;
-        if (id == null || id.isEmpty || id.startsWith('c0000')) continue;
+
+        // Try both 'id' and 'track_id' field names
+        final id = (json['id'] ?? json['track_id']) as String?;
+        if (id == null || id.isEmpty) continue;
+        // NOTE: c0000 tracks are allowed through here — they are display-only.
+        // The backend blocks them on POST /playlists/{id}/tracks (add track).
+        // Filtering here was causing empty screens for mixes/stations/related.
 
         result.add(
           PlaylistTrack(
