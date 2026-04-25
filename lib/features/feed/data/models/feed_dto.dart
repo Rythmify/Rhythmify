@@ -70,6 +70,7 @@ class FeedTrackModel extends FeedTrackEntity {
     required super.likeCount,
     super.coverUrl,
     required super.audioUrl,
+    super.streamUrl, // add
     required super.uploaderUsername,
   });
 
@@ -85,6 +86,8 @@ class FeedTrackModel extends FeedTrackEntity {
       coverUrl: json['cover_image'] as String? ?? json['coverUrl'] as String?,
       audioUrl:
           json['audio_url'] as String? ?? json['audioUrl'] as String? ?? '',
+      streamUrl:
+          json['stream_url'] as String? ?? json['streamUrl'] as String?, // add
       uploaderUsername: artistJson['username'] as String? ?? '',
     );
   }
