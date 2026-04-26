@@ -5,12 +5,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
@@ -109,35 +107,45 @@ class _Body extends ConsumerStatefulWidget {
 }
 
 class _BodyState extends ConsumerState<_Body> {
-  bool _isSaved = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.source == RelatedTracksSource.station) {
-      _checkSaved();
-    }
+  // ── Station: read isSaved from provider (not LocalSavedStore) ─────────────
+  // FIX: LocalSavedStore.isStationSaved() was always false because
+  // SavedStationsNotifier no longer writes to LocalSavedStore — it calls the
+  // backend then refreshes from it. Reading the provider is always correct.
+  bool get _isStationSaved {
+    final stations = ref.watch(savedStationsProvider).asData?.value ?? [];
+    return stations.any((s) => s.artistId == widget.sourceId);
   }
 
-  Future<void> _checkSaved() async {
-    final saved = await LocalSavedStore.instance.isStationSaved(
-      widget.sourceId,
-    );
-    if (mounted) setState(() => _isSaved = saved);
+  // ── Track radio: read isSaved from provider ────────────────────────────────
+  bool get _isTrackRadioSaved {
+    return ref
+            .watch(savedTrackRadiosProvider)
+            .asData
+            ?.value
+            .contains(widget.sourceId) ??
+        false;
+  }
+
+  bool get _isSaved {
+    if (widget.source == RelatedTracksSource.station) return _isStationSaved;
+    return _isTrackRadioSaved;
   }
 
   Future<void> _toggleLike() async {
-    if (widget.source != RelatedTracksSource.station) return;
-    final station = SavedStation(
-      artistId: widget.sourceId,
-      artistName: widget.basedOnName,
-      stationName: widget.title,
-      coverUrl: widget.coverUrl,
-      trackCount: widget.tracks.length,
-      savedAt: DateTime.now(),
-    );
-    await ref.read(savedStationsProvider.notifier).toggle(station);
-    if (mounted) setState(() => _isSaved = !_isSaved);
+    if (widget.source == RelatedTracksSource.station) {
+      final station = SavedStation(
+        artistId: widget.sourceId,
+        artistName: widget.basedOnName,
+        stationName: widget.title,
+        coverUrl: widget.coverUrl,
+        trackCount: widget.tracks.length,
+        savedAt: DateTime.now(),
+      );
+      await ref.read(savedStationsProvider.notifier).toggle(station);
+    } else {
+      // Track radio — POST /tracks/:id/like-radio
+      await ref.read(savedTrackRadiosProvider.notifier).toggle(widget.sourceId);
+    }
   }
 
   Future<void> _play(List<Track> list, int index) async {
@@ -153,6 +161,10 @@ class _BodyState extends ConsumerState<_Body> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch providers so heart rebuilds reactively
+    ref.watch(savedStationsProvider);
+    ref.watch(savedTrackRadiosProvider);
+
     final tracks = widget.tracks;
     final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
@@ -250,6 +262,7 @@ class _BodyState extends ConsumerState<_Body> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
+                  // Heart is now active for BOTH station and track radio
                   IconButton(
                     icon: Icon(
                       _isSaved ? Icons.favorite : Icons.favorite_border,
@@ -258,7 +271,7 @@ class _BodyState extends ConsumerState<_Body> {
                           : AppTheme.textPrimary,
                       size: 24,
                     ),
-                    onPressed: isStation ? _toggleLike : null,
+                    onPressed: _toggleLike,
                   ),
                   IconButton(
                     icon: const Icon(
@@ -380,15 +393,21 @@ class _BodyState extends ConsumerState<_Body> {
               label: 'Play last',
               onTap: () => Navigator.of(context).pop(),
             ),
-            if (isStation)
-              OptionSheetTile(
-                icon: _isSaved ? Icons.sensors_off : Icons.sensors,
-                label: _isSaved ? 'Remove from Saved Stations' : 'Save Station',
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _toggleLike();
-                },
-              ),
+            // Save option for both station and track radio
+            OptionSheetTile(
+              icon: _isSaved
+                  ? (isStation ? Icons.sensors_off : Icons.favorite)
+                  : (isStation ? Icons.sensors : Icons.favorite_border),
+              label: _isSaved
+                  ? (isStation
+                        ? 'Remove from Saved Stations'
+                        : 'Remove from library')
+                  : (isStation ? 'Save Station' : 'Save to library'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _toggleLike();
+              },
+            ),
             const SizedBox(height: 40),
           ],
         ),

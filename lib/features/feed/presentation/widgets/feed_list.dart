@@ -5,6 +5,7 @@ import 'feed_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/feed_item.dart';
+import '../../../player/domain/entities/player_state.dart';
 
 enum FeedTab { discover, following }
 
@@ -18,8 +19,11 @@ class FeedList extends ConsumerStatefulWidget {
 
 class FeedListState extends ConsumerState<FeedList> {
   final _pageController = PageController();
+
   bool _previewMode = false;
   String? _nowPlayingTrackId;
+  String? _pendingTrackId;
+  String? _rawPendingTrackId;
 
   @override
   void dispose() {
@@ -34,15 +38,20 @@ class FeedListState extends ConsumerState<FeedList> {
     });
   }
 
+  // ─── Preview mode ────────────────────────────────────────────────────────
+
   void _activatePreviewMode(Track track) {
     setState(() {
       _previewMode = true;
       _nowPlayingTrackId = null;
     });
+
     final playerState = ref.read(playerStateProvider);
     final isAlreadyLoaded = playerState.currentTrack?.id == track.id;
     if (isAlreadyLoaded) {
-      ref.read(playerStateProvider.notifier).togglePlayPause();
+      if (playerState.status != PlayerStatus.playing) {
+        ref.read(playerStateProvider.notifier).togglePlayPause();
+      }
     } else {
       ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
     }
@@ -50,39 +59,58 @@ class FeedListState extends ConsumerState<FeedList> {
 
   void _deactivatePreviewMode() {
     setState(() => _previewMode = false);
-    ref.read(playerStateProvider.notifier).togglePlayPause();
+    final playerState = ref.read(playerStateProvider);
+    if (playerState.status == PlayerStatus.playing) {
+      ref.read(playerStateProvider.notifier).togglePlayPause();
+    }
   }
 
+  // ─── Bottom-info full play ───────────────────────────────────────────────
+
+  /// Called by FeedCardBottomInfo when user taps title or play circle.
+  /// Sets pending-expand so the sheet opens as soon as the player confirms
+  /// the track — handles both instant (already loaded) and async (new track).
   void _onBottomInfoPlay(String trackId) {
+    _rawPendingTrackId = trackId;
+
     setState(() {
       _nowPlayingTrackId = trackId;
       _previewMode = false;
+      _pendingTrackId = trackId;
     });
   }
 
-  void _playTrack(Track track) {
-    final playerState = ref.read(playerStateProvider);
-    if (playerState.currentTrack?.id == track.id) return;
-    ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+  void _tryExpandSheet({int attempts = 0}) {
+    if (!mounted) return;
+    if (attempts > 20) return; // give up after ~400ms
+
+    final notifier = playerSheetNotifier.value;
+    if (notifier != null) {
+      notifier();
+      // Schedule a second call slightly later in case the controller
+      // wasn't attached yet on the first call (first-track case)
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted) notifier();
+      });
+    } else {
+      // Notifier not ready yet, retry next frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tryExpandSheet(attempts: attempts + 1);
+      });
+    }
   }
 
-  // preview url = audioUrl, full stream = streamUrl
-  Track _trackFromFollowing(FeedItemEntity item) => Track(
-    id: item.track.id,
-    userId: item.user.id,
-    title: item.track.title,
-    artist: item.user.displayName,
-    artistPfp: item.user.avatar,
-    audioUrl: item.track.audioUrl,
-    streamUrl: item.track.streamUrl,
-    coverImage: item.track.coverUrl,
-    duration: Duration(seconds: item.track.duration),
-    createdAt: item.createdAt,
-    playCount: item.track.playCount,
-    likeCount: item.track.likeCount,
-  );
+  // ─── Scroll while preview ────────────────────────────────────────────────
 
-  Track _trackFromDiscover(FeedItemEntity item) => Track(
+  void _onPageChangedInPreviewMode(Track track) {
+    // Just load and play the new track; preview mode stays active.
+    ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+    // Keep _nowPlayingTrackId null — this is preview, not full play.
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
+  Track _trackFrom(FeedItemEntity item) => Track(
     id: item.track.id,
     userId: item.user.id,
     title: item.track.title,
@@ -99,6 +127,37 @@ class FeedListState extends ConsumerState<FeedList> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(playerStateProvider, (prev, next) {
+      final currentId = next.currentTrack?.id;
+      final pendingId = _rawPendingTrackId ?? _pendingTrackId;
+
+      if (pendingId != null && currentId == pendingId) {
+        _tryExpandSheet(); // <-- replaces playerSheetNotifier.value?.call()
+        _rawPendingTrackId = null;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _pendingTrackId = null;
+            });
+          }
+        });
+      }
+
+      if (_nowPlayingTrackId != null && pendingId == null) {
+        final stoppedOrPaused =
+            next.status == PlayerStatus.paused ||
+            next.status == PlayerStatus.stopped;
+        if (stoppedOrPaused || currentId != _nowPlayingTrackId) {
+          setState(() {
+            _nowPlayingTrackId = null;
+            if (next.currentTrack != null && stoppedOrPaused) {
+              _previewMode = false;
+            }
+          });
+        }
+      }
+    });
+
     if (widget.tab == FeedTab.discover) {
       final async = ref.watch(discoverFeedProvider);
       return async.when(
@@ -120,7 +179,11 @@ class FeedListState extends ConsumerState<FeedList> {
           itemCount: items.length,
           onPageChanged: (index) {
             if (_previewMode) {
-              _playTrack(_trackFromDiscover(items[index]));
+              _onPageChangedInPreviewMode(_trackFrom(items[index]));
+            } else if (_nowPlayingTrackId != null) {
+              // Scrolled away from a full-play card — keep audio playing
+              // but clear the "Now Playing" label since that card is gone.
+              setState(() => _nowPlayingTrackId = null);
             }
           },
           itemBuilder: (context, index) => Stack(
@@ -133,7 +196,7 @@ class FeedListState extends ConsumerState<FeedList> {
                 previewMode: _previewMode,
                 nowPlayingTrackId: _nowPlayingTrackId,
                 onPlay: () => _onBottomInfoPlay(items[index].track.id),
-                fullScreen: true, // ← add this
+                fullScreen: true,
               ),
               Positioned(
                 top: 0,
@@ -146,7 +209,7 @@ class FeedListState extends ConsumerState<FeedList> {
                     if (_previewMode) {
                       _deactivatePreviewMode();
                     } else {
-                      _activatePreviewMode(_trackFromDiscover(items[index]));
+                      _activatePreviewMode(_trackFrom(items[index]));
                     }
                   },
                 ),
@@ -157,6 +220,7 @@ class FeedListState extends ConsumerState<FeedList> {
       );
     }
 
+    // ── Following tab ──
     final async = ref.watch(followingFeedProvider);
     return async.when(
       loading: () => const Center(
@@ -177,7 +241,9 @@ class FeedListState extends ConsumerState<FeedList> {
         itemCount: items.length,
         onPageChanged: (index) {
           if (_previewMode) {
-            _playTrack(_trackFromFollowing(items[index]));
+            _onPageChangedInPreviewMode(_trackFrom(items[index]));
+          } else if (_nowPlayingTrackId != null) {
+            setState(() => _nowPlayingTrackId = null);
           }
         },
         itemBuilder: (context, index) => Stack(
@@ -202,7 +268,7 @@ class FeedListState extends ConsumerState<FeedList> {
                   if (_previewMode) {
                     _deactivatePreviewMode();
                   } else {
-                    _activatePreviewMode(_trackFromFollowing(items[index]));
+                    _activatePreviewMode(_trackFrom(items[index]));
                   }
                 },
               ),

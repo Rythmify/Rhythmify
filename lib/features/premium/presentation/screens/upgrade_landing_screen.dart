@@ -277,6 +277,7 @@ class _Content extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 50),
       ],
     );
   }

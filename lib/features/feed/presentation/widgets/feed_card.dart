@@ -5,6 +5,7 @@ import 'feed_card_bottom_info.dart';
 import 'feed_card_side_actions.dart';
 import 'feed_card_cover.dart';
 import 'feed_list.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 
 class FeedCard extends ConsumerWidget {
   final FeedItemEntity item;
@@ -26,7 +27,10 @@ class FeedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isThisTrackNowPlaying = nowPlayingTrackId == item.track.id;
+    final playerState = ref.watch(playerStateProvider);
+    final isThisTrackNowPlaying =
+        nowPlayingTrackId == item.track.id &&
+        playerState.currentTrack?.id == item.track.id;
     final showTapToPreview = !previewMode && !isThisTrackNowPlaying;
 
     return Stack(

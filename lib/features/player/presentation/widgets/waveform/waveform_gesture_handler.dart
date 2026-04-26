@@ -96,6 +96,7 @@ class _WaveformGestureHandlerState extends ConsumerState<WaveformGestureHandler>
     final double msPerPixel = duration.inMilliseconds / totalWaveWidth;
 
     return GestureDetector(
+      key: const Key('player_waveform_gesture_detector'),
       behavior: HitTestBehavior.opaque,
       onHorizontalDragStart: (details) {
         _isDragging = true;

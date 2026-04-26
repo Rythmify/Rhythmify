@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../domain/entities/comment.dart';
 import 'comment_action_bottom_sheet.dart';
+import '../../../../features/feed/presentation/providers/feed_providers.dart';
 
 /// A reusable UI widget that displays a standard comment or reply.
 ///
@@ -13,13 +14,13 @@ class CommentCard extends StatelessWidget {
   /// The [Comment] entity containing the data to display.
   final Comment comment;
 
-  /// Callback triggered when the user taps the like heart icon.
+  /// Callback triggered when the like button is pressed.
   final VoidCallback? onLike;
 
-  /// Callback triggered when the user taps the "Reply" text button.
+  /// Callback triggered when the reply button is pressed.
   final VoidCallback? onReply;
 
-  /// Callback triggered when the user taps the vertical ellipsis (more options).
+  /// Callback triggered when the vertical ellipsis (more options).
   final VoidCallback? onMore;
 
   /// Callback triggered when the user toggles the "Show replies" dropdown.
@@ -28,7 +29,7 @@ class CommentCard extends StatelessWidget {
   /// Indicates whether this card is being rendered as a nested reply (adds left padding).
   final bool isReply;
 
-  /// Indicates whether the replies section for this comment is currently expanded.
+  /// Whether the replies section for this comment is currently expanded.
   final bool isExpanded;
 
   /// Creates a [CommentCard] for the specified [comment].
@@ -45,6 +46,8 @@ class CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBlocked = comment.isAuthorBlocked;
+
     return Padding(
       padding: EdgeInsets.only(
         left: isReply ? 48.0 : 16.0,
@@ -55,45 +58,55 @@ class CommentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () => context.push('/profile/${comment.userId}'),
-            borderRadius: BorderRadius.circular(isReply ? 16 : 20),
-            child: Container(
-              width: isReply ? 32 : 40,
-              height: isReply ? 32 : 40,
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-                shape: BoxShape.circle,
-              ),
-              child: ClipOval(
-                child: comment.userPfp == null || comment.userPfp!.isEmpty
-                    ? Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: isReply ? 16 : 20,
-                      )
-                    : (comment.userPfp!.startsWith('http') ||
-                              comment.userPfp!.startsWith('https')
-                          ? Image.network(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )
-                          : Image.asset(
-                              comment.userPfp!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: isReply ? 16 : 20,
-                                  ),
-                            )),
+          Opacity(
+            opacity: isBlocked ? 0.4 : 1.0,
+            child: InkWell(
+              key: Key('comment_card_avatar_${comment.id}_inkwell'),
+              onTap: isBlocked
+                  ? null
+                  : () {
+                      playerCollapseNotifier.value?.call(); // Collapse player
+                      context.pop(); // Close comments
+                      context.push('/home/profile/${comment.userId}');
+                    },
+              borderRadius: BorderRadius.circular(isReply ? 16 : 20),
+              child: Container(
+                width: isReply ? 32 : 40,
+                height: isReply ? 32 : 40,
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: comment.userPfp == null || comment.userPfp!.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: isReply ? 16 : 20,
+                        )
+                      : (comment.userPfp!.startsWith('http') ||
+                                comment.userPfp!.startsWith('https')
+                            ? Image.network(
+                                comment.userPfp!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: isReply ? 16 : 20,
+                                    ),
+                              )
+                            : Image.asset(
+                                comment.userPfp!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: isReply ? 16 : 20,
+                                    ),
+                              )),
+                ),
               ),
             ),
           ),
@@ -104,54 +117,68 @@ class CommentCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    InkWell(
-                      onTap: () => context.push('/profile/${comment.userId}'),
-                      borderRadius: BorderRadius.circular(
-                        4,
-                      ), // Gives the ripple a nice rounded edge
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 2.0,
-                          vertical: 2.0,
-                        ), // Slight padding so the ripple doesn't cut off the text
-                        child: Text(
-                          comment.userDisplayName,
-                          style: AppTheme.bodyNormal.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                    Opacity(
+                      opacity: isBlocked ? 0.4 : 1.0,
+                      child: InkWell(
+                        key: Key('comment_card_username_${comment.id}_inkwell'),
+                        onTap: isBlocked
+                            ? null
+                            : () {
+                                playerCollapseNotifier.value
+                                    ?.call(); // Collapse player
+                                context.pop(); // Close comments
+                                context.push('/home/profile/${comment.userId}');
+                              },
+                        borderRadius: BorderRadius.circular(
+                          4,
+                        ), // Gives the ripple a nice rounded edge
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2.0,
+                            vertical: 2.0,
+                          ), // Slight padding so the ripple doesn't cut off the text
+                          child: Text(
+                            comment.userDisplayName,
+                            style: AppTheme.bodyNormal.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'at  ',
-                          style: AppTheme.commentLabel.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[850],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            TimeUtils.formatTrackTimestamp(
-                              comment.trackTimestamp,
-                            ),
+                    Opacity(
+                      opacity: isBlocked ? 0.4 : 1.0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'at  ',
                             style: AppTheme.commentLabel.copyWith(
-                              color: Colors.blueAccent,
+                              color: Colors.white70,
                             ),
                           ),
-                        ),
-                      ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 3,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[850],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              TimeUtils.formatTrackTimestamp(
+                                comment.trackTimestamp,
+                              ),
+                              style: AppTheme.commentLabel.copyWith(
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 4),
                     const Text('·', style: TextStyle(color: Colors.white70)),
@@ -165,15 +192,43 @@ class CommentCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  comment.content,
-                  style: AppTheme.bodyNormal.copyWith(fontSize: 14),
-                ),
+                if (isBlocked)
+                  Container(
+                    key: Key('comment_card_blocked_${comment.id}_text'),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Text(
+                      'You blocked this user',
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontSize: 14,
+                        color: Colors.red.withValues(alpha: 0.5),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    comment.content,
+                    style: AppTheme.bodyNormal.copyWith(fontSize: 14),
+                  ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    if (!isReply) ...[
+                    if (!isReply && !isBlocked) ...[
                       GestureDetector(
+                        key: Key(
+                          'comment_card_reply_${comment.id}_gesture_detector',
+                        ),
                         onTap: onReply,
                         child: Text(
                           'Reply',
@@ -186,6 +241,7 @@ class CommentCard extends StatelessWidget {
                       const SizedBox(width: 25),
                     ],
                     InkWell(
+                      key: Key('comment_card_more_${comment.id}_inkwell'),
                       onTap: () {
                         // Just open the bottom sheet directly
                         showModalBottomSheet(
@@ -219,6 +275,9 @@ class CommentCard extends StatelessWidget {
 
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
+                    key: Key(
+                      'comment_card_show_replies_${comment.id}_text_button',
+                    ),
                     onPressed: onShowReplies,
                     icon: Icon(
                       isExpanded
@@ -241,24 +300,29 @@ class CommentCard extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            children: [
-              IconButton(
-                onPressed: onLike,
-                icon: Icon(
-                  comment.isLikedByMe ? Icons.favorite : Icons.favorite_border,
-                  size: 16,
-                  color: comment.isLikedByMe ? Colors.red : Colors.white70,
+          if (!isBlocked)
+            Column(
+              children: [
+                IconButton(
+                  key: Key('comment_card_like_${comment.id}_icon_button'),
+                  onPressed: onLike,
+                  icon: Icon(
+                    comment.isLikedByMe
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    size: 16,
+                    color: comment.isLikedByMe ? Colors.red : Colors.white70,
+                  ),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
                 ),
-                constraints: const BoxConstraints(),
-                padding: EdgeInsets.zero,
-              ),
-              Text(
-                comment.likesCount.toString(),
-                style: AppTheme.labelSmall.copyWith(fontSize: 10),
-              ),
-            ],
-          ),
+                Text(
+                  comment.likesCount.toString(),
+                  key: Key('comment_card_likes_count_${comment.id}_text'),
+                  style: AppTheme.labelSmall.copyWith(fontSize: 10),
+                ),
+              ],
+            ),
         ],
       ),
     );

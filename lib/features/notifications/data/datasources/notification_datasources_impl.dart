@@ -10,13 +10,19 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
 
   @override
   Future<({List<NotificationModel> items, int unreadCount, bool hasNext})>
-  getNotifications({int page = 1, int limit = 20, bool? unreadOnly}) async {
+  getNotifications({
+    int page = 1,
+    int limit = 20,
+    bool? unreadOnly,
+    String? type,
+  }) async {
     final result = await dio.get(
       '/notifications',
       queryParameters: {
         'page': page,
         'limit': limit,
         'unread_only': ?unreadOnly,
+        'type': ?type,
       },
     );
 
@@ -52,5 +58,17 @@ class NotificationDatasourcesImpl implements NotificationRemoteDatasources {
   Future<bool> getFollowStatus(String userId) async {
     final result = await dio.get('/users/$userId/follow-status');
     return result.data['data']['is_following'] as bool? ?? false;
+  }
+
+  @override
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  ) async {
+    final result = await dio.get('/comments/$commentId');
+    final data = result.data['data'] as Map<String, dynamic>;
+    return (
+      trackId: data['track_id'] as String?,
+      isLikedByMe: data['is_liked_by_me'] as bool? ?? false,
+    );
   }
 }

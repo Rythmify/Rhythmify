@@ -1,11 +1,10 @@
-// lib/features/playlist/presentation/screens/playlist_detail_screen.dart
-
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
 import '../../domain/entities/playlist_entity.dart';
@@ -38,7 +37,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     });
   }
 
-  // Used only for suggestion tiles (they don't have an index in the main list)
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
       final fullTrack = await ref
@@ -89,35 +87,43 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
   }
 
+  String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return '$count';
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistDetailProvider);
 
     if (state.isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFF111111),
+        backgroundColor: AppTheme.background,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF5500)),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
         ),
       );
     }
 
     if (state.playlist == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF111111),
+      return Scaffold(
+        backgroundColor: AppTheme.background,
         body: Center(
-          child: Text(
-            'Playlist not found',
-            style: TextStyle(color: Colors.white),
-          ),
+          child: Text('Playlist not found', style: AppTheme.bodyMedium),
         ),
       );
     }
 
     final playlist = state.playlist!;
 
+    // ── Cover: prefer state.playlist.coverUrl, fall back to first track cover
+    final coverUrl =
+        playlist.coverUrl ??
+        (state.tracks.isNotEmpty ? state.tracks.first.coverUrl : null);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -130,15 +136,16 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     key: const Key('playlist_detail_back_button'),
                     icon: const Icon(
                       Icons.chevron_left,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 28,
                     ),
                     onPressed: () => context.pop(),
                   ),
-                  PlaylistCoverImage(
-                    playlist: playlist,
+                  // Cover — uses resolved coverUrl with network fallback
+                  _CoverImage(
+                    coverUrl: coverUrl,
+                    name: playlist.name,
                     size: 56,
-                    borderRadius: 4,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -149,19 +156,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           playlist.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: AppTheme.bodyNormal,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           playlist.detailSubtitle,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                          ),
+                          style: AppTheme.labelSmall,
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -170,22 +170,20 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                               playlist.type == PlaylistType.station
                                   ? 'Based on '
                                   : 'By ',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12,
-                              ),
+                              style: AppTheme.labelSmall,
                             ),
                             Flexible(
                               child: Text(
                                 playlist.type == PlaylistType.station
                                     ? (playlist.seedArtistName ??
                                           playlist.ownerName)
-                                    : playlist.ownerName,
+                                    : playlist.ownerName.isNotEmpty
+                                    ? playlist.ownerName
+                                    : 'You',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
+                                style: AppTheme.labelSmall.copyWith(
+                                  color: AppTheme.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -204,28 +202,44 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  IconButton(
+                  // Like button + count
+                  GestureDetector(
                     key: const Key('playlist_detail_like_button'),
-                    icon: Icon(
-                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
-                      color: playlist.isLiked
-                          ? const Color(0xFFFF5500)
-                          : Colors.white,
-                      size: 24,
-                    ),
-                    onPressed: () =>
+                    onTap: () =>
                         ref.read(playlistDetailProvider.notifier).toggleLike(),
-                  ),
-                  if (!widget.isOwner && playlist.likeCount > 0)
-                    Text(
-                      _formatCount(playlist.likeCount),
-                      style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          playlist.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: playlist.isLiked
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textPrimary,
+                          size: 24,
+                        ),
+                        if (playlist.likeCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatCount(playlist.likeCount),
+                            style: AppTheme.labelSmall.copyWith(
+                              color: playlist.isLiked
+                                  ? AppTheme.primaryBrand
+                                  : AppTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
+                  const SizedBox(width: 4),
                   IconButton(
                     key: const Key('playlist_detail_more_button'),
                     icon: const Icon(
                       Icons.more_horiz,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 24,
                     ),
                     onPressed: () {
@@ -255,7 +269,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     key: const Key('playlist_detail_shuffle_button'),
                     icon: const Icon(
                       Icons.shuffle,
-                      color: Colors.white60,
+                      color: AppTheme.textSecondary,
                       size: 24,
                     ),
                     onPressed: _shuffle,
@@ -267,12 +281,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       width: 52,
                       height: 52,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF3A3A3A),
+                        color: AppTheme.lighterSurface,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.play_arrow,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                         size: 28,
                       ),
                     ),
@@ -281,95 +295,94 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               ),
             ),
 
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
 
             // ── Track list + suggestions ─────────────────────────────────────
             Expanded(
-              child: ListView(
-                children: [
-                  ...state.tracks.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final track = entry.value;
-                    return TrackTileInPlaylist(
-                      key: Key('playlist_track_${track.id}'),
-                      track: track,
-                      onTap: () => _playFrom(index),
-                    );
-                  }),
+              child: state.tracks.isEmpty && !state.isLoading
+                  ? _emptyTracksState(playlist)
+                  : ListView(
+                      children: [
+                        ...state.tracks.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final track = entry.value;
+                          return TrackTileInPlaylist(
+                            key: Key('playlist_track_${track.id}'),
+                            track: track,
+                            onTap: () => _playFrom(index),
+                          );
+                        }),
 
-                  if (widget.isOwner &&
-                      playlist.type == PlaylistType.playlist &&
-                      (state.isSuggestionsLoading ||
-                          state.suggestions.isNotEmpty)) ...[
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-                      child: Text(
-                        'Suggestions for your new playlist',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    if (state.isSuggestionsLoading)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFFF5500),
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      )
-                    else
-                      ...state.suggestions.map(
-                        (suggestion) => TrackTileInPlaylist(
-                          key: Key('suggestion_${suggestion.id}'),
-                          track: suggestion,
-                          onTap: () => _fetchAndPlay(suggestion),
-                          trailingWidget: IconButton(
-                            key: Key('add_suggestion_${suggestion.id}'),
-                            icon: const Icon(
-                              Icons.add_box_outlined,
-                              color: Colors.white70,
-                              size: 26,
+                        // Suggestions — only for owned playlists
+                        if (widget.isOwner &&
+                            playlist.type == PlaylistType.playlist &&
+                            (state.isSuggestionsLoading ||
+                                state.suggestions.isNotEmpty)) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                            child: Text(
+                              'Suggestions for your new playlist',
+                              style: AppTheme.titleLarge,
                             ),
-                            onPressed: () => ref
-                                .read(playlistDetailProvider.notifier)
-                                .addSuggestion(suggestion),
                           ),
-                        ),
-                      ),
-                    if (!state.isSuggestionsLoading)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 44,
-                          child: ElevatedButton(
-                            key: const Key('refresh_suggestions_button'),
-                            onPressed: () => ref
-                                .read(playlistDetailProvider.notifier)
-                                .refreshSuggestions(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2A2A2A),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
+                          if (state.isSuggestionsLoading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primaryBrand,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          else
+                            ...state.suggestions.map(
+                              (suggestion) => TrackTileInPlaylist(
+                                key: Key('suggestion_${suggestion.id}'),
+                                track: suggestion,
+                                onTap: () => _fetchAndPlay(suggestion),
+                                trailingWidget: IconButton(
+                                  key: Key('add_suggestion_${suggestion.id}'),
+                                  icon: const Icon(
+                                    Icons.add_box_outlined,
+                                    color: AppTheme.textSecondary,
+                                    size: 26,
+                                  ),
+                                  onPressed: () => ref
+                                      .read(playlistDetailProvider.notifier)
+                                      .addSuggestion(suggestion),
+                                ),
                               ),
                             ),
-                            child: const Text(
-                              'Refresh suggestions',
-                              style: TextStyle(color: Colors.white),
+                          if (!state.isSuggestionsLoading)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 44,
+                                child: ElevatedButton(
+                                  key: const Key('refresh_suggestions_button'),
+                                  onPressed: () => ref
+                                      .read(playlistDetailProvider.notifier)
+                                      .refreshSuggestions(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Refresh suggestions',
+                                    style: AppTheme.bodyNormal,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                  ],
+                        ],
 
-                  const SizedBox(height: 140),
-                ],
-              ),
+                        const SizedBox(height: 140),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -377,9 +390,79 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     );
   }
 
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return '$count';
+  Widget _emptyTracksState(PlaylistEntity playlist) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.queue_music,
+              color: AppTheme.textSecondary,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              widget.isOwner
+                  ? 'This playlist is empty\nAdd tracks to get started'
+                  : 'No tracks available',
+              style: AppTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
+}
+
+// ── Cover image widget ────────────────────────────────────────────────────────
+// Separate from PlaylistCoverImage so we can pass a resolved URL directly
+// without needing the full PlaylistEntity (useful when cover comes from tracks).
+class _CoverImage extends StatelessWidget {
+  const _CoverImage({
+    required this.coverUrl,
+    required this.name,
+    required this.size,
+  });
+
+  final String? coverUrl;
+  final String name;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child:
+            coverUrl != null &&
+                coverUrl!.isNotEmpty &&
+                coverUrl!.startsWith('http')
+            ? Image.network(
+                coverUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _placeholder(),
+              )
+            : _placeholder(),
+      ),
+    );
+  }
+
+  Widget _placeholder() => Container(
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'P',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
 }
