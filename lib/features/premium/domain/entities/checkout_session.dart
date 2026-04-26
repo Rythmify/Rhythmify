@@ -1,8 +1,8 @@
 import 'subscription_plan.dart';
 
 class CheckoutSession {
-  final String transactionId;   // UUID string e.g. "f2c5b997-4756-..."
-  final String subscriptionId;  // UUID string
+  final String transactionId; // UUID string e.g. "f2c5b997-4756-..."
+  final String subscriptionId; // UUID string
   final String checkoutStatus;
   final String paymentMethod;
   final String paymentUrl;

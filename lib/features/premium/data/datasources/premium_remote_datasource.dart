@@ -21,8 +21,7 @@ class PremiumRemoteDatasource {
   // GET /subscriptions/me  (Bearer required)
   Future<UserSubscription> fetchMySubscription() async {
     final res = await _dio.get('/subscriptions/me');
-    return UserSubscription.fromJson(
-        res.data['data'] as Map<String, dynamic>);
+    return UserSubscription.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
   // POST /subscriptions/checkout  (Bearer required)
@@ -32,8 +31,7 @@ class PremiumRemoteDatasource {
       '/subscriptions/checkout',
       data: {'subscription_plan_id': planId},
     );
-    return CheckoutSession.fromJson(
-        res.data['data'] as Map<String, dynamic>);
+    return CheckoutSession.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
   // POST /subscriptions/mock-confirm/{transaction_id}  (Bearer required)

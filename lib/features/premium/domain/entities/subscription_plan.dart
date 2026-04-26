@@ -1,10 +1,11 @@
 class SubscriptionPlan {
-  final String planId;       // UUID — e.g. "a1b2c3d4-..."  sent to /subscriptions/checkout
-  final String name;         // "free" | "premium"
-  final String price;        // "4.99"
+  final String
+  planId; // UUID — e.g. "a1b2c3d4-..."  sent to /subscriptions/checkout
+  final String name; // "free" | "premium"
+  final String price; // "4.99"
   final int? durationDays;
-  final int? trackLimit;     // null = unlimited
-  final int? playlistLimit;  // null = unlimited
+  final int? trackLimit; // null = unlimited
+  final int? playlistLimit; // null = unlimited
 
   const SubscriptionPlan({
     required this.planId,
