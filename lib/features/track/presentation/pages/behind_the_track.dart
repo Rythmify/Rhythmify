@@ -80,18 +80,30 @@ class BehindTheTrackPage extends ConsumerWidget {
                   ),
 
                   const SizedBox(height: 15),
-                  TrackInfoHeader(track: track),
+                  TrackInfoHeader(
+                    key: Key('behind_the_track_info_header_$trackId'),
+                    track: track,
+                  ),
 
                   const SizedBox(height: 16),
-                  TrackActionBar(track: track),
+                  TrackActionBar(
+                    key: Key('behind_the_track_action_bar_$trackId'),
+                    track: track,
+                  ),
 
                   const SizedBox(height: 14),
-                  TrackDetailsSection(track: track),
+                  TrackDetailsSection(
+                    key: Key('behind_the_track_details_section_$trackId'),
+                    track: track,
+                  ),
 
                   const SizedBox(height: 35),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: FansLeaderboard(trackId: trackId),
+                    child: FansLeaderboard(
+                      key: Key('behind_the_track_fans_leaderboard_$trackId'),
+                      trackId: trackId,
+                    ),
                   ),
                   const SizedBox(height: 155),
                 ],

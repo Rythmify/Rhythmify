@@ -97,6 +97,9 @@ class TrackDetailsSection extends ConsumerWidget {
             children: [
               Expanded(
                 child: InkWell(
+                  key: Key(
+                    'track_details_section_artist_inkwell_${track.userId}',
+                  ),
                   onTap: () {
                     context.push('/home/profile/${track.userId}');
                   },
@@ -154,7 +157,10 @@ class TrackDetailsSection extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              FollowButton(targetUserId: track.userId),
+              FollowButton(
+                key: Key('track_details_section_follow_button_${track.userId}'),
+                targetUserId: track.userId,
+              ),
             ],
           ),
         ),

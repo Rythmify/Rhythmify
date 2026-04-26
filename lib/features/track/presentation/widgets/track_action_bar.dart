@@ -38,6 +38,7 @@ class TrackActionBar extends ConsumerWidget {
       child: Row(
         children: [
           _buildActionButton(
+            key: Key('track_action_bar_like_inkwell_${syncedTrack.id}'),
             syncedTrack.isLiked ? Icons.favorite : Icons.favorite_border,
             Formatters.formatCount(syncedTrack.likeCount),
             onTap: () {
@@ -58,6 +59,7 @@ class TrackActionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           _buildActionButton(
+            key: Key('track_action_bar_repost_inkwell_${syncedTrack.id}'),
             Icons.repeat,
             Formatters.formatCount(syncedTrack.repostCount),
             onTap: () async {
@@ -87,6 +89,7 @@ class TrackActionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           _buildActionButton(
+            key: Key('track_action_bar_comment_inkwell_${syncedTrack.id}'),
             Icons.chat_outlined,
             Formatters.formatCount(syncedTrack.commentCount),
             onTap: () {
@@ -98,6 +101,7 @@ class TrackActionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 20),
           InkWell(
+            key: Key('track_action_bar_more_inkwell_${syncedTrack.id}'),
             onTap: () {
               showModalBottomSheet(
                 context: context,
@@ -149,11 +153,13 @@ class TrackActionBar extends ConsumerWidget {
   Widget _buildActionButton(
     IconData icon,
     String value, {
+    Key? key,
     VoidCallback? onTap,
     Color iconColor = AppTheme.fadedWhite,
     Color textColor = AppTheme.fadedWhite,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(

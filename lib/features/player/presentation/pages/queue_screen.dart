@@ -50,6 +50,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
         centerTitle: true,
         actions: [
           IconButton(
+            key: const Key('player_queue_shuffle_icon_button'),
             icon: Icon(
               queueState.isShuffled ? Icons.shuffle_on : Icons.shuffle,
               color: queueState.isShuffled
@@ -70,6 +71,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               ),
             )
           : ReorderableListView.builder(
+              key: const Key('player_queue_listview'),
               scrollController: _scrollController,
               itemCount: upcomingTracks.length,
               onReorder: (oldIndex, newIndex) {
@@ -91,12 +93,20 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: GestureDetector(
+                          key: Key(
+                            'player_queue_track_gesture_detector_${track.id}',
+                          ),
                           onTap: () {
                             ref
                                 .read(queueStateProvider.notifier)
                                 .playFromQueue(index);
                           },
-                          child: IgnorePointer(child: TrackCard(track: track)),
+                          child: IgnorePointer(
+                            child: TrackCard(
+                              key: Key('player_queue_track_card_${track.id}'),
+                              track: track,
+                            ),
+                          ),
                         ),
                       ),
                     ],

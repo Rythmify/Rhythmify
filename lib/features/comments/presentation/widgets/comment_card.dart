@@ -226,7 +226,9 @@ class CommentCard extends StatelessWidget {
                   children: [
                     if (!isReply && !isBlocked) ...[
                       GestureDetector(
-                        key: Key('comment_card_reply_${comment.id}_gesture_detector'),
+                        key: Key(
+                          'comment_card_reply_${comment.id}_gesture_detector',
+                        ),
                         onTap: onReply,
                         child: Text(
                           'Reply',
@@ -273,7 +275,9 @@ class CommentCard extends StatelessWidget {
 
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
-                    key: Key('comment_card_show_replies_${comment.id}_text_button'),
+                    key: Key(
+                      'comment_card_show_replies_${comment.id}_text_button',
+                    ),
                     onPressed: onShowReplies,
                     icon: Icon(
                       isExpanded
