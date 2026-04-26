@@ -23,8 +23,9 @@ class _ReportPageState extends State<ReportPage> {
 
   final _detailsController = TextEditingController();
   final _nameController = TextEditingController();
-  final _emailController =
-      TextEditingController(text: 'basseialaa33@gmail.com');
+  final _emailController = TextEditingController(
+    text: 'basseialaa33@gmail.com',
+  );
   final _urlController = TextEditingController();
 
   late final ReportRepository _repository;
@@ -75,7 +76,8 @@ class _ReportPageState extends State<ReportPage> {
   Future<void> _submitReport() async {
     if (!_formKey.currentState!.validate() ||
         _selectedReason == null ||
-        !_isConsentChecked) return;
+        !_isConsentChecked)
+      return;
 
     final selectedViolations = _violations.entries
         .where((e) => e.value)
@@ -103,9 +105,9 @@ class _ReportPageState extends State<ReportPage> {
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -139,8 +141,7 @@ class _ReportPageState extends State<ReportPage> {
               /// TITLE
               Text(
                 'Reason for Reporting',
-                style: AppTheme.titleMedium
-                    .copyWith(color: AppTheme.babyBlue),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
 
               const SizedBox(height: 12),
@@ -167,8 +168,7 @@ class _ReportPageState extends State<ReportPage> {
               /// DETAILS
               Text(
                 "Please provide more detail",
-                style: AppTheme.titleMedium
-                    .copyWith(color: AppTheme.babyBlue),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -199,8 +199,7 @@ class _ReportPageState extends State<ReportPage> {
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter name' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
               ),
 
               const SizedBox(height: 16),
@@ -244,8 +243,7 @@ class _ReportPageState extends State<ReportPage> {
               /// VIOLATIONS
               Text(
                 'Where is the violation?',
-                style: AppTheme.titleMedium
-                    .copyWith(color: AppTheme.babyBlue),
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
 
@@ -278,8 +276,9 @@ class _ReportPageState extends State<ReportPage> {
               CheckboxListTile(
                 title: Text(
                   'I confirm this report is accurate',
-                  style: AppTheme.bodyNormal
-                      .copyWith(fontWeight: FontWeight.bold),
+                  style: AppTheme.bodyNormal.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 value: _isConsentChecked,
                 onChanged: (val) {
@@ -310,9 +309,7 @@ class _ReportPageState extends State<ReportPage> {
                       : Text(
                           'Submit Report',
                           style: AppTheme.titleMedium.copyWith(
-                            color: isFormValid
-                                ? Colors.white
-                                : Colors.white54,
+                            color: isFormValid ? Colors.white : Colors.white54,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
