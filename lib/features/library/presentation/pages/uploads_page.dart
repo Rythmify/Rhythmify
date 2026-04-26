@@ -107,11 +107,11 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     ref
         .read(uploadFormProvider.notifier)
         .initDraft(
-          artistId:       'dev_user_001',
-          artistName:     displayName,
+          artistId: 'dev_user_001',
+          artistName: displayName,
           localAudioPath: picked.path!,
-          duration:       duration,
-          fileName:       picked.name,
+          duration: duration,
+          fileName: picked.name,
         );
 
     if (mounted) {

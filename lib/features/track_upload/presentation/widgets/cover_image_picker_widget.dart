@@ -51,13 +51,13 @@ class CoverImagePickerWidget extends ConsumerWidget {
           border: Border.all(color: Colors.white12),
           image: decorationImage,
         ),
-child: (hasLocalArtwork || hasRemoteArtwork)
-    ? null
-    : const Icon(
-        Icons.camera_alt_outlined,
-        color: Colors.white38,
-        size: 28,
-      ),
+        child: (hasLocalArtwork || hasRemoteArtwork)
+            ? null
+            : const Icon(
+                Icons.camera_alt_outlined,
+                color: Colors.white38,
+                size: 28,
+              ),
       ),
     );
   }

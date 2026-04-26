@@ -38,20 +38,20 @@ class AudioPickerWidget extends ConsumerWidget {
       await player.dispose();
     } catch (_) {}
 
-   final authState = ref.read(authProvider);
-final displayName = authState is AuthAuthenticated
-    ? authState.user.displayName
-    : 'Your Name';
+    final authState = ref.read(authProvider);
+    final displayName = authState is AuthAuthenticated
+        ? authState.user.displayName
+        : 'Your Name';
 
-ref
-    .read(uploadFormProvider.notifier)
-    .initDraft(
-      artistId:      'dev_user_001',
-      artistName:    displayName,
-      localAudioPath: picked.path!,
-      duration:      duration,
-      fileName:      picked.name,
-    );
+    ref
+        .read(uploadFormProvider.notifier)
+        .initDraft(
+          artistId: 'dev_user_001',
+          artistName: displayName,
+          localAudioPath: picked.path!,
+          duration: duration,
+          fileName: picked.name,
+        );
     ref.read(uploadFormProvider.notifier).startAudioUpload();
   }
 
