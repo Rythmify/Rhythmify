@@ -5,6 +5,7 @@ import '../providers/home_providers.dart';
 import 'package:go_router/go_router.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import 'shimmers/playlist_card_shimmer.dart';
 
 class MixedPlaylistsSection extends ConsumerWidget {
   const MixedPlaylistsSection({super.key});
@@ -22,7 +23,16 @@ class MixedPlaylistsSection extends ConsumerWidget {
           child: Text("Mixed For You", style: AppTheme.homeTitle),
         ),
         asyncMixedForYou.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 5,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => const PlaylistCardShimmer(),
+            ),
+          ),
           error: (e, _) =>
               Text("Error: $e", key: const Key('mixed_for_you_error_text')),
           data: (items) {
@@ -34,7 +44,7 @@ class MixedPlaylistsSection extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   return MixedPlaylistCard(

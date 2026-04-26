@@ -22,7 +22,6 @@ class FeedListState extends ConsumerState<FeedList> {
 
   bool _previewMode = false;
   String? _nowPlayingTrackId;
-  bool _pendingExpand = false;
   String? _pendingTrackId;
   String? _rawPendingTrackId;
 
@@ -77,7 +76,6 @@ class FeedListState extends ConsumerState<FeedList> {
     setState(() {
       _nowPlayingTrackId = trackId;
       _previewMode = false;
-      _pendingExpand = true;
       _pendingTrackId = trackId;
     });
   }
@@ -139,7 +137,6 @@ class FeedListState extends ConsumerState<FeedList> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {
-              _pendingExpand = false;
               _pendingTrackId = null;
             });
           }

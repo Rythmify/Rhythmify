@@ -40,6 +40,7 @@ class PlayerActionBar extends ConsumerWidget {
           children: [
             // ------ 1. Like Action ------
             InkWell(
+              key: Key('player_action_bar_like_inkwell_$trackId'),
               onTap: () {
                 if (track != null) {
                   ref
@@ -108,6 +109,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 2. Comment Action ------
             InkWell(
+              key: Key('player_action_bar_comment_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   context.pushNamed(
@@ -145,6 +147,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 3. Share Action ------
             InkWell(
+              key: Key('player_action_bar_share_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   showModalBottomSheet(
@@ -178,6 +181,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 4. Playlist Action ------
             InkWell(
+              key: Key('player_action_bar_playlist_inkwell_$trackId'),
               onTap: () {
                 context.push('/queue');
               },
@@ -200,6 +204,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 5. More Action ------
             InkWell(
+              key: Key('player_action_bar_more_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   showModalBottomSheet(

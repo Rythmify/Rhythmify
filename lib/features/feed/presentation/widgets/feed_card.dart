@@ -6,7 +6,6 @@ import 'feed_card_side_actions.dart';
 import 'feed_card_cover.dart';
 import 'feed_list.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../player/domain/entities/player_state.dart';
 
 class FeedCard extends ConsumerWidget {
   final FeedItemEntity item;

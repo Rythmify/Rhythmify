@@ -4,6 +4,7 @@ import '../providers/search_providers.dart';
 import '../../../profile/domain/entities/profile_entity.dart';
 import '../../../../core/utils/formatters.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// A reusable profile card showing avatar, display name, follower count, and a Follow button.
 /// Used both in [ProfilesTab] and inline in the All tab's profiles section.
@@ -44,19 +45,7 @@ class SearchProfileCard extends StatelessWidget {
           ),
         ],
       ),
-      trailing: ElevatedButton(
-        key: Key('follow_button_${profile.id}'),
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          minimumSize: const Size(0, 32),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        ),
-        child: const Text('Follow'),
-      ),
+      trailing: FollowButton(targetUserId: profile.id, compact: true),
     );
   }
 }

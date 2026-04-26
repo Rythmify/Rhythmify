@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
+import 'shimmers/playlist_card_shimmer.dart';
 
 class MoreOfWhatYouLikeSection extends ConsumerWidget {
   const MoreOfWhatYouLikeSection({super.key});
@@ -20,7 +21,16 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
           child: Text("More of what you like", style: AppTheme.homeTitle),
         ),
         asyncMore.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => SizedBox(
+            height: 180,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 5,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => const PlaylistCardShimmer(),
+            ),
+          ),
           error: (e, _) => Text(
             "Error: $e",
             key: const Key('more_of_what_you_like_error_text'),

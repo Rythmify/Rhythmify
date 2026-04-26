@@ -68,8 +68,8 @@ class FollowingState extends Equatable {
 /// Handles loading, pagination, error states, and unfollow actions.
 /// Pagination triggers when scrolling near the bottom of the list.
 class FollowingNotifier extends Notifier<FollowingState> {
-  late final GetFollowingUseCase _getFollowing;
-  late final UnfollowUserLibraryUseCase _unfollow;
+  late GetFollowingUseCase _getFollowing;
+  late UnfollowUserLibraryUseCase _unfollow;
   int _page = 1;
 
   @override
@@ -163,9 +163,9 @@ class PlaylistsState extends Equatable {
 }
 
 class PlaylistsNotifier extends Notifier<PlaylistsState> {
-  late final GetMyPlaylistsUseCase _get;
-  late final CreatePlaylistUseCase _create;
-  late final DeletePlaylistUseCase _delete;
+  late GetMyPlaylistsUseCase _get;
+  late CreatePlaylistUseCase _create;
+  late DeletePlaylistUseCase _delete;
 
   @override
   PlaylistsState build() {
@@ -263,9 +263,9 @@ class UploadsState extends Equatable {
 }
 
 class UploadsNotifier extends Notifier<UploadsState> {
-  late final GetMyUploadsUseCase _get;
-  late final ToggleTrackVisibilityUseCase _toggleVis;
-  late final DeleteTrackUseCase _delete;
+  late GetMyUploadsUseCase _get;
+  late ToggleTrackVisibilityUseCase _toggleVis;
+  late DeleteTrackUseCase _delete;
   int _page = 1;
 
   @override
@@ -372,7 +372,7 @@ class LikesState extends Equatable {
 }
 
 class LikesNotifier extends Notifier<LikesState> {
-  late final GetLikedTracksLibraryUseCase _get;
+  late GetLikedTracksLibraryUseCase _get;
   int _page = 1;
 
   @override
@@ -469,8 +469,8 @@ class HistoryState extends Equatable {
 }
 
 class HistoryNotifier extends Notifier<HistoryState> {
-  late final GetListeningHistoryUseCase _get;
-  late final ClearListeningHistoryUseCase _clear;
+  late GetListeningHistoryUseCase _get;
+  late ClearListeningHistoryUseCase _clear;
   int _page = 1;
 
   @override

@@ -9,6 +9,7 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 
 import '../providers/home_providers.dart';
+import 'shimmers/hot_for_you_shimmer.dart';
 
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
@@ -26,10 +27,7 @@ class HotForYouSection extends ConsumerWidget {
           child: Text("Hot For You 🔥", style: AppTheme.homeTitle),
         ),
         asyncHotForYou.when(
-          loading: () => const Center(
-            key: Key('hot_for_you_loading'),
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-          ),
+          loading: () => const HotForYouShimmer(),
           error: (e, _) => Text(
             e.toString(),
             key: const Key('hot_for_you_error_text'),

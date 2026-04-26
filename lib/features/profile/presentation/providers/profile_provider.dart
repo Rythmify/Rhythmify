@@ -143,7 +143,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     await loadUploadedTracks(userId: userId, refresh: true, limit: 3);
     await loadLikedTracks(userId: userId, refresh: true, limit: 3);
     await loadRepostedTracks(userId: userId, refresh: true, limit: 3);
-    await loadPlaylists(userId: userId, refresh: true, limit: 3);
+    await loadPlaylists(userId: userId, refresh: true, limit: 4);
   }
 
   Future<void> loadLikedTracks({
