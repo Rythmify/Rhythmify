@@ -21,6 +21,7 @@ import '../../../library/presentation/providers/library_providers.dart';
 import '../providers/home_providers.dart';
 import '../widgets/home_likes_card.dart';
 import '../widgets/home_top_track_card.dart';
+import '../widgets/shimmers/home_shimmer_screen.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -89,12 +90,16 @@ class HomeScreen extends ConsumerWidget {
     final latestTracks =
         historyState.entries.take(4).map((e) => e.toTrack()).toList();
 
+    final asyncHome = ref.watch(homeDataProvider);
+
     final screenWidth = MediaQuery.of(context).size.width;
     const crossAxisCount = 2;
     const horizontalPadding = 16.0 * 2;
     const crossAxisSpacing = 8.0;
     final itemWidth = (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
     final dynamicAspectRatio = itemWidth / 59.6;
+
+    final isLoading = asyncHome.isLoading && asyncHome.value == null;
 
     return Scaffold(
       key: const Key('home_scaffold'),
@@ -196,7 +201,9 @@ class HomeScreen extends ConsumerWidget {
             ref.read(historyProvider.notifier).load(refresh: true),
           ]);
         },
-        child: ListView(
+        child: isLoading 
+          ? const HomeShimmerScreen()
+          : ListView(
           key: const Key('home_scroll_view'),
           padding: const EdgeInsets.only(bottom: 150),
           physics: const AlwaysScrollableScrollPhysics(),
@@ -250,4 +257,3 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
-

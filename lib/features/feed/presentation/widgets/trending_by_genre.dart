@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
+import 'shimmers/trending_genre_shimmer.dart';
 
 final List<Color> genreColors = [
   Colors.pink,
@@ -69,7 +70,7 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
           child: Text("Trending by Genre", style: AppTheme.homeTitle),
         ),
         asyncHome.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const TrendingGenreShimmer(),
           error: (e, _) => Text('Error: $e'),
           data: (homeData) {
             final genres = homeData.trendingByGenre.genres;
@@ -267,7 +268,7 @@ class GenreTabView extends ConsumerWidget {
             padding: const EdgeInsets.only(left: 20),
             child: _TrendingHorizontalColumns(tracks: genreTabTracks.tracks),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const TrendingGenreShimmer(),
           error: (e, _) => Center(
             child: Text(
               'Error: $e',
