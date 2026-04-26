@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/data/datasources/data_sources_sockets.dart';
+import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
@@ -20,6 +21,7 @@ import 'package:rythmify/features/messaging/presentation/widgets/blocked_user_wi
 import 'package:rythmify/features/messaging/presentation/widgets/message_bubble.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/message_input_bubble.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/pop_up_menu_widget.dart';
+import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/selected_embeds_preview_widget.dart';
 
 /// A screen that displays the chat conversation between users.
@@ -47,12 +49,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final TextEditingController controller;
   late final ScrollController _scrollController;
   final List<SharedEmbed> _selectedEmbeds = [];
+  final Map<String, SharedEmbed> _embedCache = {};
   late DataSourcesSockets _socket;
+  Timer? _urlDetectionTimer;
 
   @override
   void initState() {
     super.initState();
     controller = TextEditingController();
+    controller.addListener(_onTextChanged);
     _scrollController = ScrollController();
     _socket = ref.read(socketProvider);
     if (widget.conv != null) {
@@ -60,6 +65,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       Future.microtask(() {
         if (!mounted) return;
         ref.invalidate(conversationProvider);
+        ref.invalidate(messagesNotifierProvider(widget.conv!.conversationId));
         if (widget.conv!.participantId.isNotEmpty) {
           ref.invalidate(isBlockedProvider(widget.conv!.participantId));
           ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
@@ -86,24 +92,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _setupSocketListeners(String conversationId) {
     _socket.onMessageReceived((data) {
-      //print('🔥 onMessageReceived fired: $data');
+      print('🔥 onMessageReceived fired: $data');
       if (mounted) {
-        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
+        final message = MessageModel.fromJson(
+          data['message'] as Map<String, dynamic>,
+        );
+        ref
+            .read(messagesNotifierProvider(conversationId).notifier)
+            .appendMessage(message);
         ref.invalidate(conversationProvider);
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+        _socket.markRead(conversationId, message.messageId, true, 0);
       }
     });
     _socket.onMessageReadUpdated((data) {
       if (mounted) {
-        ref.read(messagesNotifierProvider(conversationId).notifier).refresh();
+        final messageId = data['messageId'] as String?;
+        if (messageId != null) {
+          ref
+              .read(messagesNotifierProvider(conversationId).notifier)
+              .updateMessageRead(messageId);
+        }
+        ref.invalidate(conversationProvider);
       }
     });
   }
 
   @override
   void dispose() {
+    _urlDetectionTimer?.cancel();
     if (widget.conv != null) {
       _socket.leaveConversation(widget.conv!.conversationId);
     }
+    _socket.clearConversationListeners();
     _scrollController.dispose();
     controller.dispose();
     super.dispose();
@@ -313,6 +340,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? BlockedUserWidget(
                             key: const Key('chat_screen_blocked_user_widget'),
                             participantId: participantId,
+                            onUnblocked: widget.conv != null
+                                ? () {
+                                    _socket.joinConversation(
+                                      widget.conv!.conversationId,
+                                    );
+                                    _setupSocketListeners(
+                                      widget.conv!.conversationId,
+                                    );
+                                  }
+                                : null,
                           )
                         : isBlockedBy
                         ? const BlockedByWidget(
@@ -328,10 +365,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 selectedEmbeds: _selectedEmbeds,
                                 onRemove: (index) => setState(() {
                                   if (index < _selectedEmbeds.length) {
-                                    final removedPermalink =
-                                        'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
+                                    final e = _selectedEmbeds[index];
                                     controller.text = controller.text
-                                        .replaceAll(removedPermalink, '')
+                                        .replaceAll(_permalinkFor(e), '')
+                                        .replaceAll(_idUrlFor(e), '')
                                         .trim();
                                     _selectedEmbeds.removeAt(index);
                                   }
@@ -357,24 +394,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         final embeds = await context
                                             .push<List<SharedEmbed>>(
                                               '/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists',
+                                              extra: List<SharedEmbed>.from(
+                                                _selectedEmbeds,
+                                              ),
                                             );
-                                        if (embeds != null &&
-                                            embeds.isNotEmpty) {
+                                        if (embeds != null) {
                                           setState(() {
-                                            _selectedEmbeds.addAll(embeds);
-                                            final addedPermalinks =
-                                                _buildPermalinks(embeds);
-                                            final existing = controller.text;
-                                            controller.text = existing.isEmpty
-                                                ? addedPermalinks
-                                                : '$existing\n$addedPermalinks';
-                                            controller.selection =
-                                                TextSelection.fromPosition(
-                                                  TextPosition(
-                                                    offset:
-                                                        controller.text.length,
-                                                  ),
-                                                );
+                                            _reconcileEmbeds(embeds);
                                           });
                                         }
                                       },
@@ -444,10 +470,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     key: const Key('chat_screen_selected_embeds_preview'),
                     selectedEmbeds: _selectedEmbeds,
                     onRemove: (index) => setState(() {
-                      final removedPermalink =
-                          'https://rythmify.com/${_selectedEmbeds[index].embedType == 'track' ? 'tracks' : 'playlists'}/${_selectedEmbeds[index].embedName}';
+                      final e = _selectedEmbeds[index];
                       controller.text = controller.text
-                          .replaceAll(removedPermalink, '')
+                          .replaceAll(_permalinkFor(e), '')
+                          .replaceAll(_idUrlFor(e), '')
                           .trim();
                       _selectedEmbeds.removeAt(index);
                     }),
@@ -467,21 +493,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             final embeds = await context
                                 .push<List<SharedEmbed>>(
                                   '/home/inbox/chat/new/likes-playlists',
+                                  extra: List<SharedEmbed>.from(
+                                    _selectedEmbeds,
+                                  ),
                                 );
-                            if (embeds != null && embeds.isNotEmpty) {
+                            if (embeds != null) {
                               setState(() {
-                                _selectedEmbeds.addAll(embeds);
-                                final addedPermalinks = _buildPermalinks(
-                                  embeds,
-                                );
-                                final existing = controller.text;
-                                controller.text = existing.isEmpty
-                                    ? addedPermalinks
-                                    : '$existing\n$addedPermalinks';
-                                controller
-                                    .selection = TextSelection.fromPosition(
-                                  TextPosition(offset: controller.text.length),
-                                );
+                                _reconcileEmbeds(embeds);
                               });
                             }
                           },
@@ -649,32 +667,146 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  String _buildPermalinks(List<SharedEmbed> embeds) {
-    return embeds
-        .map(
-          (e) =>
-              'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedName}',
-        )
-        .join('\n');
+  // ─── URL → embed preview ──────────────────────────────────────────────────
+  // Detects Rythmify URLs typed/pasted into the text field and fetches their
+  // embed details to populate the preview widget. Text is NOT modified here —
+  // the URLs stay in the controller so they activate the send button and are
+  // parsed by _processAndSendMessages at send time.
+
+  static final _trackUrlRegex = RegExp(
+    r'https://rythmify\.com/tracks/([a-zA-Z0-9_\-]+)',
+  );
+  static final _playlistUrlRegex = RegExp(
+    r'https://rythmify\.com/playlists/([a-zA-Z0-9_\-]+)',
+  );
+
+  void _onTextChanged() {
+    _urlDetectionTimer?.cancel();
+    _urlDetectionTimer = Timer(
+      const Duration(milliseconds: 400),
+      _checkForCopyLinkEmbeds,
+    );
   }
+
+  Future<void> _checkForCopyLinkEmbeds() async {
+    if (!mounted) return;
+    final text = controller.text;
+    final repo = ref.read(repositoryprovider);
+
+    // Remove preview cards whose URL is no longer present (or has been edited).
+    final orphaned = _selectedEmbeds
+        .where(
+          (e) =>
+              !text.contains(_permalinkFor(e)) && !text.contains(_idUrlFor(e)),
+        )
+        .toList();
+    if (orphaned.isNotEmpty) {
+      setState(() => _selectedEmbeds.removeWhere(orphaned.contains));
+    }
+
+    // Restore any previously-seen embed whose URL reappeared in text.
+    // Uses full URL text match so multi-word embed names (which the regex
+    // cannot fully capture due to spaces) are correctly restored from cache.
+    final seenIds = <String>{};
+    for (final embed in _embedCache.values) {
+      if (!seenIds.add(embed.embedId)) continue;
+      if (_selectedEmbeds.any((e) => e.embedId == embed.embedId)) continue;
+      if (text.contains(_permalinkFor(embed)) ||
+          text.contains(_idUrlFor(embed))) {
+        if (mounted) setState(() => _selectedEmbeds.add(embed));
+      }
+    }
+
+    // Detect URLs for embeds not yet in the cache (first paste / never seen before).
+    final pending = <({String segment, String type})>[];
+    for (final m in _trackUrlRegex.allMatches(text)) {
+      final seg = m.group(1)!;
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+        continue;
+      if (_embedCache.containsKey(seg)) continue;
+      pending.add((segment: seg, type: 'track'));
+    }
+    for (final m in _playlistUrlRegex.allMatches(text)) {
+      final seg = m.group(1)!;
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+        continue;
+      if (_embedCache.containsKey(seg)) continue;
+      pending.add((segment: seg, type: 'playlist'));
+    }
+
+    for (final (:segment, :type) in pending) {
+      try {
+        final embed = type == 'track'
+            ? await repo.getTrack(segment)
+            : await repo.getPlaylist(segment, 'playlist');
+        if (mounted &&
+            !_selectedEmbeds.any((e) => e.embedId == embed.embedId)) {
+          _embedCache[embed.embedId] = embed;
+          _embedCache[embed.embedName] = embed;
+          setState(() => _selectedEmbeds.add(embed));
+        }
+      } catch (_) {
+        // Not a valid resource ID — name slug or bad URL; leave text as-is.
+      }
+    }
+  }
+
+  // ─── Library picker reconciliation ────────────────────────────────────────
+
+  String _permalinkFor(SharedEmbed e) =>
+      'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedName}';
+
+  String _idUrlFor(SharedEmbed e) =>
+      'https://rythmify.com/${e.embedType == 'track' ? 'tracks' : 'playlists'}/${e.embedId}';
+
+  void _reconcileEmbeds(List<SharedEmbed> returned) {
+    for (final e in returned) {
+      _embedCache[e.embedId] = e;
+      _embedCache[e.embedName] = e;
+    }
+
+    final currentIds = {for (final e in _selectedEmbeds) e.embedId};
+    final returnedIds = {for (final e in returned) e.embedId};
+
+    // Remove deselected embeds — try both name-based and ID-based URLs.
+    for (final removed in _selectedEmbeds.where(
+      (e) => !returnedIds.contains(e.embedId),
+    )) {
+      controller.text = controller.text
+          .replaceAll(_permalinkFor(removed), '')
+          .replaceAll(_idUrlFor(removed), '')
+          .trim();
+    }
+
+    // Add newly selected embeds as name-based permalinks.
+    final newEmbeds = returned
+        .where((e) => !currentIds.contains(e.embedId))
+        .toList();
+    if (newEmbeds.isNotEmpty) {
+      final newLinks = newEmbeds.map(_permalinkFor).join('\n');
+      final existing = controller.text;
+      controller.text = existing.isEmpty ? newLinks : '$existing\n$newLinks';
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
+    }
+
+    _selectedEmbeds
+      ..clear()
+      ..addAll(returned);
+  }
+
+  // ─── Send ─────────────────────────────────────────────────────────────────
 
   Future<void> _processAndSendMessages(
     String conversationId,
     String text,
   ) async {
-    final trackUrlRegex = RegExp(
-      r'https://rythmify\.com/tracks/([a-zA-Z0-9\-]+)',
-    );
-    final playlistUrlRegex = RegExp(
-      r'https://rythmify\.com/playlists/([a-zA-Z0-9\-]+)',
-    );
-
-    final permalinkToEmbed = <String, SharedEmbed>{};
-    for (final embed in _selectedEmbeds) {
-      final url =
-          'https://rythmify.com/${embed.embedType == 'track' ? 'tracks' : 'playlists'}/${embed.embedName}';
-      permalinkToEmbed[url] = embed;
-    }
+    // Build a name-URL → embed map so name-based permalinks resolve to the
+    // actual embedId (which may differ from the embed name).
+    final permalinkToEmbed = <String, SharedEmbed>{
+      for (final e in _selectedEmbeds) _permalinkFor(e): e,
+    };
 
     String remaining = text;
 
@@ -684,31 +816,42 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       String? extractedEmbedId;
       String? extractedEmbedType;
 
+      // 1. Name-based permalinks (library selections) — highest priority.
       for (final url in permalinkToEmbed.keys) {
         final idx = remaining.indexOf(url);
         if (idx != -1 && idx < foundIndex) {
           foundIndex = idx;
           foundUrl = url;
-          final embed = permalinkToEmbed[url]!;
-          extractedEmbedId = embed.embedId;
-          extractedEmbedType = embed.embedType;
+          extractedEmbedId = permalinkToEmbed[url]!.embedId;
+          extractedEmbedType = permalinkToEmbed[url]!.embedType;
         }
       }
 
-      final trackMatch = trackUrlRegex.firstMatch(remaining);
+      // 2. UUID-based copy links (tracks) — only if the listener already
+      //    confirmed this embed is valid (i.e. it's in _selectedEmbeds).
+      //    Broken/edited URLs won't be in _selectedEmbeds and fall through
+      //    to plain-text sending.
+      final trackMatch = _trackUrlRegex.firstMatch(remaining);
       if (trackMatch != null && trackMatch.start < foundIndex) {
-        foundIndex = trackMatch.start;
-        foundUrl = trackMatch.group(0);
-        extractedEmbedId = trackMatch.group(1);
-        extractedEmbedType = 'track';
+        final seg = trackMatch.group(1)!;
+        if (_selectedEmbeds.any((e) => e.embedId == seg)) {
+          foundIndex = trackMatch.start;
+          foundUrl = trackMatch.group(0);
+          extractedEmbedId = seg;
+          extractedEmbedType = 'track';
+        }
       }
 
-      final playlistMatch = playlistUrlRegex.firstMatch(remaining);
+      // 3. UUID-based copy links (playlists) — same guard.
+      final playlistMatch = _playlistUrlRegex.firstMatch(remaining);
       if (playlistMatch != null && playlistMatch.start < foundIndex) {
-        foundIndex = playlistMatch.start;
-        foundUrl = playlistMatch.group(0);
-        extractedEmbedId = playlistMatch.group(1);
-        extractedEmbedType = 'playlist';
+        final seg = playlistMatch.group(1)!;
+        if (_selectedEmbeds.any((e) => e.embedId == seg)) {
+          foundIndex = playlistMatch.start;
+          foundUrl = playlistMatch.group(0);
+          extractedEmbedId = seg;
+          extractedEmbedType = 'playlist';
+        }
       }
 
       if (foundUrl != null) {
@@ -718,7 +861,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               .read(sendMessageProvider.notifier)
               .sendMessage(conversationId: conversationId, body: textBefore);
         }
-
         await ref
             .read(sendMessageProvider.notifier)
             .sendMessage(
@@ -726,16 +868,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               embedId: extractedEmbedId,
               embedType: extractedEmbedType,
             );
-
         remaining = remaining.substring(foundIndex + foundUrl.length).trim();
       } else {
-        if (remaining.trim().isNotEmpty) {
+        if (remaining.isNotEmpty) {
           await ref
               .read(sendMessageProvider.notifier)
-              .sendMessage(
-                conversationId: conversationId,
-                body: remaining.trim(),
-              );
+              .sendMessage(conversationId: conversationId, body: remaining);
         }
         remaining = '';
       }
@@ -745,24 +883,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendInExistingConv() async {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
-
       await _processAndSendMessages(
         widget.conv!.conversationId,
         controller.text,
       );
-
       if (mounted) {
-        ref.invalidate(conversationProvider);
-        ref
-            .read(
-              messagesNotifierProvider(widget.conv!.conversationId).notifier,
-            )
-            .refresh();
         controller.clear();
         setState(() => _selectedEmbeds.clear());
       }
     } catch (e) {
-      //print('❌ _sendInExistingConv error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -789,7 +918,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (mounted) {
           ref
               .read(messagesNotifierProvider(newConv.conversationId).notifier)
-              .refresh();
+              .appendMessage(
+                MessageModel.fromJson(data['message'] as Map<String, dynamic>),
+              );
           ref.invalidate(conversationProvider);
         }
       });
@@ -800,7 +931,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ref.invalidate(conversationProvider);
         controller.clear();
         setState(() => _selectedEmbeds.clear());
-
         context.go(
           '/home/inbox/chat/${newConv.conversationId}',
           extra: newConv,

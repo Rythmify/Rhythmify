@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
@@ -34,6 +35,7 @@ import '../../features/profile/presentation/pages/uploaded_tracks_page.dart';
 import '../../features/profile/presentation/pages/reposted_tracks_page.dart';
 import '../../features/profile/presentation/pages/profile_connections_page.dart';
 import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
+import '../../features/profile/presentation/pages/user_playlists_page.dart';
 
 //  Feed imports
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -94,6 +96,7 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 //  Premium imports
 import '../../features/premium/presentation/screens/upgrade_screen.dart';
 import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
+import '../../features/premium/presentation/screens/checkout_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -207,60 +210,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ───────────────────────────────────────────────────
-      GoRoute(
-        path: '/profile/edit',
-        builder: (context, state) => const EditProfilePage(),
-      ),
-      GoRoute(
-        path: '/profile/:userId',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return PublicProfilePage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/likes',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return LikesPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/uploads',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return UploadedTracksPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/reposts',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return RepostedTracksPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/followers',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ProfileConnectionsPage(
-            userId: userId,
-            type: ProfileConnectionsType.followers,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/following',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ProfileConnectionsPage(
-            userId: userId,
-            type: ProfileConnectionsType.following,
-          );
-        },
-      ),
-
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainAppScaffold(navigationShell: navigationShell);
@@ -310,8 +259,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'likes-playlists',
-                            builder: (context, state) =>
-                                const LikesPlaylistsScreen(),
+                            builder: (context, state) {
+                              final initial = state.extra is List<SharedEmbed>
+                                  ? state.extra as List<SharedEmbed>
+                                  : const <SharedEmbed>[];
+                              return LikesPlaylistsScreen(
+                                initialSelected: initial,
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -327,15 +282,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const NotificationsScreen(),
                   ),
 
-                  // ── M14: Playlist/Album/Station/Mix/Related ────────────
-                  // These are sub-routes of /home so they render INSIDE the
-                  // shell — getting the real mini-player and real nav bar
-                  // from MainAppScaffold automatically.
-                  //
-                  // Call with: context.push('/home/playlist/$id', extra: bool)
-                  // Call with: context.push('/home/mix/$id', extra: {...})
-                  // Call with: context.push('/home/station/$id', extra: {...})
-                  // Call with: context.push('/home/related-tracks/$id', extra: {...})
                   GoRoute(
                     path: 'playlist/:playlistId',
                     builder: (context, state) {
@@ -398,6 +344,75 @@ final routerProvider = Provider<GoRouter>((ref) {
                         title: extra['stationName'] as String? ?? artistName,
                         coverUrl: extra['coverUrl'] as String?,
                       );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'profile/edit',
+                    builder: (context, state) => const EditProfilePage(),
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return PublicProfilePage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/likes',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return LikesPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/uploads',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UploadedTracksPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/reposts',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return RepostedTracksPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/playlists',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UserPlaylistsPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/followers',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return ProfileConnectionsPage(
+                        userId: userId,
+                        type: ProfileConnectionsType.followers,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/following',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return ProfileConnectionsPage(
+                        userId: userId,
+                        type: ProfileConnectionsType.following,
+                      );
+                    },
+                  ),
+
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    name: 'behindTheTrack',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
                     },
                   ),
                 ],
@@ -577,9 +592,35 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeLandingScreen(),
                 routes: [
+                  // "See all plans" from landing screen
                   GoRoute(
                     path: 'plans',
                     builder: (context, state) => const UpgradeScreen(),
+                  ),
+                  // "Continue" from landing screen — default Artist Pro Monthly
+                  // "Subscribe now" from any plan card — plan data passed via extra
+                  GoRoute(
+                    path: 'checkout',
+                    builder: (context, state) {
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      return CheckoutScreen(
+                        planId:
+                            extra['planId'] as String? ??
+                            '', // UUID from backend
+                        planName:
+                            extra['planName'] as String? ?? 'Artist Pro ★',
+                        price: extra['price'] as String? ?? 'EGP 164.99/month',
+                        features: List<String>.from(
+                          extra['features'] as List? ??
+                              [
+                                'Unlimited track uploads',
+                                'Get paid directly and more fairly',
+                                'Discover and connect with your biggest fans',
+                                'Unlimited distribution to all major streaming and social platforms',
+                              ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -589,15 +630,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // ── Root Level Pages (render ON TOP of nav bar — intentional) ────────
-      GoRoute(
-        path: '/behind-the-track/:trackId',
-        name: 'behindTheTrack',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final trackId = state.pathParameters['trackId']!;
-          return BehindTheTrackPage(trackId: trackId);
-        },
-      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,

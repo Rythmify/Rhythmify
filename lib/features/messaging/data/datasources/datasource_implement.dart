@@ -187,11 +187,10 @@ class DatasourceImplement implements DatasourceInterface {
       final url = ApiEndPoints.getSearchedUsers(query);
 
       final response = await dio.get(url);
-
       final body = response.data;
-      final List data = body['data']['items'];
+      final List raw = body['data']['users'];
 
-      return data
+      return raw
           .map(
             (e) =>
                 PotentialConversationModel.fromJson(e as Map<String, dynamic>),
@@ -256,19 +255,33 @@ class DatasourceImplement implements DatasourceInterface {
           )
           .toList();
     } else if (embedType == 'playlist') {
-      final response = await dio.get(ApiEndPoints.getMyLikedPlaylists());
-      final List data = response.data['data']['items'];
-      return data
-          .map(
-            (e) => SharedEmbedModel(
-              embedId: e['playlist_id'],
+      final response = await Future.wait([
+        dio.get(ApiEndPoints.getMyLikedPlaylists()),
+        dio.get(
+          '/playlists',
+          queryParameters: {'mine': true, 'filter': 'created'},
+        ),
+      ]);
+      final List likedData = response[0].data['data']['items'] as List;
+      final List createdData = response[1].data['data']['items'] as List;
+
+      final seen = <String>{};
+      final merged = <SharedEmbedModel>[];
+      for (final e in [...likedData, ...createdData]) {
+        final id = (e['playlist_id'] ?? e['id']) as String?;
+        if (id != null && seen.add(id)) {
+          merged.add(
+            SharedEmbedModel(
+              embedId: id,
               embedType: 'playlist',
               embedName: e['name'],
               artistName: null,
               thumbnailUrl: e['cover_image'],
             ),
-          )
-          .toList();
+          );
+        }
+      }
+      return merged;
     } else if (embedType == 'album') {
       final response = await dio.get(ApiEndPoints.getMyLikedAlbums());
       final List data = response.data['data']['items'];

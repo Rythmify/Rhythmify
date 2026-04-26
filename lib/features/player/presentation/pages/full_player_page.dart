@@ -10,6 +10,7 @@ import '../widgets/player_action_bar.dart';
 import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// The main immersive playback page of the application.
 ///
@@ -91,6 +92,7 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: PageView.builder(
+        key: const Key('player_full_player_pageview'),
         controller: _pageController,
         itemCount: allTracks.length,
         onPageChanged: (index) {
@@ -131,7 +133,7 @@ class _PlayerTrackPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      key: ValueKey('player_page_${track.id}'),
+      key: Key('player_track_page_gesture_detector_${track.id}'),
       onTap: () {
         if (isCurrent) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
@@ -155,15 +157,22 @@ class _PlayerTrackPage extends ConsumerWidget {
             child: Column(
               children: [
                 _CircularActionButton(
+                  key: const Key('player_collapse_button'),
                   icon: Icons.keyboard_arrow_down,
                   onPressed: onCollapse ?? () => Navigator.pop(context),
                 ),
                 const SizedBox(height: 16),
-                _CircularActionButton(
-                  icon: track.isArtistFollowed
-                      ? Icons.person_add_alt_1
-                      : Icons.person_add_alt,
-                  onPressed: () {},
+                FollowButton(
+                  targetUserId: track.userId,
+                  builder: (context, isFollowing, isInFlight, toggle) {
+                    return _CircularActionButton(
+                      key: Key('player_follow_button_${track.userId}'),
+                      icon: isFollowing
+                          ? Icons.person_add_alt_1
+                          : Icons.person_add_alt,
+                      onPressed: toggle,
+                    );
+                  },
                 ),
               ],
             ),
@@ -184,18 +193,21 @@ class _PlayerTrackPage extends ConsumerWidget {
                 const SizedBox(height: 5),
                 if (isCurrent) const FloatingCommentBar(),
                 const SizedBox(height: 40),
-                if (isCurrent) PlayerActionBar(trackId: track.id),
+                if (isCurrent)
+                  PlayerActionBar(
+                    key: Key('player_action_bar_${track.id}'),
+                    trackId: track.id,
+                  ),
               ],
             ),
           ),
-
-          // Track Info moved lower so it renders above the waveform
 
           // Track Info moved to bottom so it renders above the waveform
           Positioned(
             top: 60,
             left: 16,
             child: TrackInfoBox(
+              key: Key('player_track_info_box_${track.id}'),
               trackInfo: track,
               onNavigateBehindTrack: onNavigateBehindTrack,
             ),
@@ -210,7 +222,11 @@ class _CircularActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
 
-  const _CircularActionButton({required this.icon, required this.onPressed});
+  const _CircularActionButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {

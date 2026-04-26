@@ -130,6 +130,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                 const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
+                    key: const Key('floating_comment_bar_input_textfield'),
                     controller: _commentController,
                     focusNode: _focusNode,
                     style: AppTheme.bodyNormal,
@@ -144,6 +145,9 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                 ),
                 if (_hasText)
                   GestureDetector(
+                    key: const Key(
+                      'floating_comment_bar_post_gesture_detector',
+                    ),
                     onTap: () => _postComment(trackId),
                     child: Container(
                       padding: const EdgeInsets.all(9),
@@ -163,16 +167,25 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
+                        key: const Key(
+                          'floating_comment_bar_emoji_fire_gesture_detector',
+                        ),
                         onTap: () => _appendEmoji('🔥'),
                         child: const Text('🔥', style: TextStyle(fontSize: 20)),
                       ),
                       const SizedBox(width: 24),
                       GestureDetector(
+                        key: const Key(
+                          'floating_comment_bar_emoji_clap_gesture_detector',
+                        ),
                         onTap: () => _appendEmoji('👏'),
                         child: const Text('👏', style: TextStyle(fontSize: 20)),
                       ),
                       const SizedBox(width: 24),
                       GestureDetector(
+                        key: const Key(
+                          'floating_comment_bar_emoji_sad_gesture_detector',
+                        ),
                         onTap: () => _appendEmoji('🥺'),
                         child: const Text('🥺', style: TextStyle(fontSize: 20)),
                       ),
@@ -192,6 +205,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
             child: ScaleTransition(
               scale: _animation,
               child: FloatingComment(
+                key: const Key('floating_comment_bar_popup_widget'),
                 imageUrl: _currentCommentPfp,
                 text: _currentCommentText,
               ),

@@ -11,8 +11,8 @@ import '../widgets/unsaved_changes_dialog.dart';
 /// A full-screen page for editing the authenticated user's profile.
 ///
 /// Accessible via:
-/// - [PublicProfilePage] edit icon → `context.push('/profile/edit')`
-/// - GoRouter route `/profile/edit`
+/// - [PublicProfilePage] edit icon → `context.push('/home/profile/edit')`
+/// - GoRouter route `/home/profile/edit`
 ///
 /// **Route ordering**: `/profile/edit` MUST be declared BEFORE
 /// `/profile/:userId` in [app_router.dart]. If the order is reversed,
