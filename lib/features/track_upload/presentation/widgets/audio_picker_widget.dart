@@ -4,6 +4,8 @@ import 'package:rythmify/features/track_upload/presentation/providers/upload_tra
 import 'package:rythmify/features/track_upload/presentation/widgets/upload_button_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
 
 /// Widget: AudioPickerWidget
 ///
@@ -36,10 +38,16 @@ class AudioPickerWidget extends ConsumerWidget {
       await player.dispose();
     } catch (_) {}
 
+    final authState = ref.read(authProvider);
+    final displayName = authState is AuthAuthenticated
+        ? authState.user.displayName
+        : 'Your Name';
+
     ref
         .read(uploadFormProvider.notifier)
         .initDraft(
           artistId: 'dev_user_001',
+          artistName: displayName,
           localAudioPath: picked.path!,
           duration: duration,
           fileName: picked.name,
