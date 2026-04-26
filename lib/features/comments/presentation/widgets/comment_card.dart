@@ -61,6 +61,7 @@ class CommentCard extends StatelessWidget {
           Opacity(
             opacity: isBlocked ? 0.4 : 1.0,
             child: InkWell(
+              key: Key('comment_card_avatar_${comment.id}_inkwell'),
               onTap: isBlocked
                   ? null
                   : () {
@@ -119,6 +120,7 @@ class CommentCard extends StatelessWidget {
                     Opacity(
                       opacity: isBlocked ? 0.4 : 1.0,
                       child: InkWell(
+                        key: Key('comment_card_username_${comment.id}_inkwell'),
                         onTap: isBlocked
                             ? null
                             : () {
@@ -192,6 +194,7 @@ class CommentCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 if (isBlocked)
                   Container(
+                    key: Key('comment_card_blocked_${comment.id}_text'),
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -223,6 +226,7 @@ class CommentCard extends StatelessWidget {
                   children: [
                     if (!isReply && !isBlocked) ...[
                       GestureDetector(
+                        key: Key('comment_card_reply_${comment.id}_gesture_detector'),
                         onTap: onReply,
                         child: Text(
                           'Reply',
@@ -235,6 +239,7 @@ class CommentCard extends StatelessWidget {
                       const SizedBox(width: 25),
                     ],
                     InkWell(
+                      key: Key('comment_card_more_${comment.id}_inkwell'),
                       onTap: () {
                         // Just open the bottom sheet directly
                         showModalBottomSheet(
@@ -268,6 +273,7 @@ class CommentCard extends StatelessWidget {
 
                 if (!isReply && comment.replyCount > 0)
                   TextButton.icon(
+                    key: Key('comment_card_show_replies_${comment.id}_text_button'),
                     onPressed: onShowReplies,
                     icon: Icon(
                       isExpanded
@@ -294,6 +300,7 @@ class CommentCard extends StatelessWidget {
             Column(
               children: [
                 IconButton(
+                  key: Key('comment_card_like_${comment.id}_icon_button'),
                   onPressed: onLike,
                   icon: Icon(
                     comment.isLikedByMe
@@ -307,6 +314,7 @@ class CommentCard extends StatelessWidget {
                 ),
                 Text(
                   comment.likesCount.toString(),
+                  key: Key('comment_card_likes_count_${comment.id}_text'),
                   style: AppTheme.labelSmall.copyWith(fontSize: 10),
                 ),
               ],

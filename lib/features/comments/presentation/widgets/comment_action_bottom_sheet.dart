@@ -118,6 +118,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
 
           // Row 2: Play from
           _buildActionRow(
+            key: const Key('comment_action_play_from_inkwell'),
             icon: Icons.play_circle_outline,
             label:
                 'Play from ${TimeUtils.formatTrackTimestamp(comment.trackTimestamp)}',
@@ -126,6 +127,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
 
           // Row 3: Go to profile
           _buildActionRow(
+            key: const Key('comment_action_view_profile_inkwell'),
             icon: Icons.person_outline,
             label: 'View profile',
             onTap: () {
@@ -138,6 +140,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
 
           // Row 4: Copy
           _buildActionRow(
+            key: const Key('comment_action_copy_inkwell'),
             icon: Icons.copy_outlined,
             label: 'Copy',
             onTap: () => _copyComment(context),
@@ -146,6 +149,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
           if (isMe)
             // Row 5 (Me): Delete
             _buildActionRow(
+              key: const Key('comment_action_delete_inkwell'),
               icon: Icons.delete_outline,
               label: 'Delete comment',
               onTap: () => _deleteComment(context, ref),
@@ -153,6 +157,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
           else ...[
             // Row 5 (Other): Report
             _buildActionRow(
+              key: const Key('comment_action_report_inkwell'),
               icon: Icons.flag_outlined,
               label: 'Report user',
               onTap: () => _reportUser(context),
@@ -160,6 +165,7 @@ class CommentActionBottomSheet extends ConsumerWidget {
 
             // Row 6 (Other): Block/Unblock
             _buildActionRow(
+              key: const Key('comment_action_toggle_block_inkwell'),
               icon: Icons.block,
               label: comment.isAuthorBlocked ? 'Unblock' : 'Block',
               onTap: () => _toggleBlock(context, ref),
@@ -205,11 +211,13 @@ class CommentActionBottomSheet extends ConsumerWidget {
   }
 
   Widget _buildActionRow({
+    Key? key,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
