@@ -56,26 +56,13 @@ class DataSourcesSockets {
     if (_socket?.connected == true) {
       _socket!.emit('message:join', {'conversationId': conversationId});
       debugPrint('📤 message:join emitted for $conversationId');
-    }
-    //else if(_socket!=null && !(_socket!.connected)){
-    //   _socket!.connect();
-    // }
-    else {
+    } else {
       debugPrint(
         '⚠️  joinConversation: socket not connected — onConnect will join',
       );
     }
     // If not connected yet, onConnect will handle the join
   }
-
-  // void reConnectIfNeeded(String Function() getToken){
-  //   if(_socket==null) return;
-  //   if(!_socket!.connected){
-  //     debugPrint('🔄 reconnectIfNeeded: reconnecting socket');
-  //     _socket!.auth = {'token': 'Bearer ${getToken()}'};
-  //     _socket!.connect();
-  //   }
-  // }
 
   void leaveConversation(String conversationId) {
     _currentConversationId = null;

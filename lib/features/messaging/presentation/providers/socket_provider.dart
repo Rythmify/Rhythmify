@@ -39,29 +39,8 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
         }
       },
     );
-
-    //   final binding=WidgetsBinding.instance;
-    //   final observer=_AppLifeCycleObserver(() => socket.reConnectIfNeeded(getToken));
-    //   binding.addObserver(observer);
-    //   ref.onDispose(() {
-    //     binding.removeObserver(observer);
-    //     socket.disconnect();
-    //   });
-    // } else {
-    //   ref.onDispose(() => socket.disconnect());
   }
   ref.onDispose(() => socket.disconnect());
   return socket;
 });
 
-// class _AppLifeCycleObserver extends WidgetsBindingObserver {
-//   final VoidCallback onResumed;
-//   _AppLifeCycleObserver(this.onResumed);
-
-//   @override
-//   void didChangeAppLifecycleState(AppLifecycleState state) {
-//      if (state == AppLifecycleState.resumed) {
-//       onResumed();
-//     }
-//   }
-// }
