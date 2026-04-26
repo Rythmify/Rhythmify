@@ -141,19 +141,32 @@ class UploadTrackRemoteDataSource {
   }
 
   Future<List<String>> fetchGenres() async {
-    try {
-      final response = await _dio.get('/genres');
-      final data = response.data;
-      final rawList = data['data']?['items'] ?? data['data'] ?? [];
+  try {
+    final response = await _dio.get('/genres');
+    final data     = response.data;
 
-      return (rawList as List<dynamic>)
-          .map((g) => g['name'] as String? ?? '')
-          .where((g) => g.isNotEmpty)
-          .toList();
-    } on DioException catch (e) {
-      throw _handleError(e);
+    debugPrint('=== GENRES RAW: $data ===');
+
+    List<dynamic> rawList = [];
+    if (data['data'] is List) {
+      rawList = data['data'] as List<dynamic>;       // deployed shape
+    } else if (data['data'] is Map) {
+      rawList = data['data']?['items'] ?? [];         // old local shape
     }
+
+    final genres = rawList
+        .map((g) => g['name'] as String? ?? '')
+        .where((g) => g.isNotEmpty)
+        .toList();
+
+    debugPrint('=== GENRES PARSED: $genres ===');
+    return genres;
+
+  } on DioException catch (e) {
+    debugPrint('=== GENRES FETCH FAILED: ${e.response?.data} ===');
+    throw _handleError(e);
   }
+}
 
   // ── Error handler ──────────────────────────────────────────────────────────
 
