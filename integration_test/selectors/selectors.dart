@@ -605,4 +605,13 @@ const String trackShareSMSGestureDetector       = 'track_options_share_sms_gestu
 const String trackUpdateTrackInkwell            = 'track_options_action_update_track_inkwell';
 const String trackLikeInkwell                   = 'track_options_action_toggle_like_inkwell';
 
-const String trackCardArtist               = 'track_card_artist';
+// ── Notifications feed screen — TODO: pending cross-team Key() implementation ─
+const String notificationsScreenKey       = 'notifications_screen';
+const String notificationsBackButton      = 'notifications_back_button';
+const String notificationsListView        = 'notifications_list_view';
+const String notificationsFilterIcon      = 'notifications_filter_icon';
+const String notificationsFilterComments  = 'notifications_filter_comments';
+const String notificationsFilterLikes     = 'notifications_filter_likes';
+const String notificationsFilterFollowing = 'notifications_filter_following';
+const String notificationsFilterReposts   = 'notifications_filter_reposts';
+const String notificationsFilterShowAll   = 'notifications_filter_show_all';
