@@ -389,6 +389,7 @@ class _StationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      key: Key('station_tile_${station.artistId}_inkwell'),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -423,6 +423,7 @@ class _AlbumTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      key: Key('album_tile_${album.id}_inkwell'),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

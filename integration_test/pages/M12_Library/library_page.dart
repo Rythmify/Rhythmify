@@ -64,8 +64,17 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
-  // TODO: pending cross-team — first album card key & album scroll view
-  Future<void> tapFirstAlbum()   async => await tapByKey(libraryAlbumsFirstItem);
+  Future<void> tapFirstAlbum() async {
+    final finder = find.byWidgetPredicate(
+      (widget) =>
+          widget is InkWell &&
+          widget.key != null &&
+          widget.key.toString().contains('album_tile_') &&
+          widget.key.toString().contains('_inkwell'),
+    );
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
   Future<void> tapAlbumPlay()    async => await tapByKey(libraryAlbumsPlayButton);
 
   bool isAlbumsScreenVisible()      => isVisible(libraryAlbumsBackButton);
@@ -74,9 +83,19 @@ class LibraryPage extends BasePage {
       find.text('No results for "$query"').evaluate().isNotEmpty;
 
   // ── Following ──────────────────────────────────────────────────────────────
-  // TODO: pending cross-team — following back button key
-  Future<void> tapFollowingBack()          async => await tapByKey(libraryFollowingBackButton);
-  Future<void> tapFirstFollowingButton()   async => await tapByKey(libraryFollowingFirstButton);
+  Future<void> tapFollowingBack()        async => await tapByKey(libraryFollowingBackButton);
+
+  Future<void> tapFirstFollowingButton() async {
+    final finder = find.byWidgetPredicate(
+      (widget) =>
+          widget is OutlinedButton &&
+          widget.key != null &&
+          widget.key.toString().contains('following_item_') &&
+          widget.key.toString().contains('_following_button'),
+    );
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
   Future<void> tapCancelOnDialog()         async => await tapByKey(libraryFollowingDialogCancel);
   Future<void> tapUnfollowOnDialog()       async => await tapByKey(libraryFollowingDialogUnfollow);
 
@@ -91,8 +110,17 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
-  // TODO: pending cross-team — first station card key, scroll view, play button, detail screen
-  Future<void> tapFirstStation()  async => await tapByKey(libraryStationsFirstItem);
+  Future<void> tapFirstStation() async {
+    final finder = find.byWidgetPredicate(
+      (widget) =>
+          widget is InkWell &&
+          widget.key != null &&
+          widget.key.toString().contains('station_tile_') &&
+          widget.key.toString().contains('_inkwell'),
+    );
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
   Future<void> tapStationPlay()   async => await tapByKey(libraryStationsPlayButton);
 
   bool isStationsScreenVisible()      => isVisible(libraryStationsBackButton);
@@ -129,8 +157,17 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
-  // TODO: pending cross-team — three-dots key per upload item & delete option
-  Future<void> tapFirstUploadThreeDots() async => await tapByKey(uploadsFirstTrackThreeDots);
+  Future<void> tapFirstUploadThreeDots() async {
+    final finder = find.byWidgetPredicate(
+      (widget) =>
+          widget is InkWell &&
+          widget.key != null &&
+          widget.key.toString().contains('track_card_') &&
+          widget.key.toString().contains('_more_inkwell'),
+    );
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
   Future<void> tapDeleteUploadOption()   async => await tapByKey(uploadsDeleteOption);
 
   bool isUploadsScreenVisible() => isVisible(uploadsScrollView);
