@@ -12,7 +12,6 @@ import '../../../../core/presentation/widgets/follow_button.dart';
 
 import '../../../player/presentation/providers/queue_provider.dart';
 
-
 class FeedCardBottomInfo extends ConsumerWidget {
   final FeedItemEntity item;
   final VoidCallback? onPlay;
@@ -83,9 +82,12 @@ class FeedCardBottomInfo extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white.withOpacity(0.12),
+            color: Colors.white.withValues(alpha: 0.12),
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
             ),
           ),
           child: Row(
