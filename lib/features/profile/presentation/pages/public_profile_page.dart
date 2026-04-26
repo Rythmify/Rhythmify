@@ -9,6 +9,7 @@ import '../providers/profile_state.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
 import '../widgets/share_bottom_sheet.dart';
+import '../widgets/blocked_user_screen.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -96,6 +97,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   void _showShareSheet(BuildContext context, ProfileLoaded state) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ShareBottomSheet(profile: state.profile),
     );
@@ -113,6 +116,13 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
+
+    // ── Block guard ────────────────────────────────────────────────────────
+    // If the authenticated user has blocked this account, show the blocked
+    // screen immediately with no profile data exposed.
+    if (profileState is ProfileLoaded && profileState.followStatus.isBlocking) {
+      return BlockedUserScreen(userId: _resolvedUserId);
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.background,

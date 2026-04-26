@@ -59,3 +59,12 @@ android/.kotlin/sessions/kotlin-compiler-13249507405906181982.salive
 macos/Flutter/GeneratedPluginRegistrant.swift
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
+
+# Signing and Keystores
+key.properties
+*.keystore
+*.jks
+**/android/key.properties
+
+# Explicitly un-ignore debug.keystore
+!android/app/debug.keystore

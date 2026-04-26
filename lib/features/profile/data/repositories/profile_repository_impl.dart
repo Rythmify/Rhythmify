@@ -5,6 +5,7 @@ import '../../../../core/domain/entities/track.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../datasources/profile_remote_datasource.dart';
+import '../../domain/entities/follow_status.dart';
 
 /// Profile repository that converts datasource exceptions into domain failures.
 
@@ -118,6 +119,26 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, void>> blockUser({required String userId}) async {
+    try {
+      await remoteDatasource.blockUser(userId: userId);
+      return const Right(null);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unblockUser({required String userId}) async {
+    try {
+      await remoteDatasource.unblockUser(userId: userId);
+      return const Right(null);
+    } catch (e) {
+      return Left(_mapError(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Track>>> getLikedTracks({
     required String userId,
     required int page,
@@ -205,6 +226,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
     } catch (e) {
       return Left(_mapError(e.toString()));
     }
+  }
+
+  @override
+  Future<FollowStatus> getFollowStatus(String userId) async {
+    return await remoteDatasource.getFollowStatus(userId);
   }
 
   // ── Error mapping ─────────────────────────────────────────────────────

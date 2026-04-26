@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+
 import '../../theme/app_theme.dart';
+import '../../data/models/report_request.dart';
+import '../../data/models/report_repository.dart';
 
 class ReportPage extends StatefulWidget {
   final String reportedContentId;
@@ -12,8 +16,10 @@ class ReportPage extends StatefulWidget {
 
 class _ReportPageState extends State<ReportPage> {
   final _formKey = GlobalKey<FormState>();
+
   String? _selectedReason;
   bool _isConsentChecked = false;
+  bool _isLoading = false;
 
   final _detailsController = TextEditingController();
   final _nameController = TextEditingController();
@@ -21,6 +27,8 @@ class _ReportPageState extends State<ReportPage> {
     text: 'basseialaa33@gmail.com',
   );
   final _urlController = TextEditingController();
+
+  late final ReportRepository _repository;
 
   final List<String> _reasons = [
     "It's hate speech",
@@ -46,6 +54,17 @@ class _ReportPageState extends State<ReportPage> {
   };
 
   @override
+  void initState() {
+    super.initState();
+
+    _repository = ReportRepository(Dio());
+
+    // ✅ Auto-generate URL
+    _urlController.text =
+        'https://rythmify.com/tracks/${widget.reportedContentId}';
+  }
+
+  @override
   void dispose() {
     _detailsController.dispose();
     _nameController.dispose();
@@ -54,225 +73,225 @@ class _ReportPageState extends State<ReportPage> {
     super.dispose();
   }
 
-  void _submitReport() {
-    if (_formKey.currentState!.validate() &&
-        _selectedReason != null &&
-        _isConsentChecked) {
-      // Process submission
+  Future<void> _submitReport() async {
+    if (!_formKey.currentState!.validate() ||
+        _selectedReason == null ||
+        !_isConsentChecked)
+      return;
+
+    final selectedViolations = _violations.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toList();
+
+    final request = ReportRequest(
+      contentId: widget.reportedContentId,
+      reason: _selectedReason!,
+      details: _detailsController.text,
+      name: _nameController.text,
+      email: _emailController.text,
+      url: _urlController.text,
+      violations: selectedViolations,
+    );
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _repository.submitReport(request);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report submitted successfully')),
       );
-      Navigator.of(context).pop();
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isFormValid = _selectedReason != null && _isConsentChecked;
+    final bool isFormValid =
+        _selectedReason != null && _isConsentChecked && !_isLoading;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         elevation: 0,
-        leadingWidth: 300,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 14.0),
-          child: Row(
-            children: [
-              const SizedBox(width: 9),
-              Text(
-                'Rythmify Report Center',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        title: const Text('Rythmify Report Center'),
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.pop(context),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// TITLE
               Text(
                 'Reason for Reporting',
                 style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
-              const SizedBox(height: 8),
-              RadioGroup<String>(
-                groupValue: _selectedReason,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedReason = value;
-                  });
-                },
-                child: Column(
-                  spacing: -6,
-                  children: [
-                    ..._reasons.map((reason) {
-                      return RadioListTile<String>(
-                        title: Text(reason, style: AppTheme.bodyNormal),
-                        value: reason,
-                        contentPadding: EdgeInsets.zero,
-                        activeColor: AppTheme.primaryBrand,
-                      );
-                    }),
-                  ],
-                ),
+
+              const SizedBox(height: 12),
+
+              /// ✅ FIXED RADIO LIST (NO NEGATIVE SPACING)
+              Column(
+                children: _reasons.map((reason) {
+                  return RadioListTile<String>(
+                    title: Text(reason, style: AppTheme.bodyNormal),
+                    value: reason,
+                    groupValue: _selectedReason,
+                    onChanged: (value) {
+                      setState(() => _selectedReason = value);
+                    },
+                    contentPadding: EdgeInsets.zero,
+                    dense: true, // ✅ cleaner spacing
+                    activeColor: AppTheme.primaryBrand,
+                  );
+                }).toList(),
               ),
+
               const SizedBox(height: 24),
+
+              /// DETAILS
               Text(
-                "Please provide more detail as to why you're reporting this content",
+                "Please provide more detail",
                 style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _detailsController,
-                maxLines: 6,
-                maxLength: 1000,
+                maxLines: 5,
                 decoration: InputDecoration(
-                  labelText: 'Content report details',
+                  labelText: 'Details',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please provide details'
-                    : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter details' : null,
               ),
 
               const SizedBox(height: 24),
-              Text(
-                'Your Information',
-                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
-              ),
-              const SizedBox(height: 12),
+
+              /// NAME
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Your Name',
+                  labelText: 'Name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter your name'
-                    : null,
+                validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
               ),
+
               const SizedBox(height: 16),
+
+              /// EMAIL
               TextFormField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: 'Your email address',
+                  labelText: 'Email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!RegExp(
-                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                  ).hasMatch(value)) {
-                    return 'Please enter a valid email';
-                  }
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Enter email';
+                  if (!v.contains('@')) return 'Invalid email';
                   return null;
                 },
               ),
 
               const SizedBox(height: 24),
-              Text(
-                'Please provide the link (URL) within Rythmify to the content you are reporting. Please only input one link per report.',
-                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
-              ),
-              const SizedBox(height: 12),
+
+              /// URL (READ ONLY)
               TextFormField(
                 controller: _urlController,
+                readOnly: true,
                 decoration: InputDecoration(
                   labelText: 'URL',
-                  hintText: 'https://rythmify.com/track/123/comment/4567',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   filled: true,
                   fillColor: Colors.white10,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a URL';
-                  }
-                  if (!value.contains('rythmify.com')) {
-                    return 'Please enter a valid Rythmify link';
-                  }
-                  return null;
-                },
               ),
 
               const SizedBox(height: 24),
+
+              /// VIOLATIONS
               Text(
-                'Select where the violation occurs (select all that apply)',
+                'Where is the violation?',
                 style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
               const SizedBox(height: 12),
+
               Wrap(
-                spacing: 15,
-                runSpacing: 1,
+                spacing: 10,
+                runSpacing: 0,
                 children: _violations.keys.map((key) {
-                  return IntrinsicWidth(
+                  return SizedBox(
+                    width: 200,
                     child: CheckboxListTile(
                       title: Text(key, style: AppTheme.bodyNormal),
                       value: _violations[key],
-                      onChanged: (bool? value) {
+                      onChanged: (val) {
                         setState(() {
-                          _violations[key] = value ?? false;
+                          _violations[key] = val ?? false;
                         });
                       },
-                      controlAffinity: ListTileControlAffinity.leading,
                       contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      dense: true,
                       activeColor: AppTheme.primaryBrand,
                     ),
                   );
                 }).toList(),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+
+              /// CONSENT
               CheckboxListTile(
                 title: Text(
-                  'I hereby state that I have a good-faith belief that the information and allegations I have submitted are accurate and complete.',
+                  'I confirm this report is accurate',
                   style: AppTheme.bodyNormal.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 value: _isConsentChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isConsentChecked = value ?? false;
-                  });
+                onChanged: (val) {
+                  setState(() => _isConsentChecked = val ?? false);
                 },
-                controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
                 activeColor: AppTheme.primaryBrand,
               ),
 
               const SizedBox(height: 24),
+
+              /// SUBMIT BUTTON
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -285,100 +304,23 @@ class _ReportPageState extends State<ReportPage> {
                       borderRadius: BorderRadius.circular(25),
                     ),
                   ),
-                  child: Text(
-                    'Submit Report',
-                    style: AppTheme.titleMedium.copyWith(
-                      color: isFormValid ? Colors.white : Colors.white54,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          'Submit Report',
+                          style: AppTheme.titleMedium.copyWith(
+                            color: isFormValid ? Colors.white : Colors.white54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
 
-              const SizedBox(height: 64),
-              _buildBrandFooter(),
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBrandFooter() {
-    return Column(
-      children: [
-        const Text(
-          'About Rythmify:',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 12,
-          children: [
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Company',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                'About us',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Blog', style: TextStyle(color: Colors.grey)),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Jobs', style: TextStyle(color: Colors.grey)),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Developers',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Legal', style: TextStyle(color: Colors.grey)),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Copyright',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.camera_alt, color: Colors.white70),
-            SizedBox(width: 24),
-            Icon(Icons.flutter_dash, color: Colors.white70),
-            SizedBox(width: 24),
-            Icon(Icons.facebook, color: Colors.white70),
-          ],
-        ),
-        const SizedBox(height: 32),
-        const Align(
-          alignment: Alignment.center,
-          child: Text(
-            '© 2026 Rythmify - Language: English (US)',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
     );
   }
 }

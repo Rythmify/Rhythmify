@@ -13,7 +13,12 @@ import 'package:rythmify/features/messaging/presentation/providers/un_block_prov
 
 class BlockedUserWidget extends ConsumerWidget {
   final String participantId;
-  const BlockedUserWidget({super.key, required this.participantId});
+  final VoidCallback? onUnblocked;
+  const BlockedUserWidget({
+    super.key,
+    required this.participantId,
+    this.onUnblocked,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,6 +54,7 @@ class BlockedUserWidget extends ConsumerWidget {
                           .unBlockUser(participantId: participantId);
 
                       ref.invalidate(isBlockedProvider(participantId));
+                      onUnblocked?.call();
 
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
