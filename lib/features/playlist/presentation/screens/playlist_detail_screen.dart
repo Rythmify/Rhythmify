@@ -1,3 +1,4 @@
+// lib/features/playlist/presentation/screens/playlist_detail_screen.dart
 library;
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,9 @@ class PlaylistDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
+  // Local flag so we only trigger suggestion loading once
+  bool _suggestionsRequested = false;
+
   @override
   void initState() {
     super.initState();
@@ -39,12 +43,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
-      final fullTrack = await ref
-          .read(getTrackDetailsUseCaseProvider)
-          .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        fullTrack,
-      ], initialIndex: 0);
+      final fullTrack =
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [fullTrack],
+        initialIndex: 0,
+      );
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
     }
@@ -57,9 +61,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(tracks[index].id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        clickedTrack,
-      ], initialIndex: 0);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [clickedTrack],
+        initialIndex: 0,
+      );
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to play: $e');
     }
@@ -79,9 +84,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(shuffled.first.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        clickedTrack,
-      ], initialIndex: 0);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
+        [clickedTrack],
+        initialIndex: 0,
+      );
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }
@@ -96,6 +102,19 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistDetailProvider);
+
+    // Once init finishes and this is an owned playlist,
+    // trigger suggestion loading exactly once.
+    if (widget.isOwner &&
+        !state.isLoading &&
+        state.playlist != null &&
+        state.playlist!.type == PlaylistType.playlist &&
+        !_suggestionsRequested) {
+      _suggestionsRequested = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(playlistDetailProvider.notifier).loadSuggestionsIfOwner();
+      });
+    }
 
     if (state.isLoading) {
       return const Scaffold(
@@ -116,11 +135,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
 
     final playlist = state.playlist!;
-
-    // ── Cover: prefer state.playlist.coverUrl, fall back to first track cover
-    final coverUrl =
-        playlist.coverUrl ??
+    final coverUrl = playlist.coverUrl ??
         (state.tracks.isNotEmpty ? state.tracks.first.coverUrl : null);
+
+    // Whether to show suggestions section:
+    // ONLY when widget.isOwner=true (passed from router) AND playlist type is playlist
+    final showSuggestionsSection = widget.isOwner &&
+        playlist.type == PlaylistType.playlist &&
+        (state.isSuggestionsLoading || state.suggestions.isNotEmpty);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -141,7 +163,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     ),
                     onPressed: () => context.pop(),
                   ),
-                  // Cover — uses resolved coverUrl with network fallback
                   _CoverImage(
                     coverUrl: coverUrl,
                     name: playlist.name,
@@ -176,10 +197,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                               child: Text(
                                 playlist.type == PlaylistType.station
                                     ? (playlist.seedArtistName ??
-                                          playlist.ownerName)
+                                        playlist.ownerName)
                                     : playlist.ownerName.isNotEmpty
-                                    ? playlist.ownerName
-                                    : 'You',
+                                        ? playlist.ownerName
+                                        : 'You',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTheme.labelSmall.copyWith(
@@ -202,11 +223,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  // Like button + count
                   GestureDetector(
                     key: const Key('playlist_detail_like_button'),
-                    onTap: () =>
-                        ref.read(playlistDetailProvider.notifier).toggleLike(),
+                    onTap: () => ref
+                        .read(playlistDetailProvider.notifier)
+                        .toggleLike(),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -299,90 +320,89 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
             // ── Track list + suggestions ─────────────────────────────────────
             Expanded(
-              child: state.tracks.isEmpty && !state.isLoading
-                  ? _emptyTracksState(playlist)
-                  : ListView(
-                      children: [
-                        ...state.tracks.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final track = entry.value;
-                          return TrackTileInPlaylist(
-                            key: Key('playlist_track_${track.id}'),
-                            track: track,
-                            onTap: () => _playFrom(index),
-                          );
-                        }),
+              child: ListView(
+                children: [
+                  // Empty state for owned playlists still shows suggestions below
+                  if (state.tracks.isEmpty && !showSuggestionsSection)
+                    _emptyTracksState(playlist)
+                  else
+                    ...state.tracks.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final track = entry.value;
+                      return TrackTileInPlaylist(
+                        key: Key('playlist_track_${track.id}'),
+                        track: track,
+                        onTap: () => _playFrom(index),
+                      );
+                    }),
 
-                        // Suggestions — only for owned playlists
-                        if (widget.isOwner &&
-                            playlist.type == PlaylistType.playlist &&
-                            (state.isSuggestionsLoading ||
-                                state.suggestions.isNotEmpty)) ...[
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                  // ── Suggestions — ONLY for owned playlists ────────────────
+                  if (showSuggestionsSection) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                      child: Text(
+                        'Suggestions for your new playlist',
+                        style: AppTheme.titleLarge,
+                      ),
+                    ),
+                    if (state.isSuggestionsLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    else
+                      ...state.suggestions.map(
+                        (suggestion) => TrackTileInPlaylist(
+                          key: Key('suggestion_${suggestion.id}'),
+                          track: suggestion,
+                          onTap: () => _fetchAndPlay(suggestion),
+                          trailingWidget: IconButton(
+                            key: Key('add_suggestion_${suggestion.id}'),
+                            icon: const Icon(
+                              Icons.add_box_outlined,
+                              color: AppTheme.textSecondary,
+                              size: 26,
+                            ),
+                            onPressed: () => ref
+                                .read(playlistDetailProvider.notifier)
+                                .addSuggestion(suggestion),
+                          ),
+                        ),
+                      ),
+                    if (!state.isSuggestionsLoading)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: ElevatedButton(
+                            key: const Key('refresh_suggestions_button'),
+                            onPressed: () => ref
+                                .read(playlistDetailProvider.notifier)
+                                .refreshSuggestions(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
                             child: Text(
-                              'Suggestions for your new playlist',
-                              style: AppTheme.titleLarge,
+                              'Refresh suggestions',
+                              style: AppTheme.bodyNormal,
                             ),
                           ),
-                          if (state.isSuggestionsLoading)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.primaryBrand,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            )
-                          else
-                            ...state.suggestions.map(
-                              (suggestion) => TrackTileInPlaylist(
-                                key: Key('suggestion_${suggestion.id}'),
-                                track: suggestion,
-                                onTap: () => _fetchAndPlay(suggestion),
-                                trailingWidget: IconButton(
-                                  key: Key('add_suggestion_${suggestion.id}'),
-                                  icon: const Icon(
-                                    Icons.add_box_outlined,
-                                    color: AppTheme.textSecondary,
-                                    size: 26,
-                                  ),
-                                  onPressed: () => ref
-                                      .read(playlistDetailProvider.notifier)
-                                      .addSuggestion(suggestion),
-                                ),
-                              ),
-                            ),
-                          if (!state.isSuggestionsLoading)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: 44,
-                                child: ElevatedButton(
-                                  key: const Key('refresh_suggestions_button'),
-                                  onPressed: () => ref
-                                      .read(playlistDetailProvider.notifier)
-                                      .refreshSuggestions(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.surface,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Refresh suggestions',
-                                    style: AppTheme.bodyNormal,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                        ),
+                      ),
+                  ],
 
-                        const SizedBox(height: 140),
-                      ],
-                    ),
+                  const SizedBox(height: 140),
+                ],
+              ),
             ),
           ],
         ),
@@ -391,35 +411,31 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   }
 
   Widget _emptyTracksState(PlaylistEntity playlist) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.queue_music,
-              color: AppTheme.textSecondary,
-              size: 48,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              widget.isOwner
-                  ? 'This playlist is empty\nAdd tracks to get started'
-                  : 'No tracks available',
-              style: AppTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.queue_music,
+            color: AppTheme.textSecondary,
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            widget.isOwner
+                ? 'This playlist is empty\nAdd tracks to get started'
+                : 'No tracks available',
+            style: AppTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 }
 
 // ── Cover image widget ────────────────────────────────────────────────────────
-// Separate from PlaylistCoverImage so we can pass a resolved URL directly
-// without needing the full PlaylistEntity (useful when cover comes from tracks).
 class _CoverImage extends StatelessWidget {
   const _CoverImage({
     required this.coverUrl,
@@ -438,14 +454,13 @@ class _CoverImage extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child:
-            coverUrl != null &&
+        child: coverUrl != null &&
                 coverUrl!.isNotEmpty &&
                 coverUrl!.startsWith('http')
             ? Image.network(
                 coverUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _placeholder(),
+                errorBuilder: (context, error, stackTrace) => _placeholder(),
               )
             : _placeholder(),
       ),
@@ -453,16 +468,16 @@ class _CoverImage extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    color: AppTheme.surface,
-    child: Center(
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : 'P',
-        style: const TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
+        color: AppTheme.surface,
+        child: Center(
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : 'P',
+            style: const TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }

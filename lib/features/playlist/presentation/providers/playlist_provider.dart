@@ -33,11 +33,12 @@ class PlaylistListState {
     List<PlaylistEntity>? playlists,
     bool? isLoading,
     String? error,
-  }) => PlaylistListState(
-    playlists: playlists ?? this.playlists,
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-  );
+  }) =>
+      PlaylistListState(
+        playlists: playlists ?? this.playlists,
+        isLoading: isLoading ?? this.isLoading,
+        error: error,
+      );
 }
 
 class PlaylistDetailState {
@@ -73,15 +74,17 @@ class PlaylistDetailState {
     bool? isSuggestionsLoading,
     bool? isLiked,
     String? error,
-  }) => PlaylistDetailState(
-    playlist: playlist ?? this.playlist,
-    tracks: tracks ?? this.tracks,
-    suggestions: suggestions ?? this.suggestions,
-    isLoading: isLoading ?? this.isLoading,
-    isSuggestionsLoading: isSuggestionsLoading ?? this.isSuggestionsLoading,
-    isLiked: isLiked ?? this.isLiked,
-    error: error,
-  );
+  }) =>
+      PlaylistDetailState(
+        playlist: playlist ?? this.playlist,
+        tracks: tracks ?? this.tracks,
+        suggestions: suggestions ?? this.suggestions,
+        isLoading: isLoading ?? this.isLoading,
+        isSuggestionsLoading:
+            isSuggestionsLoading ?? this.isSuggestionsLoading,
+        isLiked: isLiked ?? this.isLiked,
+        error: error,
+      );
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -96,13 +99,15 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
 
   // ── LOAD CREATED (owned) ──────────────────────────────────────────────────
+  // fromJsonListOwned ensures isOwned=true on every playlist returned here.
   Future<void> loadPlaylists() async {
     state = state.copyWith(isLoading: true);
     try {
-      // fetchMyPlaylists now returns entities with isOwned=true
       final playlists = await _ds.fetchMyPlaylists(filter: 'created');
       _cache.syncFromBackend(playlists);
       state = PlaylistListState(playlists: playlists);
+      debugPrint('[LIST] ✅ Loaded ${playlists.length} owned playlists  '
+          'isOwned check: ${playlists.firstOrNull?.isOwned}');
     } on DioException catch (_) {
       state = PlaylistListState(
         playlists: _cache.getMyPlaylists(),
@@ -112,10 +117,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
   }
 
   // ── LOAD LIKED ────────────────────────────────────────────────────────────
-  // Uses GET /me/liked-playlists — correct endpoint for liked mixes & playlists.
-  // Returns entities with isOwned=false and cover/trackCount enriched from
-  // LocalSavedStore for generated playlists (mixes) that the backend returns
-  // with null cover and 0 tracks.
+  // GET /me/liked-playlists — correct endpoint for mixes + liked playlists.
+  // All returned with isOwned=false.
   Future<void> loadLikedPlaylists() async {
     state = state.copyWith(isLoading: true);
     try {
@@ -150,7 +153,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     required bool isPublic,
   }) async {
     try {
-      final created = await _ds.createPlaylist(name: name, isPublic: isPublic);
+      final created =
+          await _ds.createPlaylist(name: name, isPublic: isPublic);
       _cache.createWithId(
         id: created.id,
         name: created.name,
@@ -192,10 +196,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         ownerId: created.ownerId,
       );
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Copied "$playlistId" → "${created.id}"');
       return created.id;
     } catch (e) {
-      debugPrint('[LIST] ❌ copyPlaylist: $e');
       return null;
     }
   }
@@ -221,7 +223,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         description: description,
       );
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Updated $playlistId');
     } catch (e) {
       debugPrint('[LIST] ❌ updatePlaylist: $e');
     }
@@ -242,7 +243,6 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       await _ds.deletePlaylist(playlistId);
       _cache.delete(playlistId);
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Deleted $playlistId');
     } catch (e) {
       debugPrint('[LIST] ❌ deletePlaylist: $e');
     }
@@ -300,7 +300,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       final related = merged.skip(existingTracks.length).toList()..shuffle();
       final station58 = [...seeds, ...related].take(58).toList();
 
-      _cache.convertToStation(playlistId, seedArtistName: playlist?.ownerName);
+      _cache.convertToStation(playlistId,
+          seedArtistName: playlist?.ownerName);
       _cache.clearTracks(playlistId);
       for (int i = 0; i < station58.length; i++) {
         _cache.addTrack(
@@ -348,14 +349,53 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     state = const PlaylistDetailState(isLoading: true);
 
     try {
-      final results = await Future.wait([
-        _ds.fetchPlaylistDetail(playlistId),
-        _ds.fetchPlaylistTracks(playlistId),
-      ]);
+      // Step 1: fetch playlist metadata
+      final playlist = await _ds.fetchPlaylistDetail(playlistId);
 
-      final playlist = results[0] as PlaylistEntity;
-      final tracks = results[1] as List<PlaylistTrack>;
+      debugPrint('[DETAIL] playlist: "${playlist.name}" '
+          'isOwned: ${playlist.isOwned} '
+          'type: ${playlist.type}');
 
+      // Step 2: fetch tracks using the correct endpoint based on playlist type.
+      //
+      // ROUTING LOGIC:
+      // • isOwned = true  → regular owned playlist → GET /playlists/:id/tracks
+      // • isOwned = false AND type = station → GET /home/stations/:id/tracks
+      // • isOwned = false AND everything else → GET /playlists/:id/tracks
+      //   (works for liked regular playlists, mixes stored as playlists, etc.)
+      //   If that returns empty, fall back to GET /home/mixes/:id
+      //
+      // NOTE: fetchPlaylistDetail does NOT set isOwned because it comes from
+      // a generic /playlists/:id endpoint. isOwned is set at list-load time.
+      // So for the detail screen, we trust the isOwner param passed from the
+      // router (which reflects how the tile was tapped) rather than playlist.isOwned.
+
+      List<PlaylistTrack> tracks = [];
+
+      if (playlist.type == PlaylistType.station) {
+        // Station — use station tracks endpoint
+        if (playlist.seedArtistName != null) {
+          tracks = await _fetchStationTracks(playlist.seedArtistName!);
+        } else {
+          tracks = await _ds.fetchPlaylistTracks(playlistId);
+        }
+      } else {
+        // Regular or generated playlist — try /playlists/:id/tracks first
+        tracks = await _ds.fetchPlaylistTracks(playlistId);
+
+        if (tracks.isEmpty) {
+          // Empty — could be a generated mix. Try /home/mixes/:id as fallback.
+          debugPrint(
+              '[DETAIL] tracks empty, trying fetchMixTracks as fallback');
+          final mixTracks = await _ds.fetchMixTracks(playlistId);
+          if (mixTracks.isNotEmpty) {
+            tracks = mixTracks;
+            debugPrint('[DETAIL] ✅ Got ${tracks.length} tracks from mix fallback');
+          }
+        }
+      }
+
+      // Cache for offline fallback
       _cache.createWithId(
         id: playlist.id,
         name: playlist.name,
@@ -370,49 +410,20 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
       debugPrint('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
 
-      if (playlist.type == PlaylistType.station) {
-        final cachedTracks = _cache.getTracksFor(playlistId);
-        if (cachedTracks.isNotEmpty) {
-          state = PlaylistDetailState(
-            playlist: playlist,
-            tracks: cachedTracks,
-            isLiked: playlist.isLiked,
-            isLoading: false,
-          );
-          return;
-        }
-
-        if (playlist.seedArtistName != null) {
-          final stationTracks = await _fetchStationTracks(
-            playlist.seedArtistName!,
-          );
-          state = PlaylistDetailState(
-            playlist: playlist,
-            tracks: stationTracks.isNotEmpty ? stationTracks : tracks,
-            isLiked: playlist.isLiked,
-            isLoading: false,
-          );
-          return;
-        }
-
-        state = PlaylistDetailState(
-          playlist: playlist,
-          tracks: tracks,
-          isLiked: playlist.isLiked,
-          isLoading: false,
-        );
-        return;
-      }
-
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: tracks,
         isLiked: playlist.isLiked,
         isLoading: false,
-        isSuggestionsLoading: playlist.type == PlaylistType.playlist,
+        // Only load suggestions for owned playlists (isOwner comes from router extra)
+        // We use tracks.isEmpty as a proxy for "new playlist that needs suggestions"
+        isSuggestionsLoading: false,
       );
 
-      if (playlist.type == PlaylistType.playlist) {
+      // Load suggestions only if this looks like an owned playlist
+      // (tracks == 0 and type == playlist suggests a newly created one)
+      if (playlist.type == PlaylistType.playlist && tracks.isEmpty) {
+        state = state.copyWith(isSuggestionsLoading: true);
         final suggestions = await _fetchSuggestionsExcluding(tracks);
         state = state.copyWith(
           suggestions: suggestions,
@@ -438,6 +449,17 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
     }
   }
 
+  // Called from PlaylistDetailScreen when isOwner=true to show suggestions
+  Future<void> loadSuggestionsIfOwner() async {
+    if (state.suggestions.isNotEmpty || state.isSuggestionsLoading) return;
+    state = state.copyWith(isSuggestionsLoading: true);
+    final suggestions = await _fetchSuggestionsExcluding(state.tracks);
+    state = state.copyWith(
+      suggestions: suggestions,
+      isSuggestionsLoading: false,
+    );
+  }
+
   Future<void> toggleLike() async {
     if (_currentPlaylistId == null) return;
     final wasLiked = state.playlist?.isLiked ?? false;
@@ -453,7 +475,6 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         await _ds.likePlaylist(_currentPlaylistId!);
       }
     } catch (e) {
-      debugPrint('[DETAIL] toggleLike failed: $e');
       state = state.copyWith(
         playlist: state.playlist?.copyWith(isLiked: wasLiked),
       );
@@ -463,9 +484,8 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<void> addSuggestion(PlaylistTrack suggestion) async {
     if (_currentPlaylistId == null) return;
 
-    final optimistic = state.suggestions
-        .where((s) => s.id != suggestion.id)
-        .toList();
+    final optimistic =
+        state.suggestions.where((s) => s.id != suggestion.id).toList();
     state = state.copyWith(suggestions: optimistic);
 
     try {
@@ -473,34 +493,33 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         playlistId: _currentPlaylistId!,
         trackId: suggestion.id,
       );
-      debugPrint('[DETAIL] ✅ Added "${suggestion.title}"');
-
-      final updatedTracks = await _ds.fetchPlaylistTracks(_currentPlaylistId!);
+      final updatedTracks =
+          await _ds.fetchPlaylistTracks(_currentPlaylistId!);
       _cache.clearTracks(_currentPlaylistId!);
       for (final t in updatedTracks) {
         _cache.addTrack(playlistId: _currentPlaylistId!, track: t);
       }
-
-      final freshSuggestions = await _fetchSuggestionsExcluding(updatedTracks);
+      final freshSuggestions =
+          await _fetchSuggestionsExcluding(updatedTracks);
       state = state.copyWith(
         tracks: updatedTracks,
         suggestions: freshSuggestions,
       );
     } on DioException catch (e) {
-      debugPrint(
-        '[DETAIL] ❌ addSuggestion ${e.response?.statusCode}: ${e.response?.data}',
-      );
       state = state.copyWith(
         suggestions: [...optimistic, suggestion],
-        error: 'Could not add "${suggestion.title}". Try again.',
+        error:
+            'Could not add "${suggestion.title}". Try again.',
       );
+      debugPrint('[DETAIL] ❌ addSuggestion ${e.response?.statusCode}');
     }
   }
 
   Future<void> removeTrack(String trackId) async {
     if (_currentPlaylistId == null) return;
 
-    final optimistic = state.tracks.where((t) => t.id != trackId).toList();
+    final optimistic =
+        state.tracks.where((t) => t.id != trackId).toList();
     state = state.copyWith(tracks: optimistic);
 
     try {
@@ -508,18 +527,19 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
         playlistId: _currentPlaylistId!,
         trackId: trackId,
       );
-      _cache.removeTrack(playlistId: _currentPlaylistId!, trackId: trackId);
-      debugPrint('[DETAIL] ✅ Removed track $trackId');
-    } on DioException catch (e) {
-      debugPrint('[DETAIL] ❌ removeTrack ${e.response?.statusCode}');
-      state = state.copyWith(tracks: _cache.getTracksFor(_currentPlaylistId!));
+      _cache.removeTrack(
+          playlistId: _currentPlaylistId!, trackId: trackId);
+    } on DioException catch (_) {
+      state = state.copyWith(
+          tracks: _cache.getTracksFor(_currentPlaylistId!));
     }
   }
 
   Future<void> refreshSuggestions() async {
     state = state.copyWith(isSuggestionsLoading: true);
     final fresh = await _fetchSuggestionsExcluding(state.tracks);
-    state = state.copyWith(suggestions: fresh, isSuggestionsLoading: false);
+    state = state.copyWith(
+        suggestions: fresh, isSuggestionsLoading: false);
   }
 
   void reload() {
@@ -527,14 +547,13 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   }
 
   Future<List<PlaylistTrack>> _fetchSuggestionsExcluding(
-    List<PlaylistTrack> existing,
-  ) async {
+      List<PlaylistTrack> existing) async {
     try {
       return await _ds.fetchRecommendedTracksExcluding(
         excludeIds: existing.map((t) => t.id).toList(),
         limit: 5,
       );
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   }
@@ -542,7 +561,7 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
   Future<List<PlaylistTrack>> _fetchStationTracks(String artistId) async {
     try {
       return await _ds.fetchStationTracks(artistId, limit: 50);
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   }
@@ -554,10 +573,10 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
 final playlistListProvider =
     NotifierProvider<PlaylistListNotifier, PlaylistListState>(
-      PlaylistListNotifier.new,
-    );
+  PlaylistListNotifier.new,
+);
 
 final playlistDetailProvider =
     NotifierProvider<PlaylistDetailNotifier, PlaylistDetailState>(
-      PlaylistDetailNotifier.new,
-    );
+  PlaylistDetailNotifier.new,
+);
