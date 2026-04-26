@@ -8,13 +8,13 @@ class FeedPage extends BasePage {
 
   Future<void> tapFeedButton() async => await tapByKey(feedNavButton);
   Future<void> tapDiscoverButton() async => await tapByKey(feedTabDiscover );
-  // Future<void> tap
   Future<void> tapFollowingButton() async => await tapByKey(feedTabFollowing);
   Future<void> taplikeButton() async => await tapByKey(feedCardSideActionsLike);
   Future<void> tapCommentButton() async => await tapByKey(feedCardSideActionsComment);
   Future<void> DragTrackCard() async => await tapByKey(feedCardBottomInfoPlayCircle);
   bool PlayerTrack() => isVisible (playerTrackInfoBoxDetails);
-  Future<void> tapDragtButton() async => await tapByKey(playerProgressBarSlider);
+  bool isFeedPgaeVisible() => isVisible(feedCardCover);
+  Future<void> tapDragtButton() async => await tapByKey(playerCollapseButton);
   Future<void> scrollDown() async {
     const Offset(0, -100);
     maxIteration: 50;
