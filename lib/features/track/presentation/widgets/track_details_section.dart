@@ -141,7 +141,7 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    context.push('/profile/${track.userId}');
+                    context.push('/home/profile/${track.userId}');
                   },
                   borderRadius: BorderRadius.circular(8),
                   highlightColor: Colors.white.withValues(alpha: 0.1),

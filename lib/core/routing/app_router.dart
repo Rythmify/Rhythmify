@@ -207,60 +207,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ── Profile routes ───────────────────────────────────────────────────
-      GoRoute(
-        path: '/profile/edit',
-        builder: (context, state) => const EditProfilePage(),
-      ),
-      GoRoute(
-        path: '/profile/:userId',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return PublicProfilePage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/likes',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return LikesPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/uploads',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return UploadedTracksPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/reposts',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return RepostedTracksPage(userId: userId);
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/followers',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ProfileConnectionsPage(
-            userId: userId,
-            type: ProfileConnectionsType.followers,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/profile/:userId/following',
-        builder: (context, state) {
-          final userId = state.pathParameters['userId']!;
-          return ProfileConnectionsPage(
-            userId: userId,
-            type: ProfileConnectionsType.following,
-          );
-        },
-      ),
-
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainAppScaffold(navigationShell: navigationShell);
@@ -398,6 +344,70 @@ final routerProvider = Provider<GoRouter>((ref) {
                         title: extra['stationName'] as String? ?? artistName,
                         coverUrl: extra['coverUrl'] as String?,
                       );
+                    },
+                  ),
+
+                  // ── Profile routes (Moved inside branch) ───────────────────
+                  GoRoute(
+                    path: 'profile/edit',
+                    builder: (context, state) => const EditProfilePage(),
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return PublicProfilePage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/likes',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return LikesPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/uploads',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UploadedTracksPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/reposts',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return RepostedTracksPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/followers',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return ProfileConnectionsPage(
+                        userId: userId,
+                        type: ProfileConnectionsType.followers,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/following',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return ProfileConnectionsPage(
+                        userId: userId,
+                        type: ProfileConnectionsType.following,
+                      );
+                    },
+                  ),
+
+                  // ── Behind the track route (Moved inside branch) ────────────
+                  GoRoute(
+                    path: 'behind-the-track/:trackId',
+                    name: 'behindTheTrack',
+                    builder: (context, state) {
+                      final trackId = state.pathParameters['trackId']!;
+                      return BehindTheTrackPage(trackId: trackId);
                     },
                   ),
                 ],
@@ -589,15 +599,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // ── Root Level Pages (render ON TOP of nav bar — intentional) ────────
-      GoRoute(
-        path: '/behind-the-track/:trackId',
-        name: 'behindTheTrack',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final trackId = state.pathParameters['trackId']!;
-          return BehindTheTrackPage(trackId: trackId);
-        },
-      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,

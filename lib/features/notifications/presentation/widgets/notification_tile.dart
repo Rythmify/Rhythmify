@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/avatar.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
@@ -11,6 +12,10 @@ class NotificationTile extends StatelessWidget {
   final bool isCommentLiked;
   final bool isFollowing;
 
+  /// Resolved track embed for comment-type notifications.
+  /// Provides cover image, title, and track ID for navigation.
+  final SharedEmbed? trackEmbed;
+
   const NotificationTile({
     super.key,
     required this.notification,
@@ -19,6 +24,7 @@ class NotificationTile extends StatelessWidget {
     this.onTap,
     this.isCommentLiked = false,
     this.isFollowing = false,
+    this.trackEmbed,
   });
 
   @override
@@ -92,13 +98,40 @@ class NotificationTile extends StatelessWidget {
           title: notification.resourceTitle,
         );
       case NotificationType.comment:
-        return _richAction(
-          verb: 'commented ',
-          title: notification.resourceContent,
-          suffix: notification.resourceTitle != null
-              ? ' on your ${_resourceLabel()} '
-              : null,
-          suffixTitle: notification.resourceTitle,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RichText(
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                style: AppTheme.bodyMedium,
+                children: [
+                  const TextSpan(text: 'commented '),
+                  if (notification.resourceContent != null)
+                    TextSpan(
+                      text: notification.resourceContent,
+                      style: AppTheme.bodyNormal,
+                    ),
+                ],
+              ),
+            ),
+            if (trackEmbed?.embedName != null)
+              RichText(
+                text: TextSpan(
+                  style: AppTheme.bodyMedium,
+                  children: [
+                    const TextSpan(text: 'on '),
+                    TextSpan(
+                      text: trackEmbed!.embedName,
+                      style: AppTheme.bodyNormal.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         );
       case NotificationType.newPostByFollowed:
         return const SizedBox.shrink();
@@ -173,6 +206,8 @@ class NotificationTile extends StatelessWidget {
   Widget _buildTrailing() {
     if (notification.type == NotificationType.follow) {
       return _FollowButton(isFollowing: isFollowing, onTap: onFollowTap);
+    } else if (notification.type == NotificationType.comment) {
+      return _ResourceThumbnail(imageUrl: trackEmbed?.thumbnailUrl);
     }
     return _ResourceThumbnail(imageUrl: notification.resourceImageUrl);
   }

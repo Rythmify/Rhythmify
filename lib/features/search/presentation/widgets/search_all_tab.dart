@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/search/presentation/widgets/search_albums_tab.dart';
+import 'package:rythmify/features/search/presentation/widgets/search_playlists_tab.dart';
+import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import '../widgets/track_tile.dart';
 import '../widgets/search_profiles_tab.dart';
@@ -66,10 +68,21 @@ class AllTab extends ConsumerWidget {
           ],
           // ── Profiles ────────────────────────────────────────
           if (data.profiles.isNotEmpty) ...[
-            const _SectionTitle('Profiles'),
+            _SectionHeader(
+              title: 'Profiles',
+              onSeeAll: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SearchSeeAllPage(
+                    title: 'Albums',
+                    child: ProfilesTab(),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 12),
             ...data.profiles
-                .take(3)
+                .take(1)
                 .toList()
                 .asMap()
                 .entries
@@ -85,7 +98,18 @@ class AllTab extends ConsumerWidget {
 
           // ── Playlists ───────────────────────────────────────
           if (data.playlists.isNotEmpty) ...[
-            const _SectionTitle('Playlists'),
+            _SectionHeader(
+              title: 'Playlists',
+              onSeeAll: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SearchSeeAllPage(
+                    title: 'Playlists',
+                    child: PlaylistsTab(),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 12),
             ...data.playlists
                 .take(3)
@@ -165,12 +189,15 @@ class _PlaylistRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () {
+        context.push('/home/playlist/${playlist['id']}', extra: false);
+      },
       contentPadding: EdgeInsets.zero,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Image.asset(
-          playlist['artworkUrl']!,
+        child: Image.network(
           key: Key('all_tab_playlist_artwork_${playlist['id']}'),
+          playlist['artworkUrl'] ?? '',
           width: 50,
           height: 50,
           fit: BoxFit.cover,
@@ -206,12 +233,15 @@ class _AlbumRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () {
+        context.push('/home/playlist/${album['id']}', extra: false);
+      },
       contentPadding: EdgeInsets.zero,
       isThreeLine: true,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Image.asset(
-          album['artworkUrl']!,
+        child: Image.network(
+          album['artworkUrl'] ?? '',
           key: Key('all_tab_album_artwork_${album['id']}'),
           width: 50,
           height: 50,
@@ -293,7 +323,7 @@ class _TopResultCard extends StatelessWidget {
         ),
         subtitle: Text('Profile', style: TextStyle(color: Colors.grey[400])),
         trailing: const Icon(Icons.more_vert),
-        onTap: () => context.push('/profile/${profile.id}'),
+        onTap: () => context.push('/home/profile/${profile.id}'),
       ),
 
       TopResultPlaylist(:final playlist) => ListTile(
@@ -319,7 +349,8 @@ class _TopResultCard extends StatelessWidget {
           style: TextStyle(color: Colors.grey[400]),
         ),
         trailing: const Icon(Icons.more_vert),
-        onTap: () => context.push('/playlist/${playlist['id']}', extra: false),
+        onTap: () =>
+            context.push('/home/playlist/${playlist['id']}', extra: false),
       ),
 
       TopResultAlbum(:final album) => ListTile(
@@ -345,7 +376,8 @@ class _TopResultCard extends StatelessWidget {
           style: TextStyle(color: Colors.grey[400]),
         ),
         trailing: const Icon(Icons.more_vert),
-        onTap: () => context.push('/playlist/${album['id']}', extra: false),
+        onTap: () =>
+            context.push('/home/playlist/${album['id']}', extra: false),
       ),
     };
   }
@@ -364,7 +396,7 @@ class _TracksSection extends StatelessWidget {
         return Padding(
           key: Key('all_tab_track_${e.key}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: TrackTile(track: e.value),
+          child: TrackCard(track: e.value),
         );
       }).toList(),
     );

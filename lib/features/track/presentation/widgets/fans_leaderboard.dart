@@ -186,7 +186,7 @@ class FansLeaderboard extends ConsumerWidget {
   Widget _buildListenerCard(BuildContext context, dynamic item) {
     return InkWell(
       onTap: () {
-        context.push('/profile/${item.userId}');
+        context.push('/home/profile/${item.userId}');
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(

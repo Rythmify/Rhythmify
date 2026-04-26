@@ -44,6 +44,14 @@ class TrackSyncNotifier extends Notifier<Map<String, Track>> {
 
     state = {...state, trackId: updatedTrack};
   }
+
+  void updateCommentCount(String trackId, int newCount, Track? currentTrack) {
+    final track = state[trackId] ?? currentTrack;
+    if (track == null) return;
+
+    final updatedTrack = track.copyWith(commentCount: newCount);
+    state = {...state, trackId: updatedTrack};
+  }
 }
 
 final trackSyncProvider =
@@ -53,5 +61,7 @@ final trackSyncProvider =
 
 final syncedTrackProvider = Provider.family<Track, Track>((ref, track) {
   final map = ref.watch(trackSyncProvider);
-  return map[track.id] ?? track;
+  final synced = map[track.id];
+  if (synced != null) return synced;
+  return track;
 });

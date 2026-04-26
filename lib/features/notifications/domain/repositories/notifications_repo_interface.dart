@@ -9,7 +9,7 @@ abstract class NotificationsRepoInterface {
   ///
   /// Returns the [items] list, the total [unreadCount], and [hasNext].
   Future<({List<NotificationEntity> items, int unreadCount, bool hasNext})>
-  getNotifications({int page, int limit, bool? unreadOnly});
+  getNotifications({int page, int limit, bool? unreadOnly, String? type});
 
   /// Returns the number of unread notifications.
   Future<int> getUnreadCount();
@@ -19,4 +19,9 @@ abstract class NotificationsRepoInterface {
 
   /// Returns `true` if the authenticated user follows [userId].
   Future<bool> getFollowStatus(String userId);
+
+  /// Returns the `track_id` for the comment identified by [commentId].
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  );
 }

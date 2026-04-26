@@ -85,7 +85,16 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
       queryParameters: {'limit': limit, 'offset': offset, 'sort': sortValue},
     );
 
-    final items = response.data['data']['items'] as List;
+    final data = response.data['data'];
+    final List items;
+    if (data is List) {
+      items = data;
+    } else if (data is Map && data['items'] is List) {
+      items = data['items'] as List;
+    } else {
+      items = [];
+    }
+
     return items.map((json) => CommentDto.fromJson(json)).toList();
   }
 
@@ -162,7 +171,16 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
       );
     }
 
-    final items = response.data['data']['items'] as List;
+    final data = response.data['data'];
+    final List items;
+    if (data is List) {
+      items = data;
+    } else if (data is Map && data['items'] is List) {
+      items = data['items'] as List;
+    } else {
+      items = [];
+    }
+
     return items.map((json) => CommentDto.fromJson(json)).toList();
   }
 

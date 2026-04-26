@@ -12,7 +12,7 @@ class GenreProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/profile/${artist.id}'),
+      onTap: () => context.push('/home/profile/${artist.id}'),
       child: SizedBox(
         width: 90,
         child: Column(
