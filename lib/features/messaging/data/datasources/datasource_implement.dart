@@ -281,6 +281,7 @@ class DatasourceImplement implements DatasourceInterface {
           );
         }
       }
+      return merged;
     } else if (embedType == 'album') {
       final response = await dio.get(ApiEndPoints.getMyLikedAlbums());
       final List data = response.data['data']['items'];

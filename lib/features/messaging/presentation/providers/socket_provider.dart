@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
@@ -11,15 +12,20 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
     authProvider.select((s) => s is AuthAuthenticated ? s.user.id : null),
   );
 
+  debugPrint('🔌 socketProvider rebuilt | userId=$userId');
+
   final socket = DataSourcesSockets();
 
   if (userId != null) {
+
+    String getToken () {
+    final current = ref.read(authProvider);
+    return current is AuthAuthenticated ? (current.user.token ?? '') : '';
+    }
+
     socket.connect(
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
-      () {
-        final current = ref.read(authProvider);
-        return current is AuthAuthenticated ? (current.user.token ?? '') : '';
-      },
+      getToken
     );
 
     // When the Dio interceptor silently refreshes the access token, proactively
@@ -34,9 +40,30 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
         }
       },
     );
+    
+  //   final binding=WidgetsBinding.instance;
+  //   final observer=_AppLifeCycleObserver(() => socket.reConnectIfNeeded(getToken));
+  //   binding.addObserver(observer);
+  //   ref.onDispose(() {
+  //     binding.removeObserver(observer);
+  //     socket.disconnect();
+  //   });
+  // } else {
+  //   ref.onDispose(() => socket.disconnect());
   }
-
   ref.onDispose(() => socket.disconnect());
-
   return socket;
 });
+
+
+// class _AppLifeCycleObserver extends WidgetsBindingObserver {
+//   final VoidCallback onResumed;
+//   _AppLifeCycleObserver(this.onResumed);
+
+//   @override
+//   void didChangeAppLifecycleState(AppLifecycleState state) {
+//      if (state == AppLifecycleState.resumed) {
+//       onResumed();
+//     }
+//   }
+// }

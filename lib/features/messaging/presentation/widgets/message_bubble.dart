@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_playlist_details_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/get_track_details_provider.dart';
@@ -86,68 +87,82 @@ class MessageBubble extends ConsumerWidget {
                     if (embedType == 'track' ||
                         embedType == 'playlist' ||
                         embedType == 'album') ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2F2F31),
-                          borderRadius: borderRadius,
-                        ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: embedDetails?.thumbnailUrl != null
-                                  ? Image.network(
-                                      embedDetails!.thumbnailUrl!,
-                                      width: 56,
-                                      height: 56,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      width: 56,
-                                      height: 56,
-                                      color: const Color(0xFF3A3A3A),
-                                      child: Icon(
-                                        embedType == 'track'
-                                            ? Icons.music_note
-                                            : Icons.queue_music,
-                                        color: Colors.white,
-                                        size: 28,
+                      GestureDetector(
+                        onTap: embedId==null
+                               ? null
+                               : (){
+                                  if(embedType=='track'){
+                                    context.push('/behind-the-track/$embedId');
+                                  }else{
+                                    context.push(
+                                      '/home/playlist/$embedId',
+                                      extra: false,
+                                    );
+                                  }
+                               },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2F2F31),
+                            borderRadius: borderRadius,
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: embedDetails?.thumbnailUrl != null
+                                    ? Image.network(
+                                        embedDetails!.thumbnailUrl!,
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        width: 56,
+                                        height: 56,
+                                        color: const Color(0xFF3A3A3A),
+                                        child: Icon(
+                                          embedType == 'track'
+                                              ? Icons.music_note
+                                              : Icons.queue_music,
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
                                       ),
-                                    ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    embedDetails?.embedName ??
-                                        (embedType == 'track'
-                                            ? 'Shared a track'
-                                            : embedType == 'playlist'
-                                            ? 'Shared a playlist'
-                                            : 'Shared an album'),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  if (embedDetails?.artistName != null)
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      embedDetails!.artistName!,
+                                      embedDetails?.embedName ??
+                                          (embedType == 'track'
+                                              ? 'Shared a track'
+                                              : embedType == 'playlist'
+                                              ? 'Shared a playlist'
+                                              : 'Shared an album'),
                                       style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                ],
+                                    if (embedDetails?.artistName != null)
+                                      Text(
+                                        embedDetails!.artistName!,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 13,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                       if (body != null) const SizedBox(height: 8),
