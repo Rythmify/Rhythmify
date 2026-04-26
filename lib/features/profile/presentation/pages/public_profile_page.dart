@@ -517,7 +517,7 @@ class _PlaylistsSection extends ConsumerWidget {
             children: [
               Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
-                onPressed: () => context.go('/library/playlists'),
+                onPressed: () => context.push('/home/profile/$userId/playlists'),
                 child: Text(
                   'See All',
                   style: AppTheme.labelLarge.copyWith(
