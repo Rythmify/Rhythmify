@@ -291,12 +291,21 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     final followState = ref.watch(followStateProvider);
     if (state.isLoading) {
       return const Center(
-        child: CircularProgressIndicator(key: Key('notifications_loading_indicator'), color: AppTheme.primaryBrand),
+        child: CircularProgressIndicator(
+          key: Key('notifications_loading_indicator'),
+          color: AppTheme.primaryBrand,
+        ),
       );
     }
 
     if (state.error != null && state.items.isEmpty) {
-      return Center(child: Text(state.error!, key: const Key('notifications_error_text'), style: AppTheme.bodyMedium));
+      return Center(
+        child: Text(
+          state.error!,
+          key: const Key('notifications_error_text'),
+          style: AppTheme.bodyMedium,
+        ),
+      );
     }
 
     if (state.items.isEmpty) {

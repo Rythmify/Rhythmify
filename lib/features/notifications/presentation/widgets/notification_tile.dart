@@ -208,11 +208,21 @@ class NotificationTile extends StatelessWidget {
 
   Widget _buildTrailing() {
     if (notification.type == NotificationType.follow) {
-      return _FollowButton(key: const Key('notification_follow_button'), isFollowing: isFollowing, onTap: onFollowTap);
+      return _FollowButton(
+        key: const Key('notification_follow_button'),
+        isFollowing: isFollowing,
+        onTap: onFollowTap,
+      );
     } else if (notification.type == NotificationType.comment) {
-      return _ResourceThumbnail(key: const Key('notification_resource_thumbnail'), imageUrl: trackEmbed?.thumbnailUrl);
+      return _ResourceThumbnail(
+        key: const Key('notification_resource_thumbnail'),
+        imageUrl: trackEmbed?.thumbnailUrl,
+      );
     }
-    return _ResourceThumbnail(key: const Key('notification_resource_thumbnail'), imageUrl: notification.resourceImageUrl);
+    return _ResourceThumbnail(
+      key: const Key('notification_resource_thumbnail'),
+      imageUrl: notification.resourceImageUrl,
+    );
   }
 
   String _timeAgo(DateTime dt) {
