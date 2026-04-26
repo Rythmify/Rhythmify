@@ -10,6 +10,7 @@ import '../widgets/player_action_bar.dart';
 import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// The main immersive playback page of the application.
 ///
@@ -159,11 +160,16 @@ class _PlayerTrackPage extends ConsumerWidget {
                   onPressed: onCollapse ?? () => Navigator.pop(context),
                 ),
                 const SizedBox(height: 16),
-                _CircularActionButton(
-                  icon: track.isArtistFollowed
-                      ? Icons.person_add_alt_1
-                      : Icons.person_add_alt,
-                  onPressed: () {},
+                FollowButton(
+                  targetUserId: track.userId,
+                  builder: (context, isFollowing, isInFlight, toggle) {
+                    return _CircularActionButton(
+                      icon: isFollowing
+                          ? Icons.person_add_alt_1
+                          : Icons.person_add_alt,
+                      onPressed: toggle,
+                    );
+                  },
                 ),
               ],
             ),
@@ -188,8 +194,6 @@ class _PlayerTrackPage extends ConsumerWidget {
               ],
             ),
           ),
-
-          // Track Info moved lower so it renders above the waveform
 
           // Track Info moved to bottom so it renders above the waveform
           Positioned(
