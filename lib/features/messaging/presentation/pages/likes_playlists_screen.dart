@@ -9,7 +9,8 @@ import 'package:rythmify/features/messaging/presentation/widgets/shared_embed_ti
 import 'package:go_router/go_router.dart';
 
 class LikesPlaylistsScreen extends ConsumerStatefulWidget {
-  const LikesPlaylistsScreen({super.key});
+  final List<SharedEmbed> initialSelected;
+  const LikesPlaylistsScreen({super.key, this.initialSelected = const []});
 
   @override
   ConsumerState<LikesPlaylistsScreen> createState() =>
@@ -21,12 +22,13 @@ class _LikesPlaylistsScreenState extends ConsumerState<LikesPlaylistsScreen>
   late TabController _controller;
   //final List<String> _selectedTracksIds=[];
   //final List<String> _selectedPlaylistsAlbumsIds=[];
-  final List<SharedEmbed> _selectedEmbeds = [];
+  late final List<SharedEmbed> _selectedEmbeds;
 
   @override
   void initState() {
     super.initState();
     _controller = TabController(length: 2, vsync: this);
+    _selectedEmbeds = List.from(widget.initialSelected);
   }
 
   @override

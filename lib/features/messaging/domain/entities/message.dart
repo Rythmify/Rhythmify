@@ -37,4 +37,17 @@ class Message {
     required this.isRead,
     required this.createdAt,
   });
+
+  Message copyWith({bool? isRead}) {
+    return Message(
+      messageId: messageId,
+      senderId: senderId,
+      conversationId: conversationId,
+      body: body,
+      embedId: embedId,
+      embedType: embedType,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt,
+    );
+  }
 }

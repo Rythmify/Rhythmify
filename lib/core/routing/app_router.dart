@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
@@ -257,8 +258,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'likes-playlists',
-                            builder: (context, state) =>
-                                const LikesPlaylistsScreen(),
+                            builder: (context, state) {
+                              final initial = state.extra is List<SharedEmbed>
+                                  ? state.extra as List<SharedEmbed>
+                                  : const <SharedEmbed>[];
+                              return LikesPlaylistsScreen(
+                                initialSelected: initial,
+                              );
+                            },
                           ),
                         ],
                       ),
