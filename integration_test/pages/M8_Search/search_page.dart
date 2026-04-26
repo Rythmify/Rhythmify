@@ -7,9 +7,8 @@ class SearchPage extends BasePage {
   SearchPage(WidgetTester tester) : super(tester);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
-  // TODO: replace key when cross-team implements it
   Future<void> tapSearchNavButton() async => await tapByKey(searchNavButton);
-  Future<void> tapBack() async => await tapByKey(searchBackButton);
+  //Future<void> tapBack() async => await tapByKey(searchBackButton);
 
   // ── Search bar ─────────────────────────────────────────────────────────────
   Future<void> tapSearchBar() async => await tapByKey(searchBarField);
@@ -28,12 +27,12 @@ class SearchPage extends BasePage {
 
   // ── Vibes section ──────────────────────────────────────────────────────────
   Future<void> scrollVibesDown() async {
-    await tester.drag(find.byKey(const Key(vibesGrid)), const Offset(0, -400));
+    await tester.drag(find.byKey(const Key(vibesList)), const Offset(0, -400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> scrollVibesUp() async {
-    await tester.drag(find.byKey(const Key(vibesGrid)), const Offset(0, 400));
+    await tester.drag(find.byKey(const Key(vibesList)), const Offset(0, 400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
@@ -43,56 +42,57 @@ class SearchPage extends BasePage {
   }
 
   // ── Vibe detail — inner tab bar (All / Trending / Playlists / Albums) ──────
-  // TODO: replace keys when cross-team implements them
-  Future<void> tapAllVibeTab() async => await tapByKey(searchVibeTabAll);
-  Future<void> tapTrendingVibeTab() async => await tapByKey(searchVibeTabTrending);
-  Future<void> tapPlaylistsVibeTab() async => await tapByKey(searchVibeTabPlaylists);
-  Future<void> tapAlbumsVibeTab() async => await tapByKey(searchVibeTabAlbums);
+  Future<void> tapAllVibeTab() async => await tapByKey(genreTabAll);
+  Future<void> tapTrendingVibeTab() async => await tapByKey(genreTabTrending);
+  Future<void> tapPlaylistsVibeTab() async => await tapByKey(genreTabPlaylists);
+  Future<void> tapAlbumsVibeTab() async => await tapByKey(genreTabAlbums);
 
   Future<void> scrollVibeDetailDown() async {
-    await tester.drag(find.byKey(const Key(searchVibeDetailScrollView)), const Offset(0, -400));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, -400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> scrollVibeDetailUp() async {
-    await tester.drag(find.byKey(const Key(searchVibeDetailScrollView)), const Offset(0, 400));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, 400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> swipeVibeDetailLeft() async {
-    await tester.drag(find.byKey(const Key(searchVibeDetailPageView)), const Offset(-300, 0));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(-300, 0));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> swipeVibeDetailRight() async {
-    await tester.drag(find.byKey(const Key(searchVibeDetailPageView)), const Offset(300, 0));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(300, 0));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
+  Future<void> GenreBackButton() async => await tapByKey(genreBackButton);
+
   // ── Search results — tab bar (All / Tracks / Profiles / Playlists / Albums) ─
-  Future<void> tapAllResultsTab() async => await tapByKey(searchResultsTabAll);
-  Future<void> tapTracksResultsTab() async => await tapByKey(searchResultsTabTracks);
-  Future<void> tapProfilesResultsTab() async => await tapByKey(searchResultsTabProfiles);
-  Future<void> tapPlaylistsResultsTab() async => await tapByKey(searchResultsTabPlaylists);
-  Future<void> tapAlbumsResultsTab() async => await tapByKey(searchResultsTabAlbums);
+  Future<void> tapAllResultsTab() async => await tapByKey(searchTabAll);
+  Future<void> tapTracksResultsTab() async => await tapByKey(searchTabTracks);
+  Future<void> tapProfilesResultsTab() async => await tapByKey(searchTabProfiles);
+  Future<void> tapPlaylistsResultsTab() async => await tapByKey(searchTabPlaylists);
+  Future<void> tapAlbumsResultsTab() async => await tapByKey(searchTabAlbums);
 
   Future<void> swipeResultsLeft() async {
-    await tester.drag(find.byKey(const Key(searchResultsPageView)), const Offset(-300, 0));
+    await tester.drag(find.byKey(const Key(searchTabView)), const Offset(-300, 0));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> swipeResultsRight() async {
-    await tester.drag(find.byKey(const Key(searchResultsPageView)), const Offset(300, 0));
+    await tester.drag(find.byKey(const Key(searchTabView)), const Offset(300, 0));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> scrollResultsDown() async {
-    await tester.drag(find.byKey(const Key(searchResultsScrollView)), const Offset(0, -400));
+    await tester.drag(find.byKey(const Key(searchTabView)), const Offset(0, -400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> scrollResultsUp() async {
-    await tester.drag(find.byKey(const Key(searchResultsScrollView)), const Offset(0, 400));
+    await tester.drag(find.byKey(const Key(searchTabView)), const Offset(0, 400));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
@@ -103,8 +103,9 @@ class SearchPage extends BasePage {
   bool isSearchScreenVisible()     => isVisible(searchScreen);
   bool isSuggestionListVisible()   => isVisible(searchSuggestionsList);
   bool isNoResultsVisible()        => find.text('No results found').evaluate().isNotEmpty;
+  
+  bool isVibePageScreenVisible() => isVisible(genrePage);
+  bool isResultsScreenVisible()    => isVisible(searchTabView);
   // TODO: replace keys when cross-team implements them
-  bool isVibeDetailScreenVisible() => isVisible(searchVibeDetailScreenKey);
-  bool isResultsScreenVisible()    => isVisible(searchResultsScreenKey);
   bool isMiniPlayerVisible()       => isVisible(searchMiniPlayerBar);
 }
