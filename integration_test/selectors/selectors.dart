@@ -218,12 +218,6 @@ const String librarySettingsButton          = 'library_settings_icon_button';
 const String libraryProfileAvatarGesture    = 'library_profile_avatar_gesture_detector';
 const String libraryCastIconButton          = 'library_cast_icon_button';
 const String libraryMainScrollView          = 'library_main_scroll_view';
-const String libraryLikesItem               = 'library_likes_item';
-const String libraryPlaylistsItem           = 'library_playlists_item';
-const String libraryAlbumsItem              = 'library_albums_item';
-const String libraryFollowingItem           = 'library_following_item';
-const String libraryStationsItem            = 'library_stations_item';
-const String libraryInsightsItem            = 'library_insights_item';
 const String libraryImportBannerCard        = 'library_import_banner_card';
 const String libraryImportBannerCloseGesture = 'library_import_banner_close_gesture';
 const String libraryImportNowButton         = 'library_import_now_button';
@@ -231,6 +225,12 @@ const String libraryRecentlyPlayedSeeAllButton = 'library_recently_played_see_al
 const String libraryRecentlyPlayedListView  = 'library_recently_played_list_view';
 
 // --- Library Menu Items ---
+const String libraryLikesItem               = 'library_likes_item';
+const String libraryPlaylistsItem           = 'library_playlists_item';
+const String libraryAlbumsItem              = 'library_albums_item';
+const String libraryFollowingItem           = 'library_following_item';
+const String libraryStationsItem            = 'library_stations_item';
+const String libraryInsightsItem            = 'library_insights_item';
 const String libraryUploadsItem             = 'library_uploads_item';
 
 // --- Messaging ---
@@ -385,17 +385,6 @@ const String libraryUpgradeProButton        = 'library_upgrade_pro_button';
 const String libraryImportBannerDismissible = 'library_import_banner_dismissible';
 
 // ── Library — TODO: pending cross-team Key() implementation ──────────────────
-const String libraryYourLikes                  = 'library_your_likes';
-const String libraryAlbums                     = 'library_albums';
-const String libraryFollowing                  = 'library_following';
-const String libraryStations                   = 'library_stations';
-const String libraryYourInsights               = 'library_your_insights';
-const String libraryYourUploads                = 'library_your_uploads';
-const String libraryRecentlyPlayedSeeAll       = 'library_recently_played_see_all';
-
-const String libraryLikesFirstTrackThreeDots   = 'library_likes_first_track_three_dots';
-const String libraryLikesUnlikeOption          = 'library_likes_unlike_option';
-
 const String libraryAlbumsFirstItem            = 'library_albums_first_item';
 const String libraryAlbumsPlayButton           = 'library_albums_play_button';
 const String libraryAlbumDetailScreen          = 'library_album_detail_screen';
@@ -411,13 +400,14 @@ const String libraryStationsPlayButton         = 'library_stations_play_button';
 const String libraryStationDetailScreen        = 'library_station_detail_screen';
 
 const String libraryInsightsBackButton         = 'library_insights_back_button';
+const String libraryRecentlyPlayedDialogCancel = 'library_recently_played_dialog_cancel';
+const String libraryRecentlyPlayedDialogClear  = 'library_recently_played_dialog_clear';
+const String libraryHistoryBackButton          = 'library_history_back_button';
 
 const String uploadsFirstTrackThreeDots        = 'uploads_first_track_three_dots';
 const String uploadsDeleteOption               = 'uploads_delete_option';
 
-const String libraryRecentlyPlayedDialogCancel = 'library_recently_played_dialog_cancel';
-const String libraryRecentlyPlayedDialogClear  = 'library_recently_played_dialog_clear';
-const String libraryHistoryBackButton          = 'library_history_back_button';
+
 
 // ---- Playlist Detail Page ----
 const String playlistDetailBackButton       = 'playlist_detail_back_button';
@@ -606,3 +596,13 @@ const String addPlayerWidget                = 'add_player_widget';
 // --- Settings — Basic ---
 const String clearApplicationCacheTile      = 'Clear_application_cache_tile';
 const String changeAppIconTile              = 'change_app_icon_tile';
+
+// --- Track Card Options ---
+const String trackShareMessageGestureDetector   = 'track_options_share_message_gesture_detector';
+const String trackShareCopyLinkGestureDetector  = 'track_options_share_copy_link_gesture_detector';
+const String trackShareWhatsappGestureDetector  = 'track_options_share_whatsapp_gesture_detector';
+const String trackShareSMSGestureDetector       = 'track_options_share_sms_gesture_detector';
+const String trackUpdateTrackInkwell            = 'track_options_action_update_track_inkwell';
+const String trackLikeInkwell                   = 'track_options_action_toggle_like_inkwell';
+
+const String trackCardArtist               = 'track_card_artist';

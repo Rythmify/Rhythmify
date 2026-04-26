@@ -7,18 +7,16 @@ class LibraryPage extends BasePage {
   LibraryPage(WidgetTester tester) : super(tester);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
-  // TODO: pending cross-team Key() implementation
   Future<void> tapLibraryNavButton() async => await tapByKey(libraryNavButton);
 
   // ── Library main screen sections ───────────────────────────────────────────
-  // TODO: pending cross-team Key() implementation
-  Future<void> tapYourLikes()             async => await tapByKey(libraryYourLikes);
-  Future<void> tapAlbums()                async => await tapByKey(libraryAlbums);
-  Future<void> tapFollowing()             async => await tapByKey(libraryFollowing);
-  Future<void> tapStations()              async => await tapByKey(libraryStations);
-  Future<void> tapYourInsights()          async => await tapByKey(libraryYourInsights);
-  Future<void> tapYourUploads()           async => await tapByKey(libraryYourUploads);
-  Future<void> tapRecentlyPlayedSeeAll()  async => await tapByKey(libraryRecentlyPlayedSeeAll);
+  Future<void> tapYourLikes()             async => await tapByKey(libraryLikesItem);
+  Future<void> tapAlbums()                async => await tapByKey(libraryAlbumsItem);
+  Future<void> tapFollowing()             async => await tapByKey( libraryFollowingItem);
+  Future<void> tapStations()              async => await tapByKey(libraryStationsItem);
+  Future<void> tapYourInsights()          async => await tapByKey(libraryInsightsItem);
+  Future<void> tapYourUploads()           async => await tapByKey(libraryUploadsItem);
+  Future<void> tapRecentlyPlayedSeeAll()  async => await tapByKey(libraryRecentlyPlayedSeeAllButton);
 
   // ── Generic scroll helpers ─────────────────────────────────────────────────
   Future<void> scrollListDown(String scrollableKey) async {
@@ -41,11 +39,20 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
-  // TODO: pending cross-team — three-dots key per track item
-  Future<void> tapFirstTrackThreeDots() async => await tapByKey(libraryLikesFirstTrackThreeDots);
-  // TODO: pending cross-team — unlike option inside the bottom sheet
-  Future<void> tapUnlikeOption()         async => await tapByKey(libraryLikesUnlikeOption);
+  // Finds the first "more" inkwell in the likes list and taps it
+  Future<void> tapFirstTrackThreeDots() async {
+    final moreFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is InkWell &&
+          widget.key != null &&
+          widget.key.toString().contains('track_card_') &&
+          widget.key.toString().contains('_more_inkwell'),
+    );
+    await tester.tap(moreFinder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
 
+  Future<void> tapUnlikeOption()         async => await tapByKey(trackLikeInkwell);
   bool isLikesScreenVisible()            => isVisible(libraryLikesScrollView);
   bool isTrackVisible(String trackName)  => find.text(trackName).evaluate().isNotEmpty;
 
