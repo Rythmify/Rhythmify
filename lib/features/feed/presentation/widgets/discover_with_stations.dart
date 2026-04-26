@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/home_providers.dart';
+import 'shimmers/station_card_shimmer.dart';
 
 class DiscoverWithStationsSection extends ConsumerWidget {
   const DiscoverWithStationsSection({super.key});
@@ -29,7 +30,16 @@ class DiscoverWithStationsSection extends ConsumerWidget {
           child: Text("Discover with Stations", style: AppTheme.homeTitle),
         ),
         asyncStations.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => SizedBox(
+            height: 200,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 5,
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => const StationCardShimmer(),
+            ),
+          ),
           error: (e, _) => Text(
             "Error: $e",
             key: const Key('discover_with_stations_error_text'),
@@ -41,7 +51,7 @@ class DiscoverWithStationsSection extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final station = items[index];
                   return StationCard(
@@ -106,115 +116,132 @@ class StationCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                height: 155,
-                width: 160,
-                child: Stack(
-                  key: Key('station_image_$artistName'),
-                  children: [
-                    // Vinyl record background
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _VinylPainter(ringColor: ringColor),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  // border: Border.all(
+                  //   color: Colors.grey.withValues(alpha: 0.5),
+                  //   width: 0.8,
+                  // ),
+                ),
+                child: SizedBox(
+                  height: 155,
+                  width: 160,
+                  child: Stack(
+                    key: Key('station_image_$artistName'),
+                    children: [
+                      // Vinyl record background
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _VinylPainter(ringColor: ringColor),
+                        ),
                       ),
-                    ),
 
-                    // Left small avatar
-                    if (leftImage != null)
+                      // Left small avatar
+                      if (leftImage != null)
+                        Positioned(
+                          left: 6,
+                          top: 10,
+                          child: _CircleAvatar(
+                            imageUrl: leftImage!,
+                            size: 50,
+                            borderColor: const Color.fromARGB(
+                              255,
+                              202,
+                              196,
+                              182,
+                            ),
+                            borderWidth: 2,
+                          ),
+                        ),
+
+                      // Right small avatar
+                      if (rightImage != null)
+                        Positioned(
+                          right: 6,
+                          top: 60,
+                          child: _CircleAvatar(
+                            imageUrl: rightImage!,
+                            size: 50,
+                            borderColor: const Color.fromARGB(
+                              255,
+                              202,
+                              196,
+                              182,
+                            ),
+                            borderWidth: 2,
+                          ),
+                        ),
+
+                      // Center large badge
                       Positioned(
-                        left: 6,
-                        top: 10,
-                        child: _CircleAvatar(
-                          imageUrl: leftImage!,
-                          size: 50,
-                          borderColor: const Color.fromARGB(255, 202, 196, 182),
-                          borderWidth: 2,
+                        left: 0,
+                        right: 0,
+                        top: 30,
+                        child: Center(
+                          child: _CenterArtistBadge(
+                            imageUrl: centerImage,
+                            artistName: artistName,
+                            size: 82,
+                            borderColor: ringColor,
+                          ),
                         ),
                       ),
 
-                    // Right small avatar
-                    if (rightImage != null)
+                      // Bottom gradient label
                       Positioned(
-                        right: 6,
-                        top: 60,
-                        child: _CircleAvatar(
-                          imageUrl: rightImage!,
-                          size: 50,
-                          borderColor: const Color.fromARGB(255, 202, 196, 182),
-                          borderWidth: 2,
-                        ),
-                      ),
-
-                    // Center large badge
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 30,
-                      child: Center(
-                        child: _CenterArtistBadge(
-                          imageUrl: centerImage,
-                          artistName: artistName,
-                          size: 82,
-                          borderColor: ringColor,
-                        ),
-                      ),
-                    ),
-
-                    // Bottom gradient label
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.78),
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.78),
+                              ],
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                "STATION",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  fontStyle: FontStyle.italic,
+                                  letterSpacing: 1.4,
+                                ),
+                              ),
+                              Text(
+                                artistName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              "STATION",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                fontStyle: FontStyle.italic,
-                                letterSpacing: 1.4,
-                              ),
-                            ),
-                            Text(
-                              artistName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-
             const SizedBox(height: 6),
-
             Text(
               key: Key('station_artists_$artistName'),
               stationName,

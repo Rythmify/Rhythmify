@@ -263,17 +263,17 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   void _onTap(NotificationEntity notification, String? embedId) {
     switch (notification.type) {
       case NotificationType.follow:
-        context.push('/profile/${notification.actorId}');
+        context.push('/home/profile/${notification.actorId}');
       case NotificationType.like:
       case NotificationType.repost:
         if (notification.resourceId == null) return;
         if (notification.resourceType == ResourceType.playlist) {
-          context.push('/playlist/${notification.resourceId}');
+          context.push('/home/playlist/${notification.resourceId}');
         } else if (notification.resourceType == ResourceType.track) {
-          context.push('/behind-the-track/${notification.resourceId}');
+          context.push('/home/behind-the-track/${notification.resourceId}');
         }
       case NotificationType.comment:
-        if (embedId != null) context.push('/behind-the-track/$embedId');
+        if (embedId != null) context.push('/home/behind-the-track/$embedId');
       case NotificationType.newPostByFollowed:
         return;
     }

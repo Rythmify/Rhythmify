@@ -23,6 +23,9 @@ class TrackInfoHeader extends StatelessWidget {
         child: Stack(
           children: [
             GestureDetector(
+              key: const Key(
+                'track_info_header_artwork_fullscreen_gesture_detector',
+              ),
               onTap: () => Navigator.pop(context),
               child: Center(
                 child: Padding(
@@ -73,6 +76,9 @@ class TrackInfoHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
+                  key: const Key(
+                    'track_info_header_artwork_fullscreen_close_icon_button',
+                  ),
                   icon: const Icon(Icons.close, color: Colors.white, size: 22),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -92,6 +98,7 @@ class TrackInfoHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
+            key: Key('track_info_header_artwork_gesture_detector_${track.id}'),
             onTap: () => _showFullScreenArtwork(context),
             child: Hero(
               tag: 'track_artwork_${track.id}',

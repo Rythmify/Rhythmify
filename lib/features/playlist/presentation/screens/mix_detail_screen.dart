@@ -10,7 +10,6 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/local/local_saved_store.dart';
 import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
@@ -85,17 +84,12 @@ class _MixDetailBody extends ConsumerStatefulWidget {
 }
 
 class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
-  bool _isSaved = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkSaved();
-  }
-
-  Future<void> _checkSaved() async {
-    final saved = await LocalSavedStore.instance.isMixSaved(widget.mixId);
-    if (mounted) setState(() => _isSaved = saved);
+  // FIX: derive _isSaved from savedMixesProvider instead of LocalSavedStore.
+  // This keeps the heart in sync when the user likes/unlikes from this screen
+  // or from any other screen in the same session.
+  bool get _isSaved {
+    final mixes = ref.watch(savedMixesProvider).asData?.value ?? [];
+    return mixes.any((m) => m.mixId == widget.mixId);
   }
 
   Future<void> _toggleLike() async {
@@ -107,8 +101,8 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
       trackCount: widget.tracks.length,
       savedAt: DateTime.now(),
     );
+    // toggle() handles backend call + LocalSavedStore + playlistListProvider reload
     await ref.read(savedMixesProvider.notifier).toggle(mix);
-    if (mounted) setState(() => _isSaved = !_isSaved);
   }
 
   Future<void> _play(List<Track> list, int index) async {
@@ -124,6 +118,9 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch savedMixesProvider so the heart rebuilds reactively
+    ref.watch(savedMixesProvider);
+
     final tracks = widget.tracks;
     final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
