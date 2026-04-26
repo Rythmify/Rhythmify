@@ -104,17 +104,18 @@ flutter_launcher_icons:
   image_path: "assets/icons/app_icon.png"
   min_sdk_android: 21
   adaptive_icon_background: "#121212"
-  adaptive_icon_foreground: assets/icons/logo.png
-
+  adaptive_icon_foreground: "assets/icons/logo.png"
 
 # The engine splash screen
-# just a solid color before the actual custom splash screen
 flutter_native_splash:
   color: "#121212"
-  image: "assets/icons/empty.png"
+  image: "assets/icons/logo.png"
+  brand: "assets/icons/logo.png"
+  color_dark: "#121212"
   android: true
   ios: true
 
   android_12:
     color: "#121212"
-    image: "assets/icons/empty.png"
+    image: "assets/icons/logo.png"
+    icon_background_color: "#121212"

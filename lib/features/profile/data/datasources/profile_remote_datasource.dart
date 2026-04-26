@@ -1,10 +1,13 @@
 import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
+import '../models/follow_status_model.dart';
 
 /// Contract for profile-related remote data operations.
 abstract class ProfileRemoteDatasource {
   Future<ProfileModel> getProfile({required String userId});
+
+  Future<FollowStatusModel> getFollowStatus(String userId);
 
   Future<ProfileModel> updateProfile({
     required String displayName,
@@ -27,6 +30,10 @@ abstract class ProfileRemoteDatasource {
   Future<void> followUser({required String userId});
 
   Future<void> unfollowUser({required String userId});
+
+  Future<void> blockUser({required String userId});
+
+  Future<void> unblockUser({required String userId});
 
   Future<List<TrackModel>> getLikedTracks({
     required String userId,
