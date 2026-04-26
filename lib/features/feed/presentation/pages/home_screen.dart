@@ -89,6 +89,13 @@ class HomeScreen extends ConsumerWidget {
     final latestTracks =
         historyState.entries.take(4).map((e) => e.toTrack()).toList();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    const crossAxisCount = 2;
+    const horizontalPadding = 16.0 * 2;
+    const crossAxisSpacing = 8.0;
+    final itemWidth = (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
+    final dynamicAspectRatio = itemWidth / 59.6;
+
     return Scaffold(
       key: const Key('home_scaffold'),
       appBar: AppBar(
@@ -181,11 +188,13 @@ class HomeScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(homeDataProvider);
           ref.invalidate(hotForYouProvider);
-          ref.invalidate(likesProvider);
-          ref.invalidate(historyProvider);
-          // Also invalidate specific genre if needed, but homeDataProvider covers most
-          await ref.read(homeDataProvider.future);
-          await ref.read(hotForYouProvider.future);
+          
+          await Future.wait([
+            ref.read(homeDataProvider.future),
+            ref.read(hotForYouProvider.future),
+            ref.read(likesProvider.notifier).load(refresh: true),
+            ref.read(historyProvider.notifier).load(refresh: true),
+          ]);
         },
         child: ListView(
           key: const Key('home_scroll_view'),
@@ -201,11 +210,11 @@ class HomeScreen extends ConsumerWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
                     mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 3,
+                    crossAxisSpacing: crossAxisSpacing,
+                    childAspectRatio: dynamicAspectRatio,
                   ),
                   itemCount: latestTracks.length,
                   itemBuilder: (context, index) =>
@@ -213,12 +222,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-            //const SizedBox(height: 16),
+            const SizedBox(height: 4),
 
             /// Displays trending tracks grouped by genre.
             TrendingByGenre(),
-
-            //const SizedBox(height: 24),
 
             /// Displays personalized "Hot For You" recommendations.
             HotForYouSection(),
