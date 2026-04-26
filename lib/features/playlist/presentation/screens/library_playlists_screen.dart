@@ -283,6 +283,7 @@ class _LibraryPlaylistsScreenState
                   child: Row(
                     children: [
                       IconButton(
+                        key: const Key('library_playlists_back_button'),
                         icon: const Icon(
                           Icons.chevron_left,
                           color: AppTheme.textPrimary,
@@ -297,6 +298,7 @@ class _LibraryPlaylistsScreenState
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(
+                            key: const Key('library_playlists_search_field'),
                             onChanged: (v) => setState(() => _searchQuery = v),
                             style: AppTheme.bodyNormal,
                             decoration: InputDecoration(
@@ -315,6 +317,7 @@ class _LibraryPlaylistsScreenState
                         ),
                       ),
                       TextButton(
+                        key: const Key('library_playlists_cancel_button'),
                         onPressed: () => context.pop(),
                         child: Text(
                           'Cancel',
@@ -325,6 +328,9 @@ class _LibraryPlaylistsScreenState
                       ),
                       IconButton(
                         key: _filterIconKey,
+                        // Semantic key for tests to find the filter button
+                        // without conflicting with the GlobalKey used for
+                        // overlay positioning.
                         icon: Icon(
                           Icons.tune,
                           color:
@@ -355,6 +361,7 @@ class _LibraryPlaylistsScreenState
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
+                          key: const Key('library_playlists_import_button'),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -381,6 +388,7 @@ class _LibraryPlaylistsScreenState
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
+                          key: const Key('library_playlists_create_button'),
                           onPressed: () => _showCreateSheet(context),
                           icon: const Icon(
                             Icons.add,
@@ -407,18 +415,21 @@ class _LibraryPlaylistsScreenState
                   child: _loading
                       ? const Center(
                           child: CircularProgressIndicator(
+                            key: Key('library_playlists_loading_indicator'),
                             color: AppTheme.primaryBrand,
                           ),
                         )
                       : filtered.isEmpty
                       ? _emptyState()
                       : ListView.builder(
+                          key: const Key('library_playlists_list'),
                           padding: const EdgeInsets.only(bottom: 140),
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final playlist = filtered[index];
                             final isOwner = playlist.isOwned;
                             return _PlaylistListTile(
+                              key: Key('playlist_tile_${playlist.id}'),
                               playlist: playlist,
                               onTap: () => _onPlaylistTap(context, playlist),
                               onMoreTap: () =>
@@ -609,6 +620,7 @@ class _DropdownItem extends StatelessWidget {
 // ── Playlist tile ─────────────────────────────────────────────────────────────
 class _PlaylistListTile extends StatelessWidget {
   const _PlaylistListTile({
+    super.key,
     required this.playlist,
     required this.onTap,
     required this.onMoreTap,
@@ -647,6 +659,7 @@ class _PlaylistListTile extends StatelessWidget {
               ),
             ),
             IconButton(
+              key: Key('playlist_tile_more_${playlist.id}'),
               icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),

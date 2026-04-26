@@ -187,6 +187,7 @@ class _BodyState extends ConsumerState<_Body> {
               child: Row(
                 children: [
                   IconButton(
+                    key: const Key('related_tracks_back_button'),
                     icon: const Icon(
                       Icons.chevron_left,
                       color: AppTheme.textPrimary,
@@ -264,6 +265,7 @@ class _BodyState extends ConsumerState<_Body> {
                 children: [
                   // Heart is now active for BOTH station and track radio
                   IconButton(
+                    key: const Key('related_tracks_like_button'),
                     icon: Icon(
                       _isSaved ? Icons.favorite : Icons.favorite_border,
                       color: _isSaved
@@ -274,6 +276,7 @@ class _BodyState extends ConsumerState<_Body> {
                     onPressed: _toggleLike,
                   ),
                   IconButton(
+                    key: const Key('related_tracks_more_button'),
                     icon: const Icon(
                       Icons.more_horiz,
                       color: AppTheme.textPrimary,
@@ -283,6 +286,7 @@ class _BodyState extends ConsumerState<_Body> {
                   ),
                   const Spacer(),
                   IconButton(
+                    key: const Key('related_tracks_shuffle_button'),
                     icon: const Icon(
                       Icons.shuffle,
                       color: AppTheme.textSecondary,
@@ -294,6 +298,7 @@ class _BodyState extends ConsumerState<_Body> {
                     },
                   ),
                   GestureDetector(
+                    key: const Key('related_tracks_play_button'),
                     onTap: () => _play(tracks, 0),
                     child: Container(
                       width: 52,

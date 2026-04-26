@@ -122,7 +122,10 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
       body: SafeArea(
         child: asyncStations.when(
           loading: () => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+            child: CircularProgressIndicator(
+              key: Key('library_stations_loading_indicator'),
+              color: AppTheme.primaryBrand,
+            ),
           ),
           error: (e, _) => Center(
             child: Column(
@@ -131,6 +134,7 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
                 Text('Could not load stations', style: AppTheme.bodyMedium),
                 const SizedBox(height: 12),
                 TextButton(
+                  key: const Key('library_stations_retry_button'),
                   onPressed: () =>
                       ref.read(savedStationsProvider.notifier).refresh(),
                   child: Text(
@@ -153,6 +157,7 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
                   child: Row(
                     children: [
                       IconButton(
+                        key: const Key('library_stations_back_button'),
                         icon: const Icon(
                           Icons.chevron_left,
                           color: AppTheme.textPrimary,
@@ -167,6 +172,7 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: TextField(
+                            key: const Key('library_stations_search_field'),
                             onChanged: (v) => setState(() => _searchQuery = v),
                             style: AppTheme.bodyNormal,
                             decoration: InputDecoration(
@@ -241,11 +247,13 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
                               .read(savedStationsProvider.notifier)
                               .refresh(),
                           child: ListView.builder(
+                            key: const Key('library_stations_list'),
                             padding: const EdgeInsets.only(bottom: 140),
                             itemCount: filtered.length,
                             itemBuilder: (context, i) {
                               final s = filtered[i];
                               return _StationTile(
+                                key: Key('station_tile_${s.artistId}'),
                                 station: s,
                                 onTap: () => context.push(
                                   '/home/station/${s.artistId}',
@@ -377,6 +385,7 @@ class _DropdownItem extends StatelessWidget {
 // ── Station tile ──────────────────────────────────────────────────────────────
 class _StationTile extends StatelessWidget {
   const _StationTile({
+    super.key,
     required this.station,
     required this.onTap,
     required this.onUnsave,
@@ -440,6 +449,7 @@ class _StationTile extends StatelessWidget {
               ),
             ),
             IconButton(
+              key: Key('station_tile_unsave_${station.artistId}'),
               icon: const Icon(
                 Icons.sensors_off,
                 color: AppTheme.textSecondary,

@@ -141,6 +141,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               child: Row(
                 children: [
                   IconButton(
+                    key: const Key('mix_detail_back_button'),
                     icon: const Icon(
                       Icons.chevron_left,
                       color: AppTheme.textPrimary,
@@ -195,6 +196,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
               child: Row(
                 children: [
                   IconButton(
+                    key: const Key('mix_detail_like_button'),
                     icon: Icon(
                       _isSaved ? Icons.favorite : Icons.favorite_border,
                       color: _isSaved
@@ -205,6 +207,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                     onPressed: _toggleLike,
                   ),
                   IconButton(
+                    key: const Key('mix_detail_more_button'),
                     icon: const Icon(
                       Icons.more_horiz,
                       color: AppTheme.textPrimary,
@@ -214,6 +217,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                   ),
                   const Spacer(),
                   IconButton(
+                    key: const Key('mix_detail_shuffle_button'),
                     icon: const Icon(
                       Icons.shuffle,
                       color: AppTheme.textSecondary,
@@ -225,6 +229,7 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
                     },
                   ),
                   GestureDetector(
+                    key: const Key('mix_detail_play_button'),
                     onTap: () => _play(tracks, 0),
                     child: Container(
                       width: 52,

@@ -154,6 +154,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               child: Row(
                 children: [
                   IconButton(
+                    key: const Key('library_albums_back_button'),
                     icon: const Icon(
                       Icons.chevron_left,
                       color: AppTheme.textPrimary,
@@ -168,6 +169,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: TextField(
+                        key: const Key('library_albums_search_field'),
                         onChanged: (v) => setState(() => _searchQuery = v),
                         style: AppTheme.bodyNormal,
                         decoration: InputDecoration(
@@ -214,6 +216,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
               child: state.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
+                        key: Key('library_albums_loading_indicator'),
                         color: AppTheme.primaryBrand,
                       ),
                     )
@@ -231,12 +234,14 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                       ),
                     )
                   : ListView.builder(
+                      key: const Key('library_albums_list'),
                       padding: const EdgeInsets.only(bottom: 140),
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
                         final album = filtered[index];
                         final isOwner = album.ownerId == _currentUserId();
                         return _AlbumTile(
+                          key: Key('album_tile_${album.id}'),
                           album: album,
                           onTap: () => context.push(
                             '/home/playlist/${album.id}',
@@ -411,6 +416,7 @@ class _DropdownItem extends StatelessWidget {
 // ── Album tile ────────────────────────────────────────────────────────────────
 class _AlbumTile extends StatelessWidget {
   const _AlbumTile({
+    super.key,
     required this.album,
     required this.onTap,
     required this.onMoreTap,
@@ -452,6 +458,7 @@ class _AlbumTile extends StatelessWidget {
               ),
             ),
             IconButton(
+              key: Key('album_tile_more_${album.id}'),
               icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
