@@ -57,6 +57,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
         centerTitle: false,
         actions: [
           IconButton(
+            key: const Key('notifications_filter_button'),
             onPressed: _showFilterSheet,
             icon: const Icon(Icons.tune_rounded),
           ),
@@ -109,6 +110,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
               ),
               const SizedBox(height: 8),
               _FilterOption(
+                key: const Key('filter_option_all'),
                 icon: Icons.notifications_rounded,
                 label: 'Show all notifications',
                 selected: _filter == Filter.all,
@@ -118,6 +120,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 },
               ),
               _FilterOption(
+                key: const Key('filter_option_comments'),
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Comments',
                 selected: _filter == Filter.comments,
@@ -127,6 +130,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 },
               ),
               _FilterOption(
+                key: const Key('filter_option_likes'),
                 icon: Icons.favorite_border_rounded,
                 label: 'Likes',
                 selected: _filter == Filter.likes,
@@ -136,6 +140,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 },
               ),
               _FilterOption(
+                key: const Key('filter_option_followings'),
                 icon: Icons.person_outline_rounded,
                 label: 'Followings',
                 selected: _filter == Filter.followings,
@@ -145,6 +150,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 },
               ),
               _FilterOption(
+                key: const Key('filter_option_reposts'),
                 icon: Icons.repeat_rounded,
                 label: 'Reposts',
                 selected: _filter == Filter.reposts,
@@ -154,6 +160,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 },
               ),
               _FilterOption(
+                key: const Key('filter_option_reactions'),
                 icon: Icons.sentiment_satisfied_outlined,
                 label: 'Reactions',
                 selected: _filter == Filter.reactions,
@@ -223,6 +230,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             SizedBox(
               width: double.infinity,
               child: TextButton(
+                key: const Key('notifications_show_all_button'),
                 onPressed: () => _setFilter(Filter.all),
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -283,18 +291,19 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     final followState = ref.watch(followStateProvider);
     if (state.isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        child: CircularProgressIndicator(key: Key('notifications_loading_indicator'), color: AppTheme.primaryBrand),
       );
     }
 
     if (state.error != null && state.items.isEmpty) {
-      return Center(child: Text(state.error!, style: AppTheme.bodyMedium));
+      return Center(child: Text(state.error!, key: const Key('notifications_error_text'), style: AppTheme.bodyMedium));
     }
 
     if (state.items.isEmpty) {
       if (_filter == Filter.all) {
         return const Center(
           child: Column(
+            key: Key('notifications_empty_all'),
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
@@ -317,6 +326,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     if (filteredItems.isEmpty) return _emptyListMessage();
     final items = _buildItems(filteredItems);
     return RefreshIndicator(
+      key: const Key('notifications_list'),
       color: AppTheme.primaryBrand,
       onRefresh: () => ref.read(notificationsProvider.notifier).fetch(),
       child: ListView.builder(
@@ -360,6 +370,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
               ? !serverIsLiked
               : serverIsLiked;
           return NotificationTile(
+            key: ValueKey(notification.id),
             notification: notification,
             onTap: () => _onTap(notification, commentData?.embed?.embedId),
             trackEmbed: commentData?.embed,
@@ -395,6 +406,7 @@ class _FilterOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const _FilterOption({
+    super.key,
     required this.icon,
     required this.label,
     required this.selected,

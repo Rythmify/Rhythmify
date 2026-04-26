@@ -33,6 +33,7 @@ class NotificationTile extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return InkWell(
+      key: const Key('notification_tile_inkwell'),
       onTap: onTap,
       child: Container(
         color: notification.isRead ? Colors.transparent : Color(0xFF2F2F2F),
@@ -41,6 +42,7 @@ class NotificationTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _AvatarWithBadge(
+              key: const Key('notification_avatar_badge'),
               avatar: notification.actorAvatar,
               type: notification.type,
             ),
@@ -175,6 +177,7 @@ class NotificationTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: GestureDetector(
+        key: const Key('notification_like_button'),
         onTap: onLikeTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -205,11 +208,11 @@ class NotificationTile extends StatelessWidget {
 
   Widget _buildTrailing() {
     if (notification.type == NotificationType.follow) {
-      return _FollowButton(isFollowing: isFollowing, onTap: onFollowTap);
+      return _FollowButton(key: const Key('notification_follow_button'), isFollowing: isFollowing, onTap: onFollowTap);
     } else if (notification.type == NotificationType.comment) {
-      return _ResourceThumbnail(imageUrl: trackEmbed?.thumbnailUrl);
+      return _ResourceThumbnail(key: const Key('notification_resource_thumbnail'), imageUrl: trackEmbed?.thumbnailUrl);
     }
-    return _ResourceThumbnail(imageUrl: notification.resourceImageUrl);
+    return _ResourceThumbnail(key: const Key('notification_resource_thumbnail'), imageUrl: notification.resourceImageUrl);
   }
 
   String _timeAgo(DateTime dt) {
@@ -226,7 +229,7 @@ class _AvatarWithBadge extends StatelessWidget {
   final String? avatar;
   final NotificationType type;
 
-  const _AvatarWithBadge({required this.avatar, required this.type});
+  const _AvatarWithBadge({super.key, required this.avatar, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +293,7 @@ class _FollowButton extends StatelessWidget {
   final bool isFollowing;
   final VoidCallback? onTap;
 
-  const _FollowButton({required this.isFollowing, this.onTap});
+  const _FollowButton({super.key, required this.isFollowing, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +318,7 @@ class _FollowButton extends StatelessWidget {
 
 class _ResourceThumbnail extends StatelessWidget {
   final String? imageUrl;
-  const _ResourceThumbnail({this.imageUrl});
+  const _ResourceThumbnail({super.key, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
