@@ -187,11 +187,10 @@ class DatasourceImplement implements DatasourceInterface {
       final url = ApiEndPoints.getSearchedUsers(query);
 
       final response = await dio.get(url);
+      final body=response.data;
+      final List raw= body['data']['users']; 
 
-      final body = response.data;
-      final List data = body['data']['items'];
-
-      return data
+      return raw
           .map(
             (e) =>
                 PotentialConversationModel.fromJson(e as Map<String, dynamic>),

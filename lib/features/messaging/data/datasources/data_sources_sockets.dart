@@ -30,6 +30,19 @@ class DataSourcesSockets {
       debugPrint('🔄 reconnect_attempt: auth token refreshed');
     });
 
+    // After all built-in reconnect attempts are exhausted, wait and try again.
+    // This covers Azure Container Apps cold-start: the server may take longer
+    // than the 5-attempt window to become ready.
+    _socket!.io.on('reconnect_failed', (_) {
+      debugPrint('⚠️ reconnect_failed: all attempts exhausted — retrying in 8s');
+      Future.delayed(const Duration(seconds: 8), () {
+        if (_socket != null && !(_socket!.connected)) {
+          _socket!.auth = {'token': 'Bearer ${getToken()}'};
+          _socket!.connect();
+        }
+      });
+    });
+
     _socket!.onConnect((_) {
       debugPrint('✅ Socket connected');
       if (_currentConversationId != null) {

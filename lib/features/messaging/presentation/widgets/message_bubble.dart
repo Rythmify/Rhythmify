@@ -92,7 +92,7 @@ class MessageBubble extends ConsumerWidget {
                             ? null
                             : () {
                                 if (embedType == 'track') {
-                                  context.push('/behind-the-track/$embedId');
+                                  context.push('/home/behind-the-track/$embedId');
                                 } else {
                                   context.push(
                                     '/home/playlist/$embedId',
