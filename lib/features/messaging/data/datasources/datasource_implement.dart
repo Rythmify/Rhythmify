@@ -6,7 +6,6 @@ import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
-import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
 /// Concrete implementation of [DatasourceInterface] using the Dio HTTP client.
 ///
