@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -6,47 +8,63 @@ class DataSourcesSockets {
   String? _currentConversationId;
   Function()? _onReconnectedToRoom;
 
+  String? _url;
+  String Function()? _getToken;
+  Timer? _retryTimer;
+
   void setOnReconnectedToRoom(Function() callback) {
     _onReconnectedToRoom = callback;
   }
 
   void connect(String url, String Function() getToken) {
+    _url = url;
+    _getToken = getToken;
+    _buildAndConnect();
+  }
+
+  void _buildAndConnect() {
+    // Dispose old socket cleanly before creating a new one
+    _socket?.off('reconnect_attempt');
+    _socket?.off('reconnect_failed');
+    _socket?.clearListeners();
+    _socket?.dispose();
+    _socket = null;
+
     _socket = io.io(
-      url,
+      _url!,
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .setAuth({'token': 'Bearer ${getToken()}'})
+          .setAuth({'token': 'Bearer ${_getToken!()}'})
           .enableReconnection()
-          .setReconnectionAttempts(5)
+          .setReconnectionAttempts(10) // ← was 5
+          .setReconnectionDelay(2000) // ← 2s between attempts
+          .setReconnectionDelayMax(10000) // ← cap at 10s
           .disableAutoConnect()
           .build(),
     );
 
-    // Refresh the auth token before each automatic reconnect attempt.
-    // Must be registered on the Manager (socket.io), not the Socket itself —
-    // the Dart socket_io_client fires reconnect_attempt on the Manager.
     _socket!.io.on('reconnect_attempt', (_) {
-      _socket!.auth = {'token': 'Bearer ${getToken()}'};
+      _socket!.auth = {'token': 'Bearer ${_getToken!()}'};
       debugPrint('🔄 reconnect_attempt: auth token refreshed');
     });
 
-    // After all built-in reconnect attempts are exhausted, wait and try again.
-    // This covers Azure Container Apps cold-start: the server may take longer
-    // than the 5-attempt window to become ready.
+    // KEY FIX: after all attempts fail, build a FRESH socket instance.
+    // Calling connect() on the old socket after reconnect_failed doesn't
+    // work — the Manager is in a terminal state and ignores the call.
     _socket!.io.on('reconnect_failed', (_) {
-      debugPrint(
-        '⚠️ reconnect_failed: all attempts exhausted — retrying in 8s',
-      );
-      Future.delayed(const Duration(seconds: 8), () {
-        if (_socket != null && !(_socket!.connected)) {
-          _socket!.auth = {'token': 'Bearer ${getToken()}'};
-          _socket!.connect();
+      debugPrint('⚠️ reconnect_failed — rebuilding socket in 8s');
+      _retryTimer?.cancel();
+      _retryTimer = Timer(const Duration(seconds: 8), () {
+        if (_url != null && _getToken != null) {
+          debugPrint('🔁 Rebuilding socket with fresh instance');
+          _buildAndConnect(); // ← fresh socket, not connect() on stale one
         }
       });
     });
 
     _socket!.onConnect((_) {
       debugPrint('✅ Socket connected');
+      _retryTimer?.cancel(); // stop any pending rebuild timer
       if (_currentConversationId != null) {
         debugPrint('🔁 onConnect: rejoining room $_currentConversationId');
         _socket!.emit('message:join', {
@@ -172,12 +190,30 @@ class DataSourcesSockets {
     _socket!.auth = {'token': 'Bearer $token'};
     if (!(_socket!.connected)) {
       debugPrint('🔄 reconnectWithToken: connecting with fresh token');
-      _socket!.connect();
+      // If the socket Manager is exhausted, rebuild entirely
+      if (_url != null && _getToken != null) {
+        _buildAndConnect();
+      } else {
+        _socket!.connect();
+      }
+    }
+  }
+
+  void forceReconnectIfNeeded() {
+    if (_socket == null || _url == null) return;
+    if (!(_socket!.connected)) {
+      debugPrint('📲 App resumed — rebuilding socket');
+      _buildAndConnect();
     }
   }
 
   void disconnect() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
     _socket?.disconnect();
+    _socket?.dispose();
     _socket = null;
+    _url = null;
+    _getToken = null;
   }
 }
