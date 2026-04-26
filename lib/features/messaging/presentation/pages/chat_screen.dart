@@ -722,7 +722,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     for (final m in _trackUrlRegex.allMatches(text)) {
       final seg = m.group(1)!;
       if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
-        continue;
+        {continue;}
       if (_embedCache.containsKey(seg)) continue;
       pending.add((segment: seg, type: 'track'));
     }
