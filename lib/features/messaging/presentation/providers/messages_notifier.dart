@@ -61,7 +61,7 @@ class MessagesState {
 class MessagesNotifier extends StateNotifier<MessagesState> {
   final GetMessagesUsecase _usecase;
   final String _conversationId;
-  int _total=0;
+  int _total = 0;
 
   /// Maximum number of messages fetched per request (matches server-side limit).
   static const int _limit = 100;
@@ -112,7 +112,7 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
           hasMore: latestOffset > 0,
         );
       }
-      _total=total;
+      _total = total;
     } catch (e) {
       if (!mounted) return;
       state = MessagesState(
@@ -156,16 +156,16 @@ class MessagesNotifier extends StateNotifier<MessagesState> {
   /// Called by socket listeners on new message or read-status updates.
   Future<void> refresh() => loadInitial();
 
-  void appendMessage(Message message){
+  void appendMessage(Message message) {
     _total++;
-  state=state.copyWith(messages:[...state.messages,message]);
+    state = state.copyWith(messages: [...state.messages, message]);
   }
 
-  void updateMessageRead(String messageId){
-    state=state.copyWith(
+  void updateMessageRead(String messageId) {
+    state = state.copyWith(
       messages: state.messages
-                     .map((m)=> m.messageId==messageId?m.copyWith(isRead: true):m)
-                     .toList(),
+          .map((m) => m.messageId == messageId ? m.copyWith(isRead: true) : m)
+          .toList(),
     );
   }
 }
@@ -183,4 +183,3 @@ final messagesNotifierProvider =
         conversationId: conversationId,
       );
     });
-

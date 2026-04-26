@@ -23,15 +23,19 @@ class MarkAsReadNotifier extends StateNotifier<bool> {
   Future<void> markRead({required String msgId, required String convId}) async {
     if (!mounted) return;
     state = true;
-   try{ 
-      final uCase = MarkMessagesAsReadUsecase(repo: ref.read(repositoryprovider));
+    try {
+      final uCase = MarkMessagesAsReadUsecase(
+        repo: ref.read(repositoryprovider),
+      );
       await uCase(msgId, convId);
-      if(!mounted) return;
-      ref.read(messagesNotifierProvider(convId).notifier).updateMessageRead(msgId);
-    }catch(e){
+      if (!mounted) return;
+      ref
+          .read(messagesNotifierProvider(convId).notifier)
+          .updateMessageRead(msgId);
+    } catch (e) {
       //409 = already read.
-    }finally{
-      if(mounted)state = false;
+    } finally {
+      if (mounted) state = false;
     }
   }
 }

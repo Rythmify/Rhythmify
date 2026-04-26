@@ -10,10 +10,7 @@ import 'package:go_router/go_router.dart';
 
 class LikesPlaylistsScreen extends ConsumerStatefulWidget {
   final List<SharedEmbed> initialSelected;
-  const LikesPlaylistsScreen({
-    super.key,
-    this.initialSelected=const[]
-  });
+  const LikesPlaylistsScreen({super.key, this.initialSelected = const []});
 
   @override
   ConsumerState<LikesPlaylistsScreen> createState() =>

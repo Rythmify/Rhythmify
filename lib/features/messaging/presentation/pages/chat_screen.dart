@@ -94,20 +94,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.onMessageReceived((data) {
       print('🔥 onMessageReceived fired: $data');
       if (mounted) {
-        final message = MessageModel.fromJson(data['message'] as Map<String, dynamic>);
-        ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(message);
+        final message = MessageModel.fromJson(
+          data['message'] as Map<String, dynamic>,
+        );
+        ref
+            .read(messagesNotifierProvider(conversationId).notifier)
+            .appendMessage(message);
         ref.invalidate(conversationProvider);
-        if(_scrollController.hasClients){
-          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
         }
         _socket.markRead(conversationId, message.messageId, true, 0);
       }
     });
     _socket.onMessageReadUpdated((data) {
       if (mounted) {
-        final messageId = data['messageId']as String?;
-        if(messageId!=null){
-          ref.read(messagesNotifierProvider(conversationId).notifier).updateMessageRead(messageId);
+        final messageId = data['messageId'] as String?;
+        if (messageId != null) {
+          ref
+              .read(messagesNotifierProvider(conversationId).notifier)
+              .updateMessageRead(messageId);
         }
         ref.invalidate(conversationProvider);
       }
@@ -330,12 +340,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? BlockedUserWidget(
                             key: const Key('chat_screen_blocked_user_widget'),
                             participantId: participantId,
-                            onUnblocked: widget.conv!=null
-                              ?(){
-                                _socket.joinConversation(widget.conv!.conversationId);
-                                _setupSocketListeners(widget.conv!.conversationId);
-                              }
-                              :null,
+                            onUnblocked: widget.conv != null
+                                ? () {
+                                    _socket.joinConversation(
+                                      widget.conv!.conversationId,
+                                    );
+                                    _setupSocketListeners(
+                                      widget.conv!.conversationId,
+                                    );
+                                  }
+                                : null,
                           )
                         : isBlockedBy
                         ? const BlockedByWidget(
@@ -380,7 +394,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         final embeds = await context
                                             .push<List<SharedEmbed>>(
                                               '/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists',
-                                              extra: List<SharedEmbed>.from(_selectedEmbeds)
+                                              extra: List<SharedEmbed>.from(
+                                                _selectedEmbeds,
+                                              ),
                                             );
                                         if (embeds != null) {
                                           setState(() {
@@ -477,7 +493,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             final embeds = await context
                                 .push<List<SharedEmbed>>(
                                   '/home/inbox/chat/new/likes-playlists',
-                                  extra: List<SharedEmbed>.from(_selectedEmbeds),
+                                  extra: List<SharedEmbed>.from(
+                                    _selectedEmbeds,
+                                  ),
                                 );
                             if (embeds != null) {
                               setState(() {
@@ -677,7 +695,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     // Remove preview cards whose URL is no longer present (or has been edited).
     final orphaned = _selectedEmbeds
-        .where((e) => !text.contains(_permalinkFor(e)) && !text.contains(_idUrlFor(e)))
+        .where(
+          (e) =>
+              !text.contains(_permalinkFor(e)) && !text.contains(_idUrlFor(e)),
+        )
         .toList();
     if (orphaned.isNotEmpty) {
       setState(() => _selectedEmbeds.removeWhere(orphaned.contains));
@@ -690,7 +711,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     for (final embed in _embedCache.values) {
       if (!seenIds.add(embed.embedId)) continue;
       if (_selectedEmbeds.any((e) => e.embedId == embed.embedId)) continue;
-      if (text.contains(_permalinkFor(embed)) || text.contains(_idUrlFor(embed))) {
+      if (text.contains(_permalinkFor(embed)) ||
+          text.contains(_idUrlFor(embed))) {
         if (mounted) setState(() => _selectedEmbeds.add(embed));
       }
     }
@@ -699,13 +721,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final pending = <({String segment, String type})>[];
     for (final m in _trackUrlRegex.allMatches(text)) {
       final seg = m.group(1)!;
-      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg)) continue;
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+        continue;
       if (_embedCache.containsKey(seg)) continue;
       pending.add((segment: seg, type: 'track'));
     }
     for (final m in _playlistUrlRegex.allMatches(text)) {
       final seg = m.group(1)!;
-      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg)) continue;
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+        continue;
       if (_embedCache.containsKey(seg)) continue;
       pending.add((segment: seg, type: 'playlist'));
     }
@@ -715,7 +739,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final embed = type == 'track'
             ? await repo.getTrack(segment)
             : await repo.getPlaylist(segment, 'playlist');
-        if (mounted && !_selectedEmbeds.any((e) => e.embedId == embed.embedId)) {
+        if (mounted &&
+            !_selectedEmbeds.any((e) => e.embedId == embed.embedId)) {
           _embedCache[embed.embedId] = embed;
           _embedCache[embed.embedName] = embed;
           setState(() => _selectedEmbeds.add(embed));
@@ -744,7 +769,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final returnedIds = {for (final e in returned) e.embedId};
 
     // Remove deselected embeds — try both name-based and ID-based URLs.
-    for (final removed in _selectedEmbeds.where((e) => !returnedIds.contains(e.embedId))) {
+    for (final removed in _selectedEmbeds.where(
+      (e) => !returnedIds.contains(e.embedId),
+    )) {
       controller.text = controller.text
           .replaceAll(_permalinkFor(removed), '')
           .replaceAll(_idUrlFor(removed), '')
@@ -752,7 +779,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
 
     // Add newly selected embeds as name-based permalinks.
-    final newEmbeds = returned.where((e) => !currentIds.contains(e.embedId)).toList();
+    final newEmbeds = returned
+        .where((e) => !currentIds.contains(e.embedId))
+        .toList();
     if (newEmbeds.isNotEmpty) {
       final newLinks = newEmbeds.map(_permalinkFor).join('\n');
       final existing = controller.text;
@@ -828,23 +857,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (foundUrl != null) {
         final textBefore = remaining.substring(0, foundIndex).trim();
         if (textBefore.isNotEmpty) {
-          await ref.read(sendMessageProvider.notifier).sendMessage(
-            conversationId: conversationId,
-            body: textBefore,
-          );
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(conversationId: conversationId, body: textBefore);
         }
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: conversationId,
-          embedId: extractedEmbedId,
-          embedType: extractedEmbedType,
-        );
+        await ref
+            .read(sendMessageProvider.notifier)
+            .sendMessage(
+              conversationId: conversationId,
+              embedId: extractedEmbedId,
+              embedType: extractedEmbedType,
+            );
         remaining = remaining.substring(foundIndex + foundUrl.length).trim();
       } else {
         if (remaining.isNotEmpty) {
-          await ref.read(sendMessageProvider.notifier).sendMessage(
-            conversationId: conversationId,
-            body: remaining,
-          );
+          await ref
+              .read(sendMessageProvider.notifier)
+              .sendMessage(conversationId: conversationId, body: remaining);
         }
         remaining = '';
       }
@@ -879,7 +908,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .ensureConversation(widget.newParticipantId!);
 
       final newConv =
-          nConv.participantName == 'Unknown' && widget.newParticipantName != null
+          nConv.participantName == 'Unknown' &&
+              widget.newParticipantName != null
           ? nConv.copyWith(participantName: widget.newParticipantName)
           : nConv;
 
@@ -901,7 +931,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ref.invalidate(conversationProvider);
         controller.clear();
         setState(() => _selectedEmbeds.clear());
-        context.go('/home/inbox/chat/${newConv.conversationId}', extra: newConv);
+        context.go(
+          '/home/inbox/chat/${newConv.conversationId}',
+          extra: newConv,
+        );
       }
     } catch (e) {
       if (!mounted) return;

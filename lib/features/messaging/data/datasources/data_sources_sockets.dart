@@ -50,16 +50,20 @@ class DataSourcesSockets {
 
   void joinConversation(String conversationId) {
     _currentConversationId = conversationId;
-    debugPrint('🚪 joinConversation: $conversationId | connected=${_socket?.connected}');
+    debugPrint(
+      '🚪 joinConversation: $conversationId | connected=${_socket?.connected}',
+    );
     if (_socket?.connected == true) {
       _socket!.emit('message:join', {'conversationId': conversationId});
       debugPrint('📤 message:join emitted for $conversationId');
-    } 
+    }
     //else if(_socket!=null && !(_socket!.connected)){
     //   _socket!.connect();
     // }
     else {
-      debugPrint('⚠️  joinConversation: socket not connected — onConnect will join');
+      debugPrint(
+        '⚠️  joinConversation: socket not connected — onConnect will join',
+      );
     }
     // If not connected yet, onConnect will handle the join
   }
@@ -111,10 +115,14 @@ class DataSourcesSockets {
   void onMessageReceived(Function(Map<String, dynamic>) callback) {
     _socket?.off('message:received');
     _socket?.on('message:received', (data) {
-      debugPrint('📨 RAW message:received | type=${data.runtimeType} | data=$data');
+      debugPrint(
+        '📨 RAW message:received | type=${data.runtimeType} | data=$data',
+      );
       callback(data as Map<String, dynamic>);
     });
-    debugPrint('👂 onMessageReceived listener registered | socket=${_socket?.id}');
+    debugPrint(
+      '👂 onMessageReceived listener registered | socket=${_socket?.id}',
+    );
   }
 
   void onMessageReadUpdated(Function(Map<String, dynamic>) callback) {
@@ -132,10 +140,10 @@ class DataSourcesSockets {
     _socket?.on('message:stop_typing', (data) => callback(data));
   }
 
-  void clearConversationListeners(){
+  void clearConversationListeners() {
     _socket?.off('message:received');
     _socket?.off('message:read_updated');
-    _onReconnectedToRoom=null;
+    _onReconnectedToRoom = null;
   }
 
   void onNotificationCreated(Function(Map<String, dynamic>) callback) {

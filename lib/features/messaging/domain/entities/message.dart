@@ -38,7 +38,7 @@ class Message {
     required this.createdAt,
   });
 
-  Message copyWith({bool? isRead}){
+  Message copyWith({bool? isRead}) {
     return Message(
       messageId: messageId,
       senderId: senderId,
@@ -46,8 +46,8 @@ class Message {
       body: body,
       embedId: embedId,
       embedType: embedType,
-      isRead: isRead??this.isRead,
-      createdAt: createdAt
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt,
     );
   }
 }

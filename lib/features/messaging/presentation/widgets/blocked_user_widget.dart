@@ -14,7 +14,11 @@ import 'package:rythmify/features/messaging/presentation/providers/un_block_prov
 class BlockedUserWidget extends ConsumerWidget {
   final String participantId;
   final VoidCallback? onUnblocked;
-  const BlockedUserWidget({super.key, required this.participantId, this.onUnblocked});
+  const BlockedUserWidget({
+    super.key,
+    required this.participantId,
+    this.onUnblocked,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

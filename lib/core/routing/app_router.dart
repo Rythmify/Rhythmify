@@ -258,14 +258,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'likes-playlists',
-                            builder: (context, state){ 
-                                final initial=state.extra is List<SharedEmbed>
-                                              ? state.extra as List<SharedEmbed>
-                                              : const <SharedEmbed>[];
-                                return LikesPlaylistsScreen(
-                                  initialSelected: initial,
-                                );
-                              }
+                            builder: (context, state) {
+                              final initial = state.extra is List<SharedEmbed>
+                                  ? state.extra as List<SharedEmbed>
+                                  : const <SharedEmbed>[];
+                              return LikesPlaylistsScreen(
+                                initialSelected: initial,
+                              );
+                            },
                           ),
                         ],
                       ),

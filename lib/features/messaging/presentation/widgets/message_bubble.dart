@@ -88,18 +88,18 @@ class MessageBubble extends ConsumerWidget {
                         embedType == 'playlist' ||
                         embedType == 'album') ...[
                       GestureDetector(
-                        onTap: embedId==null
-                               ? null
-                               : (){
-                                  if(embedType=='track'){
-                                    context.push('/behind-the-track/$embedId');
-                                  }else{
-                                    context.push(
-                                      '/home/playlist/$embedId',
-                                      extra: false,
-                                    );
-                                  }
-                               },
+                        onTap: embedId == null
+                            ? null
+                            : () {
+                                if (embedType == 'track') {
+                                  context.push('/behind-the-track/$embedId');
+                                } else {
+                                  context.push(
+                                    '/home/playlist/$embedId',
+                                    extra: false,
+                                  );
+                                }
+                              },
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(

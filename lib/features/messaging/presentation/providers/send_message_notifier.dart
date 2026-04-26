@@ -43,17 +43,19 @@ class SendMessageNotifier extends StateNotifier<bool> {
       final message = await uCase(conversationId, body, embedId, embedType);
 
       final socket = ref.read(socketProvider);
-      ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(message);
+      ref
+          .read(messagesNotifierProvider(conversationId).notifier)
+          .appendMessage(message);
 
       socket.sendMessage(conversationId, {
         'id': message.messageId,
-        'conversation_id':message.conversationId,
-        'sender_id':message.senderId,
-        'body':message.body,
-        'embed_id':message.embedId,
-        'embed_type':message.embedType,
-        'is_read':message.isRead,
-        'created_at':message.createdAt.toIso8601String()
+        'conversation_id': message.conversationId,
+        'sender_id': message.senderId,
+        'body': message.body,
+        'embed_id': message.embedId,
+        'embed_type': message.embedType,
+        'is_read': message.isRead,
+        'created_at': message.createdAt.toIso8601String(),
       });
       ref.invalidate(conversationProvider);
       state = false;

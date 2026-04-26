@@ -17,15 +17,14 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
   final socket = DataSourcesSockets();
 
   if (userId != null) {
-
-    String getToken () {
-    final current = ref.read(authProvider);
-    return current is AuthAuthenticated ? (current.user.token ?? '') : '';
+    String getToken() {
+      final current = ref.read(authProvider);
+      return current is AuthAuthenticated ? (current.user.token ?? '') : '';
     }
 
     socket.connect(
       'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io',
-      getToken
+      getToken,
     );
 
     // When the Dio interceptor silently refreshes the access token, proactively
@@ -40,21 +39,20 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
         }
       },
     );
-    
-  //   final binding=WidgetsBinding.instance;
-  //   final observer=_AppLifeCycleObserver(() => socket.reConnectIfNeeded(getToken));
-  //   binding.addObserver(observer);
-  //   ref.onDispose(() {
-  //     binding.removeObserver(observer);
-  //     socket.disconnect();
-  //   });
-  // } else {
-  //   ref.onDispose(() => socket.disconnect());
+
+    //   final binding=WidgetsBinding.instance;
+    //   final observer=_AppLifeCycleObserver(() => socket.reConnectIfNeeded(getToken));
+    //   binding.addObserver(observer);
+    //   ref.onDispose(() {
+    //     binding.removeObserver(observer);
+    //     socket.disconnect();
+    //   });
+    // } else {
+    //   ref.onDispose(() => socket.disconnect());
   }
   ref.onDispose(() => socket.disconnect());
   return socket;
 });
-
 
 // class _AppLifeCycleObserver extends WidgetsBindingObserver {
 //   final VoidCallback onResumed;
