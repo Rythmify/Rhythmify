@@ -8,7 +8,7 @@ abstract class NotificationRemoteDatasources {
   /// and [hasNext] indicating whether more pages exist.
   /// Pass [unreadOnly] as `true` to restrict results to unread notifications only.
   Future<({List<NotificationModel> items, int unreadCount, bool hasNext})>
-  getNotifications({int page, int limit, bool? unreadOnly});
+  getNotifications({int page, int limit, bool? unreadOnly, String? type});
 
   /// Returns the total count of unread notifications for the authenticated user.
   Future<int> getUnreadCount();
@@ -21,4 +21,11 @@ abstract class NotificationRemoteDatasources {
   ///
   /// Calls `GET /users/{userId}/follow-status` and extracts `is_following`.
   Future<bool> getFollowStatus(String userId);
+
+  /// Returns the `track_id` for the comment identified by [commentId].
+  ///
+  /// Calls `GET /comments/{commentId}` and extracts `track_id`.
+  Future<({String? trackId, bool isLikedByMe})> getTrackIdByCommentId(
+    String commentId,
+  );
 }

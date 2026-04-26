@@ -27,7 +27,7 @@ class ProfileUserListTile extends ConsumerWidget {
       color: Colors.transparent,
       child: InkWell(
         key: Key('profile_connections_user_${user.id}_tile'),
-        onTap: () => context.push('/profile/${user.id}'),
+        onTap: () => context.push('/home/profile/${user.id}'),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(

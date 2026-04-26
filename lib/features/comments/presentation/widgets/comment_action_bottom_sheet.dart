@@ -10,10 +10,10 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/player_dependency_providers.dart';
 import '../../domain/entities/comment.dart';
-import '../providers/comment_di_providers.dart';
 import '../providers/track_comments_notifier.dart';
 import '../providers/comment_replies_notifier.dart';
 import '../../../../core/presentation/pages/report_page.dart';
+import '../../../../features/feed/presentation/providers/feed_providers.dart';
 
 /// A bottom sheet widget displaying contextual actions for a specific comment.
 ///
@@ -30,11 +30,6 @@ class CommentActionBottomSheet extends ConsumerWidget {
   void _copyComment(BuildContext context) {
     Clipboard.setData(ClipboardData(text: comment.content));
     Navigator.pop(context);
-  }
-
-  void _goToProfile(BuildContext context) {
-    Navigator.pop(context);
-    context.push('/profile/${comment.userId}');
   }
 
   void _playFrom(BuildContext context, WidgetRef ref) {
@@ -80,24 +75,6 @@ class CommentActionBottomSheet extends ConsumerWidget {
         builder: (context) => ReportPage(reportedContentId: comment.id),
       ),
     );
-  }
-
-  void _blockUser(BuildContext context, WidgetRef ref) async {
-    Navigator.pop(context);
-    try {
-      await ref.read(blockUserProvider)(comment.userId);
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('User blocked')));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to block user: $e')));
-      }
-    }
   }
 
   @override
@@ -150,8 +127,13 @@ class CommentActionBottomSheet extends ConsumerWidget {
           // Row 3: Go to profile
           _buildActionRow(
             icon: Icons.person_outline,
-            label: 'Go to profile',
-            onTap: () => _goToProfile(context),
+            label: 'View profile',
+            onTap: () {
+              playerCollapseNotifier.value?.call(); // Collapse player
+              Navigator.pop(context); // Close bottom sheet
+              context.pop(); // Close comments screen
+              context.push('/home/profile/${comment.userId}');
+            },
           ),
 
           // Row 4: Copy
@@ -176,16 +158,50 @@ class CommentActionBottomSheet extends ConsumerWidget {
               onTap: () => _reportUser(context),
             ),
 
-            // Row 6 (Other): Block
+            // Row 6 (Other): Block/Unblock
             _buildActionRow(
               icon: Icons.block,
-              label: 'Block',
-              onTap: () => _blockUser(context, ref),
+              label: comment.isAuthorBlocked ? 'Unblock' : 'Block',
+              onTap: () => _toggleBlock(context, ref),
             ),
           ],
         ],
       ),
     );
+  }
+
+  void _toggleBlock(BuildContext context, WidgetRef ref) async {
+    Navigator.pop(context);
+    final shouldBlock = !comment.isAuthorBlocked;
+    try {
+      if (comment.parentId == null) {
+        await ref
+            .read(trackCommentsProvider(comment.trackId).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      } else {
+        await ref
+            .read(commentRepliesProvider(comment.parentId!).notifier)
+            .toggleBlockUser(comment.userId, shouldBlock: shouldBlock);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(shouldBlock ? 'User blocked' : 'User unblocked'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to ${shouldBlock ? 'block' : 'unblock'} user: $e',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildActionRow({

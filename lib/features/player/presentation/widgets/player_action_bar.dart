@@ -133,31 +133,10 @@ class PlayerActionBar extends ConsumerWidget {
                       color: Colors.white,
                     ),
                     const SizedBox(width: 6),
-                    trackAsync.when(
-                      data: (track) => Text(
-                        Formatters.formatCount(track.commentCount),
-                        key: const Key('player_action_bar_comment_count_text'),
-                        style: AppTheme.bodyNormal,
-                      ),
-                      loading: () => const SizedBox(
-                        width: 10,
-                        height: 10,
-                        child: CircularProgressIndicator(
-                          key: Key(
-                            'player_action_bar_comment_count_loading_indicator',
-                          ),
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                      error: (a, b) => const Text(
-                        '0',
-                        key: Key('player_action_bar_comment_count_error_text'),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    Text(
+                      Formatters.formatCount(track?.commentCount ?? 0),
+                      key: const Key('player_action_bar_comment_count_text'),
+                      style: AppTheme.bodyNormal,
                     ),
                   ],
                 ),

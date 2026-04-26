@@ -71,7 +71,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: GestureDetector(
               key: const Key('library_profile_avatar_gesture_detector'),
-              onTap: () => context.push('/profile/me'),
+              onTap: () => context.push('/home/profile/me'),
               child: ProfileAvatar(avatarUrl: currentUserAvatar, radius: 18),
             ),
           ),
