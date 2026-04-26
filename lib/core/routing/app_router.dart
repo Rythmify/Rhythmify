@@ -96,6 +96,7 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 //  Premium imports
 import '../../features/premium/presentation/screens/upgrade_screen.dart';
 import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
+import '../../features/premium/presentation/screens/checkout_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -281,15 +282,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) => const NotificationsScreen(),
                   ),
 
-                  // ── M14: Playlist/Album/Station/Mix/Related ────────────
-                  // These are sub-routes of /home so they render INSIDE the
-                  // shell — getting the real mini-player and real nav bar
-                  // from MainAppScaffold automatically.
-                  //
-                  // Call with: context.push('/home/playlist/$id', extra: bool)
-                  // Call with: context.push('/home/mix/$id', extra: {...})
-                  // Call with: context.push('/home/station/$id', extra: {...})
-                  // Call with: context.push('/home/related-tracks/$id', extra: {...})
                   GoRoute(
                     path: 'playlist/:playlistId',
                     builder: (context, state) {
@@ -355,7 +347,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     },
                   ),
 
-                  // ── Profile routes (Moved inside branch) ───────────────────
                   GoRoute(
                     path: 'profile/edit',
                     builder: (context, state) => const EditProfilePage(),
@@ -416,7 +407,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                     },
                   ),
 
-                  // ── Behind the track route (Moved inside branch) ────────────
                   GoRoute(
                     path: 'behind-the-track/:trackId',
                     name: 'behindTheTrack',
@@ -602,9 +592,35 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/upgrade',
                 builder: (context, state) => const UpgradeLandingScreen(),
                 routes: [
+                  // "See all plans" from landing screen
                   GoRoute(
                     path: 'plans',
                     builder: (context, state) => const UpgradeScreen(),
+                  ),
+                  // "Continue" from landing screen — default Artist Pro Monthly
+                  // "Subscribe now" from any plan card — plan data passed via extra
+                  GoRoute(
+                    path: 'checkout',
+                    builder: (context, state) {
+                      final extra = state.extra as Map<String, dynamic>? ?? {};
+                      return CheckoutScreen(
+                        planId:
+                            extra['planId'] as String? ??
+                            '', // UUID from backend
+                        planName:
+                            extra['planName'] as String? ?? 'Artist Pro ★',
+                        price: extra['price'] as String? ?? 'EGP 164.99/month',
+                        features: List<String>.from(
+                          extra['features'] as List? ??
+                              [
+                                'Unlimited track uploads',
+                                'Get paid directly and more fairly',
+                                'Discover and connect with your biggest fans',
+                                'Unlimited distribution to all major streaming and social platforms',
+                              ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
