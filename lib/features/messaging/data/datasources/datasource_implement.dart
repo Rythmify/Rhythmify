@@ -6,6 +6,7 @@ import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
+import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
 /// Concrete implementation of [DatasourceInterface] using the Dio HTTP client.
 ///
@@ -256,19 +257,30 @@ class DatasourceImplement implements DatasourceInterface {
           )
           .toList();
     } else if (embedType == 'playlist') {
-      final response = await dio.get(ApiEndPoints.getMyLikedPlaylists());
-      final List data = response.data['data']['items'];
-      return data
-          .map(
-            (e) => SharedEmbedModel(
-              embedId: e['playlist_id'],
+      final response = await Future.wait ([
+        dio.get(ApiEndPoints.getMyLikedPlaylists()),
+        dio.get('/playlists', queryParameters: {'mine': true, 'filter': 'created'})
+      ]);
+      final List likedData = response[0].data['data']['items'] as List;
+      final List createdData = response[1].data['data']['items'] as List;
+
+      final seen=<String>{};
+      final merged=<SharedEmbedModel>[];
+      for(final e in[...likedData,...createdData])
+      {
+        final id= (e['playlist_id'] ?? e['id']) as String?;
+        if(id!=null && seen.add(id)){
+          merged.add(
+              SharedEmbedModel(
+              embedId: id,
               embedType: 'playlist',
               embedName: e['name'],
               artistName: null,
               thumbnailUrl: e['cover_image'],
             ),
-          )
-          .toList();
+          );
+        }
+      }
     } else if (embedType == 'album') {
       final response = await dio.get(ApiEndPoints.getMyLikedAlbums());
       final List data = response.data['data']['items'];

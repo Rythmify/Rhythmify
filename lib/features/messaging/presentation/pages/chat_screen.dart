@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/messaging/data/datasources/data_sources_sockets.dart';
+import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/providers/current_user_id_provider.dart';
@@ -60,6 +61,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       Future.microtask(() {
         if (!mounted) return;
         ref.invalidate(conversationProvider);
+        ref.invalidate(messagesNotifierProvider(widget.conv!.conversationId));
         if (widget.conv!.participantId.isNotEmpty) {
           ref.invalidate(isBlockedProvider(widget.conv!.participantId));
           ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
@@ -88,13 +90,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.onMessageReceived((data) {
       print('🔥 onMessageReceived fired: $data');
       if (mounted) {
-        ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(data);
+        final message = MessageModel.fromJson(data['message'] as Map<String, dynamic>);
+        ref.read(messagesNotifierProvider(conversationId).notifier).appendMessage(message);
         ref.invalidate(conversationProvider);
         if(_scrollController.hasClients){
           _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
         }
-        _socket.markRead(conversationId, data.messageId, true, 0);
-        //ref.read(markAsRead.notifier).markRead(msgId: data.messageId, convId: conversationId);
+        _socket.markRead(conversationId, message.messageId, true, 0);
       }
     });
     _socket.onMessageReadUpdated((data) {
@@ -113,6 +115,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.conv != null) {
       _socket.leaveConversation(widget.conv!.conversationId);
     }
+    _socket.clearConversationListeners();
     _scrollController.dispose();
     controller.dispose();
     super.dispose();
@@ -798,7 +801,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (mounted) {
           ref
               .read(messagesNotifierProvider(newConv.conversationId).notifier)
-              .appendMessage(data);
+              .appendMessage(MessageModel.fromJson(data['message'] as Map<String, dynamic>));
           ref.invalidate(conversationProvider);
         }
       });
