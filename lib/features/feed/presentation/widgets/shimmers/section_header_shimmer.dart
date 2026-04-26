@@ -8,12 +8,7 @@ class SectionHeaderShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(bottom: 6, left: 16, top: 16),
-      child: BaseShimmer(
-        child: ShimmerBox(
-          width: 150,
-          height: 22,
-        ),
-      ),
+      child: BaseShimmer(child: ShimmerBox(width: 150, height: 22)),
     );
   }
 }

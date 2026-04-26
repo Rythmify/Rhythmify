@@ -98,7 +98,8 @@ class FollowButton extends ConsumerStatefulWidget {
     bool isFollowing,
     bool isInFlight,
     VoidCallback toggle,
-  )? builder;
+  )?
+  builder;
 
   /// Creates a [FollowButton].
   const FollowButton({

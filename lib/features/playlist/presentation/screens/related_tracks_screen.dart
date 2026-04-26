@@ -118,7 +118,12 @@ class _BodyState extends ConsumerState<_Body> {
 
   // ── Track radio: read isSaved from provider ────────────────────────────────
   bool get _isTrackRadioSaved {
-    return ref.watch(savedTrackRadiosProvider).asData?.value.contains(widget.sourceId) ?? false;
+    return ref
+            .watch(savedTrackRadiosProvider)
+            .asData
+            ?.value
+            .contains(widget.sourceId) ??
+        false;
   }
 
   bool get _isSaved {

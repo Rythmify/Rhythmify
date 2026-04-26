@@ -18,11 +18,7 @@ class HotForYouShimmer extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              const ShimmerBox(
-                width: 65,
-                height: 70,
-                borderRadius: 8,
-              ),
+              const ShimmerBox(width: 65, height: 70, borderRadius: 8),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
@@ -35,11 +31,7 @@ class HotForYouShimmer extends StatelessWidget {
                   ],
                 ),
               ),
-              const ShimmerBox(
-                width: 50,
-                height: 50,
-                shape: BoxShape.circle,
-              ),
+              const ShimmerBox(width: 50, height: 50, shape: BoxShape.circle),
             ],
           ),
         ),

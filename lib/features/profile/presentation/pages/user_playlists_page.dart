@@ -24,7 +24,7 @@ class _UserPlaylistsPageState extends ConsumerState<UserPlaylistsPage> {
       final notifier = widget.userId == 'me'
           ? ref.read(ownProfileProvider.notifier)
           : ref.read(publicProfileProvider(widget.userId).notifier);
-      
+
       notifier.loadPlaylists(userId: widget.userId, refresh: true);
     });
   }
@@ -45,19 +45,23 @@ class _UserPlaylistsPageState extends ConsumerState<UserPlaylistsPage> {
         ),
       ),
       body: switch (profileState) {
-        ProfileLoaded(:final playlists, :final isLoadingPlaylists) => 
+        ProfileLoaded(:final playlists, :final isLoadingPlaylists) =>
           _buildGrid(context, playlists, isLoadingPlaylists),
         ProfileLoading() => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-          ),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
         _ => const SizedBox.shrink(),
       },
     );
   }
 
-  Widget _buildGrid(BuildContext context, List<PlaylistEntity> playlists, bool isLoading) {
+  Widget _buildGrid(
+    BuildContext context,
+    List<PlaylistEntity> playlists,
+    bool isLoading,
+  ) {
     if (playlists.isEmpty && !isLoading) {
-      return  Center(
+      return Center(
         child: Text('No playlists yet', style: AppTheme.bodyMedium),
       );
     }
@@ -105,7 +109,8 @@ class _PlaylistCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: AspectRatio(
                 aspectRatio: 1,
-                child: (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
+                child:
+                    (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
                     ? CachedNetworkImage(
                         imageUrl: playlist.coverUrl!,
                         fit: BoxFit.cover,
@@ -135,9 +140,9 @@ class _PlaylistCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: const Center(
-          child: Icon(Icons.music_note, color: AppTheme.textSecondary, size: 40),
-        ),
-      );
+    color: AppTheme.surface,
+    child: const Center(
+      child: Icon(Icons.music_note, color: AppTheme.textSecondary, size: 40),
+    ),
+  );
 }

@@ -10,16 +10,10 @@ class PlaylistCardShimmer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         BaseShimmer(
-          child: ShimmerBox(
-            width: 140,
-            height: 140,
-            borderRadius: 1,
-          ),
+          child: ShimmerBox(width: 140, height: 140, borderRadius: 1),
         ),
         SizedBox(height: 8),
-        BaseShimmer(
-          child: ShimmerBox(width: 100, height: 12),
-        ),
+        BaseShimmer(child: ShimmerBox(width: 100, height: 12)),
       ],
     );
   }

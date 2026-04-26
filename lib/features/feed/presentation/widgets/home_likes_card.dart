@@ -23,7 +23,7 @@ class LikesBannerWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final likesState = ref.watch(likesProvider);
-    
+
     // Only visible if the user has liked at least one track
     if (likesState.tracks.isEmpty && !likesState.isLoading) {
       return const SizedBox.shrink();
@@ -39,10 +39,7 @@ class LikesBannerWidget extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF501606),
-                Color(0xFF222222),
-              ],
+              colors: [Color(0xFF501606), Color(0xFF222222)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -80,7 +77,9 @@ class LikesBannerWidget extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 70.0), // Space for hearts
+                    padding: const EdgeInsets.only(
+                      left: 70.0,
+                    ), // Space for hearts
                     child: Text(
                       label,
                       style: const TextStyle(
@@ -120,10 +119,22 @@ class HeartPainter extends CustomPainter {
     final height = size.height;
 
     path.moveTo(width / 2, height * 0.25);
-    path.cubicTo(width * 0.2, height * -0.1, width * -0.25, height * 0.45,
-        width / 2, height * 0.9);
-    path.cubicTo(width * 1.25, height * 0.45, width * 0.8, height * -0.1,
-        width / 2, height * 0.25);
+    path.cubicTo(
+      width * 0.2,
+      height * -0.1,
+      width * -0.25,
+      height * 0.45,
+      width / 2,
+      height * 0.9,
+    );
+    path.cubicTo(
+      width * 1.25,
+      height * 0.45,
+      width * 0.8,
+      height * -0.1,
+      width / 2,
+      height * 0.25,
+    );
 
     // Draw Fill
     final fillPaint = Paint()

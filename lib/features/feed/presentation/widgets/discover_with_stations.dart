@@ -145,7 +145,12 @@ class StationCard extends StatelessWidget {
                           child: _CircleAvatar(
                             imageUrl: leftImage!,
                             size: 50,
-                            borderColor: const Color.fromARGB(255, 202, 196, 182),
+                            borderColor: const Color.fromARGB(
+                              255,
+                              202,
+                              196,
+                              182,
+                            ),
                             borderWidth: 2,
                           ),
                         ),
@@ -158,7 +163,12 @@ class StationCard extends StatelessWidget {
                           child: _CircleAvatar(
                             imageUrl: rightImage!,
                             size: 50,
-                            borderColor: const Color.fromARGB(255, 202, 196, 182),
+                            borderColor: const Color.fromARGB(
+                              255,
+                              202,
+                              196,
+                              182,
+                            ),
                             borderWidth: 2,
                           ),
                         ),

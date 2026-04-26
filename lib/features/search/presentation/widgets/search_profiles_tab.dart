@@ -45,14 +45,10 @@ class SearchProfileCard extends StatelessWidget {
           ),
         ],
       ),
-      trailing: FollowButton(
-        targetUserId: profile.id,
-        compact: true,
-      ),
+      trailing: FollowButton(targetUserId: profile.id, compact: true),
     );
   }
 }
-
 
 /// Search results tab displaying the profiles list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [SearchProfileCard].

@@ -20,11 +20,7 @@ class TrendingGenreShimmer extends StatelessWidget {
               itemCount: 5,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) => const BaseShimmer(
-                child: ShimmerBox(
-                  width: 80,
-                  height: 32,
-                  borderRadius: 24,
-                ),
+                child: ShimmerBox(width: 80, height: 32, borderRadius: 24),
               ),
             ),
           ),
@@ -38,16 +34,15 @@ class TrendingGenreShimmer extends StatelessWidget {
             itemCount: 2,
             separatorBuilder: (context, index) => const SizedBox(width: 10),
             itemBuilder: (context, index) => Column(
-              children: List.generate(3, (i) => const Padding(
-                padding: EdgeInsets.only(bottom: 8.0),
-                child: BaseShimmer(
-                  child: ShimmerBox(
-                    width: 300,
-                    height: 50,
-                    borderRadius: 6,
+              children: List.generate(
+                3,
+                (i) => const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
+                  child: BaseShimmer(
+                    child: ShimmerBox(width: 300, height: 50, borderRadius: 6),
                   ),
                 ),
-              )),
+              ),
             ),
           ),
         ),

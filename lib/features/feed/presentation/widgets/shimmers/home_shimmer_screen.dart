@@ -18,7 +18,7 @@ class HomeShimmerScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const LikesBannerShimmer(),
-          
+
           // Top Tracks Grid
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -35,17 +35,17 @@ class HomeShimmerScreen extends StatelessWidget {
               itemBuilder: (context, index) => const TopTrackCardShimmer(),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           const SectionHeaderShimmer(),
           const TrendingGenreShimmer(),
-          
+
           const SectionHeaderShimmer(),
           const HotForYouShimmer(),
-          
+
           const SizedBox(height: 40),
-          
+
           const SectionHeaderShimmer(),
           SizedBox(
             height: 160,
@@ -57,9 +57,9 @@ class HomeShimmerScreen extends StatelessWidget {
               itemBuilder: (context, index) => const PlaylistCardShimmer(),
             ),
           ),
-          
+
           const SizedBox(height: 30),
-          
+
           const SectionHeaderShimmer(),
           SizedBox(
             height: 200,
@@ -71,7 +71,7 @@ class HomeShimmerScreen extends StatelessWidget {
               itemBuilder: (context, index) => const StationCardShimmer(),
             ),
           ),
-          
+
           const SectionHeaderShimmer(),
           SizedBox(
             height: 180,

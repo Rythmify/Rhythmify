@@ -87,8 +87,10 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyState = ref.watch(historyProvider);
-    final latestTracks =
-        historyState.entries.take(4).map((e) => e.toTrack()).toList();
+    final latestTracks = historyState.entries
+        .take(4)
+        .map((e) => e.toTrack())
+        .toList();
 
     final asyncHome = ref.watch(homeDataProvider);
 
@@ -96,7 +98,8 @@ class HomeScreen extends ConsumerWidget {
     const crossAxisCount = 2;
     const horizontalPadding = 16.0 * 2;
     const crossAxisSpacing = 8.0;
-    final itemWidth = (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
+    final itemWidth =
+        (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
     final dynamicAspectRatio = itemWidth / 59.6;
 
     final isLoading = asyncHome.isLoading && asyncHome.value == null;
@@ -149,7 +152,9 @@ class HomeScreen extends ConsumerWidget {
                 await player.dispose();
               } catch (_) {}
 
-              ref.read(uploadFormProvider.notifier).initDraft(
+              ref
+                  .read(uploadFormProvider.notifier)
+                  .initDraft(
                     artistId: 'dev_user_001',
                     localAudioPath: picked.path!,
                     duration: duration,
@@ -193,7 +198,7 @@ class HomeScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(homeDataProvider);
           ref.invalidate(hotForYouProvider);
-          
+
           await Future.wait([
             ref.read(homeDataProvider.future),
             ref.read(hotForYouProvider.future),
@@ -201,58 +206,58 @@ class HomeScreen extends ConsumerWidget {
             ref.read(historyProvider.notifier).load(refresh: true),
           ]);
         },
-        child: isLoading 
-          ? const HomeShimmerScreen()
-          : ListView(
-          key: const Key('home_scroll_view'),
-          padding: const EdgeInsets.only(bottom: 150),
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            const LikesBannerWidget(),
+        child: isLoading
+            ? const HomeShimmerScreen()
+            : ListView(
+                key: const Key('home_scroll_view'),
+                padding: const EdgeInsets.only(bottom: 150),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  const LikesBannerWidget(),
 
-            if (latestTracks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: crossAxisSpacing,
-                    childAspectRatio: dynamicAspectRatio,
-                  ),
-                  itemCount: latestTracks.length,
-                  itemBuilder: (context, index) =>
-                      HomeTopTrackCard(track: latestTracks[index]),
-                ),
+                  if (latestTracks.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: crossAxisSpacing,
+                          childAspectRatio: dynamicAspectRatio,
+                        ),
+                        itemCount: latestTracks.length,
+                        itemBuilder: (context, index) =>
+                            HomeTopTrackCard(track: latestTracks[index]),
+                      ),
+                    ),
+
+                  const SizedBox(height: 4),
+
+                  /// Displays trending tracks grouped by genre.
+                  TrendingByGenre(),
+
+                  /// Displays personalized "Hot For You" recommendations.
+                  HotForYouSection(),
+
+                  const SizedBox(height: 40),
+
+                  /// Displays mixed playlist recommendations.
+                  MixedPlaylistsSection(),
+
+                  const SizedBox(height: 30),
+
+                  /// Displays discovery-based station suggestions.
+                  DiscoverWithStationsSection(),
+
+                  //const SizedBox(height: 10),
+
+                  /// Displays additional personalized music suggestions.
+                  MoreOfWhatYouLikeSection(),
+                ],
               ),
-
-            const SizedBox(height: 4),
-
-            /// Displays trending tracks grouped by genre.
-            TrendingByGenre(),
-
-            /// Displays personalized "Hot For You" recommendations.
-            HotForYouSection(),
-
-            const SizedBox(height: 40),
-
-            /// Displays mixed playlist recommendations.
-            MixedPlaylistsSection(),
-
-            const SizedBox(height: 30),
-
-            /// Displays discovery-based station suggestions.
-            DiscoverWithStationsSection(),
-
-            //const SizedBox(height: 10),
-
-            /// Displays additional personalized music suggestions.
-            MoreOfWhatYouLikeSection(),
-          ],
-        ),
       ),
     );
   }

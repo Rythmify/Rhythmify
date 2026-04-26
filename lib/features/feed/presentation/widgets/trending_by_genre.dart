@@ -326,18 +326,18 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(5.2),
                       child:
                           track.coverImage != null &&
-                                  track.coverImage!.startsWith('http')
-                              ? Image.network(
-                                  track.coverImage!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  color: Colors.grey[800],
-                                ),
+                              track.coverImage!.startsWith('http')
+                          ? Image.network(
+                              track.coverImage!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey[800],
+                            ),
                     ),
                   ),
                   title: Text(

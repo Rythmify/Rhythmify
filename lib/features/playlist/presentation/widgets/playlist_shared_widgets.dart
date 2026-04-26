@@ -1,16 +1,15 @@
 // lib/features/playlist/presentation/widgets/playlist_shared_widgets.dart
-//
-// CHANGES vs original:
-//   + TrackTileInPlaylist now shows timeAgo(addedAt) when addedAt is present
 
 library;
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/utils/time_ago.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 import 'dart:io';
-import '../../../../core/domain/entities/track.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // PlaylistCoverImage
@@ -52,12 +51,13 @@ class PlaylistCoverImage extends StatelessWidget {
         errorBuilder: (_, _, _) => _Placeholder(playlist: playlist),
       );
     }
-    return Image.network(
-      url,
+    return CachedNetworkImage(
+      imageUrl: url,
       width: size,
       height: size,
       fit: BoxFit.cover,
-      errorBuilder: (_, _, _) => _Placeholder(playlist: playlist),
+      placeholder: (_, _) => _Placeholder(playlist: playlist),
+      errorWidget: (_, _, _) => _Placeholder(playlist: playlist),
     );
   }
 }
@@ -106,25 +106,30 @@ class TrackTileInPlaylist extends StatelessWidget {
     return InkWell(
       onTap: track.isUnavailable ? null : onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // ── Cover art ──────────────────────────────────────────────
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: SizedBox(
-                width: 60,
-                height: 60,
-                child: track.coverUrl != null
-                    ? Image.network(track.coverUrl!, fit: BoxFit.cover)
-                    : Container(
-                        color: const Color(0xFF2A2A2A),
-                        child: const Icon(
-                          Icons.music_note,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                      ),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.0),
+                border: Border.all(color: Colors.grey.shade700, width: 0.5),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5.5),
+                child: SizedBox(
+                  width: 65,
+                  height: 65,
+                  child: track.coverUrl != null && track.coverUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: track.coverUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => _buildPlaceholder(),
+                          errorWidget: (_, _, _) => _buildPlaceholder(),
+                        )
+                      : _buildPlaceholder(),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -133,6 +138,7 @@ class TrackTileInPlaylist extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     track.title,
@@ -142,20 +148,20 @@ class TrackTileInPlaylist extends StatelessWidget {
                       color: track.isUnavailable
                           ? Colors.grey[600]
                           : Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (track.artistName.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       track.artistName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
                     ),
                   ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
 
                   // ── Stats / unavailable row ────────────────────────
                   if (track.isUnavailable)
@@ -163,7 +169,7 @@ class TrackTileInPlaylist extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.location_on,
-                          size: 12,
+                          size: 14,
                           color: Colors.grey[600],
                         ),
                         const SizedBox(width: 4),
@@ -171,52 +177,70 @@ class TrackTileInPlaylist extends StatelessWidget {
                           'Not available',
                           style: TextStyle(
                             color: Colors.grey[600],
-                            fontSize: 12,
+                            fontSize: 13,
                           ),
                         ),
                       ],
                     )
                   else
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.play_arrow,
-                          size: 13,
-                          color: Colors.grey[500],
+                          size: 16,
+                          color: Colors.grey,
                         ),
                         const SizedBox(width: 2),
                         Text(
                           track.formattedPlayCount,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            '•',
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
                           ),
                         ),
                         Text(
-                          ' · ${track.formattedDuration}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
+                          track.formattedDuration,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
                           ),
                         ),
 
                         // ── addedAt timestamp ───────────────────────
                         if (track.addedAt != null) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Text(
+                              '•',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                           Text(
-                            ' · ${timeAgo(track.addedAt!)}',
+                            timeAgo(track.addedAt!),
                             style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: 12,
+                              fontSize: 13,
                             ),
                           ),
                         ],
 
                         if (track.isLiked) ...[
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                           const Icon(
                             Icons.favorite,
-                            color: Color(0xFFFF5500),
-                            size: 12,
+                            color: AppTheme.primaryBrand,
+                            size: 14,
                           ),
                         ],
                       ],
@@ -234,9 +258,21 @@ class TrackTileInPlaylist extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 65,
+      height: 65,
+      color: const Color(0xFF2A2A2A),
+      child: const Icon(Icons.music_note, color: Colors.grey, size: 24),
+    );
+  }
 }
 
-//ADDED IN HOME AND SEARCH WIRING
+// ════════════════════════════════════════════════════════════════════════════
+// TrackTileFromTrack
+// ════════════════════════════════════════════════════════════════════════════
+
 class TrackTileFromTrack extends StatelessWidget {
   const TrackTileFromTrack({
     super.key,
@@ -262,22 +298,31 @@ class TrackTileFromTrack extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Cover art
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: track.coverImage != null && track.coverImage!.isNotEmpty
-                    ? Image.network(
-                        track.coverImage!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _placeholder(),
-                      )
-                    : _placeholder(),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6.0),
+                border: Border.all(color: Colors.grey.shade700, width: 0.5),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5.5),
+                child: SizedBox(
+                  width: 65,
+                  height: 65,
+                  child:
+                      track.coverImage != null && track.coverImage!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: track.coverImage!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => _buildPlaceholder(),
+                          errorWidget: (_, _, _) => _buildPlaceholder(),
+                        )
+                      : _buildPlaceholder(),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -286,6 +331,7 @@ class TrackTileFromTrack extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     track.title,
@@ -293,32 +339,54 @@ class TrackTileFromTrack extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     track.artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
                   ),
                   const SizedBox(height: 2),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(Icons.play_arrow, size: 12, color: Colors.grey[600]),
+                      const Icon(
+                        Icons.play_arrow,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 2),
                       Text(
-                        '$playStr · $durationStr',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                        playStr,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Text(
+                          '•',
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                      ),
+                      Text(
+                        durationStr,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                       ),
                       if (track.isLiked) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         const Icon(
                           Icons.favorite,
-                          size: 11,
-                          color: Color(0xFFFF5500),
+                          size: 14,
+                          color: AppTheme.primaryBrand,
                         ),
                       ],
                     ],
@@ -329,7 +397,7 @@ class TrackTileFromTrack extends StatelessWidget {
 
             // Options menu
             IconButton(
-              icon: Icon(Icons.more_horiz, color: Colors.grey[600], size: 20),
+              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 24),
               onPressed: () => _showTrackOptions(context, track),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -340,9 +408,11 @@ class TrackTileFromTrack extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(
+  Widget _buildPlaceholder() => Container(
+    width: 65,
+    height: 65,
     color: const Color(0xFF2A2A2A),
-    child: const Icon(Icons.music_note, color: Colors.white38, size: 20),
+    child: const Icon(Icons.music_note, color: Colors.grey, size: 24),
   );
 
   void _showTrackOptions(BuildContext context, Track track) {
@@ -372,7 +442,10 @@ class TrackTileFromTrack extends StatelessWidget {
                       width: 56,
                       height: 56,
                       child: track.coverImage != null
-                          ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                          ? CachedNetworkImage(
+                              imageUrl: track.coverImage!,
+                              fit: BoxFit.cover,
+                            )
                           : Container(color: const Color(0xFF2A2A2A)),
                     ),
                   ),
@@ -427,6 +500,7 @@ class TrackTileFromTrack extends StatelessWidget {
     );
   }
 }
+
 // ════════════════════════════════════════════════════════════════════════════
 // BottomSheetHandle
 // ════════════════════════════════════════════════════════════════════════════

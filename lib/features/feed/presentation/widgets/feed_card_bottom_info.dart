@@ -141,10 +141,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        FollowButton(
-                          targetUserId: item.user.id,
-                          compact: true,
-                        ),
+                        FollowButton(targetUserId: item.user.id, compact: true),
                       ],
                     ),
                   ],
@@ -168,4 +165,3 @@ class FeedCardBottomInfo extends ConsumerWidget {
 }
 
 // Removed private _FollowButton class as it's replaced by unified FollowButton
-

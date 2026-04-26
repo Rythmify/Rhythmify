@@ -41,14 +41,10 @@ class GenreProfileCard extends StatelessWidget {
               style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 6),
-            FollowButton(
-              targetUserId: artist.id,
-              compact: true,
-            ),
+            FollowButton(targetUserId: artist.id, compact: true),
           ],
         ),
       ),
     );
   }
 }
-

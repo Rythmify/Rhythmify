@@ -6,11 +6,6 @@ class TopTrackCardShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const BaseShimmer(
-      child: ShimmerBox(
-        height: 48,
-        borderRadius: 12,
-      ),
-    );
+    return const BaseShimmer(child: ShimmerBox(height: 48, borderRadius: 12));
   }
 }

@@ -17,9 +17,7 @@ enum _AlbumSort { recentlyAdded, firstAdded, albumName }
 
 enum _AlbumTypeFilter { all, album, compilation, ep, single }
 
-extension _AlbumSortLabel on _AlbumSort {
-
-}
+extension _AlbumSortLabel on _AlbumSort {}
 
 class LibraryAlbumsScreen extends ConsumerStatefulWidget {
   const LibraryAlbumsScreen({super.key});

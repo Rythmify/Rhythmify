@@ -12,11 +12,7 @@ class HomeTopTrackCard extends ConsumerWidget {
   final Track track;
   final VoidCallback? onTap;
 
-  const HomeTopTrackCard({
-    super.key,
-    required this.track,
-    this.onTap,
-  });
+  const HomeTopTrackCard({super.key, required this.track, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,10 +75,7 @@ class HomeTopTrackCard extends ConsumerWidget {
                     track.artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
                   ),
                 ],
               ),

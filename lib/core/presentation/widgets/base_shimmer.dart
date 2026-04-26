@@ -5,11 +5,7 @@ class BaseShimmer extends StatelessWidget {
   final Widget child;
   final bool enabled;
 
-  const BaseShimmer({
-    super.key,
-    required this.child,
-    this.enabled = true,
-  });
+  const BaseShimmer({super.key, required this.child, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
