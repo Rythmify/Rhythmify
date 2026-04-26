@@ -66,6 +66,8 @@ const String registerSubmitButton           = 'register_submit_button';
 // --- Home / Feed ---
 const String homeScaffold                   = 'home_scaffold';
 const String feedNavButton                  = 'feed_nav_button';
+const String searchNavButton                = 'search_nav_button';
+const String libraryNavButton               = 'library_nav_button';
 const String homeAppBar                     = 'home_app_bar';
 const String homeUploadTrackButton          = 'home_upload_track_icon_button';
 const String homeInboxButton                = 'home_inbox_icon_button';
@@ -383,7 +385,6 @@ const String libraryUpgradeProButton        = 'library_upgrade_pro_button';
 const String libraryImportBannerDismissible = 'library_import_banner_dismissible';
 
 // ── Library — TODO: pending cross-team Key() implementation ──────────────────
-const String libraryNavButton                  = 'library_nav_button';
 const String libraryYourLikes                  = 'library_your_likes';
 const String libraryAlbums                     = 'library_albums';
 const String libraryFollowing                  = 'library_following';
@@ -514,7 +515,6 @@ const String genreAllTracksError            = 'genre_all_tracks_error';
 const String genreAllTracksEmpty            = 'genre_all_tracks_empty';
 
 // --- Search (TODO: pending cross-team Key() implementation) ------------------
-const String searchNavButton             = 'search_nav_button';
 const String searchBackButton            = 'search_back_button';
 const String searchVibeDetailScreenKey   = 'search_vibe_detail_screen';
 const String searchVibeDetailScrollView  = 'search_vibe_detail_scroll_view';
