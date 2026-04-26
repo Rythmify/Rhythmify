@@ -1,4 +1,3 @@
-// lib/features/playlist/presentation/screens/playlist_detail_screen.dart
 library;
 
 import 'package:flutter/material.dart';

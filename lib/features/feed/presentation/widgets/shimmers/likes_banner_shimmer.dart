@@ -7,11 +7,11 @@ class LikesBannerShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
       child: BaseShimmer(
         child: ShimmerBox(
-          height: 60,
-          borderRadius: 12,
+          height: 64,
+          //borderRadius: 12,
         ),
       ),
     );

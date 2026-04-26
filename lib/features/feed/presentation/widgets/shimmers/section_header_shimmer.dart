@@ -11,7 +11,7 @@ class SectionHeaderShimmer extends StatelessWidget {
       child: BaseShimmer(
         child: ShimmerBox(
           width: 150,
-          height: 20,
+          height: 22,
         ),
       ),
     );

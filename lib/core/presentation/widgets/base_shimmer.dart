@@ -17,7 +17,7 @@ class BaseShimmer extends StatelessWidget {
 
     return Shimmer.fromColors(
       baseColor: Colors.white.withValues(alpha: 0.1),
-      highlightColor: Colors.white.withValues(alpha: 0.2),
+      highlightColor: Colors.white.withValues(alpha: 0.12),
       period: const Duration(milliseconds: 1500),
       child: child,
     );

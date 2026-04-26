@@ -119,10 +119,10 @@ class StationCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.grey.withValues(alpha: 0.5),
-                    width: 0.8,
-                  ),
+                  // border: Border.all(
+                  //   color: Colors.grey.withValues(alpha: 0.5),
+                  //   width: 0.8,
+                  // ),
                 ),
                 child: SizedBox(
                   height: 155,
