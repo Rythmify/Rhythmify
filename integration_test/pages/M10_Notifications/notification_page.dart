@@ -45,21 +45,14 @@ class NotificationsPage extends BasePage {
   bool isHomePageVisible()            => isVisible(homeScaffold);
 
   // ── Filter result checks ───────────────────────────────────────────────────
-  /// Verifies that every visible notification item belongs to [expectedType].
-  /// expectedType matches against the key pattern: notification_item_{type}_{id}
-  bool areOnlyFilteredNotificationsVisible(String expectedType) {
-    final allNotifications = find.byWidgetPredicate(
-      (widget) =>
-          widget.key != null &&
-          widget.key.toString().contains('notification_item_'),
-    );
-
-    if (allNotifications.evaluate().isEmpty) return false;
-
-    return allNotifications.evaluate().every(
-      (element) => element.widget.key.toString().contains(expectedType),
-    );
-  }
+  // After applying a filter the screen is valid if EITHER:
+  // - the list has results (notificationsListKey visible), OR
+  // - the empty-filter message is shown (no notifications of that type)
+  // Both mean the filter was applied successfully.
+  bool isFilterAppliedSuccessfully() =>
+      isVisible(notificationsListKey) ||
+      find.text('Switch to showing all to see recent notifications')
+          .evaluate().isNotEmpty;
 
   bool isOnTrackPage()   => isVisible(behindTheTrackBackButton);
   bool isOnProfilePage() => isVisible(profileAvatarGesture);

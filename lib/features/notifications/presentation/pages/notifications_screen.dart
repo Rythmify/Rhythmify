@@ -52,7 +52,9 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
     final state = ref.watch(notificationsProvider);
 
     return Scaffold(
+      key: const Key('notifications_screen'),
       appBar: AppBar(
+        leading: const BackButton(key: Key('notifications_back_button')),
         title: const Text('Notifications'),
         centerTitle: false,
         actions: [

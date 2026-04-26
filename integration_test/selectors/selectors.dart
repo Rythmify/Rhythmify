@@ -605,13 +605,19 @@ const String trackShareSMSGestureDetector       = 'track_options_share_sms_gestu
 const String trackUpdateTrackInkwell            = 'track_options_action_update_track_inkwell';
 const String trackLikeInkwell                   = 'track_options_action_toggle_like_inkwell';
 
-// ── Notifications feed screen — TODO: pending cross-team Key() implementation ─
+// ── Notifications feed screen ─
 const String notificationsScreenKey       = 'notifications_screen';
 const String notificationsBackButton      = 'notifications_back_button';
-const String notificationsListView        = 'notifications_list_view';
-const String notificationsFilterIcon      = 'notifications_filter_icon';
-const String notificationsFilterComments  = 'notifications_filter_comments';
-const String notificationsFilterLikes     = 'notifications_filter_likes';
-const String notificationsFilterFollowing = 'notifications_filter_following';
-const String notificationsFilterReposts   = 'notifications_filter_reposts';
-const String notificationsFilterShowAll   = 'notifications_filter_show_all';
+const String notificationsListView        = 'notifications_list';
+const String notificationsFilterIcon      = 'notifications_filter_button';
+const String notificationsFilterComments  = 'filter_option_comments';
+const String notificationsFilterLikes     = 'filter_option_likes';
+const String notificationsFilterFollowing = 'filter_option_followings';
+const String notificationsFilterReposts   = 'filter_option_reposts';
+const String notificationsFilterShowAll   = 'filter_option_all';
+const String notificationsFilterReactions = 'filter_option_reactions';
+const String notificationsShowAllButton   = 'notifications_show_all_button';
+const String notificationsLoadingIndicator = 'notifications_loading_indicator';
+const String notificationsErrorText       = 'notifications_error_text';
+const String notificationsEmptyAll        = 'notifications_empty_all';
+const String notificationsListKey         = 'notifications_list';
