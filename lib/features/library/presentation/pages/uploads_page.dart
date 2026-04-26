@@ -8,6 +8,10 @@ import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../track_upload/presentation/providers/upload_track_provider.dart';
 
+// ── Added for artist name fix ──
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+
 /// Your Uploads page matching SoundCloud's layout.
 ///
 /// Layout sections (top → bottom):
@@ -94,10 +98,17 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
       await player.dispose();
     } catch (_) {}
 
+    // ── Fix: read display name from auth provider ──
+    final authState = ref.read(authProvider);
+    final displayName = authState is AuthAuthenticated
+        ? authState.user.displayName
+        : 'Your Name';
+
     ref
         .read(uploadFormProvider.notifier)
         .initDraft(
           artistId: 'dev_user_001',
+          artistName: displayName,
           localAudioPath: picked.path!,
           duration: duration,
           fileName: picked.name,

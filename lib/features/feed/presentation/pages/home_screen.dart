@@ -23,6 +23,10 @@ import '../widgets/home_likes_card.dart';
 import '../widgets/home_top_track_card.dart';
 import '../widgets/shimmers/home_shimmer_screen.dart';
 
+// ── Added for artist name fix ──
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   final jsonString = await rootBundle.loadString(
@@ -152,10 +156,17 @@ class HomeScreen extends ConsumerWidget {
                 await player.dispose();
               } catch (_) {}
 
+              // ── Fix: read display name from auth provider ──
+              final authState = ref.read(authProvider);
+              final displayName = authState is AuthAuthenticated
+                  ? authState.user.displayName
+                  : 'Your Name';
+
               ref
                   .read(uploadFormProvider.notifier)
                   .initDraft(
                     artistId: 'dev_user_001',
+                    artistName: displayName,
                     localAudioPath: picked.path!,
                     duration: duration,
                     fileName: picked.name,
