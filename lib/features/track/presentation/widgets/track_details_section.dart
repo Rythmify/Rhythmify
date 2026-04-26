@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../profile/presentation/providers/profile_provider.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -14,55 +14,13 @@ import '../../../profile/presentation/providers/profile_provider.dart';
 ///
 /// Expects a [track] entity to display accurate engagement numbers and handle playback.
 
-class TrackDetailsSection extends ConsumerStatefulWidget {
+class TrackDetailsSection extends ConsumerWidget {
   final Track track;
 
   const TrackDetailsSection({super.key, required this.track});
 
   @override
-  ConsumerState<TrackDetailsSection> createState() =>
-      _TrackDetailsSectionState();
-}
-
-class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
-  late bool _isFollowed;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFollowed = widget.track.isArtistFollowed;
-  }
-
-  @override
-  void didUpdateWidget(covariant TrackDetailsSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.track.isArtistFollowed != widget.track.isArtistFollowed) {
-      _isFollowed = widget.track.isArtistFollowed;
-    }
-  }
-
-  void _toggleFollow() {
-    final prev = _isFollowed;
-    setState(() {
-      _isFollowed = !_isFollowed;
-    });
-
-    final notifier = ref.read(profileProvider.notifier);
-    if (_isFollowed) {
-      notifier.followUser(userId: widget.track.userId).catchError((_) {
-        if (mounted) setState(() => _isFollowed = prev);
-      });
-    } else {
-      notifier.unfollowUser(userId: widget.track.userId).catchError((_) {
-        if (mounted) setState(() => _isFollowed = prev);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final track = widget.track;
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -140,6 +98,9 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
             children: [
               Expanded(
                 child: InkWell(
+                  key: Key(
+                    'track_details_section_artist_inkwell_${track.userId}',
+                  ),
                   onTap: () {
                     context.push('/home/profile/${track.userId}');
                   },
@@ -197,26 +158,9 @@ class _TrackDetailsSectionState extends ConsumerState<TrackDetailsSection> {
                 ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton(
-                key: const Key('behind_the_track_follow_outlined_button'),
-                onPressed: _toggleFollow,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: _isFollowed ? Colors.white : AppTheme.textSecondary,
-                  ),
-                  backgroundColor: _isFollowed
-                      ? Colors.white
-                      : Colors.transparent,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                ),
-                child: Text(
-                  _isFollowed ? "Following" : "Follow",
-                  style: TextStyle(
-                    color: _isFollowed ? Colors.black : Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              FollowButton(
+                key: Key('track_details_section_follow_button_${track.userId}'),
+                targetUserId: track.userId,
               ),
             ],
           ),

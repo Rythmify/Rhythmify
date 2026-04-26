@@ -72,6 +72,12 @@ final followStatusProvider = Provider.family<bool, String>((ref, targetUserId) {
 ///
 /// // Followers / following list tile (compact padding):
 /// FollowButton(targetUserId: user.id, compact: true)
+///
+/// // Custom representation (e.g. Icon):
+/// FollowButton(
+///   targetUserId: user.id,
+///   builder: (context, isFollowing, isInFlight, toggle) => IconButton(...)
+/// )
 /// ```
 class FollowButton extends ConsumerStatefulWidget {
   /// The UUID of the user to follow or unfollow.
@@ -82,11 +88,25 @@ class FollowButton extends ConsumerStatefulWidget {
   /// Compact: 16 × 6 px.  Default: 20 × 8 px.
   final bool compact;
 
+  /// Optional custom builder for the follow widget.
+  ///
+  /// If provided, this builder is responsible for rendering the UI and
+  /// calling the `toggle` callback. The `isFollowing` and `isInFlight`
+  /// states are provided for reactive updates.
+  final Widget Function(
+    BuildContext context,
+    bool isFollowing,
+    bool isInFlight,
+    VoidCallback toggle,
+  )?
+  builder;
+
   /// Creates a [FollowButton].
   const FollowButton({
     super.key,
     required this.targetUserId,
     this.compact = false,
+    this.builder,
   });
 
   @override
@@ -177,6 +197,16 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
     final isFollowing = _optimisticFollowing ?? realFollowing;
 
     final isAuthenticated = authState is AuthAuthenticated;
+
+    if (widget.builder != null) {
+      return widget.builder!(
+        context,
+        isFollowing,
+        _isInFlight,
+        isAuthenticated && !_isInFlight ? () => _toggle(isFollowing) : () {},
+      );
+    }
+
     final hPad = widget.compact ? 16.0 : 20.0;
     final vPad = widget.compact ? 6.0 : 8.0;
 

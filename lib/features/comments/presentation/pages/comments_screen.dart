@@ -149,6 +149,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
   ) {
     final isSelected = type == currentType;
     return ListTile(
+      key: Key('comments_sort_option_${type.name}_list_tile'),
       title: Text(label, style: TextStyle(color: Colors.white)),
       trailing: isSelected
           ? const Icon(Icons.check_circle, color: Colors.white)
@@ -212,6 +213,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
           child: CircleAvatar(
             backgroundColor: Colors.grey[900],
             child: IconButton(
+              key: const Key('comments_close_icon_button'),
               icon: const Icon(Icons.close, color: Colors.white, size: 20),
               onPressed: () => Navigator.pop(context),
             ),
@@ -224,6 +226,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
         ),
         actions: [
           IconButton(
+            key: const Key('comments_sort_icon_button'),
             icon: const Icon(Icons.tune, color: Colors.white),
             onPressed: _showSortBottomSheet,
           ),
@@ -253,6 +256,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommentCard(
+                          key: Key('comments_card_${comment.id}'),
                           comment: comment,
                           isExpanded: isExpanded,
                           onLike: () => ref
@@ -304,6 +308,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                               return Column(
                                 children: repliesState.comments.map((reply) {
                                   return CommentReplyCard(
+                                    key: Key('comments_reply_card_${reply.id}'),
                                     reply: reply,
                                     onLike: () => ref
                                         .read(
@@ -485,6 +490,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   ),
                   const Spacer(),
                   GestureDetector(
+                    key: const Key('comments_cancel_reply_gesture_detector'),
                     onTap: _cancelReply,
                     child: const Icon(
                       Icons.close,
@@ -512,6 +518,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
+                  key: const Key('comments_input_textfield'),
                   controller: _commentController,
                   focusNode: _focusNode,
                   style: const TextStyle(color: Colors.white),
@@ -557,6 +564,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
               if (_hasText) ...[
                 const SizedBox(width: 8),
                 GestureDetector(
+                  key: const Key('comments_post_gesture_detector'),
                   onTap: _postComment,
                   child: Container(
                     padding: const EdgeInsets.all(9),

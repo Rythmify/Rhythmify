@@ -17,18 +17,7 @@ enum _AlbumSort { recentlyAdded, firstAdded, albumName }
 
 enum _AlbumTypeFilter { all, album, compilation, ep, single }
 
-extension _AlbumSortLabel on _AlbumSort {
-  String get label {
-    switch (this) {
-      case _AlbumSort.recentlyAdded:
-        return 'Recently added';
-      case _AlbumSort.firstAdded:
-        return 'First added';
-      case _AlbumSort.albumName:
-        return 'Album name';
-    }
-  }
-}
+extension _AlbumSortLabel on _AlbumSort {}
 
 class LibraryAlbumsScreen extends ConsumerStatefulWidget {
   const LibraryAlbumsScreen({super.key});

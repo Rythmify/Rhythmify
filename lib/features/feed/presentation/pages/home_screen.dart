@@ -16,7 +16,12 @@ import '../../../../core/data/models/track_dto.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../library/domain/entities/library_entities.dart';
+import '../../../library/presentation/providers/library_providers.dart';
 import '../providers/home_providers.dart';
+import '../widgets/home_likes_card.dart';
+import '../widgets/home_top_track_card.dart';
+import '../widgets/shimmers/home_shimmer_screen.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -28,6 +33,25 @@ final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   // Map the whole JSON array into a list of Track objects
   return jsonList.map((json) => TrackDto.fromJson(json)).toList();
 });
+
+extension RecentlyPlayedEntryX on RecentlyPlayedEntry {
+  Track toTrack() {
+    return Track(
+      id: trackId,
+      userId: userId,
+      title: title,
+      artist: artistName,
+      audioUrl: audioUrl ?? '',
+      streamUrl: streamUrl,
+      coverImage: artworkUrl,
+      duration: Duration(seconds: durationSeconds),
+      playCount: playCount,
+      isLiked: isLiked,
+      isArtistFollowed: isArtistFollowed,
+      createdAt: playedAt,
+    );
+  }
+}
 
 /// Home screen of the application feed.
 ///
@@ -62,6 +86,24 @@ class HomeScreen extends ConsumerWidget {
   /// - A fully rendered [Scaffold] widget representing the Home screen UI
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final historyState = ref.watch(historyProvider);
+    final latestTracks = historyState.entries
+        .take(4)
+        .map((e) => e.toTrack())
+        .toList();
+
+    final asyncHome = ref.watch(homeDataProvider);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    const crossAxisCount = 2;
+    const horizontalPadding = 16.0 * 2;
+    const crossAxisSpacing = 8.0;
+    final itemWidth =
+        (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
+    final dynamicAspectRatio = itemWidth / 59.6;
+
+    final isLoading = asyncHome.isLoading && asyncHome.value == null;
+
     return Scaffold(
       key: const Key('home_scaffold'),
       appBar: AppBar(
@@ -156,41 +198,66 @@ class HomeScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(homeDataProvider);
           ref.invalidate(hotForYouProvider);
-          // Also invalidate specific genre if needed, but homeDataProvider covers most
-          await ref.read(homeDataProvider.future);
-          await ref.read(hotForYouProvider.future);
+
+          await Future.wait([
+            ref.read(homeDataProvider.future),
+            ref.read(hotForYouProvider.future),
+            ref.read(likesProvider.notifier).load(refresh: true),
+            ref.read(historyProvider.notifier).load(refresh: true),
+          ]);
         },
-        child: ListView(
-          key: const Key('home_scroll_view'),
-          padding: const EdgeInsets.only(bottom: 150),
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            const SizedBox(height: 16),
+        child: isLoading
+            ? const HomeShimmerScreen()
+            : ListView(
+                key: const Key('home_scroll_view'),
+                padding: const EdgeInsets.only(bottom: 150),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  const LikesBannerWidget(),
 
-            /// Displays trending tracks grouped by genre.
-            TrendingByGenre(),
+                  if (latestTracks.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: crossAxisSpacing,
+                          childAspectRatio: dynamicAspectRatio,
+                        ),
+                        itemCount: latestTracks.length,
+                        itemBuilder: (context, index) =>
+                            HomeTopTrackCard(track: latestTracks[index]),
+                      ),
+                    ),
 
-            //const SizedBox(height: 24),
+                  const SizedBox(height: 4),
 
-            /// Displays personalized "Hot For You" recommendations.
-            HotForYouSection(),
+                  /// Displays trending tracks grouped by genre.
+                  TrendingByGenre(),
 
-            const SizedBox(height: 40),
+                  /// Displays personalized "Hot For You" recommendations.
+                  HotForYouSection(),
 
-            /// Displays mixed playlist recommendations.
-            MixedPlaylistsSection(),
+                  const SizedBox(height: 40),
 
-            const SizedBox(height: 30),
+                  /// Displays mixed playlist recommendations.
+                  MixedPlaylistsSection(),
 
-            /// Displays discovery-based station suggestions.
-            DiscoverWithStationsSection(),
+                  const SizedBox(height: 30),
 
-            //const SizedBox(height: 10),
+                  /// Displays discovery-based station suggestions.
+                  DiscoverWithStationsSection(),
 
-            /// Displays additional personalized music suggestions.
-            MoreOfWhatYouLikeSection(),
-          ],
-        ),
+                  //const SizedBox(height: 10),
+
+                  /// Displays additional personalized music suggestions.
+                  MoreOfWhatYouLikeSection(),
+                ],
+              ),
       ),
     );
   }

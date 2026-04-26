@@ -8,12 +8,13 @@ import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
+import 'shimmers/trending_genre_shimmer.dart';
 
 final List<Color> genreColors = [
-  const Color.fromARGB(255, 28, 197, 22),
   Colors.pink,
   Colors.purple,
   const Color.fromARGB(255, 4, 144, 208),
+  const Color.fromARGB(255, 28, 197, 22),
   Colors.pink,
   const Color.fromARGB(255, 19, 45, 195),
   const Color.fromARGB(255, 187, 34, 149),
@@ -69,7 +70,7 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
           child: Text("Trending by Genre", style: AppTheme.homeTitle),
         ),
         asyncHome.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const TrendingGenreShimmer(),
           error: (e, _) => Text('Error: $e'),
           data: (homeData) {
             final genres = homeData.trendingByGenre.genres;
@@ -87,6 +88,7 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
 
                 return Stack(
                   children: [
+                    // Layer 1: Background & Gradients
                     Positioned.fill(
                       child: Container(color: AppTheme.background),
                     ),
@@ -122,41 +124,45 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
                         ),
                       ),
                     ),
-                    ClipRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: 22,
-                          sigmaY: 22,
-                          tileMode: TileMode.decal,
-                        ),
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GenreTabBar(
-                                tabController: tabController,
-                                genres: genres,
-                              ),
-                              SizedBox(
-                                height: 250,
-                                child: GenreTabView(
-                                  tabController: tabController,
-                                  genres: genres,
-                                  initialTracks: homeData
-                                      .trendingByGenre
-                                      .initialTab
-                                      .tracks,
-                                  initialGenreId: homeData
-                                      .trendingByGenre
-                                      .initialTab
-                                      .genreId,
-                                ),
-                              ),
-                            ],
+
+                    // Layer 2: Dedicated Gaussian Blur Layer
+                    Positioned(
+                      top: 35, // Starting at the middle of the GenreTabBar
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(
+                            sigmaX: 22,
+                            sigmaY: 22,
+                            tileMode: TileMode.decal,
                           ),
+                          child: Container(color: Colors.transparent),
                         ),
                       ),
+                    ),
+
+                    // Layer 3: Genres and Tracks Content
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GenreTabBar(
+                          tabController: tabController,
+                          genres: genres,
+                        ),
+                        SizedBox(
+                          height: 250,
+                          child: GenreTabView(
+                            tabController: tabController,
+                            genres: genres,
+                            initialTracks:
+                                homeData.trendingByGenre.initialTab.tracks,
+                            initialGenreId:
+                                homeData.trendingByGenre.initialTab.genreId,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );
@@ -262,7 +268,7 @@ class GenreTabView extends ConsumerWidget {
             padding: const EdgeInsets.only(left: 20),
             child: _TrendingHorizontalColumns(tracks: genreTabTracks.tracks),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const TrendingGenreShimmer(),
           error: (e, _) => Center(
             child: Text(
               'Error: $e',
@@ -292,7 +298,7 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
     }
 
     return SizedBox(
-      height: 100,
+      height: 200,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: chunks.length,
@@ -300,30 +306,40 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
         itemBuilder: (_, chunkIndex) {
           final chunk = chunks[chunkIndex];
           return Column(
+            mainAxisSize: MainAxisSize.min,
             children: chunk.map((track) {
               return SizedBox(
                 width: 380,
+                height: 68, // Smaller vertical distance
                 child: ListTile(
                   key: Key('item_${track.id}'),
                   contentPadding: EdgeInsets.zero,
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child:
-                        track.coverImage != null &&
-                            track.coverImage!.startsWith('http')
-                        ? Image.network(
-                            track.coverImage!,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            width: 50,
-                            height: 50,
-                            color: Colors.grey[800],
-                          ),
+                  leading: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: 0.5),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.2),
+                      child:
+                          track.coverImage != null &&
+                              track.coverImage!.startsWith('http')
+                          ? Image.network(
+                              track.coverImage!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey[800],
+                            ),
+                    ),
                   ),
-
                   title: Text(
                     track.title,
                     style: const TextStyle(fontSize: 14, color: Colors.white),

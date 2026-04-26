@@ -7,6 +7,9 @@ import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/feed_providers.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/presentation/widgets/follow_button.dart';
+
 import '../../../player/presentation/providers/queue_provider.dart';
 
 class FeedCardBottomInfo extends ConsumerWidget {
@@ -79,9 +82,12 @@ class FeedCardBottomInfo extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white.withOpacity(0.12),
+            color: Colors.white.withValues(alpha: 0.12),
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
             ),
           ),
           child: Row(
@@ -153,7 +159,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        _FollowButton(),
+                        FollowButton(targetUserId: item.user.id, compact: true),
                       ],
                     ),
                   ],
@@ -177,25 +183,4 @@ class FeedCardBottomInfo extends ConsumerWidget {
   }
 }
 
-class _FollowButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      key: const Key('feed_card_bottom_info_follow_button'),
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white60),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-      child: const Text(
-        key: Key('feed_card_bottom_info_follow_text'),
-        'Follow',
-        style: TextStyle(fontSize: 12),
-      ),
-    );
-  }
-}
+// Removed private _FollowButton class as it's replaced by unified FollowButton

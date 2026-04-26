@@ -34,6 +34,7 @@ import '../../features/profile/presentation/pages/uploaded_tracks_page.dart';
 import '../../features/profile/presentation/pages/reposted_tracks_page.dart';
 import '../../features/profile/presentation/pages/profile_connections_page.dart';
 import '../../features/profile/domain/usecases/get_user_connections_usecase.dart';
+import '../../features/profile/presentation/pages/user_playlists_page.dart';
 
 //  Feed imports
 import '../../features/feed/presentation/pages/home_screen.dart';
@@ -378,6 +379,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) {
                       final userId = state.pathParameters['userId']!;
                       return RepostedTracksPage(userId: userId);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'profile/:userId/playlists',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UserPlaylistsPage(userId: userId);
                     },
                   ),
                   GoRoute(
