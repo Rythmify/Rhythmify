@@ -37,13 +37,17 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   static const double _maxSize = 1.0;
 
   void _expandPlayer() {
-    if (_draggableController.isAttached) {
+    if (!_draggableController.isAttached) return;
+
+    // Small delay to let queueStateProvider sync with playerStateProvider
+    Future.delayed(const Duration(milliseconds: 80), () {
+      if (!_draggableController.isAttached) return;
       _draggableController.animateTo(
         _maxSize,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
       );
-    }
+    });
   }
 
   void _collapsePlayer() {

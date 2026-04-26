@@ -7,7 +7,11 @@ import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/feed_providers.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/presentation/widgets/follow_button.dart';
+
+import '../../../player/presentation/providers/queue_provider.dart';
+
 
 class FeedCardBottomInfo extends ConsumerWidget {
   final FeedItemEntity item;
@@ -21,33 +25,47 @@ class FeedCardBottomInfo extends ConsumerWidget {
     this.showProgress = false,
   });
 
-  void _handlePlayTap(WidgetRef ref) {
+  void _handlePlayTap(BuildContext context, WidgetRef ref) {
     final playerState = ref.read(playerStateProvider);
     final isThisTrackLoaded = playerState.currentTrack?.id == item.track.id;
+    final isFirstEverLoad = playerState.currentTrack == null;
 
-    if (isThisTrackLoaded) {
-      ref.read(playerStateProvider.notifier).togglePlayPause();
-    } else {
+    if (!isThisTrackLoaded) {
       final track = Track(
         id: item.track.id,
         userId: item.user.id,
         title: item.track.title,
         artist: item.user.displayName,
         artistPfp: item.user.avatar,
-        audioUrl: item.track.audioUrl,
+        audioUrl: item.track.streamUrl ?? item.track.audioUrl,
         coverImage: item.track.coverUrl,
         duration: Duration(seconds: item.track.duration),
         createdAt: item.createdAt,
         playCount: item.track.playCount,
         likeCount: item.track.likeCount,
       );
-      ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
-      Future.delayed(const Duration(milliseconds: 300), () {
-        playerSheetNotifier.value?.call();
-      });
+
+      // Use queueStateProvider so FullPlayerPage sees the track immediately
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(tracks: [track], initialIndex: 0);
+
       onPlay?.call();
+
+      if (isFirstEverLoad) {
+        Future.doWhile(() async {
+          await Future.delayed(const Duration(milliseconds: 100));
+          final current = ref.read(playerStateProvider).currentTrack;
+          if (current?.id == item.track.id) {
+            playerSheetNotifier.value?.call();
+            return false;
+          }
+          return true;
+        });
+      }
       return;
     }
+
     onPlay?.call();
     playerSheetNotifier.value?.call();
   }
@@ -65,12 +83,9 @@ class FeedCardBottomInfo extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white.withValues(alpha: 0.12),
+            color: Colors.white.withOpacity(0.12),
             border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.15),
-                width: 1,
-              ),
+              top: BorderSide(color: Colors.white.withOpacity(0.15), width: 1),
             ),
           ),
           child: Row(
@@ -85,8 +100,9 @@ class FeedCardBottomInfo extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 2),
+                    // ── Title tap: open/resume sheet, never restart audio ──
                     GestureDetector(
-                      onTap: () => _handlePlayTap(ref),
+                      onTap: () => _handlePlayTap(context, ref),
                       child: Text(
                         key: const Key('feed_card_bottom_info_title'),
                         item.track.title,
@@ -148,8 +164,9 @@ class FeedCardBottomInfo extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
+              // ── Play circle: same behaviour as title tap ──
               GestureDetector(
-                onTap: () => _handlePlayTap(ref),
+                onTap: () => _handlePlayTap(context, ref),
                 child: FeedCardPlayCircle(
                   key: const Key('feed_card_bottom_info_play_circle'),
                   showProgress: showProgress,
