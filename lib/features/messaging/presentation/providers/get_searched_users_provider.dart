@@ -15,7 +15,7 @@ final getSearchedUsersProvider =
       ref,
       query,
     ) async {
-      if (query.isEmpty) return [];
+      if (query.length < 2) return [];
       final uCase = GetSearchedUsersUsecase(repo: ref.read(repositoryprovider));
       final searchedUsers = await uCase(query);
       return searchedUsers;
