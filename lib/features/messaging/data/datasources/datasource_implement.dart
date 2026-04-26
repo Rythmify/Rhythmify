@@ -187,8 +187,8 @@ class DatasourceImplement implements DatasourceInterface {
       final url = ApiEndPoints.getSearchedUsers(query);
 
       final response = await dio.get(url);
-      final body=response.data;
-      final List raw= body['data']['users']; 
+      final body = response.data;
+      final List raw = body['data']['users'];
 
       return raw
           .map(

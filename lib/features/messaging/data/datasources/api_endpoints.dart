@@ -46,8 +46,7 @@ class ApiEndPoints {
   static String getFollowings() => '/users/me/following';
 
   /// Returns the endpoint to search for users based on a [query].
-  static String getSearchedUsers(String query) =>
-      '/search?q=$query&type=users';
+  static String getSearchedUsers(String query) => '/search?q=$query&type=users';
 
   /// Returns the endpoint to check if a user with [userId] is blocked by current user.
   static String isBlocked(String userId) => '/users/$userId/follow-status';
