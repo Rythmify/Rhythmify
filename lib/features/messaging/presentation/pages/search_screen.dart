@@ -44,16 +44,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         )
         .toList();
 
-    final followingsIds = filteredFollowings
-        .map((s) => s.participantId)
-        .toSet();
+    final followingsIds = followings.map((s) => s.participantId).toSet();
     final filteredUsers = searchedUsers
-        .where(
-          (s) =>
-              s.participantName.toLowerCase().startsWith(query.toLowerCase()) &&
-              !followingsIds.contains(s.participantId),
-        )
+        .where((s) => !followingsIds.contains(s.participantId))
         .toList();
+    // .where(
+    //   (s) =>
+    //       s.participantName.toLowerCase().startsWith(query.toLowerCase()) &&
+    //       !followingsIds.contains(s.participantId),
+    // )
+    // .toList();
 
     return [...filteredFollowings, ...filteredUsers];
   }
@@ -101,14 +101,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                   )
-                : searchedUsers.when(
-                    data: (_) => searched.isEmpty
-                        ? const SizedBox.shrink()
-                        : SearchBody(users: searched),
-                    error: (e, _) => Center(child: Text(e.toString())),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                  ),
+                : searched.isEmpty && searchedUsers.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : searched.isEmpty
+                ? const SizedBox.shrink()
+                : SearchBody(users: searched),
           ),
         ],
       ),
