@@ -1,7 +1,7 @@
 import 'subscription_plan.dart';
 
 class UserSubscription {
-  final int subscriptionId;
+  final String subscriptionId; // UUID
   final String userId;
   final String status; // "pending" | "active" | "canceled" | "expired"
   final String startDate;
@@ -25,7 +25,7 @@ class UserSubscription {
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
     return UserSubscription(
-      subscriptionId: json['user_subscription_id'] as int,
+      subscriptionId: json['user_subscription_id'].toString(),
       userId: json['user_id'] as String,
       status: json['status'] as String,
       startDate: json['start_date'] as String,
