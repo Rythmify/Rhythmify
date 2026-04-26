@@ -16,7 +16,11 @@ import '../../../../core/data/models/track_dto.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../library/domain/entities/library_entities.dart';
+import '../../../library/presentation/providers/library_providers.dart';
 import '../providers/home_providers.dart';
+import '../widgets/home_likes_card.dart';
+import '../widgets/home_top_track_card.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -28,6 +32,25 @@ final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
   // Map the whole JSON array into a list of Track objects
   return jsonList.map((json) => TrackDto.fromJson(json)).toList();
 });
+
+extension RecentlyPlayedEntryX on RecentlyPlayedEntry {
+  Track toTrack() {
+    return Track(
+      id: trackId,
+      userId: userId,
+      title: title,
+      artist: artistName,
+      audioUrl: audioUrl ?? '',
+      streamUrl: streamUrl,
+      coverImage: artworkUrl,
+      duration: Duration(seconds: durationSeconds),
+      playCount: playCount,
+      isLiked: isLiked,
+      isArtistFollowed: isArtistFollowed,
+      createdAt: playedAt,
+    );
+  }
+}
 
 /// Home screen of the application feed.
 ///
@@ -62,6 +85,10 @@ class HomeScreen extends ConsumerWidget {
   /// - A fully rendered [Scaffold] widget representing the Home screen UI
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final historyState = ref.watch(historyProvider);
+    final latestTracks =
+        historyState.entries.take(4).map((e) => e.toTrack()).toList();
+
     return Scaffold(
       key: const Key('home_scaffold'),
       appBar: AppBar(
@@ -110,9 +137,7 @@ class HomeScreen extends ConsumerWidget {
                 await player.dispose();
               } catch (_) {}
 
-              ref
-                  .read(uploadFormProvider.notifier)
-                  .initDraft(
+              ref.read(uploadFormProvider.notifier).initDraft(
                     artistId: 'dev_user_001',
                     localAudioPath: picked.path!,
                     duration: duration,
@@ -156,6 +181,8 @@ class HomeScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(homeDataProvider);
           ref.invalidate(hotForYouProvider);
+          ref.invalidate(likesProvider);
+          ref.invalidate(historyProvider);
           // Also invalidate specific genre if needed, but homeDataProvider covers most
           await ref.read(homeDataProvider.future);
           await ref.read(hotForYouProvider.future);
@@ -165,7 +192,28 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 150),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 16),
+            const LikesBannerWidget(),
+
+            if (latestTracks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 3,
+                  ),
+                  itemCount: latestTracks.length,
+                  itemBuilder: (context, index) =>
+                      HomeTopTrackCard(track: latestTracks[index]),
+                ),
+              ),
+
+            //const SizedBox(height: 16),
 
             /// Displays trending tracks grouped by genre.
             TrendingByGenre(),
@@ -195,3 +243,4 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
+

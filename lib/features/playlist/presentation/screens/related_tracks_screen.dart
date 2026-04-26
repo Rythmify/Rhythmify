@@ -5,12 +5,10 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
@@ -120,12 +118,7 @@ class _BodyState extends ConsumerState<_Body> {
 
   // ── Track radio: read isSaved from provider ────────────────────────────────
   bool get _isTrackRadioSaved {
-    return ref
-            .watch(savedTrackRadiosProvider)
-            .asData
-            ?.value
-            ?.contains(widget.sourceId) ??
-        false;
+    return ref.watch(savedTrackRadiosProvider).asData?.value.contains(widget.sourceId) ?? false;
   }
 
   bool get _isSaved {

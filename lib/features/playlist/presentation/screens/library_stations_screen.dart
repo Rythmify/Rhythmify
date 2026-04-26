@@ -5,9 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/theme/app_theme.dart';
-import '../../data/local/local_saved_store.dart';
 import '../providers/saved_content_provider.dart';
 
 enum _StationSort { recentlyAdded, firstAdded, stationName }
@@ -407,7 +405,7 @@ class _StationTile extends StatelessWidget {
                     ? Image.network(
                         station.coverUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (_, _, _) => _placeholder(),
                       )
                     : _placeholder(),
               ),

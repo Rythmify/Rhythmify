@@ -263,9 +263,9 @@ class UploadsState extends Equatable {
 }
 
 class UploadsNotifier extends Notifier<UploadsState> {
-  late final GetMyUploadsUseCase _get;
-  late final ToggleTrackVisibilityUseCase _toggleVis;
-  late final DeleteTrackUseCase _delete;
+  late GetMyUploadsUseCase _get;
+  late ToggleTrackVisibilityUseCase _toggleVis;
+  late DeleteTrackUseCase _delete;
   int _page = 1;
 
   @override
@@ -547,3 +547,4 @@ final stationsProvider = FutureProvider<List<LibraryStation>>((ref) async {
   final result = await GetStationsUseCase(repo).call();
   return result.fold((f) => throw Exception(f.message), (data) => data);
 });
+
