@@ -3,6 +3,7 @@ import '../../../../core/errors/failures.dart';
 import '../entities/profile_entity.dart';
 import '../entities/profile_user_summary.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../entities/follow_status.dart';
 
 /// Defines the contract for all profile operations in Rythmify.
 ///
@@ -95,6 +96,22 @@ abstract class ProfileRepository {
   /// [userId] — the ID of the user to unfollow.
   Future<Either<Failure, void>> unfollowUser({required String userId});
 
+  /// Blocks the user with the given [userId].
+  ///
+  /// Returns [Right] with `void` on success.
+  /// Returns [Left] with a [Failure] if the operation fails.
+  ///
+  /// [userId] — the ID of the user to block.
+  Future<Either<Failure, void>> blockUser({required String userId});
+
+  /// Unblocks the user with the given [userId].
+  ///
+  /// Returns [Right] with `void` on success.
+  /// Returns [Left] with a [Failure] if the operation fails.
+  ///
+  /// [userId] — the ID of the user to unblock.
+  Future<Either<Failure, void>> unblockUser({required String userId});
+
   /// Fetches a paginated list of tracks liked by the given user.
   Future<Either<Failure, List<Track>>> getLikedTracks({
     required String userId,
@@ -129,4 +146,12 @@ abstract class ProfileRepository {
     required int page,
     required int limit,
   });
+
+  /// Returns the bidirectional follow/block status between the authenticated
+  /// user and the user identified by [userId].
+  ///
+  /// Calls `GET /users/{user_id}/follow-status`.
+  ///
+  /// Throws a [ServerException] on network or server errors.
+  Future<FollowStatus> getFollowStatus(String userId);
 }
