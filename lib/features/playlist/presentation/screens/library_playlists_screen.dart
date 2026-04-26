@@ -5,13 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
 import '../widgets/create_playlist_sheet.dart';
 import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
+
+enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
+
+enum _FilterOption { all, liked, owned }
 
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
   const LibraryPlaylistsScreen({super.key});
@@ -24,215 +28,427 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
 class _LibraryPlaylistsScreenState
     extends ConsumerState<LibraryPlaylistsScreen> {
   String _searchQuery = '';
+  _SortOption _sort = _SortOption.recentlyAdded;
+  _FilterOption _filter = _FilterOption.all;
+
+  final List<PlaylistEntity> _allPlaylists = [];
+  final List<PlaylistEntity> _likedPlaylists = [];
+  Set<String> _savedMixIds = {};
+  bool _loading = true;
+
+  OverlayEntry? _overlayEntry;
+  final _filterIconKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // Trigger the real API call after the first frame.
-    // This replaces the old mock seeder.
-    // You will see in the console:
-    //   [LIST] loadPlaylists()
-    //   [DATASOURCE] → GET /playlists  filter=created
-    //   [DATASOURCE] ← 200  Got 3 playlists from server
-    //   [LIST] loaded 3 items ✅
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(playlistListProvider.notifier).loadPlaylists();
-    });
-  }
-
-  // Returns the logged-in user's ID, or empty string if not authenticated.
-  String _currentUserId() {
-    final authState = ref.read(authProvider);
-    return authState is AuthAuthenticated ? authState.user.id : '';
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAll());
   }
 
   @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(playlistListProvider);
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
 
-    // Filter to playlists only (albums and stations are in separate screens)
-    final allPlaylists = state.playlists
-        .where((p) => p.type == PlaylistType.playlist)
-        .toList();
-    final filtered = allPlaylists
-        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+  Future<void> _loadAll() async {
+    setState(() => _loading = true);
+    final notifier = ref.read(playlistListProvider.notifier);
+
+    final savedMixes = await LocalSavedStore.instance.getMixes();
+    _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
+
+    await notifier.loadPlaylists();
+    final created = ref.read(playlistListProvider).playlists;
+
+    await notifier.loadLikedPlaylists();
+    final liked = ref.read(playlistListProvider).playlists;
+
+    final createdIds = created.map((p) => p.id).toSet();
+    final merged = [
+      ...created,
+      ...liked.where((p) => !createdIds.contains(p.id)),
+    ];
+
+    if (mounted) {
+      setState(() {
+        _allPlaylists
+          ..clear()
+          ..addAll(merged);
+        _likedPlaylists
+          ..clear()
+          ..addAll(liked);
+        _loading = false;
+      });
+    }
+
+    await notifier.loadPlaylists();
+  }
+
+  Future<void> _loadForFilter() async {
+    setState(() => _loading = true);
+    if (_filter == _FilterOption.liked) {
+      await ref.read(playlistListProvider.notifier).loadLikedPlaylists();
+      final liked = ref.read(playlistListProvider).playlists;
+      if (mounted) {
+        setState(() {
+          _likedPlaylists
+            ..clear()
+            ..addAll(liked);
+          _loading = false;
+        });
+      }
+    } else {
+      await _loadAll();
+    }
+  }
+
+  List<PlaylistEntity> get _sourceList {
+    switch (_filter) {
+      case _FilterOption.all:
+        return _allPlaylists;
+      case _FilterOption.liked:
+        return _likedPlaylists;
+      case _FilterOption.owned:
+        return _allPlaylists.where((p) => p.isOwned).toList();
+    }
+  }
+
+  List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
+    var result = input
+        .where(
+          (p) =>
+              _filter == _FilterOption.liked || p.type == PlaylistType.playlist,
+        )
         .toList();
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
+    if (_searchQuery.isNotEmpty) {
+      result = result
+          .where(
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
+    }
+
+    switch (_sort) {
+      case _SortOption.recentlyAdded:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case _SortOption.firstAdded:
+        result.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      case _SortOption.recentlyUpdated:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case _SortOption.playlistName:
+        result.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+    }
+
+    return result;
+  }
+
+  void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
+    if (playlist.isOwned) {
+      context.push('/library/playlists/${playlist.id}', extra: true);
+      return;
+    }
+    if (_savedMixIds.contains(playlist.id)) {
+      context.push(
+        '/home/mix/${playlist.id}',
+        extra: {
+          'title': playlist.name,
+          'ownerName': playlist.ownerName.isNotEmpty
+              ? playlist.ownerName
+              : 'You',
+          'coverUrl': playlist.coverUrl,
+          'trackCount': playlist.trackCount,
+          'mixType': 'genre',
+        },
+      );
+    } else {
+      context.push('/home/playlist/${playlist.id}', extra: false);
+    }
+  }
+
+  void _toggleOverlay() {
+    if (_overlayEntry != null) {
+      _removeOverlay();
+      return;
+    }
+    _showOverlay();
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _showOverlay() {
+    final renderBox =
+        _filterIconKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _removeOverlay,
+        child: Stack(
           children: [
-            // ── Search bar ──────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    key: const Key('library_playlists_back_button'),
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                    onPressed: () => context.pop(),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: TextField(
-                        key: const Key('library_playlists_search_field'),
-                        onChanged: (v) => setState(() => _searchQuery = v),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search ${allPlaylists.length} playlists',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.grey,
-                            size: 18,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.tune, color: Colors.grey[400], size: 22),
-                ],
-              ),
-            ),
-
-            // ── Title ───────────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Playlists',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
+            Positioned(
+              top: offset.dy + size.height + 4,
+              right: MediaQuery.of(context).size.width - offset.dx - size.width,
+              child: GestureDetector(
+                onTap: () {},
+                child: Material(
+                  color: Colors.transparent,
+                  child: _FilterDropdown(
+                    sort: _sort,
+                    filter: _filter,
+                    onSortChanged: (s) {
+                      setState(() => _sort = s);
+                      _removeOverlay();
+                    },
+                    onFilterChanged: (f) {
+                      setState(() => _filter = f);
+                      _removeOverlay();
+                      _loadForFilter();
+                    },
                   ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
 
-            // ── Import / Create buttons ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('library_playlists_import_button'),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Import not available yet'),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.download_outlined,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Import',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('library_playlists_create_button'),
-                      onPressed: () => _showCreateSheet(context),
-                      icon: const Icon(
-                        Icons.add,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Create',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _applySortAndSearch(_sourceList);
+    final totalCount = _allPlaylists.length;
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: Stack(
+        children: [
+          // ── Decorative orange background ─────────────────────────
+          Positioned(
+            top: -60,
+            right: -80,
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..rotateZ(0.45)
+                ..setEntry(0, 1, 0.2),
+              child: Column(
+                children: List.generate(12, (i) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    width: 320,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFFF7700).withValues(alpha: 0.8),
+                          const Color(0xFFFF7700).withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
-                  ),
-                ],
+                    child: Container(
+                      margin: const EdgeInsets.all(1.2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.background,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
               ),
             ),
+          ),
 
-            // ── Playlist list ────────────────────────────────────────────
-            Expanded(
-              child: state.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFF5500),
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Search row ────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
+                        ),
+                        onPressed: () => context.pop(),
                       ),
-                    )
-                  : filtered.isEmpty
-                  ? Center(
-                      child: Text(
-                        _searchQuery.isEmpty
-                            ? 'No playlists yet.\nTap Create to make one!'
-                            : 'No results for "$_searchQuery"',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey[500]),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final playlist = filtered[index];
-                        // Real ownership check using the auth provider
-                        final isOwner = playlist.ownerId == _currentUserId();
-                        return _PlaylistListTile(
-                          key: Key('library_playlist_tile_${playlist.id}'),
-                          playlist: playlist,
-                          onTap: () => context.push(
-                            '/library/playlists/${playlist.id}',
-                            extra: isOwner,
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          onMoreTap: () =>
-                              _showOptions(context, playlist, isOwner),
-                        );
-                      },
-                    ),
+                          child: TextField(
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                            style: AppTheme.bodyNormal,
+                            decoration: InputDecoration(
+                              hintText: 'Search $totalCount playlists',
+                              hintStyle: AppTheme.bodyMedium,
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.pop(),
+                        child: Text(
+                          'Cancel',
+                          style: AppTheme.bodyNormal.copyWith(
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        key: _filterIconKey,
+                        icon: Icon(
+                          Icons.tune,
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
+                                  _filter != _FilterOption.all)
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
+                        onPressed: _toggleOverlay,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Title ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Playlists', style: AppTheme.headlineLarge),
+                  ),
+                ),
+
+                // ── Import + Create ───────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Import not available yet'),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.download_outlined,
+                            color: AppTheme.textPrimary,
+                          ),
+                          label: Text('Import', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: const BorderSide(
+                              color: AppTheme.lighterSurface,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showCreateSheet(context),
+                          icon: const Icon(
+                            Icons.add,
+                            color: AppTheme.textPrimary,
+                          ),
+                          label: Text('Create', style: AppTheme.labelLarge),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: AppTheme.surface,
+                            side: const BorderSide(
+                              color: AppTheme.lighterSurface,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── List ─────────────────────────────────────────
+                Expanded(
+                  child: _loading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBrand,
+                          ),
+                        )
+                      : filtered.isEmpty
+                      ? _emptyState()
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 140),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final playlist = filtered[index];
+                            final isOwner = playlist.isOwned;
+                            return _PlaylistListTile(
+                              playlist: playlist,
+                              onTap: () => _onPlaylistTap(context, playlist),
+                              onMoreTap: () =>
+                                  _showOptions(context, playlist, isOwner),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    final message = switch (_filter) {
+      _FilterOption.liked =>
+        'No liked playlists yet\nLike a mix or playlist to save it here',
+      _FilterOption.owned => 'No playlists created yet',
+      _FilterOption.all => 'No playlists yet',
+    };
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Text(
+          message,
+          style: AppTheme.bodyMedium,
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -264,9 +480,135 @@ class _LibraryPlaylistsScreenState
   }
 }
 
+// ── Filter dropdown ───────────────────────────────────────────────────────────
+class _FilterDropdown extends StatelessWidget {
+  const _FilterDropdown({
+    required this.sort,
+    required this.filter,
+    required this.onSortChanged,
+    required this.onFilterChanged,
+  });
+
+  final _SortOption sort;
+  final _FilterOption filter;
+  final ValueChanged<_SortOption> onSortChanged;
+  final ValueChanged<_FilterOption> onFilterChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DropdownItem(
+              label: 'Recently added',
+              checked: sort == _SortOption.recentlyAdded,
+              onTap: () => onSortChanged(_SortOption.recentlyAdded),
+            ),
+            _DropdownItem(
+              label: 'First added',
+              checked: sort == _SortOption.firstAdded,
+              onTap: () => onSortChanged(_SortOption.firstAdded),
+            ),
+            _DropdownItem(
+              label: 'Recently updated',
+              checked: sort == _SortOption.recentlyUpdated,
+              onTap: () => onSortChanged(_SortOption.recentlyUpdated),
+            ),
+            _DropdownItem(
+              label: 'Playlist name',
+              checked: sort == _SortOption.playlistName,
+              onTap: () => onSortChanged(_SortOption.playlistName),
+            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFF3A3A3A)),
+            _DropdownItem(
+              label: 'All playlists',
+              checked: filter == _FilterOption.all,
+              onTap: () => onFilterChanged(_FilterOption.all),
+            ),
+            _DropdownItem(
+              label: 'Liked playlists',
+              checked: filter == _FilterOption.liked,
+              onTap: () => onFilterChanged(_FilterOption.liked),
+            ),
+            _DropdownItem(
+              label: 'Owned playlists',
+              checked: filter == _FilterOption.owned,
+              onTap: () => onFilterChanged(_FilterOption.owned),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DropdownItem extends StatelessWidget {
+  const _DropdownItem({
+    required this.label,
+    required this.checked,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool checked;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              child: checked
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: checked
+                      ? AppTheme.textPrimary
+                      : AppTheme.textSecondary,
+                  fontSize: 15,
+                  fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Playlist tile ─────────────────────────────────────────────────────────────
 class _PlaylistListTile extends StatelessWidget {
   const _PlaylistListTile({
-    super.key,
     required this.playlist,
     required this.onTap,
     required this.onMoreTap,
@@ -284,7 +626,7 @@ class _PlaylistListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 4),
+            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 0),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -292,30 +634,20 @@ class _PlaylistListTile extends StatelessWidget {
                 children: [
                   Text(
                     playlist.name,
+                    style: AppTheme.bodyNormal,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
                   ),
-                  const SizedBox(height: 2),
                   Text(
-                    playlist.ownerName,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                    playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+                    style: AppTheme.artistTitle,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    playlist.subtitleLine,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
+                  Text(playlist.subtitleLine, style: AppTheme.labelSmall),
                 ],
               ),
             ),
             IconButton(
-              key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+              icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../playlist/domain/entities/playlist_entity.dart';
 
 /// Base class for all profile states in Rythmify.
 ///
@@ -56,6 +57,10 @@ class ProfileLoaded extends ProfileState {
   final bool isLoadingReposts;
   final bool hasMoreReposts;
 
+  /// Playlists created by the user.
+  final List<PlaylistEntity> playlists;
+  final bool isLoadingPlaylists;
+
   /// Whether a save operation (update, upload, delete) is in progress.
   final bool isSaving;
 
@@ -70,6 +75,8 @@ class ProfileLoaded extends ProfileState {
     this.repostedTracks = const [],
     this.isLoadingReposts = false,
     this.hasMoreReposts = true,
+    this.playlists = const [],
+    this.isLoadingPlaylists = false,
     this.isSaving = false,
   });
 
@@ -84,6 +91,8 @@ class ProfileLoaded extends ProfileState {
     List<Track>? repostedTracks,
     bool? isLoadingReposts,
     bool? hasMoreReposts,
+    List<PlaylistEntity>? playlists,
+    bool? isLoadingPlaylists,
     bool? isSaving,
   }) {
     return ProfileLoaded(
@@ -97,6 +106,8 @@ class ProfileLoaded extends ProfileState {
       repostedTracks: repostedTracks ?? this.repostedTracks,
       isLoadingReposts: isLoadingReposts ?? this.isLoadingReposts,
       hasMoreReposts: hasMoreReposts ?? this.hasMoreReposts,
+      playlists: playlists ?? this.playlists,
+      isLoadingPlaylists: isLoadingPlaylists ?? this.isLoadingPlaylists,
       isSaving: isSaving ?? this.isSaving,
     );
   }
@@ -113,6 +124,8 @@ class ProfileLoaded extends ProfileState {
     repostedTracks,
     isLoadingReposts,
     hasMoreReposts,
+    playlists,
+    isLoadingPlaylists,
     isSaving,
   ];
 }

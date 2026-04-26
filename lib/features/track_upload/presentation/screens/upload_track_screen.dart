@@ -280,7 +280,63 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   }
 
   Future<void> _pickArtwork() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: Colors.white70,
+              ),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt_outlined,
+                color: Colors.white70,
+              ),
+              title: const Text(
+                'Take a photo',
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1000,
+      maxHeight: 1000,
+    );
+
     if (image != null) {
       ref.read(uploadFormProvider.notifier).setArtwork(image.path);
     }

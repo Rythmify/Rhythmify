@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 /// Likes page matching SoundCloud's layout.
 ///
@@ -130,107 +131,141 @@ class _LikesPageState extends ConsumerState<LikesPage> {
               )
               .toList();
 
-    return Column(
-      children: [
-        // ── Search bar ──────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(21),
-            ),
-            child: TextField(
-              key: const Key('likes_search_text_field'),
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search ${state.likedTracks.length} tracks',
-                hintStyle: AppTheme.bodyMedium,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.textSecondary,
-                  size: 20,
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        await ref
+            .read(profileProvider.notifier)
+            .loadProfile(userId: widget.userId);
+        await ref
+            .read(profileProvider.notifier)
+            .loadLikedTracks(userId: widget.userId, refresh: true, limit: 20);
+      },
+      child: Column(
+        children: [
+          // ── Search bar ──────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Container(
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(21),
+              ),
+              child: TextField(
+                key: const Key('likes_search_text_field'),
+                controller: _searchController,
+                onChanged: (v) => setState(() => _query = v),
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.textPrimary,
                 ),
-                suffixIcon: const Icon(
-                  Icons.tune,
-                  color: AppTheme.textSecondary,
-                  size: 20,
+                decoration: InputDecoration(
+                  hintText: 'Search ${state.likedTracks.length} tracks',
+                  hintStyle: AppTheme.bodyMedium,
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppTheme.textSecondary,
+                    size: 20,
+                  ),
+                  suffixIcon: const Icon(
+                    Icons.tune,
+                    color: AppTheme.textSecondary,
+                    size: 20,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 11),
               ),
             ),
           ),
-        ),
 
-        // ── Action row: shuffle + play ─────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            children: [
-              IconButton(
-                key: const Key('likes_add_icon_button'),
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  color: AppTheme.textSecondary,
+          // ── Action row: shuffle + play ─────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                IconButton(
+                  key: const Key('likes_add_icon_button'),
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: AppTheme.textSecondary,
+                  ),
+                  onPressed: () {},
                 ),
-                onPressed: () {},
-              ),
-              const Spacer(),
-              IconButton(
-                key: const Key('likes_shuffle_icon_button'),
-                icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
-                onPressed: () {},
-              ),
-              FloatingActionButton.small(
-                key: const Key('likes_play_all_fab'),
-                heroTag: 'likes_play',
-                backgroundColor: Colors.white,
-                onPressed: () {},
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Colors.black,
-                  size: 22,
+                const Spacer(),
+                IconButton(
+                  key: const Key('likes_shuffle_icon_button'),
+                  icon: const Icon(
+                    Icons.shuffle,
+                    color: AppTheme.textSecondary,
+                  ),
+                  onPressed: () {
+                    if (filtered.isNotEmpty) {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(tracks: filtered, initialIndex: 0);
+                      ref.read(queueStateProvider.notifier).toggleShuffle();
+                    }
+                  },
                 ),
-              ),
-              const SizedBox(width: 8),
-            ],
+                FloatingActionButton.small(
+                  key: const Key('likes_play_all_fab'),
+                  heroTag: 'likes_play',
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    if (filtered.isNotEmpty) {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(tracks: filtered, initialIndex: 0);
+                    }
+                  },
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.black,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
           ),
-        ),
 
-        // ── Track list ─────────────────────────────────────────────────────
-        Expanded(
-          child: ListView.builder(
-            key: const Key('likes_list_view'),
-            controller: _scrollController,
-            itemCount: filtered.length + 1,
-            itemBuilder: (context, index) {
-              // Pagination footer
-              if (index == filtered.length) {
-                return state.isLoadingLikes
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryBrand,
-                            strokeWidth: 2,
+          // ── Track list ─────────────────────────────────────────────────────
+          Expanded(
+            child: ListView.builder(
+              key: const Key('likes_list_view'),
+              controller: _scrollController,
+              itemCount: filtered.length + 1,
+              itemBuilder: (context, index) {
+                // Pagination footer
+                if (index == filtered.length) {
+                  return state.isLoadingLikes
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryBrand,
+                              strokeWidth: 2,
+                            ),
                           ),
-                        ),
-                      )
-                    : const SizedBox(height: 120);
-              }
+                        )
+                      : const SizedBox(height: 120);
+                }
 
-              return TrackCard(
-                key: Key('item_${filtered[index].id}'),
-                track: filtered[index],
-              );
-            },
+                return TrackCard(
+                  key: Key('item_${filtered[index].id}'),
+                  track: filtered[index],
+                  onTap: () {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: index);
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

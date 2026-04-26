@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
 import '../widgets/track_tile.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 /// The full track list for a genre, used as the child of [GenreSeeAllPage]
 /// when the user taps "See all" on the Discover More Tracks section.
@@ -38,8 +39,15 @@ class GenreAllTracksList extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           itemCount: tracks.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (_, i) =>
-              TrackTile(key: Key('genre_all_track_$i'), track: tracks[i]),
+          itemBuilder: (context, i) => TrackTile(
+            key: Key('genre_all_track_$i'),
+            track: tracks[i],
+            onTap: () {
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(tracks: tracks, initialIndex: i);
+            },
+          ),
         );
       },
     );

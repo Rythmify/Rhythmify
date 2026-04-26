@@ -73,7 +73,7 @@ class UploadTrackRemoteDataSource {
         'title': title,
         'artists': artist, // spec: 'artists'
         'genre': genre,
-        'is_public': isPublic.toString(),
+        'is_public': isPublic, // Pass as boolean
         'audio_file': await MultipartFile.fromFile(
           // spec: 'audio_file'
           audioFile.path,
@@ -99,7 +99,7 @@ class UploadTrackRemoteDataSource {
 
       // Tags sent as repeated fields — spec: tags is array
       for (final tag in tags) {
-        formData.fields.add(MapEntry('tags[]', tag));
+        formData.fields.add(MapEntry('tags', tag));
       }
 
       debugPrint('=== SENDING TO BACKEND ===');
@@ -111,6 +111,12 @@ class UploadTrackRemoteDataSource {
       final response = await _dio.post(
         '/tracks',
         data: formData,
+        options: Options(
+          contentType:
+              null, // Allow Dio to set multipart/form-data with boundary
+          sendTimeout: const Duration(minutes: 2),
+          receiveTimeout: const Duration(minutes: 2),
+        ),
         onSendProgress: (sent, total) {
           if (total > 0 && onProgress != null) {
             final progress = (sent / total).clamp(0.0, 1.0);

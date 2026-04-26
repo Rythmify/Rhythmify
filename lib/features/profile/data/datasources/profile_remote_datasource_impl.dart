@@ -18,10 +18,27 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<ProfileModel> getProfile({required String userId}) async {
     try {
       final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
-
       final response = await client.dio.get(endpoint);
+      final data = Map<String, dynamic>.from(response.data['data'] as Map);
 
-      return ProfileModel.fromJson(response.data['data']);
+      // GET /users/{id} does not include is_following — only GET /users/me does.
+      // For public profiles, call the dedicated follow-status endpoint and merge
+      // the result so the Follow button and follower counts are always accurate.
+      if (userId != 'me') {
+        try {
+          final statusResp = await client.dio.get(
+            '/users/$userId/follow-status',
+          );
+          final isFollowing =
+              statusResp.data['data']?['is_following'] as bool? ?? false;
+          data['is_following'] = isFollowing;
+        } catch (_) {
+          // Unauthenticated or network error — default to false.
+          data['is_following'] = data['is_following'] ?? false;
+        }
+      }
+
+      return ProfileModel.fromJson(data);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -154,7 +171,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       final endpoint = userId == 'me'
           ? '/me/liked-tracks'
-          : '/users/$userId/tracks';
+          : '/users/$userId/liked-tracks';
 
       final response = await client.dio.get(
         endpoint,
@@ -202,13 +219,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     try {
       final endpoint = userId == 'me'
           ? '/me/reposted-tracks'
-          : '/users/$userId/tracks';
+          : '/users/$userId/reposted-tracks';
 
       final response = await client.dio.get(
         endpoint,
         queryParameters: {'page': page, 'limit': limit},
       );
-
       final tracks = _extractListPayload(response.data);
       return tracks.map((t) => TrackModel.fromJson(t)).toList();
     } on DioException catch (e) {
@@ -224,11 +240,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final resolvedUserId = userId == 'me'
-          ? (await getProfile(userId: 'me')).id
-          : userId;
       final response = await client.dio.get(
-        '/users/$resolvedUserId/followers',
+        '/users/$userId/followers',
         queryParameters: {'page': page, 'limit': limit},
       );
       final users = _extractListPayload(response.data);
@@ -252,11 +265,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required int limit,
   }) async {
     try {
-      final resolvedUserId = userId == 'me'
-          ? (await getProfile(userId: 'me')).id
-          : userId;
       final response = await client.dio.get(
-        '/users/$resolvedUserId/following',
+        '/users/$userId/following',
         queryParameters: {'page': page, 'limit': limit},
       );
       final users = _extractListPayload(response.data);

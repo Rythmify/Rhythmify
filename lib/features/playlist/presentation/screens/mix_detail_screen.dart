@@ -1,79 +1,21 @@
 // lib/features/playlist/presentation/screens/mix_detail_screen.dart
-
+// ignore_for_file: avoid_print
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/domain/entities/track.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../feed/presentation/providers/home_providers.dart';
 import '../../../player/presentation/providers/player_provider.dart';
-import '../../../track/presentation/providers/track_dependency_providers.dart';
-import '../../data/datasources/playlist_remote_datasource.dart';
-import '../../domain/entities/playlist_track.dart';
-import '../providers/playlist_provider.dart';
+import '../providers/saved_content_provider.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
-// ── Mix type ──────────────────────────────────────────────────────────────────
 enum MixType { genre, daily, weekly }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-class MixDetailState {
-  const MixDetailState({
-    this.tracks = const [],
-    this.isLoading = true,
-    this.error,
-  });
-
-  final List<PlaylistTrack> tracks;
-  final bool isLoading;
-  final String? error;
-
-  MixDetailState copyWith({
-    List<PlaylistTrack>? tracks,
-    bool? isLoading,
-    String? error,
-  }) => MixDetailState(
-    tracks: tracks ?? this.tracks,
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-  );
-}
-
-// ── Notifier ──────────────────────────────────────────────────────────────────
-class MixDetailNotifier extends Notifier<MixDetailState> {
-  @override
-  MixDetailState build() => const MixDetailState(isLoading: true);
-
-  PlaylistRemoteDatasource get _ds => ref.read(playlistDatasourceProvider);
-
-  Future<void> load({required String mixId, required MixType mixType}) async {
-    state = const MixDetailState(isLoading: true);
-    try {
-      List<PlaylistTrack> tracks;
-      switch (mixType) {
-        case MixType.daily:
-          tracks = await _ds.fetchDailyMixTracks();
-        case MixType.weekly:
-          tracks = await _ds.fetchWeeklyMixTracks();
-        case MixType.genre:
-          tracks = await _ds.fetchMixTracks(mixId);
-      }
-      state = MixDetailState(tracks: tracks, isLoading: false);
-      print('[MixDetail] ✅ Loaded ${tracks.length} tracks');
-    } catch (e) {
-      print('[MixDetail] ❌ Failed: $e');
-      state = MixDetailState(isLoading: false, error: 'Could not load mix');
-    }
-  }
-}
-
-// ── Provider ──────────────────────────────────────────────────────────────────
-final mixDetailProvider = NotifierProvider<MixDetailNotifier, MixDetailState>(
-  MixDetailNotifier.new,
-);
-
-// ── Screen ────────────────────────────────────────────────────────────────────
-class MixDetailScreen extends ConsumerStatefulWidget {
+class MixDetailScreen extends ConsumerWidget {
   const MixDetailScreen({
     super.key,
     required this.mixId,
@@ -92,96 +34,108 @@ class MixDetailScreen extends ConsumerStatefulWidget {
   final int? trackCount;
 
   @override
-  ConsumerState<MixDetailScreen> createState() => _MixDetailScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncTracks = ref.watch(mixTracksProvider(mixId));
+
+    return asyncTracks.when(
+      loading: () => const Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
+      ),
+      error: (e, _) => Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: Text(
+            'Could not load mix',
+            style: const TextStyle(color: AppTheme.textSecondary),
+          ),
+        ),
+      ),
+      data: (tracks) => _MixDetailBody(
+        mixId: mixId,
+        mixTitle: mixTitle,
+        ownerName: ownerName,
+        coverUrl: coverUrl,
+        tracks: tracks,
+      ),
+    );
+  }
 }
 
-class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
+class _MixDetailBody extends ConsumerStatefulWidget {
+  const _MixDetailBody({
+    required this.mixId,
+    required this.mixTitle,
+    required this.ownerName,
+    required this.tracks,
+    this.coverUrl,
+  });
+
+  final String mixId;
+  final String mixTitle;
+  final String ownerName;
+  final String? coverUrl;
+  final List<Track> tracks;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(mixDetailProvider.notifier)
-          .load(mixId: widget.mixId, mixType: widget.mixType);
-    });
+  ConsumerState<_MixDetailBody> createState() => _MixDetailBodyState();
+}
+
+class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
+  // FIX: derive _isSaved from savedMixesProvider instead of LocalSavedStore.
+  // This keeps the heart in sync when the user likes/unlikes from this screen
+  // or from any other screen in the same session.
+  bool get _isSaved {
+    final mixes = ref.watch(savedMixesProvider).asData?.value ?? [];
+    return mixes.any((m) => m.mixId == widget.mixId);
   }
 
-  Future<void> _fetchAndPlay(PlaylistTrack pt) async {
+  Future<void> _toggleLike() async {
+    final mix = SavedMix(
+      mixId: widget.mixId,
+      title: widget.mixTitle,
+      ownerName: widget.ownerName,
+      coverUrl: widget.coverUrl,
+      trackCount: widget.tracks.length,
+      savedAt: DateTime.now(),
+    );
+    // toggle() handles backend call + LocalSavedStore + playlistListProvider reload
+    await ref.read(savedMixesProvider.notifier).toggle(mix);
+  }
+
+  Future<void> _play(List<Track> list, int index) async {
+    if (list.isEmpty || index >= list.length) return;
     try {
-      final fullTrack = await ref
-          .read(getTrackDetailsUseCaseProvider)
-          .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        fullTrack,
-      ], initialIndex: 0);
+      await ref
+          .read(playerStateProvider.notifier)
+          .loadAndPlayQueue(list, initialIndex: index);
     } catch (e) {
-      debugPrint('[MixDetail] Failed to play "${pt.title}": $e');
+      debugPrint('[MixDetail] play failed: $e');
     }
-  }
-
-  Future<void> _playAll() async {
-    final tracks = ref.read(mixDetailProvider).tracks;
-    if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
-  }
-
-  Future<void> _shuffle() async {
-    final tracks = List<PlaylistTrack>.from(ref.read(mixDetailProvider).tracks)
-      ..shuffle();
-    if (tracks.isEmpty) return;
-    await _fetchAndPlay(tracks.first);
-  }
-
-  Future<void> _playFrom(int index) async {
-    final tracks = ref.read(mixDetailProvider).tracks;
-    if (tracks.isEmpty || index >= tracks.length) return;
-    await _fetchAndPlay(tracks[index]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(mixDetailProvider);
+    // Watch savedMixesProvider so the heart rebuilds reactively
+    ref.watch(savedMixesProvider);
 
-    if (state.isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF111111),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF5500)),
-        ),
-      );
-    }
-
-    if (state.error != null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF111111),
-        body: Center(
-          child: Text(
-            state.error!,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-
-    final tracks = state.tracks;
-    final trackCount = widget.trackCount ?? tracks.length;
-    final totalDuration = tracks.fold(
-      Duration.zero,
-      (sum, t) => sum + t.duration,
-    );
+    final tracks = widget.tracks;
+    final totalDuration = tracks.fold(Duration.zero, (s, t) => s + t.duration);
     final h = totalDuration.inHours;
     final m = totalDuration.inMinutes % 60;
     final s = totalDuration.inSeconds % 60;
-    final durationStr = h > 0
+    final durStr = h > 0
         ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
         : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ──────────────────────────────────────────────────────
+            // ── Header ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
               child: Row(
@@ -189,26 +143,12 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                   IconButton(
                     icon: const Icon(
                       Icons.chevron_left,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 28,
                     ),
                     onPressed: () => context.pop(),
                   ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: widget.coverUrl != null
-                          ? Image.network(
-                              widget.coverUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _Placeholder(widget.mixTitle),
-                            )
-                          : _Placeholder(widget.mixTitle),
-                    ),
-                  ),
+                  _Cover(url: widget.coverUrl, label: widget.mixTitle),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -218,38 +158,24 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                           widget.mixTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: AppTheme.titleLarge,
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Private · $durationStr · $trackCount tracks',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                          ),
+                          'Private · $durStr · ${tracks.length} tracks',
+                          style: AppTheme.labelSmall,
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Text(
-                              'Made for ',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12,
-                              ),
-                            ),
+                            Text('Made for ', style: AppTheme.labelSmall),
                             Flexible(
                               child: Text(
                                 widget.ownerName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
+                                style: AppTheme.labelSmall.copyWith(
+                                  color: AppTheme.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -263,23 +189,25 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               ),
             ),
 
-            // ── Action bar ───────────────────────────────────────────────────
+            // ── Action bar ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  const IconButton(
+                  IconButton(
                     icon: Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
+                      _isSaved ? Icons.favorite : Icons.favorite_border,
+                      color: _isSaved
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
                       size: 24,
                     ),
-                    onPressed: null,
+                    onPressed: _toggleLike,
                   ),
                   IconButton(
                     icon: const Icon(
                       Icons.more_horiz,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       size: 24,
                     ),
                     onPressed: () => _showOptions(context),
@@ -288,23 +216,26 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                   IconButton(
                     icon: const Icon(
                       Icons.shuffle,
-                      color: Colors.white60,
+                      color: AppTheme.textSecondary,
                       size: 24,
                     ),
-                    onPressed: _shuffle,
+                    onPressed: () {
+                      final shuffled = List<Track>.from(tracks)..shuffle();
+                      _play(shuffled, 0);
+                    },
                   ),
                   GestureDetector(
-                    onTap: _playAll,
+                    onTap: () => _play(tracks, 0),
                     child: Container(
                       width: 52,
                       height: 52,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF3A3A3A),
+                        color: AppTheme.lighterSurface,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.play_arrow,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                         size: 28,
                       ),
                     ),
@@ -313,24 +244,28 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               ),
             ),
 
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
 
-            // ── Track list ────────────────────────────────────────────────────
+            // ── Track list ──────────────────────────────────────────────
             Expanded(
               child: tracks.isEmpty
                   ? Center(
                       child: Text(
                         'No tracks in this mix yet',
-                        style: TextStyle(color: Colors.grey[500]),
+                        style: AppTheme.bodyMedium,
                       ),
                     )
                   : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 140),
                       itemCount: tracks.length,
-                      itemBuilder: (context, index) => TrackTileInPlaylist(
-                        key: Key('mix_track_${tracks[index].id}'),
-                        track: tracks[index],
-                        onTap: () => _playFrom(index),
-                      ),
+                      itemBuilder: (context, index) {
+                        final t = tracks[index];
+                        return TrackTileFromTrack(
+                          key: Key('mix_track_${t.id}'),
+                          track: t,
+                          onTap: () => _play(tracks, index),
+                        );
+                      },
                     ),
             ),
           ],
@@ -346,7 +281,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF1C1C1C),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         padding: EdgeInsets.only(
@@ -360,35 +295,20 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: widget.coverUrl != null
-                          ? Image.network(widget.coverUrl!, fit: BoxFit.cover)
-                          : _Placeholder(widget.mixTitle),
-                    ),
+                  _Cover(
+                    url: widget.coverUrl,
+                    label: widget.mixTitle,
+                    size: 56,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.mixTitle,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(widget.mixTitle, style: AppTheme.bodyNormal),
                         Text(
                           'Made for ${widget.ownerName}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
-                          ),
+                          style: AppTheme.artistTitle,
                         ),
                       ],
                     ),
@@ -396,7 +316,7 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
                 ],
               ),
             ),
-            const Divider(color: Colors.white12, height: 1),
+            const Divider(color: AppTheme.lighterSurface, height: 1),
             OptionSheetTile(
               icon: Icons.queue_play_next,
               label: 'Play next',
@@ -408,9 +328,12 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
               onTap: () => Navigator.of(context).pop(),
             ),
             OptionSheetTile(
-              icon: Icons.copy_all,
-              label: 'Copy mix',
-              onTap: () => Navigator.of(context).pop(),
+              icon: _isSaved ? Icons.favorite : Icons.favorite_border,
+              label: _isSaved ? 'Remove from library' : 'Save to library',
+              onTap: () {
+                Navigator.of(context).pop();
+                _toggleLike();
+              },
             ),
             const SizedBox(height: 40),
           ],
@@ -420,25 +343,41 @@ class _MixDetailScreenState extends ConsumerState<MixDetailScreen> {
   }
 }
 
-// ── Cover placeholder ─────────────────────────────────────────────────────────
-class _Placeholder extends StatelessWidget {
-  const _Placeholder(this.title);
-  final String title;
+class _Cover extends StatelessWidget {
+  const _Cover({required this.url, required this.label, this.size = 56});
+  final String? url;
+  final String label;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF2A2A2A),
-      child: Center(
-        child: Text(
-          title.isNotEmpty ? title[0].toUpperCase() : 'M',
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: url != null && url!.isNotEmpty && url!.startsWith('http')
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _placeholder(),
+              )
+            : _placeholder(),
       ),
     );
   }
+
+  Widget _placeholder() => Container(
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        label.isNotEmpty ? label[0].toUpperCase() : 'M',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
 }

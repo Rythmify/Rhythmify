@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 
 class UploadedTracksPage extends ConsumerStatefulWidget {
   final String userId;
@@ -123,61 +124,83 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
               )
               .toList();
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Container(
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(21),
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search uploads',
-                hintStyle: AppTheme.bodyMedium,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.textSecondary,
-                  size: 20,
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        await ref
+            .read(profileProvider.notifier)
+            .loadProfile(userId: widget.userId);
+        await ref
+            .read(profileProvider.notifier)
+            .loadUploadedTracks(
+              userId: widget.userId,
+              refresh: true,
+              limit: 20,
+            );
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Container(
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(21),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (v) => setState(() => _query = v),
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.textPrimary,
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: InputDecoration(
+                  hintText: 'Search uploads',
+                  hintStyle: AppTheme.bodyMedium,
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppTheme.textSecondary,
+                    size: 20,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                ),
               ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            itemCount: filtered.length + 1,
-            itemBuilder: (context, index) {
-              if (index == filtered.length) {
-                return state.isLoadingUploads
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryBrand,
-                            strokeWidth: 2,
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: filtered.length + 1,
+              itemBuilder: (context, index) {
+                if (index == filtered.length) {
+                  return state.isLoadingUploads
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryBrand,
+                              strokeWidth: 2,
+                            ),
                           ),
-                        ),
-                      )
-                    : const SizedBox(height: 120);
-              }
+                        )
+                      : const SizedBox(height: 120);
+                }
 
-              return TrackCard(
-                key: Key('upload_item_${filtered[index].id}'),
-                track: filtered[index],
-              );
-            },
+                return TrackCard(
+                  key: Key('upload_item_${filtered[index].id}'),
+                  track: filtered[index],
+                  onTap: () {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(tracks: filtered, initialIndex: index);
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

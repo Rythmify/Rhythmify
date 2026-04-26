@@ -116,6 +116,7 @@ class FansLeaderboard extends ConsumerWidget {
                   }
 
                   return ListView.separated(
+                    key: const Key('fans_leaderboard_listview'),
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
@@ -185,8 +186,9 @@ class FansLeaderboard extends ConsumerWidget {
 
   Widget _buildListenerCard(BuildContext context, dynamic item) {
     return InkWell(
+      key: Key('fans_leaderboard_listener_card_${item.userId}_inkwell'),
       onTap: () {
-        context.push('/profile/${item.userId}');
+        context.push('/home/profile/${item.userId}');
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
@@ -229,10 +231,6 @@ class FansLeaderboard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (item.isVerified) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.verified, size: 14, color: Colors.blue),
-                  ],
                 ],
               ),
             ),

@@ -117,6 +117,8 @@ class HomeDto {
   }
 
   static DiscoverStation parseDiscoverStation(Map<String, dynamic> json) {
+    final imagesJson = json['images']; // ← no cast yet
+
     return DiscoverStation(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
@@ -125,6 +127,15 @@ class HomeDto {
       coverImage: json['cover_image'] as String? ?? '',
       trackCount: json['track_count'] as int? ?? 0,
       followerCount: json['follower_count'] as int? ?? 0,
+      images:
+          imagesJson
+              is Map<String, dynamic> // ← safe check
+          ? StationImages(
+              left: imagesJson['left'] as String?,
+              center: imagesJson['center'] as String?,
+              right: imagesJson['right'] as String?,
+            )
+          : const StationImages(),
     );
   }
 }

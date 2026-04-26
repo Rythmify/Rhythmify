@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/domain/entities/track.dart';
 import '../../../../../core/presentation/pages/report_page.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/error/error_handler.dart';
+import '../../../../../core/utils/ui_utils.dart';
 import '../../providers/track_interaction_provider.dart';
 import '../../providers/track_sync_provider.dart';
 import '../../../../messaging/presentation/providers/conversations_provider.dart';
@@ -115,6 +117,9 @@ class TrackOptionsModal extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final conv = convs[index];
                         return GestureDetector(
+                          key: Key(
+                            'track_options_contact_gesture_detector_${conv.conversationId}',
+                          ),
                           onTap: () {
                             Navigator.pop(context);
                             context.push(
@@ -190,6 +195,9 @@ class TrackOptionsModal extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       _ShareIcon(
+                        key: const Key(
+                          'track_options_share_message_gesture_detector',
+                        ),
                         iconData: Icons.chat_bubble_outline,
                         color: Colors.blueAccent,
                         label: 'Message',
@@ -199,18 +207,27 @@ class TrackOptionsModal extends ConsumerWidget {
                         },
                       ),
                       _ShareIcon(
+                        key: const Key(
+                          'track_options_share_copy_link_gesture_detector',
+                        ),
                         iconData: Icons.link,
                         color: Colors.grey[700]!,
                         label: 'Copy Link',
                         onTap: () => _copyLink(context),
                       ),
                       _ShareIcon(
+                        key: const Key(
+                          'track_options_share_whatsapp_gesture_detector',
+                        ),
                         svgAsset: 'assets/icons/whatsapp.svg',
                         color: const Color(0xFF25D366),
                         label: 'WhatsApp',
                         onTap: () => _shareToWhatsApp(context),
                       ),
                       _ShareIcon(
+                        key: const Key(
+                          'track_options_share_sms_gesture_detector',
+                        ),
                         iconData: Icons.sms_outlined,
                         color: Colors.orangeAccent,
                         label: 'SMS',
@@ -225,6 +242,9 @@ class TrackOptionsModal extends ConsumerWidget {
                 if (mode == TrackModalMode.info) ...[
                   if (isOwner) ...[
                     _buildActionRow(
+                      key: const Key(
+                        'track_options_action_update_track_inkwell',
+                      ),
                       icon: Icons.edit_note,
                       label: 'Update track',
                       onTap: () {
@@ -241,6 +261,7 @@ class TrackOptionsModal extends ConsumerWidget {
                   ],
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
+                    key: const Key('track_options_action_toggle_like_inkwell'),
                     icon: syncedTrack.isLiked
                         ? Icons.favorite
                         : Icons.favorite_border,
@@ -263,35 +284,47 @@ class TrackOptionsModal extends ConsumerWidget {
                     },
                   ),
                   _buildActionRow(
+                    key: const Key('track_options_action_play_next_inkwell'),
                     icon: Icons.playlist_play,
                     label: 'Play Next',
                     onTap: () {},
                   ),
                   _buildActionRow(
+                    key: const Key('track_options_action_play_last_inkwell'),
                     icon: Icons.playlist_play,
                     label: 'Play Last',
                     onTap: () {},
                   ),
                   _buildActionRow(
+                    key: const Key(
+                      'track_options_action_add_to_playlist_inkwell',
+                    ),
                     icon: Icons.queue_music,
                     label: 'Add to Playlist',
                     onTap: () {},
                   ),
                   _buildActionRow(
+                    key: const Key(
+                      'track_options_action_start_station_inkwell',
+                    ),
                     icon: Icons.radio,
                     label: 'Start Station',
                     onTap: () {},
                   ),
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
+                    key: const Key('track_options_action_view_profile_inkwell'),
                     icon: Icons.person_outline,
                     label: 'Go to profile',
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/profile/${syncedTrack.userId}');
+                      context.push('/home/profile/${syncedTrack.userId}');
                     },
                   ),
                   _buildActionRow(
+                    key: const Key(
+                      'track_options_action_view_comments_inkwell',
+                    ),
                     icon: Icons.chat_outlined,
                     label: 'View comments',
                     onTap: () {
@@ -304,6 +337,9 @@ class TrackOptionsModal extends ConsumerWidget {
                     },
                   ),
                   _buildActionRow(
+                    key: const Key(
+                      'track_options_action_toggle_repost_inkwell',
+                    ),
                     icon: Icons.repeat,
                     iconColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
@@ -314,18 +350,31 @@ class TrackOptionsModal extends ConsumerWidget {
                     labelColor: syncedTrack.isReposted
                         ? AppTheme.primaryBrand
                         : Colors.white,
-                    onTap: () {
-                      ref
-                          .read(trackInteractionProvider)
-                          .handleToggleRepost(
-                            syncedTrack.id,
-                            syncedTrack.isReposted,
-                            currentTrack: syncedTrack,
-                          );
+                    onTap: () async {
+                      final ctx = context;
                       Navigator.pop(context);
+                      try {
+                        await ref
+                            .read(trackInteractionProvider)
+                            .handleToggleRepost(
+                              syncedTrack.id,
+                              syncedTrack.isReposted,
+                              currentTrack: syncedTrack,
+                            );
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          UIUtils.showErrorSnackBar(
+                            ctx,
+                            ErrorHandler.getFriendlyMessage(e),
+                          );
+                        }
+                      }
                     },
                   ),
                   _buildActionRow(
+                    key: const Key(
+                      'track_options_action_behind_this_track_inkwell',
+                    ),
                     icon: Icons.music_note,
                     label: 'Behind This Track',
                     onTap: () {
@@ -337,6 +386,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     },
                   ),
                   _buildActionRow(
+                    key: const Key('track_options_action_report_track_inkwell'),
                     icon: Icons.flag_outlined,
                     label: 'Report Track',
                     onTap: () {
@@ -360,6 +410,7 @@ class TrackOptionsModal extends ConsumerWidget {
   }
 
   Widget _buildActionRow({
+    Key? key,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -369,6 +420,7 @@ class TrackOptionsModal extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        key: key,
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -404,6 +456,7 @@ class _ShareIcon extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ShareIcon({
+    super.key,
     this.iconData,
     this.svgAsset,
     required this.color,

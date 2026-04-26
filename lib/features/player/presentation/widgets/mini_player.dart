@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/player_provider.dart';
+import '../providers/queue_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
 import '../../../track/presentation/providers/track_sync_provider.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 import 'mini_player_progress_button.dart';
 
 /// A persistent mini-player widget that appears when a track is active.
@@ -36,6 +38,16 @@ class MiniPlayer extends ConsumerWidget {
       child: GestureDetector(
         key: const Key('player_mini_player_gesture_detector'),
         onTap: onTap,
+        onHorizontalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+          if (velocity < -300) {
+            // Swipe Left -> Next
+            ref.read(queueStateProvider.notifier).nextTrack();
+          } else if (velocity > 300) {
+            // Swipe Right -> Prev
+            ref.read(queueStateProvider.notifier).previousTrack();
+          }
+        },
 
         // ------- Mini Player Styling ------
         child: Container(
@@ -78,17 +90,20 @@ class MiniPlayer extends ConsumerWidget {
                 ),
               ),
 
-              IconButton(
-                key: const Key('player_mini_player_follow_icon_button'),
-                icon: Icon(
-                  track.isArtistFollowed
-                      ? Icons.person_add_alt_1
-                      : Icons.person_add_alt,
-                ),
-                color: track.isArtistFollowed
-                    ? AppTheme.primaryBrand
-                    : Colors.white,
-                onPressed: () {},
+              FollowButton(
+                targetUserId: track.userId,
+                builder: (context, isFollowing, isInFlight, toggle) {
+                  return IconButton(
+                    key: const Key('player_mini_player_follow_icon_button'),
+                    icon: Icon(
+                      isFollowing
+                          ? Icons.person_add_alt_1
+                          : Icons.person_add_alt,
+                    ),
+                    color: isFollowing ? AppTheme.primaryBrand : Colors.white,
+                    onPressed: toggle,
+                  );
+                },
               ),
 
               IconButton(

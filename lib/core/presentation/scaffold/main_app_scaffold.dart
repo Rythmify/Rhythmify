@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import '../widgets/bottom_navigation.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../features/notifications/presentation/providers/notifications_provider.dart';
 import '../../../../features/player/presentation/widgets/mini_player.dart';
 import '../../../../features/player/presentation/pages/full_player_page.dart';
 import '../../../../features/player/presentation/providers/player_provider.dart';
+import '../../../features/feed/presentation/providers/feed_providers.dart';
 
 class MainAppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -21,8 +23,8 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       DraggableScrollableController();
 
   // Heights in logical pixels
-  static const double _navBarHeight = 85.0;
-  static const double _miniPlayerHeight = 65.0;
+  static const double _navBarHeight = 70.0;
+  static const double _miniPlayerHeight = 80.0;
 
   double get _minSize {
     if (!context.mounted) return 0.08;
@@ -35,13 +37,17 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   static const double _maxSize = 1.0;
 
   void _expandPlayer() {
-    if (_draggableController.isAttached) {
+    if (!_draggableController.isAttached) return;
+
+    // Small delay to let queueStateProvider sync with playerStateProvider
+    Future.delayed(const Duration(milliseconds: 80), () {
+      if (!_draggableController.isAttached) return;
       _draggableController.animateTo(
         _maxSize,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
       );
-    }
+    });
   }
 
   void _collapsePlayer() {
@@ -56,13 +62,27 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
+
+    // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        playerSheetNotifier.value = _expandPlayer;
+        playerCollapseNotifier.value = _collapsePlayer;
+      }
+    });
+
     final hasTrack = playerState.currentTrack != null;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final routerState = GoRouterState.of(context);
-    final location = routerState.uri.path;
+    // Use string matching directly on the shell's current location if possible,
+    // or keep this light.
+    final location = GoRouter.of(
+      context,
+    ).routeInformationProvider.value.uri.path;
     final isChatRoute = location.contains('/chat');
+    final isFeedRoute = location == '/feed';
     final isVisible = !isChatRoute;
     final currentMinSize = _minSize;
     final double displacement = isVisible ? 0 : screenHeight;
@@ -89,62 +109,80 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
                 maxChildSize: _maxSize,
                 snap: true,
                 builder: (context, scrollController) {
-                  return Container(
-                    color: Colors.transparent,
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      physics: const ClampingScrollPhysics(),
-                      child: SizedBox(
-                        height: screenHeight,
-                        child: AnimatedBuilder(
-                          animation: _draggableController,
-                          builder: (context, child) {
-                            final extent = _draggableController.isAttached
-                                ? _draggableController.size
-                                : currentMinSize;
-                            final t =
-                                ((extent - currentMinSize) /
-                                        (_maxSize - currentMinSize))
-                                    .clamp(0.0, 1.0);
+                  return AnimatedBuilder(
+                    animation: _draggableController,
+                    builder: (context, _) {
+                      final extent = _draggableController.isAttached
+                          ? _draggableController.size
+                          : currentMinSize;
+                      final isCollapsed = extent <= currentMinSize + 0.01;
 
-                            return Stack(
-                              children: [
-                                // Full Player
-                                Opacity(
-                                  opacity: t,
-                                  child: Container(
-                                    color: Colors.black,
-                                    child: IgnorePointer(
-                                      ignoring: t < 0.5,
-                                      child: FullPlayerPage(
-                                        key: const Key('main_full_player_page'),
-                                        onCollapse: _collapsePlayer,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                      return IgnorePointer(
+                        ignoring: isFeedRoute && isCollapsed,
+                        child: Container(
+                          color: Colors.transparent,
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            physics: const ClampingScrollPhysics(),
+                            child: SizedBox(
+                              height: screenHeight,
+                              child: AnimatedBuilder(
+                                animation: _draggableController,
+                                builder: (context, child) {
+                                  final extent = _draggableController.isAttached
+                                      ? _draggableController.size
+                                      : currentMinSize;
+                                  final t =
+                                      ((extent - currentMinSize) /
+                                              (_maxSize - currentMinSize))
+                                          .clamp(0.0, 1.0);
 
-                                if (t < 0.5)
-                                  Positioned(
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: Opacity(
-                                      opacity: (1 - t * 5).clamp(0.0, 1.0),
-                                      child: MiniPlayer(
-                                        key: const Key(
-                                          'main_mini_player_widget',
+                                  return Stack(
+                                    children: [
+                                      // Full Player
+                                      Opacity(
+                                        opacity: t,
+                                        child: Container(
+                                          color: Colors.black,
+                                          child: IgnorePointer(
+                                            ignoring: t < 0.5,
+                                            child: FullPlayerPage(
+                                              key: const Key(
+                                                'main_full_player_page',
+                                              ),
+                                              onCollapse: _collapsePlayer,
+                                            ),
+                                          ),
                                         ),
-                                        onTap: _expandPlayer,
                                       ),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+
+                                      if (t < 0.5 && !isFeedRoute)
+                                        Positioned(
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Opacity(
+                                            opacity: (1 - t * 5).clamp(
+                                              0.0,
+                                              1.0,
+                                            ),
+                                            child: MiniPlayer(
+                                              key: const Key(
+                                                'main_mini_player_widget',
+                                              ),
+                                              onTap: _expandPlayer,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),

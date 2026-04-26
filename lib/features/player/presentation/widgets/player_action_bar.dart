@@ -40,6 +40,7 @@ class PlayerActionBar extends ConsumerWidget {
           children: [
             // ------ 1. Like Action ------
             InkWell(
+              key: Key('player_action_bar_like_inkwell_$trackId'),
               onTap: () {
                 if (track != null) {
                   ref
@@ -108,6 +109,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 2. Comment Action ------
             InkWell(
+              key: Key('player_action_bar_comment_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   context.pushNamed(
@@ -133,31 +135,10 @@ class PlayerActionBar extends ConsumerWidget {
                       color: Colors.white,
                     ),
                     const SizedBox(width: 6),
-                    trackAsync.when(
-                      data: (track) => Text(
-                        Formatters.formatCount(track.commentCount),
-                        key: const Key('player_action_bar_comment_count_text'),
-                        style: AppTheme.bodyNormal,
-                      ),
-                      loading: () => const SizedBox(
-                        width: 10,
-                        height: 10,
-                        child: CircularProgressIndicator(
-                          key: Key(
-                            'player_action_bar_comment_count_loading_indicator',
-                          ),
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                      error: (a, b) => const Text(
-                        '0',
-                        key: Key('player_action_bar_comment_count_error_text'),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    Text(
+                      Formatters.formatCount(track?.commentCount ?? 0),
+                      key: const Key('player_action_bar_comment_count_text'),
+                      style: AppTheme.bodyNormal,
                     ),
                   ],
                 ),
@@ -166,6 +147,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 3. Share Action ------
             InkWell(
+              key: Key('player_action_bar_share_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   showModalBottomSheet(
@@ -199,8 +181,9 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 4. Playlist Action ------
             InkWell(
+              key: Key('player_action_bar_playlist_inkwell_$trackId'),
               onTap: () {
-                // Add playlist logic here
+                context.push('/queue');
               },
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -221,6 +204,7 @@ class PlayerActionBar extends ConsumerWidget {
 
             // ------ 5. More Action ------
             InkWell(
+              key: Key('player_action_bar_more_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
                   showModalBottomSheet(

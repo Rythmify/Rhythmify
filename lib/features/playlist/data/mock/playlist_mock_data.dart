@@ -6,6 +6,7 @@
 //   2. The edit sheet can read playlist metadata without an extra call
 //   3. Optimistic UI updates work before the backend confirms
 
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
 
@@ -50,7 +51,9 @@ class PlaylistMockData {
       ..clear()
       ..addAll(backendPlaylists);
 
-    print('[Cache] Synced ${backendPlaylists.length} playlists from backend');
+    debugPrint(
+      '[Cache] Synced ${backendPlaylists.length} playlists from backend',
+    );
   }
 
   // ── CREATE WITH REAL ID ───────────────────────────────────────────────────

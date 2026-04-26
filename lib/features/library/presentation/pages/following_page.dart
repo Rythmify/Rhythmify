@@ -10,22 +10,31 @@ import '../../domain/entities/library_entities.dart';
 ///
 /// Pull-to-refresh reloads the list from page 1. Scrolling near the bottom
 /// triggers the next page load. Long-pressing a user shows an unfollow option.
+/// The page automatically loads on mount via Future.microtask to avoid rebuild loops.
 class FollowingPage extends ConsumerStatefulWidget {
+  /// Creates a [FollowingPage].
   const FollowingPage({super.key});
 
   @override
   ConsumerState<FollowingPage> createState() => _FollowingPageState();
 }
 
+/// State for [FollowingPage] handling pagination and scroll events.
 class _FollowingPageState extends ConsumerState<FollowingPage> {
   final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    // Load initial list on first mount
+    Future.microtask(() {
+      ref.read(followingProvider.notifier).load(refresh: true);
+    });
+    // Add scroll listener for pagination (guard against initial position)
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
+      final position = _scrollController.position;
+      if (position.pixels > 0 &&
+          position.pixels >= position.maxScrollExtent - 200) {
         ref.read(followingProvider.notifier).load();
       }
     });
@@ -53,6 +62,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
     );
   }
 
+  /// Builds the appropriate body widget based on loading/error/data states.
   Widget _buildBody(BuildContext context, FollowingState state) {
     if (state.isLoading && state.users.isEmpty) {
       return const Center(
@@ -129,15 +139,22 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
   }
 }
 
+/// Individual user tile in the Following list.
+///
+/// Displays user avatar, name, follower count, and a Following button.
+/// Long-pressing shows an unfollow confirmation dialog.
 class _UserTile extends ConsumerWidget {
   final FollowedUser user;
 
   const _UserTile({required this.user});
 
+  /// Shows an unfollow confirmation dialog.
+  ///
+  /// Returns true if the user confirms, false otherwise.
   Future<void> _showUnfollowDialog(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppTheme.surface,
         title: const Text('Unfollow?', style: TextStyle(color: Colors.white)),
         content: Text(
@@ -146,11 +163,11 @@ class _UserTile extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text('Cancel', style: AppTheme.labelLarge),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
               'Unfollow',
               style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
@@ -159,8 +176,8 @@ class _UserTile extends ConsumerWidget {
         ],
       ),
     );
-    if (confirm == true) {
-      ref.read(followingProvider.notifier).unfollow(user.id);
+    if (confirm == true && context.mounted) {
+      await ref.read(followingProvider.notifier).unfollow(user.id);
     }
   }
 
@@ -168,7 +185,7 @@ class _UserTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       key: Key('following_item_${user.id}_list_tile'),
-      onTap: () => context.push('/profile/${user.id}'),
+      onTap: () => context.push('/home/profile/${user.id}'),
       onLongPress: () => _showUnfollowDialog(context, ref),
       leading: CircleAvatar(
         radius: 24,
@@ -217,6 +234,11 @@ class _UserTile extends ConsumerWidget {
     );
   }
 
+  /// Formats a count integer with K/M suffix abbreviations.
+  ///
+  /// - Values >= 1,000,000 are shown as `X.XM`
+  /// - Values >= 1,000 are shown as `X.XK`
+  /// - Smaller values are shown as-is
   String _formatCount(int count) {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';

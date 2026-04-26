@@ -11,7 +11,7 @@ class GenreAlbumCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/library/albums/${album.id}', extra: false),
+      onTap: () => context.push('/home/playlist/${album.id}', extra: false),
       child: Column(
         key: Key('genre_album_card_${album.id}'),
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,6 +5,8 @@ import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/error/error_handler.dart';
+import '../../../../core/utils/ui_utils.dart';
 import 'bottom_sheets/track_options_modal.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../providers/track_interaction_provider.dart';
@@ -36,6 +38,7 @@ class TrackActionBar extends ConsumerWidget {
       child: Row(
         children: [
           _buildActionButton(
+            key: Key('track_action_bar_like_inkwell_${syncedTrack.id}'),
             syncedTrack.isLiked ? Icons.favorite : Icons.favorite_border,
             Formatters.formatCount(syncedTrack.likeCount),
             onTap: () {
@@ -56,16 +59,26 @@ class TrackActionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           _buildActionButton(
+            key: Key('track_action_bar_repost_inkwell_${syncedTrack.id}'),
             Icons.repeat,
             Formatters.formatCount(syncedTrack.repostCount),
-            onTap: () {
-              ref
-                  .read(trackInteractionProvider)
-                  .handleToggleRepost(
-                    syncedTrack.id,
-                    syncedTrack.isReposted,
-                    currentTrack: syncedTrack,
+            onTap: () async {
+              try {
+                await ref
+                    .read(trackInteractionProvider)
+                    .handleToggleRepost(
+                      syncedTrack.id,
+                      syncedTrack.isReposted,
+                      currentTrack: syncedTrack,
+                    );
+              } catch (e) {
+                if (context.mounted) {
+                  UIUtils.showErrorSnackBar(
+                    context,
+                    ErrorHandler.getFriendlyMessage(e),
                   );
+                }
+              }
             },
             iconColor: syncedTrack.isReposted
                 ? AppTheme.primaryBrand
@@ -76,18 +89,19 @@ class TrackActionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           _buildActionButton(
+            key: Key('track_action_bar_comment_inkwell_${syncedTrack.id}'),
             Icons.chat_outlined,
             Formatters.formatCount(syncedTrack.commentCount),
             onTap: () {
-              context.pushNamed(
-                'comments',
-                pathParameters: {'trackId': syncedTrack.id},
+              context.push(
+                '/home/comments/${syncedTrack.id}',
                 extra: syncedTrack,
               );
             },
           ),
           const SizedBox(width: 20),
           InkWell(
+            key: Key('track_action_bar_more_inkwell_${syncedTrack.id}'),
             onTap: () {
               showModalBottomSheet(
                 context: context,
@@ -139,11 +153,13 @@ class TrackActionBar extends ConsumerWidget {
   Widget _buildActionButton(
     IconData icon,
     String value, {
+    Key? key,
     VoidCallback? onTap,
     Color iconColor = AppTheme.fadedWhite,
     Color textColor = AppTheme.fadedWhite,
   }) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(

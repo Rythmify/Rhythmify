@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../track_upload/presentation/providers/upload_track_provider.dart';
 
 /// Your Uploads page matching SoundCloud's layout.
 ///
@@ -15,7 +18,7 @@ import '../../../track/presentation/widgets/track_card.dart';
 ///    [UploadsState.tracks] is empty.
 ///
 /// The minutes-used chip is computed from [UploadsState] by summing
-/// [TrackEntity.durationSeconds] across all uploaded tracks and converting
+/// [TrackEntity.duration] across all uploaded tracks and converting
 /// to whole minutes (capped at [_kUploadLimitMinutes]).
 class UploadsPage extends ConsumerStatefulWidget {
   const UploadsPage({super.key});
@@ -53,12 +56,59 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     super.dispose();
   }
 
-  // ─── helpers ────────────────────────────────────────────────────────────────
-
   /// Returns the total uploaded duration in whole minutes by summing
-  /// [durationSeconds] across all tracks in [state].
+  /// [duration.inSeconds] across all tracks in [state].
   ///
-  /// Falls back to 0 when duration data is unavailable.
+  /// Falls back to 0 when [state.tracks] is empty.
+  int _computeUsedMinutes(UploadsState state) {
+    final totalSeconds = state.tracks.fold<int>(
+      0,
+      (sum, item) => sum + item.track.duration.inSeconds,
+    );
+    return (totalSeconds / 60).floor();
+  }
+
+  /// Handles audio file selection and prepares it for upload.
+  ///
+  /// This follows the same flow as the home page upload button:
+  /// 1. Opens file picker restricted to audio files
+  /// 2. Extracts selected file path and metadata
+  /// 3. Determines audio duration using local player
+  /// 4. Initializes upload draft via Riverpod provider
+  /// 5. Navigates to upload screen if successful
+  Future<void> _handleUploadButtonPress() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.first;
+    if (picked.path == null) return;
+
+    Duration duration = Duration.zero;
+    try {
+      final player = AudioPlayer();
+      final detected = await player.setFilePath(picked.path!);
+      duration = detected ?? Duration.zero;
+      await player.dispose();
+    } catch (_) {}
+
+    ref
+        .read(uploadFormProvider.notifier)
+        .initDraft(
+          artistId: 'dev_user_001',
+          localAudioPath: picked.path!,
+          duration: duration,
+          fileName: picked.name,
+        );
+
+    if (mounted) {
+      context.push('/upload-track');
+      // Start audio upload right after navigating
+      ref.read(uploadFormProvider.notifier).startAudioUpload();
+    }
+  }
 
   // ─── build ──────────────────────────────────────────────────────────────────
 
@@ -125,9 +175,9 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
         // ── Header: title + controls + stat chips ──────────────────────────
         SliverToBoxAdapter(
           child: _UploadsHeader(
-            usedMinutes: 80,
+            usedMinutes: _computeUsedMinutes(state),
             limitMinutes: _kUploadLimitMinutes,
-            onUpload: () => context.push('/upload-track'),
+            onUpload: _handleUploadButtonPress,
             onShuffle: () {},
             onPlay: () {},
           ),
@@ -137,7 +187,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
           // ── Empty state ────────────────────────────────────────────────
           SliverFillRemaining(
             hasScrollBody: false,
-            child: _EmptyUploads(onUpload: () => context.push('/upload-track')),
+            child: _EmptyUploads(onUpload: _handleUploadButtonPress),
           )
         else ...[
           // ── Track list ─────────────────────────────────────────────────
@@ -164,6 +214,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
             ),
           ),
         ],
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
   }
@@ -262,7 +313,10 @@ class _UploadsHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text('Your uploads', style: AppTheme.headlineLarge),
+                child: Text(
+                  'Your uploads',
+                  style: AppTheme.headlineLarge.copyWith(height: 1),
+                ),
               ),
               // Upload icon button
               _CircleIconButton(

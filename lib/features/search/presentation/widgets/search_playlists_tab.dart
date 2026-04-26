@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
 import '../../../../core/utils/formatters.dart';
+import 'package:go_router/go_router.dart';
 
 /// Search results tab displaying the playlists list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [_PlaylistTile].
@@ -52,35 +53,39 @@ class _PlaylistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: Image.asset(
-            playlist['artworkUrl']!,
-            key: Key('playlist_artwork_${playlist['id']}'),
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(width: 50, height: 50, color: Colors.grey[800]),
+    return GestureDetector(
+      onTap: () {
+        context.push('/home/playlist/${playlist['id']}', extra: false);
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.network(
+              playlist['artworkUrl'] ?? '',
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) =>
+                  Container(width: 50, height: 50, color: Colors.grey[800]),
+            ),
           ),
+          title: Text(
+            playlist['title']!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
+          subtitle: Text(
+            'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+          ),
+          trailing: const Icon(Icons.more_horiz),
         ),
-        title: Text(
-          playlist['title']!,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
-        subtitle: Text(
-          'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: Colors.grey[400], fontSize: 12),
-        ),
-        trailing: const Icon(Icons.more_horiz),
       ),
     );
   }

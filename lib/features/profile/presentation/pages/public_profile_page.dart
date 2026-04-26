@@ -1,4 +1,3 @@
-// coverage:ignore-file
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,13 +12,27 @@ import '../widgets/share_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../../core/presentation/widgets/follow_button.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../playlist/domain/entities/playlist_entity.dart';
 
 /// A full-screen profile page showing a user's public information and tracks.
+///
+/// Rendered as a root-level route (outside [StatefulShellRoute]), so
+/// [MainAppScaffold] is not in the tree. The mini player and full player
+/// are therefore embedded directly in this page via a [Stack] overlay,
+/// mirroring the behaviour seen inside the library tab.
+///
+/// Use `key: ValueKey('public_profile_$userId')` at the call site to
+/// prevent widget-tree reuse when navigating between different profiles.
 class PublicProfilePage extends ConsumerStatefulWidget {
+  /// The ID of the user whose profile to display, or `'me'` for the
+  /// currently authenticated user.
   final String userId;
 
+  /// Creates a [PublicProfilePage].
   const PublicProfilePage({super.key, required this.userId});
 
   @override
@@ -28,6 +41,7 @@ class PublicProfilePage extends ConsumerStatefulWidget {
 
 class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   final _scrollController = ScrollController();
+
   bool _showIncompleteBanner = true;
   late String _resolvedUserId;
 
@@ -45,12 +59,30 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : widget.userId;
 
     Future.microtask(() async {
-      await ref
-          .read(profileProvider.notifier)
-          .loadProfile(userId: _resolvedUserId);
-      // Explicitly load previews (3 tracks each) for the main profile view
-      if (mounted) {
-        ref.read(profileProvider.notifier).loadPreviews(_resolvedUserId);
+      // ── Guard: skip reload if this profile is already loaded ────────────
+      final currentState = _resolvedUserId == 'me'
+          ? ref.read(ownProfileProvider)
+          : ref.read(publicProfileProvider(_resolvedUserId));
+
+      if (currentState is ProfileLoaded) return;
+      // ────────────────────────────────────────────────────────────────────
+
+      if (_resolvedUserId == 'me') {
+        await ref
+            .read(ownProfileProvider.notifier)
+            .loadProfile(userId: _resolvedUserId);
+        if (mounted) {
+          ref.read(ownProfileProvider.notifier).loadPreviews(_resolvedUserId);
+        }
+      } else {
+        await ref
+            .read(publicProfileProvider(_resolvedUserId).notifier)
+            .loadProfile(userId: _resolvedUserId);
+        if (mounted) {
+          ref
+              .read(publicProfileProvider(_resolvedUserId).notifier)
+              .loadPreviews(_resolvedUserId);
+        }
       }
     });
   }
@@ -71,7 +103,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileProvider);
+    final profileState = _resolvedUserId == 'me'
+        ? ref.watch(ownProfileProvider)
+        : ref.watch(publicProfileProvider(_resolvedUserId));
+
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
@@ -117,15 +152,25 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 key: const Key('public_profile_retry_button'),
-                onPressed: () => ref
-                    .read(profileProvider.notifier)
-                    .loadProfile(userId: _resolvedUserId),
+                onPressed: () {
+                  final notifier = _resolvedUserId == 'me'
+                      ? ref.read(ownProfileProvider.notifier)
+                      : ref.read(
+                          publicProfileProvider(_resolvedUserId).notifier,
+                        );
+                  notifier.loadProfile(userId: _resolvedUserId);
+                },
                 child: const Text('Retry'),
               ),
             ],
           ),
         ),
-        ProfileLoaded() => _buildLoaded(context, profileState, isOwnProfile),
+        ProfileLoaded() => _buildLoaded(
+          context,
+          profileState,
+          isOwnProfile,
+          ref.watch(playerStateProvider).currentTrack != null,
+        ),
         _ => const SizedBox.shrink(),
       },
     );
@@ -135,187 +180,195 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     BuildContext context,
     ProfileLoaded state,
     bool isOwnProfile,
+    bool hasTrack,
   ) {
     final hasAnyContent =
         state.uploadedTracks.isNotEmpty ||
         state.likedTracks.isNotEmpty ||
-        state.repostedTracks.isNotEmpty;
+        state.repostedTracks.isNotEmpty ||
+        state.playlists.isNotEmpty;
 
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCoverPhoto(state.profile.coverUrl),
-                const SizedBox(height: 12),
-                ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
-                const SizedBox(height: 12),
-                Text(state.profile.displayName, style: AppTheme.headlineLarge),
-                const SizedBox(height: 4),
-                if (state.profile.city != null || state.profile.country != null)
-                  Text(
-                    [
-                      state.profile.city,
-                      state.profile.country,
-                    ].where((e) => e != null && e.isNotEmpty).join(', '),
-                    style: AppTheme.bodyMedium,
-                  ),
-                if (isOwnProfile &&
-                    _showIncompleteBanner &&
-                    _isProfileIncomplete(state.profile)) ...[
+    // Extra bottom padding so last item clears the mini player
+    final bottomPadding = hasTrack ? 80.0 : 0.0;
+
+    return RefreshIndicator(
+      color: AppTheme.primaryBrand,
+      onRefresh: () async {
+        final notifier = _resolvedUserId == 'me'
+            ? ref.read(ownProfileProvider.notifier)
+            : ref.read(publicProfileProvider(_resolvedUserId).notifier);
+
+        await notifier.loadProfile(userId: _resolvedUserId);
+        await notifier.loadPreviews(_resolvedUserId);
+      },
+      child: CustomScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCoverPhoto(state.profile.coverUrl),
                   const SizedBox(height: 12),
-                  Dismissible(
-                    key: const Key('public_profile_complete_data_dismissible'),
-                    direction: DismissDirection.horizontal,
-                    onDismissed: (_) =>
-                        setState(() => _showIncompleteBanner = false),
-                    child: _IncompleteProfileBanner(
-                      onEdit: () => context.push('/profile/edit'),
-                    ),
+                  ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
+                  const SizedBox(height: 12),
+                  Text(
+                    state.profile.displayName,
+                    style: AppTheme.headlineLarge,
                   ),
-                ],
-                const SizedBox(height: 4),
-                ProfileStatsRow(
-                  followersCount: state.profile.followersCount,
-                  followingCount: state.profile.followingCount,
-                  onFollowersTap: () =>
-                      context.push('/profile/$_resolvedUserId/followers'),
-                  onFollowingTap: () =>
-                      context.push('/profile/$_resolvedUserId/following'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    if (isOwnProfile)
-                      GestureDetector(
-                        key: const Key('public_profile_edit_gesture'),
-                        onTap: () => context.push('/profile/edit'),
-                        child: const Icon(
-                          Icons.edit_outlined,
-                          color: AppTheme.textSecondary,
-                          size: 22,
-                        ),
-                      )
-                    else
-                      GestureDetector(
-                        key: const Key('public_profile_follow_gesture'),
-                        onTap: () {
-                          if (state.profile.isFollowing) {
-                            ref
-                                .read(profileProvider.notifier)
-                                .unfollowUser(userId: widget.userId);
-                          } else {
-                            ref
-                                .read(profileProvider.notifier)
-                                .followUser(userId: widget.userId);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            state.profile.isFollowing ? 'Following' : 'Follow',
-                            style: AppTheme.labelLarge,
-                          ),
-                        ),
-                      ),
-                    const Spacer(),
-                    GestureDetector(
-                      key: const Key('public_profile_shuffle_gesture'),
-                      onTap: () {},
-                      child: const Icon(
-                        Icons.shuffle,
-                        color: AppTheme.textSecondary,
-                        size: 22,
-                      ),
+                  const SizedBox(height: 4),
+                  if (state.profile.city != null ||
+                      state.profile.country != null)
+                    Text(
+                      [
+                        state.profile.city,
+                        state.profile.country,
+                      ].where((e) => e != null && e.isNotEmpty).join(', '),
+                      style: AppTheme.bodyMedium,
                     ),
-                    const SizedBox(width: 16),
-                    Container(
-                      key: const Key('public_profile_play_button'),
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
+                  if (isOwnProfile &&
+                      _showIncompleteBanner &&
+                      _isProfileIncomplete(state.profile)) ...[
+                    const SizedBox(height: 12),
+                    Dismissible(
+                      key: const Key(
+                        'public_profile_complete_data_dismissible',
                       ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: AppTheme.textPrimary,
-                        size: 28,
+                      direction: DismissDirection.horizontal,
+                      onDismissed: (_) =>
+                          setState(() => _showIncompleteBanner = false),
+                      child: _IncompleteProfileBanner(
+                        onEdit: () => context.push('/home/profile/edit'),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 24),
-              ],
+                  const SizedBox(height: 4),
+                  ProfileStatsRow(
+                    followersCount: state.profile.followersCount,
+                    followingCount: state.profile.followingCount,
+                    onFollowersTap: () => context.push(
+                      '/home/profile/${state.profile.id}/followers',
+                    ),
+                    onFollowingTap: () => context.push(
+                      '/home/profile/${state.profile.id}/following',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      if (isOwnProfile)
+                        GestureDetector(
+                          key: const Key('public_profile_edit_gesture'),
+                          onTap: () => context.push('/home/profile/edit'),
+                          child: const Icon(
+                            Icons.edit_outlined,
+                            color: AppTheme.textSecondary,
+                            size: 22,
+                          ),
+                        )
+                      else
+                        FollowButton(
+                          key: Key(
+                            'public_profile_follow_button_${state.profile.id}',
+                          ),
+                          targetUserId: state.profile.id,
+                        ),
+                      const Spacer(),
+                      GestureDetector(
+                        key: const Key('public_profile_shuffle_gesture'),
+                        onTap: () {},
+                        child: const Icon(
+                          Icons.shuffle,
+                          color: AppTheme.textSecondary,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        key: const Key('public_profile_play_button'),
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: AppTheme.textPrimary,
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
-        ),
 
-        if (!hasAnyContent)
-          SliverFillRemaining(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Seems a little quiet over here',
-                  style: AppTheme.titleMedium.copyWith(
-                    color: AppTheme.textSecondary,
+          if (!hasAnyContent)
+            SliverFillRemaining(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Seems a little quiet over here',
+                    style: AppTheme.titleMedium.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tracks you like, repost or upload will appear here.',
+                    textAlign: TextAlign.center,
+                    style: AppTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            if (state.uploadedTracks.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _ProfileSection(
+                  title: 'Uploads',
+                  tracks: state.uploadedTracks.take(3).toList(),
+                  onSeeAll: () =>
+                      context.push('/home/profile/$_resolvedUserId/uploads'),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tracks you like, repost or upload will appear here.',
-                  textAlign: TextAlign.center,
-                  style: AppTheme.bodyMedium,
+              ),
+            if (state.likedTracks.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _ProfileSection(
+                  title: 'Likes',
+                  tracks: state.likedTracks.take(3).toList(),
+                  onSeeAll: () =>
+                      context.push('/home/profile/$_resolvedUserId/likes'),
                 ),
-              ],
-            ),
-          )
-        else ...[
-          if (state.uploadedTracks.isNotEmpty)
-            SliverToBoxAdapter(
-              child: _ProfileSection(
-                title: 'Uploads',
-                tracks: state.uploadedTracks.take(3).toList(),
-                onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/uploads'),
               ),
-            ),
-          if (state.likedTracks.isNotEmpty)
-            SliverToBoxAdapter(
-              child: _ProfileSection(
-                title: 'Likes',
-                tracks: state.likedTracks.take(3).toList(),
-                onSeeAll: () => context.push('/profile/$_resolvedUserId/likes'),
+            if (state.repostedTracks.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _ProfileSection(
+                  title: 'Reposts',
+                  tracks: state.repostedTracks.take(3).toList(),
+                  onSeeAll: () =>
+                      context.push('/home/profile/$_resolvedUserId/reposts'),
+                ),
               ),
-            ),
-          if (state.repostedTracks.isNotEmpty)
-            SliverToBoxAdapter(
-              child: _ProfileSection(
-                title: 'Reposts',
-                tracks: state.repostedTracks.take(3).toList(),
-                onSeeAll: () =>
-                    context.push('/profile/$_resolvedUserId/reposts'),
+            if (state.playlists.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _PlaylistsSection(
+                  title: 'Playlists',
+                  playlists: state.playlists.take(4).toList(),
+                  userId: _resolvedUserId,
+                ),
               ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -366,9 +419,19 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   }
 }
 
-class _ProfileSection extends StatelessWidget {
+// ── Profile section (tracks) ─────────────────────────────────────────────────
+
+/// Displays a titled section of up to 3 tracks with a "See All" button.
+///
+/// Tapping a track starts playback from that index via [playerStateProvider].
+class _ProfileSection extends ConsumerWidget {
+  /// Section title shown above the track list (e.g. `'Uploads'`).
   final String title;
+
+  /// Tracks to display — typically a `.take(3)` slice.
   final List<Track> tracks;
+
+  /// Called when the user taps "See All".
   final VoidCallback onSeeAll;
 
   const _ProfileSection({
@@ -378,7 +441,7 @@ class _ProfileSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -400,10 +463,19 @@ class _ProfileSection extends StatelessWidget {
             ],
           ),
         ),
-        ...tracks.map(
-          (track) =>
-              TrackCard(key: Key('profile_${title}_${track.id}'), track: track),
-        ),
+        ...tracks.asMap().entries.map((entry) {
+          final index = entry.key;
+          final track = entry.value;
+          return TrackCard(
+            key: Key('profile_${title}_${track.id}'),
+            track: track,
+            onTap: () {
+              ref
+                  .read(playerStateProvider.notifier)
+                  .loadAndPlayQueue(tracks, initialIndex: index);
+            },
+          );
+        }),
         const SizedBox(height: 12),
         const Divider(color: AppTheme.surface, height: 1),
       ],
@@ -411,7 +483,157 @@ class _ProfileSection extends StatelessWidget {
   }
 }
 
+// ── Playlists section ─────────────────────────────────────────────────────────
+
+/// Displays a titled section of playlists as a 2-column grid with a
+/// "See All" button — matching the screenshot layout with large square
+/// cover images, playlist name and owner name below each card.
+class _PlaylistsSection extends ConsumerWidget {
+  /// Section title (e.g. `'Playlists'`).
+  final String title;
+
+  /// Playlists to display — typically a `.take(4)` slice.
+  final List<PlaylistEntity> playlists;
+
+  /// Resolved user ID used for the "See All" navigation target.
+  final String userId;
+
+  const _PlaylistsSection({
+    required this.title,
+    required this.playlists,
+    required this.userId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Section header ───────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
+              TextButton(
+                onPressed: () =>
+                    context.push('/home/profile/$userId/playlists'),
+                child: Text(
+                  'See All',
+                  style: AppTheme.labelLarge.copyWith(
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ── 2-column grid ────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: playlists.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              // Extra height below each cell for the text labels
+              childAspectRatio: 0.82,
+            ),
+            itemBuilder: (context, index) {
+              final playlist = playlists[index];
+              return GestureDetector(
+                key: Key('profile_playlist_${playlist.id}_gesture'),
+                onTap: () =>
+                    context.push('/home/playlist/${playlist.id}', extra: false),
+                child: _PlaylistGridCard(
+                  key: Key('playlist_grid_card_${playlist.id}'),
+                  playlist: playlist,
+                ),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(height: 12),
+        const Divider(color: AppTheme.surface, height: 1),
+      ],
+    );
+  }
+}
+
+// ── Playlist grid card ────────────────────────────────────────────────────────
+
+/// A card for use inside a 2-column grid: large square cover art with the
+/// playlist name and owner name rendered below, matching the screenshot.
+class _PlaylistGridCard extends StatelessWidget {
+  /// The playlist to display.
+  final PlaylistEntity playlist;
+
+  const _PlaylistGridCard({super.key, required this.playlist});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Square cover image ───────────────────────────────────────────
+        AspectRatio(
+          aspectRatio: 1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
+                ? CachedNetworkImage(
+                    imageUrl: playlist.coverUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _) => _coverPlaceholder(),
+                    errorWidget: (_, _, _) => _coverPlaceholder(),
+                  )
+                : _coverPlaceholder(),
+          ),
+        ),
+
+        const SizedBox(height: 6),
+
+        // ── Playlist name ────────────────────────────────────────────────
+        Text(
+          playlist.name,
+          style: AppTheme.labelLarge,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+
+        const SizedBox(height: 2),
+
+        // ── Owner name ───────────────────────────────────────────────────
+        if (playlist.ownerName.isNotEmpty)
+          Text(
+            playlist.ownerName,
+            style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+      ],
+    );
+  }
+
+  Widget _coverPlaceholder() => Container(
+    color: Colors.grey[800],
+    child: const Center(
+      child: Icon(Icons.music_note, color: Colors.grey, size: 36),
+    ),
+  );
+}
+
+// ── Incomplete profile banner ─────────────────────────────────────────────────
+
+/// A dismissible banner prompting the user to complete their profile.
 class _IncompleteProfileBanner extends StatelessWidget {
+  /// Called when the user taps the "Complete" button.
   final VoidCallback onEdit;
 
   const _IncompleteProfileBanner({required this.onEdit});

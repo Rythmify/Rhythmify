@@ -139,10 +139,71 @@ void main() {
       verify(
         () => mockDio.get(
           '/tracks/track-456/comments',
-          queryParameters: {'limit': 1000, 'offset': 0},
+          queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
         ),
       ).called(1);
     });
+
+    test(
+      'falls back to newest sort when backend returns 42P18 for timestamp sort',
+      () async {
+        when(
+          () => mockDio.get(
+            '/tracks/track-456/comments',
+            queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/tracks/track-456/comments'),
+            response: Response(
+              requestOptions: RequestOptions(
+                path: '/tracks/track-456/comments',
+              ),
+              statusCode: 500,
+              data: {
+                'error': {
+                  'code': '42P18',
+                  'message': 'could not determine data type of parameter \$2',
+                },
+              },
+            ),
+          ),
+        );
+
+        when(
+          () => mockDio.get(
+            '/tracks/track-456/comments',
+            queryParameters: {'limit': 100, 'offset': 0, 'sort': 'newest'},
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            data: {
+              'data': {
+                'items': [tCommentJson],
+              },
+            },
+            statusCode: 200,
+          ),
+        );
+
+        final result = await dataSource.getAllCommentsForTrack('track-456');
+
+        expect(result.length, 1);
+        verify(
+          () => mockDio.get(
+            '/tracks/track-456/comments',
+            queryParameters: {'limit': 100, 'offset': 0, 'sort': 'timestamp'},
+          ),
+        ).called(1);
+        verify(
+          () => mockDio.get(
+            '/tracks/track-456/comments',
+            queryParameters: {'limit': 100, 'offset': 0, 'sort': 'newest'},
+          ),
+        ).called(1);
+      },
+    );
   });
 
   group('postComment', () {

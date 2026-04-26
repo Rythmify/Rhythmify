@@ -1,16 +1,15 @@
 // lib/features/playlist/presentation/screens/library_stations_screen.dart
+// ignore_for_file: avoid_print
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../providers/saved_content_provider.dart';
 
-import '../../domain/entities/playlist_entity.dart';
-import '../providers/playlist_provider.dart';
-import '../widgets/playlist_options_sheet.dart';
-import '../widgets/playlist_shared_widgets.dart';
+enum _StationSort { recentlyAdded, firstAdded, stationName }
 
-/// Library → Stations.
-/// Filters playlistListProvider to only show type == station.
 class LibraryStationsScreen extends ConsumerStatefulWidget {
   const LibraryStationsScreen({super.key});
 
@@ -21,193 +20,453 @@ class LibraryStationsScreen extends ConsumerStatefulWidget {
 
 class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
   String _searchQuery = '';
+  _StationSort _sort = _StationSort.recentlyAdded;
+
+  OverlayEntry? _overlayEntry;
+  final _filterIconKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  List<SavedStation> _applySortAndSearch(List<SavedStation> input) {
+    var result = List<SavedStation>.from(input);
+
+    if (_searchQuery.isNotEmpty) {
+      result = result
+          .where(
+            (s) => s.stationName.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ),
+          )
+          .toList();
+    }
+
+    switch (_sort) {
+      case _StationSort.recentlyAdded:
+        result.sort((a, b) => b.savedAt.compareTo(a.savedAt));
+      case _StationSort.firstAdded:
+        result.sort((a, b) => a.savedAt.compareTo(b.savedAt));
+      case _StationSort.stationName:
+        result.sort(
+          (a, b) => a.stationName.toLowerCase().compareTo(
+            b.stationName.toLowerCase(),
+          ),
+        );
+    }
+
+    return result;
+  }
+
+  bool get _isFiltered => _sort != _StationSort.recentlyAdded;
+
+  void _toggleOverlay() {
+    if (_overlayEntry != null) {
+      _removeOverlay();
+      return;
+    }
+    _showOverlay();
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _showOverlay() {
+    final renderBox =
+        _filterIconKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _removeOverlay,
+        child: Stack(
+          children: [
+            Positioned(
+              top: offset.dy + size.height + 4,
+              right: MediaQuery.of(context).size.width - offset.dx - size.width,
+              child: GestureDetector(
+                onTap: () {},
+                child: Material(
+                  color: Colors.transparent,
+                  child: _StationFilterDropdown(
+                    sort: _sort,
+                    onSortChanged: (s) {
+                      setState(() => _sort = s);
+                      _removeOverlay();
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(playlistListProvider);
-    final allStations = state.playlists
-        .where((p) => p.type == PlaylistType.station)
-        .toList();
-    final filtered = allStations
-        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    final asyncStations = ref.watch(savedStationsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          key: const Key('library_stations_back_button'),
-          icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(
-          'Stations',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: asyncStations.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryBrand),
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // ── Search bar ──────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Row(
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: TextField(
-                      key: const Key('library_stations_search_field'),
-                      onChanged: (v) => setState(() => _searchQuery = v),
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Search ${allStations.length} station${allStations.length == 1 ? '' : 's'}',
-                        hintStyle: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                          size: 18,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                        ),
-                      ),
+                Text('Could not load stations', style: AppTheme.bodyMedium),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () =>
+                      ref.read(savedStationsProvider.notifier).refresh(),
+                  child: Text(
+                    'Retry',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.primaryBrand,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(Icons.tune, color: Colors.grey[400], size: 22),
               ],
             ),
           ),
-          // ── List ────────────────────────────────────────────────────────
-          Expanded(
-            child: filtered.isEmpty
-                ? Center(
-                    child: Text(
-                      _searchQuery.isEmpty
-                          ? 'No stations yet.\n\nOpen a playlist → ··· → Edit\n→ Convert to Station.'
-                          : 'No results for "$_searchQuery"',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final station = filtered[index];
-                      return _StationTile(
-                        key: Key('library_station_tile_${station.id}'),
-                        station: station,
-                        onTap: () => context.push(
-                          '/library/stations/${station.id}',
-                          extra: true,
+          data: (stations) {
+            final filtered = _applySortAndSearch(stations);
+            return Column(
+              children: [
+                // ── Search row ──────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: AppTheme.textPrimary,
                         ),
-                        onMoreTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => PlaylistOptionsSheet(
-                            playlistId: station.id,
-                            isOwner: true,
-                            onConverted: (t) => _onConverted(context, t),
+                        onPressed: () => context.pop(),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: TextField(
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                            style: AppTheme.bodyNormal,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Search ${stations.length} station${stations.length == 1 ? '' : 's'}',
+                              hintStyle: AppTheme.bodyMedium,
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: AppTheme.textSecondary,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
+                            ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      IconButton(
+                        key: _filterIconKey,
+                        icon: Icon(
+                          Icons.tune,
+                          color: _isFiltered
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                        ),
+                        onPressed: _toggleOverlay,
+                      ),
+                    ],
                   ),
-          ),
-        ],
+                ),
+
+                // ── Title ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Stations', style: AppTheme.headlineLarge),
+                  ),
+                ),
+
+                // ── List ───────────────────────────────────────────
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.sensors_off,
+                                  color: AppTheme.textSecondary,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  stations.isEmpty
+                                      ? 'No saved stations yet\nSave stations from the home screen'
+                                      : 'No results for "$_searchQuery"',
+                                  style: AppTheme.bodyMedium,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          color: AppTheme.primaryBrand,
+                          backgroundColor: AppTheme.surface,
+                          onRefresh: () => ref
+                              .read(savedStationsProvider.notifier)
+                              .refresh(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 140),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, i) {
+                              final s = filtered[i];
+                              return _StationTile(
+                                station: s,
+                                onTap: () => context.push(
+                                  '/home/station/${s.artistId}',
+                                  extra: {
+                                    'artistName': s.artistName,
+                                    'stationName': s.stationName,
+                                    'coverUrl': s.coverUrl,
+                                  },
+                                ),
+                                onUnsave: () => ref
+                                    .read(savedStationsProvider.notifier)
+                                    .toggle(s),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
-
-  void _onConverted(BuildContext context, PlaylistType t) {
-    switch (t) {
-      case PlaylistType.playlist:
-        context.go('/library/playlists');
-      case PlaylistType.album:
-        context.go('/library/albums');
-      case PlaylistType.station:
-        break;
-    }
-  }
 }
 
-class _StationTile extends StatelessWidget {
-  const _StationTile({
-    super.key,
-    required this.station,
-    required this.onTap,
-    required this.onMoreTap,
+// ── Station filter dropdown ───────────────────────────────────────────────────
+class _StationFilterDropdown extends StatelessWidget {
+  const _StationFilterDropdown({
+    required this.sort,
+    required this.onSortChanged,
   });
 
-  final PlaylistEntity station;
-  final VoidCallback onTap;
-  final VoidCallback onMoreTap;
+  final _StationSort sort;
+  final ValueChanged<_StationSort> onSortChanged;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            PlaylistCoverImage(playlist: station, size: 65, borderRadius: 4),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    station.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    station.seedArtistName != null
-                        ? 'Based on ${station.seedArtistName}'
-                        : station.ownerName,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    station.detailSubtitle,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
-              ),
+            _DropdownItem(
+              label: 'Recently added',
+              checked: sort == _StationSort.recentlyAdded,
+              onTap: () => onSortChanged(_StationSort.recentlyAdded),
             ),
-            IconButton(
-              key: Key('station_tile_more_${station.id}'),
-              icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
-              onPressed: onMoreTap,
+            _DropdownItem(
+              label: 'First added',
+              checked: sort == _StationSort.firstAdded,
+              onTap: () => onSortChanged(_StationSort.firstAdded),
+            ),
+            _DropdownItem(
+              label: 'Station name',
+              checked: sort == _StationSort.stationName,
+              onTap: () => onSortChanged(_StationSort.stationName),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+// ── Shared dropdown item ──────────────────────────────────────────────────────
+class _DropdownItem extends StatelessWidget {
+  const _DropdownItem({
+    required this.label,
+    required this.checked,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool checked;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              child: checked
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: checked
+                      ? AppTheme.textPrimary
+                      : AppTheme.textSecondary,
+                  fontSize: 15,
+                  fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Station tile ──────────────────────────────────────────────────────────────
+class _StationTile extends StatelessWidget {
+  const _StationTile({
+    required this.station,
+    required this.onTap,
+    required this.onUnsave,
+  });
+
+  final SavedStation station;
+  final VoidCallback onTap;
+  final VoidCallback onUnsave;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child:
+                    station.coverUrl != null &&
+                        station.coverUrl!.startsWith('http')
+                    ? Image.network(
+                        station.coverUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _placeholder(),
+                      )
+                    : _placeholder(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    station.stationName,
+                    style: AppTheme.bodyNormal,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(station.artistName, style: AppTheme.artistTitle),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.sensors,
+                        size: 11,
+                        color: AppTheme.textSecondary,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Artist Station · ${station.trackCount} tracks',
+                        style: AppTheme.labelSmall,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.sensors_off,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
+              tooltip: 'Remove station',
+              onPressed: onUnsave,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder() => Container(
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        station.stationName.isNotEmpty
+            ? station.stationName[0].toUpperCase()
+            : 'S',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
 }

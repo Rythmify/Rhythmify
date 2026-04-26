@@ -63,9 +63,13 @@ class FollowingState extends Equatable {
   List<Object?> get props => [users, isLoading, hasMore, error];
 }
 
+/// Manages paginated list of users the authenticated user follows.
+///
+/// Handles loading, pagination, error states, and unfollow actions.
+/// Pagination triggers when scrolling near the bottom of the list.
 class FollowingNotifier extends Notifier<FollowingState> {
-  late final GetFollowingUseCase _getFollowing;
-  late final UnfollowUserLibraryUseCase _unfollow;
+  late GetFollowingUseCase _getFollowing;
+  late UnfollowUserLibraryUseCase _unfollow;
   int _page = 1;
 
   @override
@@ -73,10 +77,14 @@ class FollowingNotifier extends Notifier<FollowingState> {
     final repo = ref.read(_libraryRepositoryProvider);
     _getFollowing = GetFollowingUseCase(repo);
     _unfollow = UnfollowUserLibraryUseCase(repo);
-    Future.microtask(load);
-    return const FollowingState(isLoading: true);
+    return const FollowingState(isLoading: false);
   }
 
+  /// Loads the following list with pagination support.
+  ///
+  /// When [refresh] is true, resets pagination to page 1 and clears existing users.
+  /// Otherwise, appends the next page to the existing list.
+  /// Returns early if already loading and not refreshing.
   Future<void> load({bool refresh = false}) async {
     if (state.isLoading && !refresh) return;
     if (refresh) {
@@ -106,6 +114,9 @@ class FollowingNotifier extends Notifier<FollowingState> {
     );
   }
 
+  /// Unfollows a user and removes them from the list optimistically.
+  ///
+  /// Updates the list immediately (optimistic update) and reverts on failure.
   Future<void> unfollow(String userId) async {
     final prev = state.users;
     state = state.copyWith(users: prev.where((u) => u.id != userId).toList());
@@ -152,9 +163,9 @@ class PlaylistsState extends Equatable {
 }
 
 class PlaylistsNotifier extends Notifier<PlaylistsState> {
-  late final GetMyPlaylistsUseCase _get;
-  late final CreatePlaylistUseCase _create;
-  late final DeletePlaylistUseCase _delete;
+  late GetMyPlaylistsUseCase _get;
+  late CreatePlaylistUseCase _create;
+  late DeletePlaylistUseCase _delete;
 
   @override
   PlaylistsState build() {
@@ -252,9 +263,9 @@ class UploadsState extends Equatable {
 }
 
 class UploadsNotifier extends Notifier<UploadsState> {
-  late final GetMyUploadsUseCase _get;
-  late final ToggleTrackVisibilityUseCase _toggleVis;
-  late final DeleteTrackUseCase _delete;
+  late GetMyUploadsUseCase _get;
+  late ToggleTrackVisibilityUseCase _toggleVis;
+  late DeleteTrackUseCase _delete;
   int _page = 1;
 
   @override
@@ -361,7 +372,7 @@ class LikesState extends Equatable {
 }
 
 class LikesNotifier extends Notifier<LikesState> {
-  late final GetLikedTracksLibraryUseCase _get;
+  late GetLikedTracksLibraryUseCase _get;
   int _page = 1;
 
   @override
@@ -404,6 +415,16 @@ final likesProvider = NotifierProvider<LikesNotifier, LikesState>(
 // Insights provider (simple FutureProvider)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// Provides track insights analytics for the authenticated user's uploads.
+///
+/// Fetches per-track statistics (plays, listeners, likes, reposts) for all
+/// tracks uploaded by the current user. Returns a [FutureProvider] that handles
+/// loading, error, and data states.
+///
+/// The widget observing this provider must handle all three [AsyncValue] states:
+/// - loading: Shows a spinner
+/// - error: Shows error message with retry button
+/// - data: Shows insights data or empty state if no uploads exist
 final insightsProvider = FutureProvider<List<TrackInsight>>((ref) async {
   final repo = ref.read(_libraryRepositoryProvider);
   final result = await GetMyInsightsUseCase(repo).call();
@@ -448,8 +469,8 @@ class HistoryState extends Equatable {
 }
 
 class HistoryNotifier extends Notifier<HistoryState> {
-  late final GetListeningHistoryUseCase _get;
-  late final ClearListeningHistoryUseCase _clear;
+  late GetListeningHistoryUseCase _get;
+  late ClearListeningHistoryUseCase _clear;
   int _page = 1;
 
   @override
@@ -462,11 +483,14 @@ class HistoryNotifier extends Notifier<HistoryState> {
   }
 
   Future<void> load({bool refresh = false}) async {
+    // Prevent concurrent paginated loads which cause duplicated/looping fetches.
     if (refresh) {
       _page = 1;
       state = state.copyWith(entries: [], isLoading: true, hasMore: true);
     } else {
-      if (!state.hasMore) return;
+      // If there's no more data, or a load is already in progress for subsequent
+      // pages, bail out early.
+      if (!state.hasMore || (state.isLoading && _page > 1)) return;
       state = state.copyWith(isLoading: true);
     }
 
@@ -475,8 +499,20 @@ class HistoryNotifier extends Notifier<HistoryState> {
       (f) => state = state.copyWith(isLoading: false, error: f.message),
       (e) {
         _page++;
+        // Filter out any items already present (dedupe by trackId + playedAt)
+        final existingKeys = state.entries
+            .map((x) => '${x.trackId}-${x.playedAt.millisecondsSinceEpoch}')
+            .toSet();
+        final newEntries = e
+            .where(
+              (ne) => !existingKeys.contains(
+                '${ne.trackId}-${ne.playedAt.millisecondsSinceEpoch}',
+              ),
+            )
+            .toList();
+
         state = state.copyWith(
-          entries: [...state.entries, ...e],
+          entries: [...state.entries, ...newEntries],
           isLoading: false,
           hasMore: e.length == 20,
         );

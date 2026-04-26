@@ -11,8 +11,8 @@ import '../widgets/unsaved_changes_dialog.dart';
 /// A full-screen page for editing the authenticated user's profile.
 ///
 /// Accessible via:
-/// - [PublicProfilePage] edit icon → `context.push('/profile/edit')`
-/// - GoRouter route `/profile/edit`
+/// - [PublicProfilePage] edit icon → `context.push('/home/profile/edit')`
+/// - GoRouter route `/home/profile/edit`
 ///
 /// **Route ordering**: `/profile/edit` MUST be declared BEFORE
 /// `/profile/:userId` in [app_router.dart]. If the order is reversed,
@@ -118,10 +118,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   /// Populates text controllers and country fields from the current [ProfileLoaded] state.
   ///
+  /// Reads from [ownProfileProvider] which is specific to the authenticated user.
   /// Performs a reverse lookup on [_countries] to translate the stored
   /// ISO code back to the full country display name.
   void _loadCurrentValues() {
-    final state = ref.read(profileProvider);
+    final state = ref.read(ownProfileProvider);
     if (state is ProfileLoaded) {
       _displayNameController.text = state.profile.displayName;
       _usernameController.text = state.profile.username ?? '';
@@ -175,7 +176,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// Opens the image gallery and uploads the selected image as the avatar.
   ///
   /// Uses [ImagePicker] with a 512×512 max size and 85% quality.
-  /// Calls [ProfileNotifier.uploadAvatar] with the selected file path.
+  /// Calls [ProfileNotifier.uploadAvatar] via [ownProfileProvider.notifier].
   Future<void> _pickAvatar() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
@@ -185,14 +186,14 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref.read(profileProvider.notifier).uploadAvatar(filePath: image.path);
+      ref.read(ownProfileProvider.notifier).uploadAvatar(filePath: image.path);
     }
   }
 
   /// Opens the image gallery and uploads the selected image as the cover photo.
   ///
   /// Uses [ImagePicker] with max width 1200px and 85% quality.
-  /// Calls [ProfileNotifier.uploadCoverPhoto] with the selected file path.
+  /// Calls [ProfileNotifier.uploadCoverPhoto] via [ownProfileProvider.notifier].
   Future<void> _pickCoverPhoto() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
@@ -201,18 +202,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref.read(profileProvider.notifier).uploadCoverPhoto(filePath: image.path);
+      ref
+          .read(ownProfileProvider.notifier)
+          .uploadCoverPhoto(filePath: image.path);
     }
   }
 
-  /// Dispatches the save operation with current field values.
+  /// Dispatches the save operation with current field values via [ownProfileProvider.notifier].
   ///
   /// Sends [_selectedCountry] (ISO code) as the country, not the
   /// display name. Called by the Save button in the AppBar.
   /// After saving successfully, navigates back to profile page.
   Future<void> _onSave() async {
     await ref
-        .read(profileProvider.notifier)
+        .read(ownProfileProvider.notifier)
         .updateProfile(
           displayName: _displayNameController.text.trim(),
           username: _usernameController.text.trim().toLowerCase(),
@@ -327,11 +330,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileProvider);
+    /// Watch [ownProfileProvider] for this authenticated user's profile data.
+    /// This prevents flicker from public profile data.
+    final profileState = ref.watch(ownProfileProvider);
     final isSaving = profileState is ProfileLoaded && profileState.isSaving;
 
-    // Listen for successful save and show SnackBar
-    ref.listen(profileProvider, (previous, next) {
+    // Listen for successful save and reset unsaved changes flag
+    ref.listen(ownProfileProvider, (previous, next) {
       if (previous is ProfileLoaded &&
           previous.isSaving &&
           next is ProfileLoaded &&
@@ -473,6 +478,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             label: 'Username',
                             controller: _usernameController,
                             maxLength: 30,
+                            hintText: 'soundwave_cairo',
+                            pattern: r'^[a-z0-9_-]+$',
                           ),
                           const Divider(color: AppTheme.surface, height: 1),
                           _buildField(
@@ -528,45 +535,57 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// [label] — the field label shown above the text field.
   /// [controller] — the [TextEditingController] for this field.
   /// [maxLength] — character limit shown in the counter.
+  /// [hintText] — optional placeholder text for the field.
+  /// [pattern] — optional regex for validation (currently used for visual feedback).
   Widget _buildField({
     Key? key,
     required String label,
     required TextEditingController controller,
     required int maxLength,
+    String? hintText,
+    String? pattern,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTheme.bodyMedium),
-          const SizedBox(height: 4),
-          Row(
+    return StatefulBuilder(
+      builder: (context, setState) {
+        controller.addListener(() {
+          setState(() {}); // Triggers rebuild to update character count
+        });
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: TextField(
-                  key: key,
-                  controller: controller,
-                  maxLength: maxLength,
-                  style: AppTheme.bodyLarge,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    counterText: '',
-                    hintText: label,
-                    hintStyle: AppTheme.bodyMedium,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
+              Text(label, style: AppTheme.bodyMedium),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      key: key,
+                      controller: controller,
+                      maxLength: maxLength,
+                      style: AppTheme.bodyLarge,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        counterText: '',
+                        hintText: hintText ?? label,
+                        hintStyle: AppTheme.bodyMedium,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Text(
-                '${controller.text.length}/$maxLength',
-                style: AppTheme.labelSmall,
+                  Text(
+                    '${controller.text.length}/$maxLength',
+                    style: AppTheme.labelSmall,
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
