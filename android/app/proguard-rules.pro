@@ -27,3 +27,7 @@
 -keep class **.domain.entities.** { *; }
 -keep class **.models.** { *; }
 -keep class **.entities.** { *; }
+
+# Flutter Play Core / Deferred Components
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
