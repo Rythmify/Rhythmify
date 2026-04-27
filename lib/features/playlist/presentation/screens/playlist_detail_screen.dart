@@ -100,7 +100,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(playlistDetailProvider);
-
+debugPrint('[SCREEN] isOwner=${widget.isOwner} isLoading=${state.isLoading} requested=$_suggestionsRequested');
     // Once init finishes and this is an owned playlist,
     // trigger suggestion loading exactly once.
     if (widget.isOwner &&
