@@ -610,12 +610,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             planName: extra['planName'] as String? ?? 'Artist Pro ★',
             price: extra['price'] as String? ?? 'EGP 164.99/month',
             features: List<String>.from(
-              extra['features'] as List? ?? [
-                'Unlimited track uploads',
-                'Get paid directly and more fairly',
-                'Discover and connect with your biggest fans',
-                'Unlimited distribution to all major streaming and social platforms',
-              ],
+              extra['features'] as List? ??
+                  [
+                    'Unlimited track uploads',
+                    'Get paid directly and more fairly',
+                    'Discover and connect with your biggest fans',
+                    'Unlimited distribution to all major streaming and social platforms',
+                  ],
             ),
           );
         },
@@ -642,15 +643,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const UploadTrackScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             );
           },
