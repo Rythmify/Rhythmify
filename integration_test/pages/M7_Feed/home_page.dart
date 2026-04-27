@@ -45,7 +45,7 @@ class HomePage extends BasePage {
   bool isReggaeGenreVisible() => find.text('Reggae').evaluate().isNotEmpty;
 
   bool isOnInboxPage() => isVisible(messagingComposeButton);
-  bool isOnNotificationsPage() => find.text('This is a dummy page').evaluate().isNotEmpty;
+  bool isOnNotificationsPage() => isVisible(notificationsScreenKey);
 
   // ── Navigation Taps ──
 
@@ -53,8 +53,10 @@ class HomePage extends BasePage {
   Future<void> tapMessageButton() async => await tapByKey(homeInboxButton);
   Future<void> tapNotificationButton() async => await tapByKey(homeNotificationsButton);
   Future<void> tapMixedForYou() async => await tapByKey(mixedListView);
+  Future<void> mixedForYouBackButton() async => await tapByKey(mixedForYouBackbutton);
   Future<void> tapDiscoverWithStations() async => await tapByKey(discoverListView);
   Future<void> tapMoreOfWhatYouLike() async => await tapByKey(moreListView);
+  Future<void> relatedTracksBackButton() async => await tapByKey(relatedTracksBackbutton);
 
   /// Tap the inbox button, verify navigation, then return to the home screen.
   Future<void> tapInboxAndReturn() async {

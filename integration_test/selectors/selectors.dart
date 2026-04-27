@@ -91,6 +91,8 @@ const String hotForYouLoading               = 'hot_for_you_loading';
 const String mixedForYouSection             = 'mixed_for_you_section';
 const String mixedForYouErrorText           = 'mixed_for_you_error_text';
 const String mixedListView                  = 'mixed_list_view';
+const String mixedForYouBackbutton          = 'mix_detail_back_button';
+const String relatedTracksBackbutton        = 'related_tracks_back_button';
 const String moreOfWhatYouLikeSection       = 'more_of_what_you_like_section';
 const String moreOfWhatYouLikeErrorText     = 'more_of_what_you_like_error_text';
 const String moreListView                   = 'more_list_view';
@@ -305,6 +307,7 @@ const String fansLeaderboardFirstButton     = 'fans_leaderboard_first_segment_ge
 const String fansLeaderboardInfoIcon        = 'fans_leaderboard_info_icon';
 
 // --- Comments ---
+const String commentsBackButton             = 'comments_close_icon_button';
 const String commentsCommentPromptText      = 'comments_comment_prompt_text';
 const String commentsFireEmoji              = 'comments_fire_emoji_text';
 const String commentsClapEmoji              = 'comments_clap_emoji_text';
@@ -411,6 +414,7 @@ const String uploadsDeleteOption               = 'uploads_delete_option';
 
 // ---- Playlist Detail Page ----
 const String playlistDetailBackButton       = 'playlist_detail_back_button';
+const String albumBackButton                = 'library_albums_back_button';
 const String playlistDetailLikeButton       = 'playlist_detail_like_button';
 const String playlistDetailMoreButton       = 'playlist_detail_more_button';
 const String playlistDetailShuffleButton    = 'playlist_detail_shuffle_button';
