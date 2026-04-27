@@ -19,7 +19,8 @@ class PlaylistModel {
         : null;
 
     // Detect generated mix and track radio from subtype
-    final isGeneratedMix = subtype == 'auto_generated' ||
+    final isGeneratedMix =
+        subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending';

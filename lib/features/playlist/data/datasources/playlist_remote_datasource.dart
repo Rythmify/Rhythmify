@@ -88,7 +88,7 @@ class PlaylistRemoteDatasource {
     }
   }
 
-// In playlist_remote_datasource.dart, replace _likedItemFromJson with this:
+  // In playlist_remote_datasource.dart, replace _likedItemFromJson with this:
 
   PlaylistEntity _likedItemFromJson(
     Map<String, dynamic> json,
@@ -101,19 +101,20 @@ class PlaylistRemoteDatasource {
     final local = localMixes[id];
 
     final backendCover = json['cover_image'] as String?;
-    final coverUrl =
-        (backendCover != null && backendCover.isNotEmpty)
-            ? backendCover
-            : local?.coverUrl;
+    final coverUrl = (backendCover != null && backendCover.isNotEmpty)
+        ? backendCover
+        : local?.coverUrl;
 
     final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
-    final trackCount =
-        backendTrackCount > 0 ? backendTrackCount : (local?.trackCount ?? 0);
+    final trackCount = backendTrackCount > 0
+        ? backendTrackCount
+        : (local?.trackCount ?? 0);
 
     // Detect type from backend subtype field:
     // auto_generated, curated_daily, curated_weekly, genre_trending → isGeneratedMix
     // track_radio → isTrackRadio
-    final isGeneratedMix = subtype == 'auto_generated' ||
+    final isGeneratedMix =
+        subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending' ||
@@ -123,12 +124,18 @@ class PlaylistRemoteDatasource {
 
     return PlaylistEntity(
       id: id,
-      name: json['name'] as String? ?? json['title'] as String? ?? local?.title ?? 'Untitled',
-      ownerName: json['display_name'] as String? ??
+      name:
+          json['name'] as String? ??
+          json['title'] as String? ??
+          local?.title ??
+          'Untitled',
+      ownerName:
+          json['display_name'] as String? ??
           json['owner_name'] as String? ??
           local?.ownerName ??
           '',
-      ownerId: json['owner_user_id'] as String? ?? json['user_id'] as String? ?? '',
+      ownerId:
+          json['owner_user_id'] as String? ?? json['user_id'] as String? ?? '',
       isPublic: json['is_public'] as bool? ?? false,
       type: PlaylistType.playlist,
       trackCount: trackCount,
@@ -235,7 +242,9 @@ class PlaylistRemoteDatasource {
     int limit = 20,
     int offset = 0,
   }) async {
-    _log('→ GET /playlists/$playlistId/radio-tracks  limit=$limit offset=$offset');
+    _log(
+      '→ GET /playlists/$playlistId/radio-tracks  limit=$limit offset=$offset',
+    );
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/playlists/$playlistId/radio-tracks',
@@ -369,7 +378,9 @@ class PlaylistRemoteDatasource {
   }) async {
     final body = <String, dynamic>{'track_id': trackId};
     if (position != null) body['position'] = position;
-    _log('→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position');
+    _log(
+      '→ POST /playlists/$playlistId/tracks  trackId=$trackId  pos=$position',
+    );
     try {
       final response = await _dio.post<dynamic>(
         '/playlists/$playlistId/tracks',
@@ -417,7 +428,9 @@ class PlaylistRemoteDatasource {
         .entries
         .map((entry) => {'track_id': entry.value, 'position': entry.key + 1})
         .toList();
-    _log('→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks');
+    _log(
+      '→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks',
+    );
     try {
       final response = await _dio.patch<dynamic>(
         '/playlists/$playlistId/tracks/reorder',
@@ -771,11 +784,7 @@ class PlaylistRemoteDatasource {
           (genreId) => _dio
               .get<Map<String, dynamic>>(
                 '/genres/$genreId/tracks',
-                queryParameters: {
-                  'limit': 20,
-                  'offset': 0,
-                  'sort': 'popular',
-                },
+                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
               )
               .catchError((e) {
                 _log('Genre $genreId fetch failed, skipping: $e');
@@ -819,7 +828,8 @@ class PlaylistRemoteDatasource {
       if (allTracks.isEmpty) return [];
       allTracks.shuffle();
       return _mapDiscoveryTracksToPlaylistTracks(
-          allTracks.take(limit).toList());
+        allTracks.take(limit).toList(),
+      );
     } on DioException catch (e) {
       _logError('fetchRecommendedTracks() failed', e);
       return [];
@@ -846,8 +856,7 @@ class PlaylistRemoteDatasource {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/home');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final trendingByGenre =
-          data['trending_by_genre'] as Map<String, dynamic>;
+      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
       final genres = trendingByGenre['genres'] as List<dynamic>;
       return genres
           .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
@@ -878,18 +887,21 @@ class PlaylistRemoteDatasource {
           _log('  Skipping track at index $i — no id. Keys: ${json.keys}');
           continue;
         }
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration:
-              Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('  Error mapping mix track at index $i: $e');
       }
@@ -909,18 +921,21 @@ class PlaylistRemoteDatasource {
         final json = rawList[i] as Map<String, dynamic>;
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) continue;
-        result.add(PlaylistTrack(
-          id: id,
-          title: json['title'] as String? ?? 'Unknown Title',
-          artistName: json['artist_name'] as String? ?? 'Unknown Artist',
-          duration:
-              Duration(seconds: (json['duration'] as num?)?.toInt() ?? 0),
-          playCount: (json['play_count'] as num?)?.toInt() ?? 0,
-          position: startPosition + i,
-          coverUrl: json['cover_image'] as String?,
-          isLiked: false,
-          isUnavailable: false,
-        ));
+        result.add(
+          PlaylistTrack(
+            id: id,
+            title: json['title'] as String? ?? 'Unknown Title',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            duration: Duration(
+              seconds: (json['duration'] as num?)?.toInt() ?? 0,
+            ),
+            playCount: (json['play_count'] as num?)?.toInt() ?? 0,
+            position: startPosition + i,
+            coverUrl: json['cover_image'] as String?,
+            isLiked: false,
+            isUnavailable: false,
+          ),
+        );
       } catch (e) {
         _log('Error mapping track at index $i: $e');
       }

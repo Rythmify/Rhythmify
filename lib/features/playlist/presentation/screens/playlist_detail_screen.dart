@@ -43,12 +43,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
-      final fullTrack =
-          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [fullTrack],
-        initialIndex: 0,
-      );
+      final fullTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(pt.id);
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        fullTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
     }
@@ -61,10 +61,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(tracks[index].id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [clickedTrack],
-        initialIndex: 0,
-      );
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        clickedTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to play: $e');
     }
@@ -84,10 +83,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final clickedTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(shuffled.first.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue(
-        [clickedTrack],
-        initialIndex: 0,
-      );
+      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
+        clickedTrack,
+      ], initialIndex: 0);
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }
@@ -135,12 +133,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
 
     final playlist = state.playlist!;
-    final coverUrl = playlist.coverUrl ??
+    final coverUrl =
+        playlist.coverUrl ??
         (state.tracks.isNotEmpty ? state.tracks.first.coverUrl : null);
 
     // Whether to show suggestions section:
     // ONLY when widget.isOwner=true (passed from router) AND playlist type is playlist
-    final showSuggestionsSection = widget.isOwner &&
+    final showSuggestionsSection =
+        widget.isOwner &&
         playlist.type == PlaylistType.playlist &&
         (state.isSuggestionsLoading || state.suggestions.isNotEmpty);
 
@@ -197,10 +197,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                               child: Text(
                                 playlist.type == PlaylistType.station
                                     ? (playlist.seedArtistName ??
-                                        playlist.ownerName)
+                                          playlist.ownerName)
                                     : playlist.ownerName.isNotEmpty
-                                        ? playlist.ownerName
-                                        : 'You',
+                                    ? playlist.ownerName
+                                    : 'You',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTheme.labelSmall.copyWith(
@@ -225,9 +225,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                 children: [
                   GestureDetector(
                     key: const Key('playlist_detail_like_button'),
-                    onTap: () => ref
-                        .read(playlistDetailProvider.notifier)
-                        .toggleLike(),
+                    onTap: () =>
+                        ref.read(playlistDetailProvider.notifier).toggleLike(),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -454,7 +453,8 @@ class _CoverImage extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: coverUrl != null &&
+        child:
+            coverUrl != null &&
                 coverUrl!.isNotEmpty &&
                 coverUrl!.startsWith('http')
             ? Image.network(
@@ -468,16 +468,16 @@ class _CoverImage extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            name.isNotEmpty ? name[0].toUpperCase() : 'P',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'P',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

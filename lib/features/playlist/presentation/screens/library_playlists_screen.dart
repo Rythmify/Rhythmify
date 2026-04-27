@@ -16,6 +16,7 @@ import '../widgets/playlist_options_sheet.dart';
 import '../widgets/playlist_shared_widgets.dart';
 
 enum _SortOption { recentlyAdded, firstAdded, recentlyUpdated, playlistName }
+
 enum _FilterOption { all, liked, owned }
 
 class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
@@ -64,8 +65,8 @@ class _LibraryPlaylistsScreenState
     return uid.isNotEmpty && playlist.ownerId == uid;
   }
 
-// Replace _loadAll in library_playlists_screen.dart with this simplified version.
-// Also remove the _savedMixIds and _savedTrackRadioPlaylistIds field declarations.
+  // Replace _loadAll in library_playlists_screen.dart with this simplified version.
+  // Also remove the _savedMixIds and _savedTrackRadioPlaylistIds field declarations.
 
   Future<void> _loadAll() async {
     setState(() => _loading = true);
@@ -98,13 +99,13 @@ class _LibraryPlaylistsScreenState
     await notifier.loadPlaylists();
   }
 
-// Also remove these two field declarations from the class:
-//   Set<String> _savedMixIds = {};
-//   Set<String> _savedTrackRadioPlaylistIds = {};
-// And remove the LocalSavedStore import if no longer used elsewhere.
+  // Also remove these two field declarations from the class:
+  //   Set<String> _savedMixIds = {};
+  //   Set<String> _savedTrackRadioPlaylistIds = {};
+  // And remove the LocalSavedStore import if no longer used elsewhere.
 
   // ADD THIS METHOD to _LibraryPlaylistsScreenState
-// Place it directly after _loadAll() — before get _sourceList
+  // Place it directly after _loadAll() — before get _sourceList
 
   Future<void> _loadForFilter() async {
     setState(() => _loading = true);
@@ -137,14 +138,17 @@ class _LibraryPlaylistsScreenState
 
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
     var result = input
-        .where((p) =>
-            _filter == _FilterOption.liked || p.type == PlaylistType.playlist)
+        .where(
+          (p) =>
+              _filter == _FilterOption.liked || p.type == PlaylistType.playlist,
+        )
         .toList();
 
     if (_searchQuery.isNotEmpty) {
       result = result
-          .where((p) =>
-              p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
           .toList();
     }
 
@@ -157,12 +161,13 @@ class _LibraryPlaylistsScreenState
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       case _SortOption.playlistName:
         result.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
 
     return result;
   }
-// Replace _onPlaylistTap in library_playlists_screen.dart with this:
+  // Replace _onPlaylistTap in library_playlists_screen.dart with this:
 
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
     // ── 1. OWNED playlist → full edit screen with suggestions ─────────────
@@ -178,7 +183,9 @@ class _LibraryPlaylistsScreenState
         '/home/mix/${playlist.id}',
         extra: {
           'title': playlist.name,
-          'ownerName': playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+          'ownerName': playlist.ownerName.isNotEmpty
+              ? playlist.ownerName
+              : 'You',
           'coverUrl': playlist.coverUrl,
           'trackCount': playlist.trackCount,
           'mixType': 'genre',
@@ -351,15 +358,17 @@ class _LibraryPlaylistsScreenState
                         onPressed: () => context.pop(),
                         child: Text(
                           'Cancel',
-                          style: AppTheme.bodyNormal
-                              .copyWith(color: AppTheme.textPrimary),
+                          style: AppTheme.bodyNormal.copyWith(
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
                       ),
                       IconButton(
                         key: _filterIconKey,
                         icon: Icon(
                           Icons.tune,
-                          color: (_sort != _SortOption.recentlyAdded ||
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
                                   _filter != _FilterOption.all)
                               ? AppTheme.primaryBrand
                               : AppTheme.textSecondary,
@@ -390,7 +399,8 @@ class _LibraryPlaylistsScreenState
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text('Import not available yet')),
+                                content: Text('Import not available yet'),
+                              ),
                             );
                           },
                           icon: const Icon(
@@ -401,9 +411,11 @@ class _LibraryPlaylistsScreenState
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
                             side: const BorderSide(
-                                color: AppTheme.lighterSurface),
+                              color: AppTheme.lighterSurface,
+                            ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       ),
@@ -420,9 +432,11 @@ class _LibraryPlaylistsScreenState
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppTheme.surface,
                             side: const BorderSide(
-                                color: AppTheme.lighterSurface),
+                              color: AppTheme.lighterSurface,
+                            ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       ),
@@ -440,24 +454,23 @@ class _LibraryPlaylistsScreenState
                           ),
                         )
                       : filtered.isEmpty
-                          ? _emptyState()
-                          : ListView.builder(
-                              key: const Key('library_playlists_list'),
-                              padding: const EdgeInsets.only(bottom: 140),
-                              itemCount: filtered.length,
-                              itemBuilder: (context, index) {
-                                final playlist = filtered[index];
-                                final isOwner = _isPlaylistOwned(playlist);
-                                return _PlaylistListTile(
-                                  key: Key('playlist_tile_${playlist.id}'),
-                                  playlist: playlist,
-                                  onTap: () =>
-                                      _onPlaylistTap(context, playlist),
-                                  onMoreTap: () =>
-                                      _showOptions(context, playlist, isOwner),
-                                );
-                              },
-                            ),
+                      ? _emptyState()
+                      : ListView.builder(
+                          key: const Key('library_playlists_list'),
+                          padding: const EdgeInsets.only(bottom: 140),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final playlist = filtered[index];
+                            final isOwner = _isPlaylistOwned(playlist);
+                            return _PlaylistListTile(
+                              key: Key('playlist_tile_${playlist.id}'),
+                              playlist: playlist,
+                              onTap: () => _onPlaylistTap(context, playlist),
+                              onMoreTap: () =>
+                                  _showOptions(context, playlist, isOwner),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
@@ -477,8 +490,11 @@ class _LibraryPlaylistsScreenState
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Text(message,
-            style: AppTheme.bodyMedium, textAlign: TextAlign.center),
+        child: Text(
+          message,
+          style: AppTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -489,14 +505,16 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) =>
-            context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
       ),
     );
   }
 
   void _showOptions(
-      BuildContext context, PlaylistEntity playlist, bool isOwner) {
+    BuildContext context,
+    PlaylistEntity playlist,
+    bool isOwner,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -606,8 +624,11 @@ class _DropdownItem extends StatelessWidget {
             SizedBox(
               width: 20,
               child: checked
-                  ? const Icon(Icons.check,
-                      color: AppTheme.textPrimary, size: 16)
+                  ? const Icon(
+                      Icons.check,
+                      color: AppTheme.textPrimary,
+                      size: 16,
+                    )
                   : null,
             ),
             const SizedBox(width: 8),
@@ -615,8 +636,9 @@ class _DropdownItem extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color:
-                      checked ? AppTheme.textPrimary : AppTheme.textSecondary,
+                  color: checked
+                      ? AppTheme.textPrimary
+                      : AppTheme.textSecondary,
                   fontSize: 15,
                   fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
                 ),
