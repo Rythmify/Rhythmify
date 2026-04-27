@@ -41,9 +41,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// sync the [playbackState] and [mediaItem] with the system.
   Future<void> _init() async {
     _player.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed && _player.currentIndex != null) {
-        // If we reached the end but the queue was expanded since then
-        if (_player.currentIndex! < _currentQueue.length - 1) {
+      if (state == ProcessingState.completed) {
+        final currentIndex = _player.currentIndex;
+        if (currentIndex != null && currentIndex < _playlist.length - 1) {
           _player.seekToNext();
           _player.play();
         }
@@ -188,13 +188,14 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     final audioSources = _convertToAudioSources(tracks, useCache: false);
     if (audioSources.isEmpty) return;
 
+    final oldLength = _playlist.length;
     _currentQueue.addAll(tracks);
     await _playlist.addAll(audioSources);
 
     // If the player stopped because it reached the end, but we just added more,
-    // we might need to manually trigger play or seek to the next item.
+    // we must manually trigger play on the NEWLY added items.
     if (_player.processingState == ProcessingState.completed) {
-      await _player.seek(Duration.zero, index: _currentQueue.length - tracks.length);
+      await _player.seek(Duration.zero, index: oldLength);
       _player.play();
     }
   }

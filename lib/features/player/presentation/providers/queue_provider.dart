@@ -29,15 +29,15 @@ class QueueNotifier extends Notifier<AppQueueState> {
     return const AppQueueState();
   }
 
+  /// Automatically fetches related tracks when the queue is near the end.
   Future<void> _checkAndFetchRelated() async {
     final upcoming = state.upcomingTracks;
-    final recommended = state.recommendedTracks;
     final current = state.currentTrack;
 
     if (current == null) return;
 
-    // Trigger if total remaining tracks (Upcoming + Recommended) is 3 or fewer
-    if ((upcoming.length + recommended.length) <= 3 &&
+    // Trigger if 3 or fewer tracks left in the TOTAL native queue
+    if (upcoming.length <= 3 &&
         !state.isLoadingRecommendations &&
         _lastFetchedRelatedId != current.track.id) {
       
@@ -51,7 +51,6 @@ class QueueNotifier extends Notifier<AppQueueState> {
         final existingIds = {
           ...state.history.map((e) => e.track.id),
           ...state.upcomingTracks.map((e) => e.track.id),
-          ...state.recommendedTracks.map((e) => e.track.id),
           current.track.id,
         };
 
@@ -62,14 +61,17 @@ class QueueNotifier extends Notifier<AppQueueState> {
                   queueBucket: 'context',
                   sourceType: 'related',
                   sourceId: current.track.id,
+                  isRecommended: true,
                 ))
             .toList();
 
         if (newRelated.isNotEmpty) {
+          // 1. Append to native player queue
           await ref.read(appendTracksUseCaseProvider).call(newRelated.map((e) => e.track).toList());
 
+          // 2. Append to local state
           state = state.copyWith(
-            recommendedTracks: [...state.recommendedTracks, ...newRelated],
+            upcomingTracks: [...state.upcomingTracks, ...newRelated],
             isLoadingRecommendations: false,
           );
         } else {
@@ -106,11 +108,10 @@ class QueueNotifier extends Notifier<AppQueueState> {
       currentTrack: currentItem,
       upcomingTracks: upcoming,
       unShuffledUpcomingTracks: upcoming,
-      recommendedTracks: [],
       isShuffled: false,
     );
 
-    // Command native player instantly
+    // Command native player
     await ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(tracks, initialIndex: initialIndex);
@@ -132,7 +133,6 @@ class QueueNotifier extends Notifier<AppQueueState> {
       final List<QueueItem> fullContextItems =
           rawQueue.map((item) => QueueItem.fromJson(item as Map<String, dynamic>)).toList();
 
-      // --- STEP 3: ARRAY SLICING ---
       final actualIndexInContext = fullContextItems.indexWhere(
         (item) => item.track.id == tappedTrack.id,
       );
@@ -142,20 +142,13 @@ class QueueNotifier extends Notifier<AppQueueState> {
         final serverCurrent = fullContextItems[actualIndexInContext];
         final serverUpcoming = fullContextItems.sublist(actualIndexInContext + 1);
 
-        // --- STEP 4: BACKEND SYNC ---
-        ref.read(syncPlayerStateUseCaseProvider).call(
-          trackId: tappedTrack.id,
-          queue: serverUpcoming.map((e) => e.toJson()).toList(),
-        );
-
-        // --- STEP 5: SYNC NATIVE PLAYER ---
+        // Sync native player with full resolved context
         final allServerTracks = fullContextItems.map((e) => e.track).toList();
         await ref.read(playerStateProvider.notifier).updateNativeQueue(
           allServerTracks,
           newIndex: actualIndexInContext,
         );
 
-        // --- STEP 6: SILENT STATE UPDATE ---
         state = state.copyWith(
           history: serverHistory,
           currentTrack: serverCurrent,
@@ -168,35 +161,6 @@ class QueueNotifier extends Notifier<AppQueueState> {
     }
   }
 
-  Future<void> addToNextUp({
-    required String sourceType,
-    String? sourceId,
-  }) async {
-    try {
-      final response = await ref.read(fetchQueueContextUseCaseProvider).call(
-        interactionType: 'next_up',
-        sourceType: sourceType,
-        sourceId: sourceId,
-      );
-
-      final data = response['data'] as Map<String, dynamic>;
-      final rawQueue = data['queue'] as List<dynamic>;
-
-      final newItems =
-          rawQueue.map((item) => QueueItem.fromJson(item as Map<String, dynamic>)).toList();
-
-      final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
-      final updatedUpcoming = [...newItems, ...currentUpcoming];
-
-      state = state.copyWith(
-        upcomingTracks: updatedUpcoming,
-        unShuffledUpcomingTracks: updatedUpcoming,
-      );
-    } catch (e) {
-      // Fallback
-    }
-  }
-
   void _syncWithPlayer(Track activeTrack) {
     if (state.currentTrack?.track.id == activeTrack.id) return;
 
@@ -206,30 +170,18 @@ class QueueNotifier extends Notifier<AppQueueState> {
     }
 
     final newUpcoming = List<QueueItem>.from(state.upcomingTracks);
-    final newRecommended = List<QueueItem>.from(state.recommendedTracks);
     QueueItem? nextItem;
 
-    final upcomingIndex = newUpcoming.indexWhere((t) => t.track.id == activeTrack.id);
-    final recommendedIndex = newRecommended.indexWhere((t) => t.track.id == activeTrack.id);
+    final indexInUpcoming = newUpcoming.indexWhere((t) => t.track.id == activeTrack.id);
 
-    if (upcomingIndex != -1) {
-      for (int i = 0; i < upcomingIndex; i++) {
+    if (indexInUpcoming != -1) {
+      // Move skipped items to history
+      for (int i = 0; i < indexInUpcoming; i++) {
         newHistory.add(newUpcoming[i]);
       }
-      nextItem = newUpcoming[upcomingIndex];
-      newUpcoming.removeRange(0, upcomingIndex + 1);
-    } 
-    else if (recommendedIndex != -1) {
-      newHistory.addAll(newUpcoming);
-      newUpcoming.clear();
-
-      for (int i = 0; i < recommendedIndex; i++) {
-        newHistory.add(newRecommended[i]);
-      }
-      nextItem = newRecommended[recommendedIndex];
-      newRecommended.removeRange(0, recommendedIndex + 1);
-    }
-    else {
+      nextItem = newUpcoming[indexInUpcoming];
+      newUpcoming.removeRange(0, indexInUpcoming + 1);
+    } else {
       nextItem = QueueItem(track: activeTrack);
     }
 
@@ -238,13 +190,10 @@ class QueueNotifier extends Notifier<AppQueueState> {
       currentTrack: nextItem,
       upcomingTracks: newUpcoming,
       unShuffledUpcomingTracks: newUpcoming,
-      recommendedTracks: newRecommended,
     );
   }
 
-  void nextTrack() {
-    ref.read(playerStateProvider.notifier).skipToNext();
-  }
+  void nextTrack() => ref.read(playerStateProvider.notifier).skipToNext();
 
   void previousTrack() {
     if (state.history.isEmpty) {
@@ -255,7 +204,7 @@ class QueueNotifier extends Notifier<AppQueueState> {
   }
 
   void toggleShuffle() {
-    if (state.upcomingTracks.isEmpty && state.recommendedTracks.isEmpty) return;
+    if (state.upcomingTracks.isEmpty) return;
 
     if (state.isShuffled) {
       state = state.copyWith(
@@ -307,8 +256,7 @@ class QueueNotifier extends Notifier<AppQueueState> {
       unShuffledUpcomingTracks: newUpcoming,
     );
 
-    final absoluteIndex = newHistory.length; 
-    ref.read(playerStateProvider.notifier).skipToAbsoluteIndex(absoluteIndex).then((_) {
+    ref.read(playerStateProvider.notifier).skipToAbsoluteIndex(newHistory.length).then((_) {
       _isSyncing = false;
     });
 
@@ -318,35 +266,21 @@ class QueueNotifier extends Notifier<AppQueueState> {
     );
   }
 
+  /// Since recommendations are part of upcomingTracks now, we can remove 
+  /// playFromRecommended or alias it to playFromQueue.
   void playFromRecommended(int index) {
-    if (index < 0 || index >= state.recommendedTracks.length) return;
+    // We find all recommended items currently in upcomingTracks
+    final allUpcoming = state.upcomingTracks;
+    final recommendedItems = allUpcoming.where((t) => t.isRecommended).toList();
 
-    final targetItem = state.recommendedTracks[index];
-    _isSyncing = true; 
+    if (index < 0 || index >= recommendedItems.length) return;
 
-    final newHistory = List<QueueItem>.from(state.history);
-    if (state.currentTrack != null) newHistory.add(state.currentTrack!);
-    newHistory.addAll(state.upcomingTracks);
-    newHistory.addAll(state.recommendedTracks.sublist(0, index));
+    final targetItem = recommendedItems[index];
+    final globalIndexInUpcoming = allUpcoming.indexOf(targetItem);
 
-    final remainingRecommended = state.recommendedTracks.sublist(index + 1);
-
-    state = state.copyWith(
-      history: newHistory,
-      currentTrack: targetItem,
-      upcomingTracks: [], 
-      unShuffledUpcomingTracks: [],
-      recommendedTracks: remainingRecommended,
-    );
-
-    ref.read(playerStateProvider.notifier).skipToAbsoluteIndex(newHistory.length).then((_) {
-      _isSyncing = false;
-    });
-
-    ref.read(syncPlayerStateUseCaseProvider).call(
-          trackId: targetItem.track.id,
-          queue: remainingRecommended.map((e) => e.toJson()).toList(),
-        );
+    if (globalIndexInUpcoming != -1) {
+      playFromQueue(globalIndexInUpcoming);
+    }
   }
 
   void skipToIndex(int index) {
@@ -354,7 +288,6 @@ class QueueNotifier extends Notifier<AppQueueState> {
       ...state.history,
       if (state.currentTrack != null) state.currentTrack!,
       ...state.upcomingTracks,
-      ...state.recommendedTracks,
     ];
 
     if (index < 0 || index >= allItems.length) return;
@@ -365,16 +298,13 @@ class QueueNotifier extends Notifier<AppQueueState> {
     _isSyncing = true;
 
     final newHistory = allItems.sublist(0, index);
-    final allRemaining = allItems.sublist(index + 1);
-    final nextUpcoming = allRemaining.where((i) => i.sourceType != 'related').toList();
-    final nextRecommended = allRemaining.where((i) => i.sourceType == 'related').toList();
+    final newUpcoming = allItems.sublist(index + 1);
 
     state = state.copyWith(
       history: newHistory,
       currentTrack: targetItem,
-      upcomingTracks: nextUpcoming,
-      unShuffledUpcomingTracks: nextUpcoming,
-      recommendedTracks: nextRecommended,
+      upcomingTracks: newUpcoming,
+      unShuffledUpcomingTracks: newUpcoming,
     );
 
     ref.read(playerStateProvider.notifier).skipToAbsoluteIndex(index).then((_) {
@@ -383,7 +313,52 @@ class QueueNotifier extends Notifier<AppQueueState> {
 
     ref.read(syncPlayerStateUseCaseProvider).call(
       trackId: targetItem.track.id,
-      queue: [...nextUpcoming, ...nextRecommended].map((e) => e.toJson()).toList(),
+      queue: newUpcoming.map((e) => e.toJson()).toList(),
     );
+  }
+
+  Future<void> addToNextUp({
+    required String sourceType,
+    String? sourceId,
+  }) async {
+    try {
+      final response = await ref.read(fetchQueueContextUseCaseProvider).call(
+        interactionType: 'next_up',
+        sourceType: sourceType,
+        sourceId: sourceId,
+      );
+
+      final data = response['data'] as Map<String, dynamic>;
+      final rawQueue = data['queue'] as List<dynamic>;
+
+      final newItems =
+          rawQueue.map((item) => QueueItem.fromJson(item as Map<String, dynamic>)).toList();
+
+      // Insert at the front of upcoming, but BEFORE recommended tracks if they exist
+      final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
+      final firstRecommendedIndex = currentUpcoming.indexWhere((t) => t.isRecommended);
+      
+      if (firstRecommendedIndex == -1) {
+        currentUpcoming.insertAll(0, newItems);
+      } else {
+        currentUpcoming.insertAll(firstRecommendedIndex, newItems);
+      }
+
+      state = state.copyWith(
+        upcomingTracks: currentUpcoming,
+        unShuffledUpcomingTracks: currentUpcoming,
+      );
+      
+      // Update native player
+      final allTracks = [
+        ...state.history.map((e) => e.track),
+        state.currentTrack!.track,
+        ...state.upcomingTracks.map((e) => e.track),
+      ];
+      await ref.read(playerStateProvider.notifier).updateNativeQueue(allTracks);
+      
+    } catch (e) {
+      // Fallback
+    }
   }
 }

@@ -51,6 +51,7 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
   @override
   Widget build(BuildContext context) {
     final queue = ref.watch(queueStateProvider);
+    // Continuous list: History + Current + Upcoming (which now includes Recommendations)
     final allItems = [
       ...queue.history,
       if (queue.currentTrack != null) queue.currentTrack!,

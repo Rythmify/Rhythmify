@@ -27,10 +27,13 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
     
     final history = queueState.history;
     final current = queueState.currentTrack;
-    final upcoming = queueState.upcomingTracks;
-    final recommended = queueState.recommendedTracks;
+    final allUpcoming = queueState.upcomingTracks;
 
-    if (current == null && upcoming.isEmpty && history.isEmpty && recommended.isEmpty) {
+    // Split upcoming into manual vs auto-discovery
+    final manualUpcoming = allUpcoming.where((t) => !t.isRecommended).toList();
+    final recommended = allUpcoming.where((t) => t.isRecommended).toList();
+
+    if (current == null && allUpcoming.isEmpty && history.isEmpty) {
       return Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
@@ -88,14 +91,11 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                 (context, index) {
                   final item = history[index];
                   return Opacity(
-                    opacity: 0.5, // Muted style for history
+                    opacity: 0.5,
                     child: _QueueTile(
                       item: item,
                       isHistory: true,
-                      onTap: () {
-                        // Logic to skip back to a history item could be added
-                        // For now we follow the requirement of visual distinction
-                      },
+                      onTap: () {},
                     ),
                   );
                 },
@@ -123,13 +123,13 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               child: _QueueTile(
                 item: current,
                 isActive: true,
-                onTap: () => Navigator.pop(context), // Go back to player
+                onTap: () => Navigator.pop(context),
               ),
             ),
           ],
 
           // --- UPCOMING SECTION ---
-          if (upcoming.isNotEmpty) ...[
+          if (manualUpcoming.isNotEmpty) ...[
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -143,17 +143,13 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                 ),
               ),
             ),
-            // We use a regular ReorderableListView via SliverToBoxAdapter
-            // OR we can use ReorderableSliverList if available.
-            // Using a simple SliverList for upcoming to keep it smooth,
-            // Reordering usually happens in a dedicated mode or long press.
             SliverReorderableList(
-              itemCount: upcoming.length,
+              itemCount: manualUpcoming.length,
               onReorder: (oldIndex, newIndex) {
                 ref.read(queueStateProvider.notifier).reorder(oldIndex, newIndex);
               },
               itemBuilder: (context, index) {
-                final item = upcoming[index];
+                final item = manualUpcoming[index];
                 return ReorderableDelayedDragStartListener(
                   key: ValueKey(item.queueItemId ?? item.track.id + index.toString()),
                   index: index,

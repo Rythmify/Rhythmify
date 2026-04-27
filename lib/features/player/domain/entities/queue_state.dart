@@ -41,7 +41,6 @@ class AppQueueState extends Equatable {
   final QueueItem? currentTrack;
   final List<QueueItem> upcomingTracks;
   final List<QueueItem> unShuffledUpcomingTracks;
-  final List<QueueItem> recommendedTracks;
   final bool isShuffled;
   final bool hasMore;
   final int currentPage;
@@ -53,7 +52,6 @@ class AppQueueState extends Equatable {
     this.currentTrack,
     this.upcomingTracks = const [],
     this.unShuffledUpcomingTracks = const [],
-    this.recommendedTracks = const [],
     this.isShuffled = false,
     this.hasMore = false,
     this.currentPage = 1,
@@ -66,7 +64,6 @@ class AppQueueState extends Equatable {
     QueueItem? currentTrack,
     List<QueueItem>? upcomingTracks,
     List<QueueItem>? unShuffledUpcomingTracks,
-    List<QueueItem>? recommendedTracks,
     bool? isShuffled,
     bool? hasMore,
     int? currentPage,
@@ -79,7 +76,6 @@ class AppQueueState extends Equatable {
       upcomingTracks: upcomingTracks ?? this.upcomingTracks,
       unShuffledUpcomingTracks:
           unShuffledUpcomingTracks ?? this.unShuffledUpcomingTracks,
-      recommendedTracks: recommendedTracks ?? this.recommendedTracks,
       isShuffled: isShuffled ?? this.isShuffled,
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
@@ -95,7 +91,6 @@ class AppQueueState extends Equatable {
     currentTrack,
     upcomingTracks,
     unShuffledUpcomingTracks,
-    recommendedTracks,
     isShuffled,
     hasMore,
     currentPage,

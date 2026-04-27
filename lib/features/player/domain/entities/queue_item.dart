@@ -8,6 +8,7 @@ class QueueItem extends Equatable {
   final String queueBucket; // 'next_up' or 'context'
   final String? sourceType;
   final String? sourceId;
+  final bool isRecommended;
 
   const QueueItem({
     this.queueItemId,
@@ -15,6 +16,7 @@ class QueueItem extends Equatable {
     this.queueBucket = 'context',
     this.sourceType,
     this.sourceId,
+    this.isRecommended = false,
   });
 
   factory QueueItem.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class QueueItem extends Equatable {
       queueBucket: json['queue_bucket'] as String? ?? 'context',
       sourceType: json['source_type'] as String?,
       sourceId: json['source_id'] as String?,
+      isRecommended: json['is_recommended'] as bool? ?? false,
     );
   }
 
@@ -35,6 +38,7 @@ class QueueItem extends Equatable {
       'queue_bucket': queueBucket,
       'source_type': sourceType,
       'source_id': sourceId,
+      'is_recommended': isRecommended,
     };
   }
 
@@ -44,6 +48,7 @@ class QueueItem extends Equatable {
     String? queueBucket,
     String? sourceType,
     String? sourceId,
+    bool? isRecommended,
   }) {
     return QueueItem(
       queueItemId: queueItemId ?? this.queueItemId,
@@ -51,6 +56,7 @@ class QueueItem extends Equatable {
       queueBucket: queueBucket ?? this.queueBucket,
       sourceType: sourceType ?? this.sourceType,
       sourceId: sourceId ?? this.sourceId,
+      isRecommended: isRecommended ?? this.isRecommended,
     );
   }
 
@@ -61,5 +67,6 @@ class QueueItem extends Equatable {
     queueBucket,
     sourceType,
     sourceId,
+    isRecommended,
   ];
 }

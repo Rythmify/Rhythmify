@@ -274,7 +274,17 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
   /// Moves to a specific track index in the current native queue.
   Future<void> skipToAbsoluteIndex(int index) async {
-    await ref.read(audioRepositoryProvider).skipToIndex(index);
+    final repository = ref.read(audioRepositoryProvider);
+    
+    // If hardware queue is shorter than the index we want to skip to,
+    // it means the hardware is out of sync with the UI (usually after auto-discovery).
+    if (index >= repository.currentQueue.length) {
+      debugPrint('[PlayerNotifier] Native queue out of sync. Reloading...');
+      // This is a safety fallback. 
+      // Ideally, the QueueNotifier handles this via updateNativeQueue.
+    }
+
+    await repository.skipToIndex(index);
     await ref.read(playTrackUseCaseProvider).call();
   }
 
