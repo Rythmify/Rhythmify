@@ -114,7 +114,8 @@ class ProfileModel extends ProfileEntity {
     if (fallbackKey != null && json.containsKey(fallbackKey)) {
       return parse(json[fallbackKey]);
     }
-    if (secondaryFallbackKey != null && json.containsKey(secondaryFallbackKey)) {
+    if (secondaryFallbackKey != null &&
+        json.containsKey(secondaryFallbackKey)) {
       return parse(json[secondaryFallbackKey]);
     }
     return 0;

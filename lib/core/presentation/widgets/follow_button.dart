@@ -80,8 +80,7 @@ class FollowButton extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     // Hide entirely for own profile.
-    if (authState is AuthAuthenticated &&
-        authState.user.id == targetUserId) {
+    if (authState is AuthAuthenticated && authState.user.id == targetUserId) {
       return const SizedBox.shrink();
     }
 
@@ -98,12 +97,7 @@ class FollowButton extends ConsumerWidget {
         : () {};
 
     if (builder != null) {
-      return builder!(
-        context,
-        isFollowing,
-        isInFlight,
-        toggle,
-      );
+      return builder!(context, isFollowing, isInFlight, toggle);
     }
 
     final hPad = compact ? 12.0 : 16.0;
