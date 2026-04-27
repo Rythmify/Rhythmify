@@ -76,8 +76,9 @@ class _ReportPageState extends State<ReportPage> {
   Future<void> _submitReport() async {
     if (!_formKey.currentState!.validate() ||
         _selectedReason == null ||
-        !_isConsentChecked)
+        !_isConsentChecked) {
       return;
+    }
 
     final selectedViolations = _violations.entries
         .where((e) => e.value)
@@ -99,17 +100,22 @@ class _ReportPageState extends State<ReportPage> {
     try {
       await _repository.submitReport(request);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted successfully')),
-      );
-
-      Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Report submitted successfully')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

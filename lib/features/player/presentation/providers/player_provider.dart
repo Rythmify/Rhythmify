@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/player_state.dart';
 import '../../domain/entities/history_record.dart';
@@ -237,15 +238,38 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
   /// Internal helper to fetch full track metadata and waveform data.
   Future<void> _updateTrackInBackground(String trackId) async {
-    final results = await Future.wait([
-      ref.read(getTrackDetailsUseCaseProvider).call(trackId),
-      ref.read(getWaveformUseCaseProvider).call(trackId),
-    ]);
+    try {
+      // Run both calls concurrently.
+      // Note: If one fails, Future.wait will throw immediately.
+      // We wrap individual calls to allow partial success if possible,
+      // or just catch the whole thing.
+      final results = await Future.wait([
+        ref.read(getTrackDetailsUseCaseProvider).call(trackId).catchError((e) {
+          debugPrint('[PlayerNotifier] Failed to fetch track details for $trackId: $e');
+          return state.currentTrack!; // Fallback to existing track info
+        }),
+        ref.read(getWaveformUseCaseProvider).call(trackId).catchError((e) {
+          debugPrint('[PlayerNotifier] Failed to fetch waveform for $trackId: $e');
+          return <double>[]; // Fallback to empty waveform
+        }),
+      ]);
 
-    final fullTrack = results[0] as Track;
-    final waveform = results[1] as List<double>;
-    final updatedTrack = fullTrack.copyWith(waveformData: waveform);
-    await ref.read(updateTrackInfoUseCaseProvider).call(trackId, updatedTrack);
+      final fullTrack = results[0] as Track;
+      final waveform = results[1] as List<double>;
+
+      // Only update if we actually got new useful info
+      if (waveform.isNotEmpty || fullTrack != state.currentTrack) {
+        final updatedTrack = fullTrack.copyWith(
+          waveformData: waveform.isNotEmpty ? waveform : fullTrack.waveformData,
+        );
+        await ref
+            .read(updateTrackInfoUseCaseProvider)
+            .call(trackId, updatedTrack);
+      }
+    } catch (e) {
+      // Catch-all for any other unexpected errors in the background update flow
+      debugPrint('[PlayerNotifier] Critical error in _updateTrackInBackground: $e');
+    }
   }
 
   /// Toggles between playing and paused states.

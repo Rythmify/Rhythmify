@@ -1,6 +1,7 @@
 // lib/features/playlist/data/datasources/playlist_remote_datasource.dart
 
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
@@ -903,17 +904,17 @@ class PlaylistRemoteDatasource {
   // ============================================================
   void _log(String message) {
     // ignore: avoid_print
-    print('[DATASOURCE] $message');
+    debugPrint('[DATASOURCE] $message');
   }
 
   void _logError(String context, DioException e) {
     // ignore: avoid_print
-    print('[DATASOURCE] ❌ ERROR in $context');
+    debugPrint('[DATASOURCE] ❌ ERROR in $context');
     // ignore: avoid_print
-    print('[DATASOURCE]    Status: ${e.response?.statusCode}');
+    debugPrint('[DATASOURCE]    Status: ${e.response?.statusCode}');
     // ignore: avoid_print
-    print('[DATASOURCE]    Message: ${e.message}');
+    debugPrint('[DATASOURCE]    Message: ${e.message}');
     // ignore: avoid_print
-    print('[DATASOURCE]    Response body: ${e.response?.data}');
+    debugPrint('[DATASOURCE]    Response body: ${e.response?.data}');
   }
 }

@@ -10,7 +10,6 @@ import 'package:rythmify/features/comments/presentation/widgets/floating_comment
 import '../widgets/player_action_bar.dart';
 import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/domain/entities/track.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// The main immersive playback page of the application.

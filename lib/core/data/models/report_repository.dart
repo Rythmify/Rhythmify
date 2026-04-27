@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../data/models/report_request.dart';
 
 class ReportRepository {
@@ -15,8 +16,8 @@ class ReportRepository {
       }
     } catch (e) {
       if (e is DioException) {
-        print('STATUS: ${e.response?.statusCode}');
-        print('DATA: ${e.response?.data}');
+        debugPrint('STATUS: ${e.response?.statusCode}');
+        debugPrint('DATA: ${e.response?.data}');
       }
 
       throw Exception('Something went wrong.');
