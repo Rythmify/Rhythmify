@@ -152,11 +152,14 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                 return ReorderableDelayedDragStartListener(
                   key: ValueKey(item.queueItemId),
                   index: index,
-                  child: _QueueTile(
-                    item: item,
-                    onTap: () {
-                      ref.read(queueStateProvider.notifier).playFromQueue(index);
-                    },
+                  child: Material(
+                    color: Colors.transparent,
+                    child: _QueueTile(
+                      item: item,
+                      onTap: () {
+                        ref.read(queueStateProvider.notifier).playFromQueue(index);
+                      },
+                    ),
                   ),
                 );
               },

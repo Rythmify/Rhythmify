@@ -33,10 +33,13 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(likesProvider.notifier).load();
-    }
+    if (!_scrollController.hasClients) return;
+    try {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(likesProvider.notifier).load();
+      }
+    } catch (_) {}
   }
 
   @override

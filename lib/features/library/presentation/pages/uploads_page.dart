@@ -50,6 +50,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
 
   /// Triggers paginated load when the user scrolls within 200 px of the bottom.
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref.read(uploadsProvider.notifier).load();

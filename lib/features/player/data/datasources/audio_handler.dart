@@ -106,7 +106,23 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> updateTrackInfo(String id, Track updatedTrack) async {
     final index = _currentQueue.indexWhere((t) => t.id == id);
     if (index != -1) {
+      final oldTrack = _currentQueue[index];
       _currentQueue[index] = updatedTrack;
+
+      // --- DYNAMIC SOURCE REPLACEMENT (FIX FOR SILENT ARRAY SHIFT) ---
+      // If the track previously had no URL (was a placeholder) and now has one,
+      // hot-swap the AudioSource in the native playlist so the hardware
+      // index remains perfectly aligned with the UI index.
+      final oldUrl = (oldTrack.streamUrl ?? oldTrack.audioUrl).trim();
+      final newUrl = (updatedTrack.streamUrl ?? updatedTrack.audioUrl).trim();
+
+      if (oldUrl.isEmpty && newUrl.isNotEmpty) {
+        final newSource = _convertToAudioSources([updatedTrack], useCache: false).first;
+        if (index < _playlist.length) {
+          await _playlist.removeAt(index);
+          await _playlist.insert(index, newSource);
+        }
+      }
 
       if (_player.currentIndex == index) {
         mediaItem.add(
@@ -211,7 +227,14 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
     for (final track in tracks) {
       final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
-      if (rawUrl.isEmpty) continue;
+      
+      if (rawUrl.isEmpty) {
+        // CRITICAL FIX: Never drop tracks. Inject a silent/dummy placeholder 
+        // to maintain perfect 1:1 index alignment with the UI state.
+        // This placeholder will be hot-swapped via JIT resolution before playback.
+        sources.add(AudioSource.uri(Uri.parse('asset:///assets/audio/empty.mp3'), tag: track.id));
+        continue;
+      }
 
       if (rawUrl.startsWith('assets/')) {
         sources.add(AudioSource.asset(rawUrl, tag: track.id));
@@ -225,6 +248,8 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
             // Use regular URI source for background recommendations to avoid heavy caching overhead immediately
             sources.add(AudioSource.uri(resolvedUri, tag: track.id));
           }
+        } else {
+           sources.add(AudioSource.uri(Uri.parse('asset:///assets/audio/empty.mp3'), tag: track.id));
         }
       }
     }

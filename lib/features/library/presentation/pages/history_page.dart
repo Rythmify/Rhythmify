@@ -33,7 +33,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   void _onScroll() {
-    if (!mounted) return;
+    if (!mounted || !_scrollController.hasClients) return;
     try {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {

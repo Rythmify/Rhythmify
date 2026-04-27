@@ -47,6 +47,7 @@ class AudioRepositoryImpl implements AudioRepository {
         _updateState(
           _currentState.copyWith(
             currentTrack: _audioHandler.currentQueue[index],
+            queueIndex: index,
           ),
         );
       }
