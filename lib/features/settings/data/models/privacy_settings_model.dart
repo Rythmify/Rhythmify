@@ -42,10 +42,10 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
   }
 
   PrivacySettingsEntity toDomain() => PrivacySettingsEntity(
-        isPrivate: isPrivate,
-        receiveMessageFromAnyone: receiveMessageFromAnyone,
-        showActivitiesInDiscovery: showActivitiesInDiscovery,
-        showAsTopFan: showAsTopFan,
-        showTopFansOnTracks: showTopFansOnTracks,
-      );
+    isPrivate: isPrivate,
+    receiveMessageFromAnyone: receiveMessageFromAnyone,
+    showActivitiesInDiscovery: showActivitiesInDiscovery,
+    showAsTopFan: showAsTopFan,
+    showTopFansOnTracks: showTopFansOnTracks,
+  );
 }

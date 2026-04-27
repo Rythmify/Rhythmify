@@ -12,37 +12,42 @@ class SettingsDatasourcesImpl implements SettingsRemoteDatasources {
   Future<PrivacySettingsModel> getPrivacySettings() async {
     final response = await _apiClient.dio.get('/users/me/privacy-settings');
     return PrivacySettingsModel.fromJson(
-        response.data['data'] as Map<String, dynamic>);
+      response.data['data'] as Map<String, dynamic>,
+    );
   }
 
   @override
   Future<PrivacySettingsModel> updatePrivacySettings(
-      PrivacySettingsModel privacy) async {
+    PrivacySettingsModel privacy,
+  ) async {
     final response = await _apiClient.dio.patch(
       '/users/me/privacy-settings',
       data: privacy.toJson(),
     );
     return PrivacySettingsModel.fromJson(
-        response.data['data'] as Map<String, dynamic>);
+      response.data['data'] as Map<String, dynamic>,
+    );
   }
 
   @override
   Future<NotificationPreferencesModel> getNotificationPreferences() async {
-    final response =
-        await _apiClient.dio.get('/notifications/preferences');
+    final response = await _apiClient.dio.get('/notifications/preferences');
     return NotificationPreferencesModel.fromJson(
-        response.data['data'] as Map<String, dynamic>);
+      response.data['data'] as Map<String, dynamic>,
+    );
   }
 
   @override
   Future<NotificationPreferencesModel> updateNotificationPreferences(
-      NotificationPreferencesModel notificationPreferences) async {
+    NotificationPreferencesModel notificationPreferences,
+  ) async {
     final response = await _apiClient.dio.patch(
       '/notifications/preferences',
       data: notificationPreferences.toJson(),
     );
     return NotificationPreferencesModel.fromJson(
-        response.data['data'] as Map<String, dynamic>);
+      response.data['data'] as Map<String, dynamic>,
+    );
   }
 
   @override

@@ -3,8 +3,12 @@ import 'package:rythmify/features/settings/data/models/privacy_settings_model.da
 
 abstract class SettingsRemoteDatasources {
   Future<PrivacySettingsModel> getPrivacySettings();
-  Future<PrivacySettingsModel> updatePrivacySettings(PrivacySettingsModel privacy);
+  Future<PrivacySettingsModel> updatePrivacySettings(
+    PrivacySettingsModel privacy,
+  );
   Future<NotificationPreferencesModel> getNotificationPreferences();
-  Future<NotificationPreferencesModel> updateNotificationPreferences(NotificationPreferencesModel notificationPreferences);
+  Future<NotificationPreferencesModel> updateNotificationPreferences(
+    NotificationPreferencesModel notificationPreferences,
+  );
   Future<void> deleteMyAccount();
 }

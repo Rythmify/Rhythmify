@@ -12,7 +12,7 @@ class InboxSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final privacyAsync = ref.watch(privacySettingsProvider); 
+    final privacyAsync = ref.watch(privacySettingsProvider);
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: const Color(0xFF3A3A3A),
@@ -21,32 +21,39 @@ class InboxSettingsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(title: const Text('Inbox Settings'), centerTitle: false),
         body: privacyAsync.when(
-          loading: ()=>const Center(child: CircularProgressIndicator()),
-          error: (e,_)=>Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white)),),
-          data:(data)=> Column(
-          children: [
-            SwitchTileWidget(
-              key: Key('inbox_tile'),
-              title: 'Receive messages from anyone',
-              subtitle:
-                  'If you turn this setting off, only people you follow will be able to send you messages',
-              initSwitchValue: data.receiveMessageFromAnyone,
-              onSwitchChanged: (value) {
-                ref.read(privacySettingsProvider.notifier).save(data.copyWith(receiveMessageFromAnyone: value));
-              },
-              onTap: () {},
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Text(
+              'Error: $e',
+              style: const TextStyle(color: Colors.white),
             ),
-            const SizedBox(height: 24),
-            SettingsOptionsTileWidget(
-              key: Key('inbox_notification_settings_tile'),
-              title: 'Notification settings',
-              onTap: () {
-                context.push('/library/settings/notifications');
-              },
-            ),
-          ],
+          ),
+          data: (data) => Column(
+            children: [
+              SwitchTileWidget(
+                key: Key('inbox_tile'),
+                title: 'Receive messages from anyone',
+                subtitle:
+                    'If you turn this setting off, only people you follow will be able to send you messages',
+                initSwitchValue: data.receiveMessageFromAnyone,
+                onSwitchChanged: (value) {
+                  ref
+                      .read(privacySettingsProvider.notifier)
+                      .save(data.copyWith(receiveMessageFromAnyone: value));
+                },
+                onTap: () {},
+              ),
+              const SizedBox(height: 24),
+              SettingsOptionsTileWidget(
+                key: Key('inbox_notification_settings_tile'),
+                title: 'Notification settings',
+                onTap: () {
+                  context.push('/library/settings/notifications');
+                },
+              ),
+            ],
+          ),
         ),
-        )
       ),
     );
   }

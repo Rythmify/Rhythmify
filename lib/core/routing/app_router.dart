@@ -480,7 +480,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                             builder: (context, state) =>
                                 const DeleteAccountScreen(),
                           ),
-                        ]
+                        ],
                       ),
                       GoRoute(
                         path: 'basic-settings',
@@ -496,7 +496,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                                 builder: (context, state) =>
                                     const UpgradeIconScreen(),
                               ),
-                            ]
+                            ],
                           ),
                         ],
                       ),

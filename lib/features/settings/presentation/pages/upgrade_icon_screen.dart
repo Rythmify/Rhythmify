@@ -9,9 +9,8 @@ class UpgradeIconScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _UpgradeIconState();
 }
 
-
-class _UpgradeIconState extends State<UpgradeIconScreen>{
-  static const iconPaths=[
+class _UpgradeIconState extends State<UpgradeIconScreen> {
+  static const iconPaths = [
     'assets/icons/app_icon_chrome.png',
     'assets/icons/app_icon_rose_gold.png',
     'assets/icons/app_icon_silver.png',
@@ -27,7 +26,8 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned( //the x icon, top right
+            Positioned(
+              //the x icon, top right
               top: 12,
               right: 12,
               child: GestureDetector(
@@ -37,26 +37,28 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                   height: 36,
                   decoration: BoxDecoration(
                     color: Color(0xFF2A2A2A),
-                    shape: BoxShape.circle
+                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 20)
+                  child: const Icon(Icons.close, color: Colors.white, size: 20),
                 ),
-              )
+              ),
             ),
 
-            Column( //page content
+            Column(
+              //page content
               children: [
                 const SizedBox(height: 60),
-                Center( //the icon carousal
+                Center(
+                  //the icon carousal
                   child: IconCarousalWidget(
                     key: Key('premium_icons_carousal'),
-                    iconPaths: iconPaths
+                    iconPaths: iconPaths,
                   ),
                 ),
 
                 //const Spacer(),
                 const SizedBox(height: 130),
-                
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
@@ -68,7 +70,7 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                           color: Colors.white,
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          height: 1.1
+                          height: 1.1,
                         ),
                       ),
 
@@ -77,25 +79,26 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                         children: [
                           const Text(
                             'Cancel anytime.',
-                            style: TextStyle(color: Colors.white,fontSize: 14),
+                            style: TextStyle(color: Colors.white, fontSize: 14),
                           ),
                           GestureDetector(
-                            onTap:(){},
+                            onTap: () {},
                             child: const Text(
                               'Restrictions apply',
                               style: TextStyle(
                                 color: Colors.blueAccent,
                                 fontSize: 14,
                                 decoration: TextDecoration.underline,
-                                decorationColor: Colors.blueAccent
+                                decorationColor: Colors.blueAccent,
                               ),
                             ),
-                          )
-                        ]
+                          ),
+                        ],
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      ElevatedButton( //the button
+                      ElevatedButton(
+                        //the button
                         key: Key('app_icon_subscribe_button'),
                         onPressed: () => context.push('/upgrade'),
                         style: ElevatedButton.styleFrom(
@@ -103,14 +106,17 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                           foregroundColor: Colors.black,
                           minimumSize: const Size(double.infinity, 52),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          elevation: 0
+                          elevation: 0,
                         ),
                         child: const Text(
                           'Get Premium',
-                          style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),
-                        )
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 16),
@@ -122,20 +128,20 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.bold
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 32)
+                      const SizedBox(height: 32),
                     ],
                   ),
-                )
+                ),
               ],
-            )
+            ),
           ],
-        )
+        ),
       ),
     );
   }

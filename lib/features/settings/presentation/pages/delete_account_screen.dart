@@ -11,7 +11,7 @@ class DeleteAccountScreen extends ConsumerWidget {
   const DeleteAccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Delete account'), centerTitle: false),
       body: Column(
@@ -81,7 +81,7 @@ class DeleteAccountScreen extends ConsumerWidget {
                 await ref.read(settingsRepositoryProvider).deleteMyAccount();
                 await ref.read(playerStateProvider.notifier).stopPlayback();
                 await ref.read(authProvider.notifier).signOutUser();
-                if(context.mounted){
+                if (context.mounted) {
                   context.go('/onboarding');
                 }
               }

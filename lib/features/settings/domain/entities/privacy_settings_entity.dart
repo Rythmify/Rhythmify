@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class PrivacySettingsEntity extends Equatable{
+class PrivacySettingsEntity extends Equatable {
   final bool isPrivate;
   final bool receiveMessageFromAnyone;
   final bool showActivitiesInDiscovery;
@@ -11,7 +11,7 @@ class PrivacySettingsEntity extends Equatable{
     required this.receiveMessageFromAnyone,
     required this.showActivitiesInDiscovery,
     required this.showAsTopFan,
-    required this.showTopFansOnTracks
+    required this.showTopFansOnTracks,
   });
 
   PrivacySettingsEntity copyWith({
@@ -19,14 +19,16 @@ class PrivacySettingsEntity extends Equatable{
     bool? receiveMessageFromAnyone,
     bool? showActivitiesInDiscovery,
     bool? showAsTopFan,
-    bool? showTopFansOnTracks
-  }){
+    bool? showTopFansOnTracks,
+  }) {
     return PrivacySettingsEntity(
-      isPrivate: isPrivate?? this.isPrivate,
-      receiveMessageFromAnyone: receiveMessageFromAnyone?? this.receiveMessageFromAnyone,
-      showActivitiesInDiscovery: showActivitiesInDiscovery?? this.showActivitiesInDiscovery,
-      showAsTopFan: showAsTopFan?? this.showAsTopFan,
-      showTopFansOnTracks: showTopFansOnTracks?? this.showTopFansOnTracks
+      isPrivate: isPrivate ?? this.isPrivate,
+      receiveMessageFromAnyone:
+          receiveMessageFromAnyone ?? this.receiveMessageFromAnyone,
+      showActivitiesInDiscovery:
+          showActivitiesInDiscovery ?? this.showActivitiesInDiscovery,
+      showAsTopFan: showAsTopFan ?? this.showAsTopFan,
+      showTopFansOnTracks: showTopFansOnTracks ?? this.showTopFansOnTracks,
     );
   }
 
@@ -36,6 +38,6 @@ class PrivacySettingsEntity extends Equatable{
     receiveMessageFromAnyone,
     showActivitiesInDiscovery,
     showAsTopFan,
-    showTopFansOnTracks
+    showTopFansOnTracks,
   ];
 }

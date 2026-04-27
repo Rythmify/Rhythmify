@@ -53,18 +53,15 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
       newFollowerPush: json['new_follower_push'] as bool? ?? true,
       newFollowerEmail: json['new_follower_email'] as bool? ?? true,
       repostOfYourPostPush: json['repost_of_your_post_push'] as bool? ?? true,
-      repostOfYourPostEmail:
-          json['repost_of_your_post_email'] as bool? ?? true,
-      newPostByFollowedPush:
-          json['new_post_by_followed_push'] as bool? ?? true,
+      repostOfYourPostEmail: json['repost_of_your_post_email'] as bool? ?? true,
+      newPostByFollowedPush: json['new_post_by_followed_push'] as bool? ?? true,
       newPostByFollowedEmail:
           json['new_post_by_followed_email'] as bool? ?? true,
       likesAndPlaysPush: json['likes_and_plays_push'] as bool? ?? true,
       likesAndPlaysEmail: json['likes_and_plays_email'] as bool? ?? true,
       commentOnPostPush: json['comment_on_post_push'] as bool? ?? true,
       commentOnPostEmail: json['comment_on_post_email'] as bool? ?? true,
-      recommendedContentPush:
-          json['recommended_content_push'] as bool? ?? true,
+      recommendedContentPush: json['recommended_content_push'] as bool? ?? true,
       recommendedContentEmail:
           json['recommended_content_email'] as bool? ?? true,
       newMessagePush: json['new_message_push'] as bool? ?? true,
@@ -76,8 +73,7 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
           json['surveys_and_feedback_push'] as bool? ?? true,
       surveysAndFeedbackEmail:
           json['surveys_and_feedback_email'] as bool? ?? true,
-      promotionalContentPush:
-          json['promotional_content_push'] as bool? ?? true,
+      promotionalContentPush: json['promotional_content_push'] as bool? ?? true,
       promotionalContentEmail:
           json['promotional_content_email'] as bool? ?? true,
       newsletterEmail: json['newsletter_email'] as bool? ?? true,
@@ -112,7 +108,8 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
   }
 
   factory NotificationPreferencesModel.fromEntity(
-      NotificationPreferencesEntity entity) {
+    NotificationPreferencesEntity entity,
+  ) {
     return NotificationPreferencesModel(
       newFollowerPush: entity.newFollowerPush,
       newFollowerEmail: entity.newFollowerEmail,
@@ -140,27 +137,27 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
   }
 
   NotificationPreferencesEntity toDomain() => NotificationPreferencesEntity(
-        newFollowerPush: newFollowerPush,
-        newFollowerEmail: newFollowerEmail,
-        repostOfYourPostPush: repostOfYourPostPush,
-        repostOfYourPostEmail: repostOfYourPostEmail,
-        newPostByFollowedPush: newPostByFollowedPush,
-        newPostByFollowedEmail: newPostByFollowedEmail,
-        likesAndPlaysPush: likesAndPlaysPush,
-        likesAndPlaysEmail: likesAndPlaysEmail,
-        commentOnPostPush: commentOnPostPush,
-        commentOnPostEmail: commentOnPostEmail,
-        recommendedContentPush: recommendedContentPush,
-        recommendedContentEmail: recommendedContentEmail,
-        newMessagePush: newMessagePush,
-        newMessageEmail: newMessageEmail,
-        messagesFrom: messagesFrom,
-        featureUpdatesPush: featureUpdatesPush,
-        featureUpdatesEmail: featureUpdatesEmail,
-        surveysAndFeedbackPush: surveysAndFeedbackPush,
-        surveysAndFeedbackEmail: surveysAndFeedbackEmail,
-        promotionalContentPush: promotionalContentPush,
-        promotionalContentEmail: promotionalContentEmail,
-        newsletterEmail: newsletterEmail,
-      );
+    newFollowerPush: newFollowerPush,
+    newFollowerEmail: newFollowerEmail,
+    repostOfYourPostPush: repostOfYourPostPush,
+    repostOfYourPostEmail: repostOfYourPostEmail,
+    newPostByFollowedPush: newPostByFollowedPush,
+    newPostByFollowedEmail: newPostByFollowedEmail,
+    likesAndPlaysPush: likesAndPlaysPush,
+    likesAndPlaysEmail: likesAndPlaysEmail,
+    commentOnPostPush: commentOnPostPush,
+    commentOnPostEmail: commentOnPostEmail,
+    recommendedContentPush: recommendedContentPush,
+    recommendedContentEmail: recommendedContentEmail,
+    newMessagePush: newMessagePush,
+    newMessageEmail: newMessageEmail,
+    messagesFrom: messagesFrom,
+    featureUpdatesPush: featureUpdatesPush,
+    featureUpdatesEmail: featureUpdatesEmail,
+    surveysAndFeedbackPush: surveysAndFeedbackPush,
+    surveysAndFeedbackEmail: surveysAndFeedbackEmail,
+    promotionalContentPush: promotionalContentPush,
+    promotionalContentEmail: promotionalContentEmail,
+    newsletterEmail: newsletterEmail,
+  );
 }

@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/settings/domain/entities/privacy_settings_entity.dart';
 import 'package:rythmify/features/settings/presentation/providers/settings_providers.dart';
 
-final privacySettingsProvider=AsyncNotifierProvider<PrivacySettingsNotifier,PrivacySettingsEntity>(
-  PrivacySettingsNotifier.new
-);
+final privacySettingsProvider =
+    AsyncNotifierProvider<PrivacySettingsNotifier, PrivacySettingsEntity>(
+      PrivacySettingsNotifier.new,
+    );
 
-class PrivacySettingsNotifier
-    extends AsyncNotifier<PrivacySettingsEntity> {
+class PrivacySettingsNotifier extends AsyncNotifier<PrivacySettingsEntity> {
   @override
   Future<PrivacySettingsEntity> build() {
     return ref.watch(settingsRepositoryProvider).getPrivacySettings();

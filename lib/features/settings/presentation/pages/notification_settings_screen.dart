@@ -53,7 +53,10 @@ class NotificationsSettingsScreen extends ConsumerWidget {
           return ListView(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Text(
                   'Push notifications',
                   style: const TextStyle(
@@ -66,89 +69,104 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               SwitchTileWidget(
                 key: const Key('push_enable_all'),
                 title: 'Enable all',
-                subtitle: 'Turn on all mobile notifications or select which to receive.',
+                subtitle:
+                    'Turn on all mobile notifications or select which to receive.',
                 initSwitchValue: _allPushEnabled(prefs),
-                onSwitchChanged: (value) => save(prefs.copyWith(
-                  newFollowerPush: value,
-                  repostOfYourPostPush: value,
-                  newPostByFollowedPush: value,
-                  likesAndPlaysPush: value,
-                  commentOnPostPush: value,
-                  featureUpdatesPush: value,
-                  surveysAndFeedbackPush: value,
-                  promotionalContentPush: value,
-                  recommendedContentPush: value,
-                )),
+                onSwitchChanged: (value) => save(
+                  prefs.copyWith(
+                    newFollowerPush: value,
+                    repostOfYourPostPush: value,
+                    newPostByFollowedPush: value,
+                    likesAndPlaysPush: value,
+                    commentOnPostPush: value,
+                    featureUpdatesPush: value,
+                    surveysAndFeedbackPush: value,
+                    promotionalContentPush: value,
+                    recommendedContentPush: value,
+                  ),
+                ),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_new_follower'),
                 title: 'New follower',
                 initSwitchValue: prefs.newFollowerPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(newFollowerPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newFollowerPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_repost_of_your_post'),
                 title: 'Repost of your post',
                 initSwitchValue: prefs.repostOfYourPostPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(repostOfYourPostPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(repostOfYourPostPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_new_post_by_followed_user'),
                 title: 'New post by followed user',
                 initSwitchValue: prefs.newPostByFollowedPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(newPostByFollowedPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newPostByFollowedPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_like_on_your_post'),
                 title: 'Like on your post',
                 initSwitchValue: prefs.likesAndPlaysPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(likesAndPlaysPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(likesAndPlaysPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_comment_on_your_post'),
                 title: 'Comment on your post',
                 initSwitchValue: prefs.commentOnPostPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(commentOnPostPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(commentOnPostPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_rythmify_feature_updates'),
                 title: 'Rythmify feature updates and education',
                 initSwitchValue: prefs.featureUpdatesPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(featureUpdatesPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(featureUpdatesPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_surveys'),
                 title: 'Surveys and feedback',
                 initSwitchValue: prefs.surveysAndFeedbackPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(surveysAndFeedbackPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(surveysAndFeedbackPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_promotional'),
                 title: 'Promotional and partnership content',
                 initSwitchValue: prefs.promotionalContentPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(promotionalContentPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(promotionalContentPush: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('push_recommended'),
                 title: 'Recommended content',
                 initSwitchValue: prefs.recommendedContentPush,
-                onSwitchChanged: (value) => save(prefs.copyWith(recommendedContentPush: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(recommendedContentPush: value)),
               ),
               SettingsOptionsTileWidget(
                 key: const Key('new_message'),
                 title: 'New message',
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Text(
                   'Email notifications',
                   style: const TextStyle(
@@ -161,98 +179,112 @@ class NotificationsSettingsScreen extends ConsumerWidget {
               SwitchTileWidget(
                 key: const Key('email_enable_all'),
                 title: 'Enable all',
-                subtitle: 'Turn on all email notifications or select which to receive.',
+                subtitle:
+                    'Turn on all email notifications or select which to receive.',
                 initSwitchValue: _allEmailEnabled(prefs),
-                onSwitchChanged: (value) => save(prefs.copyWith(
-                  newFollowerEmail: value,
-                  repostOfYourPostEmail: value,
-                  newPostByFollowedEmail: value,
-                  likesAndPlaysEmail: value,
-                  newMessageEmail: value,
-                  commentOnPostEmail: value,
-                  featureUpdatesEmail: value,
-                  surveysAndFeedbackEmail: value,
-                  promotionalContentEmail: value,
-                  recommendedContentEmail: value,
-                  newsletterEmail: value,
-                )),
+                onSwitchChanged: (value) => save(
+                  prefs.copyWith(
+                    newFollowerEmail: value,
+                    repostOfYourPostEmail: value,
+                    newPostByFollowedEmail: value,
+                    likesAndPlaysEmail: value,
+                    newMessageEmail: value,
+                    commentOnPostEmail: value,
+                    featureUpdatesEmail: value,
+                    surveysAndFeedbackEmail: value,
+                    promotionalContentEmail: value,
+                    recommendedContentEmail: value,
+                    newsletterEmail: value,
+                  ),
+                ),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_new_follower'),
                 title: 'New follower',
                 initSwitchValue: prefs.newFollowerEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(newFollowerEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newFollowerEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_repost_of_your_post'),
                 title: 'Repost of your post',
                 initSwitchValue: prefs.repostOfYourPostEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(repostOfYourPostEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(repostOfYourPostEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_new_post_by_followed_user'),
                 title: 'New post by followed user',
                 initSwitchValue: prefs.newPostByFollowedEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(newPostByFollowedEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newPostByFollowedEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_like_on_your_post'),
                 title: 'Like on your post',
                 initSwitchValue: prefs.likesAndPlaysEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(likesAndPlaysEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(likesAndPlaysEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_new_message'),
                 title: 'New message',
                 initSwitchValue: prefs.newMessageEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(newMessageEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newMessageEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_comment_on_your_post'),
                 title: 'Comment on your post',
                 initSwitchValue: prefs.commentOnPostEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(commentOnPostEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(commentOnPostEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_rythmify_feature_updates'),
                 title: 'Rythmify feature updates and education',
                 initSwitchValue: prefs.featureUpdatesEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(featureUpdatesEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(featureUpdatesEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_surveys'),
                 title: 'Surveys and feedback',
                 initSwitchValue: prefs.surveysAndFeedbackEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(surveysAndFeedbackEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(surveysAndFeedbackEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_promotional'),
                 title: 'Promotional and partnership content',
                 initSwitchValue: prefs.promotionalContentEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(promotionalContentEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(promotionalContentEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_recommended'),
                 title: 'Recommended content',
                 initSwitchValue: prefs.recommendedContentEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(recommendedContentEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(recommendedContentEmail: value)),
               ),
               const SizedBox(height: 4),
               SwitchTileWidget(
                 key: const Key('email_rythmify_newsletter'),
                 title: 'Rythmify newsletter',
                 initSwitchValue: prefs.newsletterEmail,
-                onSwitchChanged: (value) => save(prefs.copyWith(newsletterEmail: value)),
+                onSwitchChanged: (value) =>
+                    save(prefs.copyWith(newsletterEmail: value)),
               ),
             ],
           );

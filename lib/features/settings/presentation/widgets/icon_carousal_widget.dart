@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-class IconCarousalWidget extends StatefulWidget{
+class IconCarousalWidget extends StatefulWidget {
   final List<String> iconPaths;
   const IconCarousalWidget({super.key, required this.iconPaths});
 
@@ -9,10 +9,11 @@ class IconCarousalWidget extends StatefulWidget{
   State<StatefulWidget> createState() => _IconCarousalState();
 }
 
-class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProviderStateMixin{
-  final PageController _controller=PageController(
+class _IconCarousalState extends State<IconCarousalWidget>
+    with SingleTickerProviderStateMixin {
+  final PageController _controller = PageController(
     viewportFraction: 0.65,
-    initialPage: 1000
+    initialPage: 1000,
   );
   Ticker? _ticker;
   Duration _lastElapsed = Duration.zero;
@@ -20,7 +21,7 @@ class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _ticker=createTicker(_onTick)..start();
+    _ticker = createTicker(_onTick)..start();
   }
 
   @override
@@ -30,17 +31,18 @@ class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProv
     super.dispose();
   }
 
-  void _onTick(Duration elapsed){
-    if(!_controller.hasClients) return;
-    if(_lastElapsed == Duration.zero){
-      _lastElapsed=elapsed;
+  void _onTick(Duration elapsed) {
+    if (!_controller.hasClients) return;
+    if (_lastElapsed == Duration.zero) {
+      _lastElapsed = elapsed;
       return;
     }
-    final dt = (elapsed - _lastElapsed).inMilliseconds/1000.0;
-    _lastElapsed=elapsed;
-    final pageWidth = _controller.position.viewportDimension*_controller.viewportFraction;
-    final speedMultiplier=1.5;
-    _controller.jumpTo(_controller.offset + pageWidth*dt*speedMultiplier);
+    final dt = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
+    _lastElapsed = elapsed;
+    final pageWidth =
+        _controller.position.viewportDimension * _controller.viewportFraction;
+    final speedMultiplier = 1.5;
+    _controller.jumpTo(_controller.offset + pageWidth * dt * speedMultiplier);
   }
 
   @override
@@ -50,10 +52,7 @@ class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProv
       height: 200,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-          width: 0.5
-        ),
+        border: Border.all(color: Colors.white, width: 0.5),
       ),
       child: ClipOval(
         child: SizedBox(
@@ -62,19 +61,18 @@ class _IconCarousalState extends State<IconCarousalWidget> with SingleTickerProv
           child: PageView.builder(
             controller: _controller,
             itemBuilder: (context, index) {
-              final path=widget.iconPaths[index%widget.iconPaths.length];
-              return Center
-              (
+              final path = widget.iconPaths[index % widget.iconPaths.length];
+              return Center(
                 child: AspectRatio(
                   aspectRatio: 1.0,
-                  child:  Padding(
+                  child: Padding(
                     padding: const EdgeInsets.all(3),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(35),
-                      child: Image.asset(path,fit: BoxFit.cover)
+                      child: Image.asset(path, fit: BoxFit.cover),
                     ),
                   ),
-                )
+                ),
               );
             },
           ),
