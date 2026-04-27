@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../data/local/local_saved_store.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../providers/playlist_provider.dart';
@@ -34,6 +36,7 @@ class _LibraryPlaylistsScreenState
   final List<PlaylistEntity> _allPlaylists = [];
   final List<PlaylistEntity> _likedPlaylists = [];
   Set<String> _savedMixIds = {};
+  Set<String> _savedTrackRadioPlaylistIds = {};
   bool _loading = true;
 
   OverlayEntry? _overlayEntry;
@@ -51,12 +54,33 @@ class _LibraryPlaylistsScreenState
     super.dispose();
   }
 
+  String _currentUserId() {
+    final authState = ref.read(authProvider);
+    return authState is AuthAuthenticated ? authState.user.id : '';
+  }
+  // Replace _isPlaylistOwned in library_playlists_screen.dart with this:
+
+  bool _isPlaylistOwned(PlaylistEntity playlist) {
+    // Track radios and generated mixes are NEVER owned even if ownerId matches.
+    // The backend creates them on behalf of the user but they are not editable
+    // user playlists — they have their own routing and UI.
+    if (playlist.isTrackRadio) return false;
+    if (playlist.isGeneratedMix) return false;
+
+    // isOwned flag set by fromJsonListOwned (filter=created endpoint)
+    if (playlist.isOwned) return true;
+
+    // Fallback: ownerId comparison for edge cases
+    final uid = _currentUserId();
+    return uid.isNotEmpty && playlist.ownerId == uid;
+  }
+
+  // Replace _loadAll in library_playlists_screen.dart with this simplified version.
+  // Also remove the _savedMixIds and _savedTrackRadioPlaylistIds field declarations.
+
   Future<void> _loadAll() async {
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
-
-    final savedMixes = await LocalSavedStore.instance.getMixes();
-    _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
 
     await notifier.loadPlaylists();
     final created = ref.read(playlistListProvider).playlists;
@@ -85,6 +109,14 @@ class _LibraryPlaylistsScreenState
     await notifier.loadPlaylists();
   }
 
+  // Also remove these two field declarations from the class:
+  //   Set<String> _savedMixIds = {};
+  //   Set<String> _savedTrackRadioPlaylistIds = {};
+  // And remove the LocalSavedStore import if no longer used elsewhere.
+
+  // ADD THIS METHOD to _LibraryPlaylistsScreenState
+  // Place it directly after _loadAll() — before get _sourceList
+
   Future<void> _loadForFilter() async {
     setState(() => _loading = true);
     if (_filter == _FilterOption.liked) {
@@ -110,7 +142,7 @@ class _LibraryPlaylistsScreenState
       case _FilterOption.liked:
         return _likedPlaylists;
       case _FilterOption.owned:
-        return _allPlaylists.where((p) => p.isOwned).toList();
+        return _allPlaylists.where(_isPlaylistOwned).toList();
     }
   }
 
@@ -145,13 +177,18 @@ class _LibraryPlaylistsScreenState
 
     return result;
   }
+  // Replace _onPlaylistTap in library_playlists_screen.dart with this:
 
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
-    if (playlist.isOwned) {
+    // ── 1. OWNED playlist → full edit screen with suggestions ─────────────
+    if (_isPlaylistOwned(playlist)) {
       context.push('/library/playlists/${playlist.id}', extra: true);
       return;
     }
-    if (_savedMixIds.contains(playlist.id)) {
+
+    // ── 2. GENERATED MIX (auto_generated, curated, genre_trending) ────────
+    // Routed to MixDetailScreen which calls GET /home/mixes/:id
+    if (playlist.isGeneratedMix) {
       context.push(
         '/home/mix/${playlist.id}',
         extra: {
@@ -164,9 +201,19 @@ class _LibraryPlaylistsScreenState
           'mixType': 'genre',
         },
       );
-    } else {
-      context.push('/home/playlist/${playlist.id}', extra: false);
+      return;
     }
+
+    // ── 3. TRACK RADIO (track_radio subtype) ──────────────────────────────
+    // Routed to PlaylistDetailScreen as non-owner — fetches via
+    // GET /playlists/:id/tracks (works for track_radio on the backend)
+    if (playlist.isTrackRadio) {
+      context.push('/home/playlist/${playlist.id}', extra: false);
+      return;
+    }
+
+    // ── 4. REGULAR liked playlist from another user ───────────────────────
+    context.push('/home/playlist/${playlist.id}', extra: false);
   }
 
   void _toggleOverlay() {
@@ -328,9 +375,6 @@ class _LibraryPlaylistsScreenState
                       ),
                       IconButton(
                         key: _filterIconKey,
-                        // Semantic key for tests to find the filter button
-                        // without conflicting with the GlobalKey used for
-                        // overlay positioning.
                         icon: Icon(
                           Icons.tune,
                           color:
@@ -427,7 +471,7 @@ class _LibraryPlaylistsScreenState
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final playlist = filtered[index];
-                            final isOwner = playlist.isOwned;
+                            final isOwner = _isPlaylistOwned(playlist);
                             return _PlaylistListTile(
                               key: Key('playlist_tile_${playlist.id}'),
                               playlist: playlist,
