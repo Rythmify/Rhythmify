@@ -10,21 +10,30 @@ class PlaylistModel {
     debugPrintPlaylist('RAW JSON received: $json');
 
     final subtype = json['subtype'] as String? ?? 'playlist';
+
+    // KEY FIX: also read the top-level 'type' field from the backend.
+    // The backend returns type: "track_radio" for track radio playlists
+    // even when subtype is "playlist". This is the reliable signal.
+    final typeField = json['type'] as String? ?? '';
+
     final playlistType = _typeFromSubtype(subtype);
 
-    // FIX: parse releaseYear as int? by taking first 4 chars of release_date
+    // releaseYear parsed as int? from release_date string
     final releaseDateStr = json['release_date'] as String?;
     final releaseYear = (releaseDateStr != null && releaseDateStr.length >= 4)
         ? int.tryParse(releaseDateStr.substring(0, 4))
         : null;
 
-    // Detect generated mix and track radio from subtype
-    final isGeneratedMix =
-        subtype == 'auto_generated' ||
+    // isGeneratedMix: from subtype
+    final isGeneratedMix = subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending';
-    final isTrackRadio = subtype == 'track_radio';
+
+    // isTrackRadio: from backend 'type' field OR subtype
+    // Backend returns type: "track_radio" — this is the reliable signal
+    final isTrackRadio = typeField == 'track_radio' ||
+        subtype == 'track_radio';
 
     final entity = PlaylistEntity(
       id: json['playlist_id'] as String,
@@ -52,6 +61,7 @@ class PlaylistModel {
       'id: ${entity.id}  '
       'type: ${entity.type}  '
       'subtype: $subtype  '
+      'typeField: $typeField  '
       'isLiked: ${entity.isLiked}  '
       'isOwned: ${entity.isOwned}  '
       'isGeneratedMix: ${entity.isGeneratedMix}  '

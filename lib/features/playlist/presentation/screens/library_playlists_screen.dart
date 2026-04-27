@@ -58,9 +58,19 @@ class _LibraryPlaylistsScreenState
     final authState = ref.read(authProvider);
     return authState is AuthAuthenticated ? authState.user.id : '';
   }
+// Replace _isPlaylistOwned in library_playlists_screen.dart with this:
 
   bool _isPlaylistOwned(PlaylistEntity playlist) {
+    // Track radios and generated mixes are NEVER owned even if ownerId matches.
+    // The backend creates them on behalf of the user but they are not editable
+    // user playlists — they have their own routing and UI.
+    if (playlist.isTrackRadio) return false;
+    if (playlist.isGeneratedMix) return false;
+
+    // isOwned flag set by fromJsonListOwned (filter=created endpoint)
     if (playlist.isOwned) return true;
+
+    // Fallback: ownerId comparison for edge cases
     final uid = _currentUserId();
     return uid.isNotEmpty && playlist.ownerId == uid;
   }

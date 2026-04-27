@@ -60,6 +60,13 @@ class PlaylistRemoteDatasource {
   // Cover and trackCount enriched from LocalSavedStore for generated
   // playlists where the backend returns null/0.
   // ============================================================
+  // In playlist_remote_datasource.dart:
+//
+// 1. Change fetchLikedPlaylists() to also load savedTrackRadios from local store
+// 2. Update _likedItemFromJson signature to accept both maps
+//
+// Replace fetchLikedPlaylists() and _likedItemFromJson with these two methods:
+
   Future<List<PlaylistEntity>> fetchLikedPlaylists({
     int limit = 50,
     int offset = 0,
@@ -75,12 +82,16 @@ class PlaylistRemoteDatasource {
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} liked playlists');
 
+      // Load both local stores for cover/metadata enrichment
       final savedMixes = await LocalSavedStore.instance.getMixes();
       final mixById = {for (final m in savedMixes) m.mixId: m};
 
+      final savedRadios = await LocalSavedStore.instance.getTrackRadios();
+      final radioByPlaylistId = {for (final r in savedRadios) r.playlistId: r};
+
       return items
           .cast<Map<String, dynamic>>()
-          .map((json) => _likedItemFromJson(json, mixById))
+          .map((json) => _likedItemFromJson(json, mixById, radioByPlaylistId))
           .toList();
     } on DioException catch (e) {
       _logError('fetchLikedPlaylists() failed', e);
@@ -88,51 +99,54 @@ class PlaylistRemoteDatasource {
     }
   }
 
-  // In playlist_remote_datasource.dart, replace _likedItemFromJson with this:
-
   PlaylistEntity _likedItemFromJson(
     Map<String, dynamic> json,
     Map<String, SavedMix> localMixes,
+    Map<String, SavedTrackRadio> localRadios,
   ) {
     _log('[LIKED] RAW: $json');
 
     final id = json['id'] as String? ?? json['playlist_id'] as String? ?? '';
     final subtype = json['subtype'] as String? ?? '';
-    final local = localMixes[id];
 
+    final localMix = localMixes[id];
+    final localRadio = localRadios[id];
+
+    // Cover: backend first, then local mix store, then local radio store
     final backendCover = json['cover_image'] as String?;
     final coverUrl = (backendCover != null && backendCover.isNotEmpty)
         ? backendCover
-        : local?.coverUrl;
+        : localMix?.coverUrl ?? localRadio?.coverUrl;
 
+    // Track count: backend first, then local stores
     final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
     final trackCount = backendTrackCount > 0
         ? backendTrackCount
-        : (local?.trackCount ?? 0);
+        : (localMix?.trackCount ?? localRadio?.trackCount ?? 0);
 
-    // Detect type from backend subtype field:
-    // auto_generated, curated_daily, curated_weekly, genre_trending → isGeneratedMix
-    // track_radio → isTrackRadio
-    final isGeneratedMix =
-        subtype == 'auto_generated' ||
+    // isGeneratedMix: backend subtype OR locally saved as a mix
+    final isGeneratedMix = subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending' ||
-        local != null; // also flag if it's in local mix store
+        localMix != null;
 
-    final isTrackRadio = subtype == 'track_radio';
+    // isTrackRadio: backend subtype OR locally saved as a track radio
+    final isTrackRadio = subtype == 'track_radio' || localRadio != null;
+
+    // Name: backend name → local mix title → local radio title → 'Untitled'
+    final name = json['name'] as String? ??
+        json['title'] as String? ??
+        localMix?.title ??
+        localRadio?.title ??
+        'Untitled';
 
     return PlaylistEntity(
       id: id,
-      name:
-          json['name'] as String? ??
-          json['title'] as String? ??
-          local?.title ??
-          'Untitled',
-      ownerName:
-          json['display_name'] as String? ??
+      name: name,
+      ownerName: json['display_name'] as String? ??
           json['owner_name'] as String? ??
-          local?.ownerName ??
+          localMix?.ownerName ??
           '',
       ownerId:
           json['owner_user_id'] as String? ?? json['user_id'] as String? ?? '',
@@ -152,7 +166,6 @@ class PlaylistRemoteDatasource {
       isTrackRadio: isTrackRadio,
     );
   }
-
   // ============================================================
   // ── FETCH: User Playlists
   // ============================================================
