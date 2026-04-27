@@ -14,7 +14,6 @@ class PlaylistMockData {
   PlaylistMockData._();
   static final PlaylistMockData instance = PlaylistMockData._();
 
-  // Starts empty — populated by syncFromBackend() when the list screen loads
   final List<PlaylistEntity> _playlists = [];
   final Map<String, List<PlaylistTrack>> _tracks = {};
 
@@ -40,25 +39,16 @@ class PlaylistMockData {
   }
 
   // ── SYNC FROM BACKEND ─────────────────────────────────────────────────────
-  // Called after fetchMyPlaylists() returns. Replaces the entire list
-  // with what the backend says, preserving locally-added track entries.
   void syncFromBackend(List<PlaylistEntity> backendPlaylists) {
-    // Keep track entries for playlists that are still in the list
     final keepIds = backendPlaylists.map((p) => p.id).toSet();
     _tracks.removeWhere((id, _) => !keepIds.contains(id));
-
     _playlists
       ..clear()
       ..addAll(backendPlaylists);
-
-    debugPrint(
-      '[Cache] Synced ${backendPlaylists.length} playlists from backend',
-    );
+    debugPrint('[Cache] Synced ${backendPlaylists.length} playlists from backend');
   }
 
   // ── CREATE WITH REAL ID ───────────────────────────────────────────────────
-  // Called after POST /playlists succeeds. Stores the real UUID so
-  // all subsequent API calls use it instead of a fake "pl-..." ID.
   PlaylistEntity createWithId({
     required String id,
     required String name,
@@ -87,7 +77,6 @@ class PlaylistMockData {
   }
 
   // ── CLEAR TRACKS ─────────────────────────────────────────────────────────
-  // Called before re-syncing tracks from backend to avoid duplicates.
   void clearTracks(String playlistId) {
     _tracks[playlistId] = [];
   }
@@ -162,19 +151,11 @@ class PlaylistMockData {
     if (i == -1) return _playlists.first;
     final updated = _playlists[i].copyWith(
       type: PlaylistType.album,
-      releaseYear: DateTime.now().year.toString(),
+      releaseYear: DateTime.now().year, // FIX: int not String
     );
     _playlists[i] = updated;
     return updated;
   }
-
-  // ============================================================
-  // REPLACE convertToStation in PlaylistMockData
-  // inside playlist_mock_data.dart
-  //
-  // Now accepts optional seedArtistName so the station tile
-  // shows "Based on [name]" correctly.
-  // ============================================================
 
   PlaylistEntity convertToStation(String playlistId, {String? seedArtistName}) {
     final i = _playlists.indexWhere((p) => p.id == playlistId);

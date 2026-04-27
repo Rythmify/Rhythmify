@@ -88,13 +88,16 @@ class PlaylistRemoteDatasource {
     }
   }
 
+// In playlist_remote_datasource.dart, replace _likedItemFromJson with this:
+
   PlaylistEntity _likedItemFromJson(
     Map<String, dynamic> json,
     Map<String, SavedMix> localMixes,
   ) {
     _log('[LIKED] RAW: $json');
 
-    final id = json['id'] as String;
+    final id = json['id'] as String? ?? json['playlist_id'] as String? ?? '';
+    final subtype = json['subtype'] as String? ?? '';
     final local = localMixes[id];
 
     final backendCover = json['cover_image'] as String?;
@@ -107,11 +110,25 @@ class PlaylistRemoteDatasource {
     final trackCount =
         backendTrackCount > 0 ? backendTrackCount : (local?.trackCount ?? 0);
 
+    // Detect type from backend subtype field:
+    // auto_generated, curated_daily, curated_weekly, genre_trending → isGeneratedMix
+    // track_radio → isTrackRadio
+    final isGeneratedMix = subtype == 'auto_generated' ||
+        subtype == 'curated_daily' ||
+        subtype == 'curated_weekly' ||
+        subtype == 'genre_trending' ||
+        local != null; // also flag if it's in local mix store
+
+    final isTrackRadio = subtype == 'track_radio';
+
     return PlaylistEntity(
       id: id,
-      name: json['title'] as String? ?? local?.title ?? 'Untitled',
-      ownerName: json['display_name'] as String? ?? local?.ownerName ?? '',
-      ownerId: json['user_id'] as String? ?? '',
+      name: json['name'] as String? ?? json['title'] as String? ?? local?.title ?? 'Untitled',
+      ownerName: json['display_name'] as String? ??
+          json['owner_name'] as String? ??
+          local?.ownerName ??
+          '',
+      ownerId: json['owner_user_id'] as String? ?? json['user_id'] as String? ?? '',
       isPublic: json['is_public'] as bool? ?? false,
       type: PlaylistType.playlist,
       trackCount: trackCount,
@@ -124,6 +141,8 @@ class PlaylistRemoteDatasource {
       likeCount: (json['like_count'] as num?)?.toInt() ?? 0,
       isLiked: true,
       isOwned: false,
+      isGeneratedMix: isGeneratedMix,
+      isTrackRadio: isTrackRadio,
     );
   }
 

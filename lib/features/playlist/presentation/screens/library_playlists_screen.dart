@@ -64,29 +64,25 @@ class _LibraryPlaylistsScreenState
     return uid.isNotEmpty && playlist.ownerId == uid;
   }
 
-   Future<void> _loadAll() async {
+// Replace _loadAll in library_playlists_screen.dart with this simplified version.
+// Also remove the _savedMixIds and _savedTrackRadioPlaylistIds field declarations.
+
+  Future<void> _loadAll() async {
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
- 
-    final savedMixes = await LocalSavedStore.instance.getMixes();
-    _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
- 
-    // getTrackRadios now exists — no try/catch needed
-    final savedRadios = await LocalSavedStore.instance.getTrackRadios();
-    _savedTrackRadioPlaylistIds = savedRadios.map((r) => r.playlistId).toSet();
- 
+
     await notifier.loadPlaylists();
     final created = ref.read(playlistListProvider).playlists;
- 
+
     await notifier.loadLikedPlaylists();
     final liked = ref.read(playlistListProvider).playlists;
- 
+
     final createdIds = created.map((p) => p.id).toSet();
     final merged = [
       ...created,
       ...liked.where((p) => !createdIds.contains(p.id)),
     ];
- 
+
     if (mounted) {
       setState(() {
         _allPlaylists
@@ -98,9 +94,14 @@ class _LibraryPlaylistsScreenState
         _loading = false;
       });
     }
- 
+
     await notifier.loadPlaylists();
   }
+
+// Also remove these two field declarations from the class:
+//   Set<String> _savedMixIds = {};
+//   Set<String> _savedTrackRadioPlaylistIds = {};
+// And remove the LocalSavedStore import if no longer used elsewhere.
 
   // ADD THIS METHOD to _LibraryPlaylistsScreenState
 // Place it directly after _loadAll() — before get _sourceList
@@ -161,25 +162,23 @@ class _LibraryPlaylistsScreenState
 
     return result;
   }
+// Replace _onPlaylistTap in library_playlists_screen.dart with this:
 
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
-    // ── 1. OWNED playlist → full edit screen ──────────────────────────────
+    // ── 1. OWNED playlist → full edit screen with suggestions ─────────────
     if (_isPlaylistOwned(playlist)) {
       context.push('/library/playlists/${playlist.id}', extra: true);
       return;
     }
 
-    // ── 2. SAVED MIX (liked from Mixed For You) ───────────────────────────
-    // These are persisted auto_generated playlists on the backend.
-    // Route to /home/mix/:id → MixDetailScreen which calls fetchMixTracks.
-    // If fetchMixTracks returns empty, MixDetailScreen falls back gracefully.
-    if (_savedMixIds.contains(playlist.id)) {
+    // ── 2. GENERATED MIX (auto_generated, curated, genre_trending) ────────
+    // Routed to MixDetailScreen which calls GET /home/mixes/:id
+    if (playlist.isGeneratedMix) {
       context.push(
         '/home/mix/${playlist.id}',
         extra: {
           'title': playlist.name,
-          'ownerName':
-              playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+          'ownerName': playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
           'coverUrl': playlist.coverUrl,
           'trackCount': playlist.trackCount,
           'mixType': 'genre',
@@ -188,18 +187,15 @@ class _LibraryPlaylistsScreenState
       return;
     }
 
-    // ── 3. SAVED TRACK RADIO (liked from More Of What You Like) ──────────
-    // These are track_radio playlists on the backend.
-    // Route to /home/playlist/:id as non-owner → PlaylistDetailScreen
-    // which calls fetchPlaylistTracks then falls back to fetchMixTracks.
-    // The /playlists/:id/tracks endpoint works for track_radio subtypes.
-    if (_savedTrackRadioPlaylistIds.contains(playlist.id)) {
+    // ── 3. TRACK RADIO (track_radio subtype) ──────────────────────────────
+    // Routed to PlaylistDetailScreen as non-owner — fetches via
+    // GET /playlists/:id/tracks (works for track_radio on the backend)
+    if (playlist.isTrackRadio) {
       context.push('/home/playlist/${playlist.id}', extra: false);
       return;
     }
 
     // ── 4. REGULAR liked playlist from another user ───────────────────────
-    // This path already works correctly — no change.
     context.push('/home/playlist/${playlist.id}', extra: false);
   }
 
