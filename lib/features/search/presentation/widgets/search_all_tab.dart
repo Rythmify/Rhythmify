@@ -401,7 +401,9 @@ class _TracksSection extends ConsumerWidget {
           child: TrackCard(
             track: e.value,
             onTap: () {
-              ref.read(queueStateProvider.notifier).playQueue(
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(
                     tracks: tracks,
                     initialIndex: e.key,
                     context: QueueContext(

@@ -245,11 +245,15 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // or just catch the whole thing.
       final results = await Future.wait([
         ref.read(getTrackDetailsUseCaseProvider).call(trackId).catchError((e) {
-          debugPrint('[PlayerNotifier] Failed to fetch track details for $trackId: $e');
+          debugPrint(
+            '[PlayerNotifier] Failed to fetch track details for $trackId: $e',
+          );
           return state.currentTrack!; // Fallback to existing track info
         }),
         ref.read(getWaveformUseCaseProvider).call(trackId).catchError((e) {
-          debugPrint('[PlayerNotifier] Failed to fetch waveform for $trackId: $e');
+          debugPrint(
+            '[PlayerNotifier] Failed to fetch waveform for $trackId: $e',
+          );
           return <double>[]; // Fallback to empty waveform
         }),
       ]);
@@ -268,7 +272,9 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       }
     } catch (e) {
       // Catch-all for any other unexpected errors in the background update flow
-      debugPrint('[PlayerNotifier] Critical error in _updateTrackInBackground: $e');
+      debugPrint(
+        '[PlayerNotifier] Critical error in _updateTrackInBackground: $e',
+      );
     }
   }
 
@@ -283,20 +289,26 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     }
 
     final targetTrack = nativeQueue[index];
-    
+
     // Safety Net: If the track somehow lacks a URL (e.g. discovery race condition),
     // resolve it just-in-time before skipping.
     if ((targetTrack.streamUrl ?? targetTrack.audioUrl).isEmpty) {
-      debugPrint('[PlayerNotifier] targetTrack at $index lacks URL. Resolving JIT...');
+      debugPrint(
+        '[PlayerNotifier] targetTrack at $index lacks URL. Resolving JIT...',
+      );
       try {
-        final streamUrl = await ref.read(initiatePlaybackUseCaseProvider).call(targetTrack.id);
+        final streamUrl = await ref
+            .read(initiatePlaybackUseCaseProvider)
+            .call(targetTrack.id);
         final resolvedTrack = targetTrack.copyWith(streamUrl: streamUrl);
-        
+
         // Update both local mirror and hardware metadata
         _queue[index] = resolvedTrack;
         await repository.updateTrackInfo(targetTrack.id, resolvedTrack);
       } catch (e) {
-        debugPrint('[PlayerNotifier] JIT URL resolution failed for ${targetTrack.id}: $e');
+        debugPrint(
+          '[PlayerNotifier] JIT URL resolution failed for ${targetTrack.id}: $e',
+        );
       }
     }
 
@@ -308,7 +320,9 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   Future<void> updateNativeQueue(List<Track> tracks, {int? newIndex}) async {
     // If a new index is provided, we use loadQueue to sync both list and position
     if (newIndex != null) {
-      await ref.read(audioRepositoryProvider).loadQueue(tracks, initialIndex: newIndex);
+      await ref
+          .read(audioRepositoryProvider)
+          .loadQueue(tracks, initialIndex: newIndex);
     } else {
       await ref.read(audioRepositoryProvider).updateQueue(tracks);
     }

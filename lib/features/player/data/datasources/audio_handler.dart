@@ -14,16 +14,18 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The underlying audio player instance.
   final AudioPlayer _player = AudioPlayer(
     audioLoadConfiguration: const AudioLoadConfiguration(
-
       androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 30),  // Buffer 30 seconds ahead
+        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
         maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
-        bufferForPlaybackDuration: Duration(milliseconds: 500,), // Start playing fast
+        bufferForPlaybackDuration: Duration(
+          milliseconds: 500,
+        ), // Start playing fast
         bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
       ),
 
       darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true ),
+        automaticallyWaitsToMinimizeStalling: true,
+      ),
     ),
   );
 
@@ -117,7 +119,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       final newUrl = (updatedTrack.streamUrl ?? updatedTrack.audioUrl).trim();
 
       if (oldUrl.isEmpty && newUrl.isNotEmpty) {
-        final newSource = _convertToAudioSources([updatedTrack], useCache: false).first;
+        final newSource = _convertToAudioSources([
+          updatedTrack,
+        ], useCache: false).first;
         if (index < _playlist.length) {
           await _playlist.removeAt(index);
           await _playlist.insert(index, newSource);
@@ -177,8 +181,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       await _playlist.clear();
       await _playlist.addAll(audioSources);
 
-      final effectiveIndex =
-          initialIndex < audioSources.length ? initialIndex : 0;
+      final effectiveIndex = initialIndex < audioSources.length
+          ? initialIndex
+          : 0;
 
       await _player.setAudioSource(
         _playlist,
@@ -204,8 +209,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// Appends tracks to the end of the current queue.
-  Future<void> appendTracks(List<Track> tracks) async
-  {
+  Future<void> appendTracks(List<Track> tracks) async {
     final audioSources = _convertToAudioSources(tracks, useCache: false);
     if (audioSources.isEmpty) return;
 
@@ -215,24 +219,31 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
     // If the player reached 'completed' before the fetch finished
     // we must manually kick-start it into the new tracks.
-    if (_player.processingState == ProcessingState.completed)
-    {
+    if (_player.processingState == ProcessingState.completed) {
       await _player.seek(Duration.zero, index: insertionIndex);
       _player.play();
     }
   }
 
-  List<AudioSource> _convertToAudioSources(List<Track> tracks, {bool useCache = true}) {
+  List<AudioSource> _convertToAudioSources(
+    List<Track> tracks, {
+    bool useCache = true,
+  }) {
     final List<AudioSource> sources = [];
 
     for (final track in tracks) {
       final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
-      
+
       if (rawUrl.isEmpty) {
-        // CRITICAL FIX: Never drop tracks. Inject a silent/dummy placeholder 
+        // CRITICAL FIX: Never drop tracks. Inject a silent/dummy placeholder
         // to maintain perfect 1:1 index alignment with the UI state.
         // This placeholder will be hot-swapped via JIT resolution before playback.
-        sources.add(AudioSource.uri(Uri.parse('asset:///assets/audio/empty.mp3'), tag: track.id));
+        sources.add(
+          AudioSource.uri(
+            Uri.parse('asset:///assets/audio/empty.mp3'),
+            tag: track.id,
+          ),
+        );
         continue;
       }
 
@@ -249,7 +260,12 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
             sources.add(AudioSource.uri(resolvedUri, tag: track.id));
           }
         } else {
-           sources.add(AudioSource.uri(Uri.parse('asset:///assets/audio/empty.mp3'), tag: track.id));
+          sources.add(
+            AudioSource.uri(
+              Uri.parse('asset:///assets/audio/empty.mp3'),
+              tag: track.id,
+            ),
+          );
         }
       }
     }
@@ -299,16 +315,15 @@ Uri? _resolveTrackUri(String rawUrl) {
   return null;
 }
 
-Uri? _resolveArtworkUri(String rawUrl)
-{
+Uri? _resolveArtworkUri(String rawUrl) {
   final trimmed = rawUrl.trim();
   if (trimmed.isEmpty) return null;
 
   final parsed = Uri.tryParse(trimmed);
-  if (parsed != null && parsed.hasScheme && 
-     (parsed.scheme == 'http' || parsed.scheme == 'https'))
-     {
-        return parsed;
-     }
+  if (parsed != null &&
+      parsed.hasScheme &&
+      (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+    return parsed;
+  }
   return null;
 }

@@ -165,7 +165,9 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                                   .read(playerStateProvider.notifier)
                                   .togglePlayPause();
                             } else {
-                              ref.read(queueStateProvider.notifier).playQueue(
+                              ref
+                                  .read(queueStateProvider.notifier)
+                                  .playQueue(
                                     tracks: [widget.track],
                                     initialIndex: 0,
                                     context: const QueueContext(

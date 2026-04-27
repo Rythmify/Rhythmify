@@ -75,7 +75,9 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
     } on DioException catch (e) {
       _handleDioError(e, 'fetchQueueContext');
       // Return a safe empty structure if fetch fails
-      return {'data': {'queue': []}};
+      return {
+        'data': {'queue': []},
+      };
     }
   }
 

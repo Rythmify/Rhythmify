@@ -110,7 +110,8 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
             item: item,
             isCurrent: isCurrent,
             onCollapse: widget.onCollapse,
-            onNavigateBehindTrack: () => _triggerNavigation(context, item.track.id),
+            onNavigateBehindTrack: () =>
+                _triggerNavigation(context, item.track.id),
           );
         },
       ),

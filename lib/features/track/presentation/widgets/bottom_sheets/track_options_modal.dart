@@ -289,7 +289,9 @@ class TrackOptionsModal extends ConsumerWidget {
                     icon: Icons.playlist_play,
                     label: 'Play Next',
                     onTap: () {
-                      ref.read(queueStateProvider.notifier).addToNextUp(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .addToNextUp(
                             sourceType: 'track',
                             sourceId: syncedTrack.id,
                           );

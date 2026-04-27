@@ -185,13 +185,16 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
                   onPressed: () {
                     if (filtered.isNotEmpty) {
                       final shuffled = List<Track>.from(filtered)..shuffle();
-                      ref.read(queueStateProvider.notifier).playQueue(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
                             tracks: shuffled,
                             initialIndex: 0,
                             context: QueueContext(
                               type: QueueSource.userTracks,
-                              targetUserId:
-                                  widget.userId == 'me' ? null : widget.userId,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
                             ),
                           );
                     }
@@ -203,13 +206,16 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
                   backgroundColor: Colors.white,
                   onPressed: () {
                     if (filtered.isNotEmpty) {
-                      ref.read(queueStateProvider.notifier).playQueue(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
                             tracks: filtered,
                             initialIndex: 0,
                             context: QueueContext(
                               type: QueueSource.userTracks,
-                              targetUserId:
-                                  widget.userId == 'me' ? null : widget.userId,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
                             ),
                           );
                     }
@@ -246,13 +252,16 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
                   key: Key('upload_item_${filtered[index].id}'),
                   track: filtered[index],
                   onTap: () {
-                    ref.read(queueStateProvider.notifier).playQueue(
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(
                           tracks: filtered,
                           initialIndex: index,
                           context: QueueContext(
                             type: QueueSource.userTracks,
-                            targetUserId:
-                                widget.userId == 'me' ? null : widget.userId,
+                            targetUserId: widget.userId == 'me'
+                                ? null
+                                : widget.userId,
                           ),
                         );
                   },

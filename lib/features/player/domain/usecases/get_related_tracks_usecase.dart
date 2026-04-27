@@ -7,22 +7,26 @@ class GetRelatedTracksUseCase {
 
   Future<List<Track>> call(String trackId) async {
     final playlistTracks = await datasource.fetchRelatedTracks(trackId);
-    
+
     // Convert PlaylistTrack -> Track
-    // Note: This is a bit of a shortcut, ideally we'd have a repository method 
+    // Note: This is a bit of a shortcut, ideally we'd have a repository method
     // that returns Track entities directly.
-    return playlistTracks.map((pt) => Track(
-      id: pt.id,
-      title: pt.title,
-      artist: pt.artistName,
-      userId: '', // Required but unknown from pt
-      audioUrl: pt.audioUrl ?? '', 
-      streamUrl: pt.streamUrl,
-      duration: pt.duration,
-      playCount: pt.playCount,
-      isLiked: pt.isLiked,
-      coverImage: pt.coverUrl,
-      createdAt: DateTime.now(), // Required but unknown
-    )).toList();
+    return playlistTracks
+        .map(
+          (pt) => Track(
+            id: pt.id,
+            title: pt.title,
+            artist: pt.artistName,
+            userId: '', // Required but unknown from pt
+            audioUrl: pt.audioUrl ?? '',
+            streamUrl: pt.streamUrl,
+            duration: pt.duration,
+            playCount: pt.playCount,
+            isLiked: pt.isLiked,
+            coverImage: pt.coverUrl,
+            createdAt: DateTime.now(), // Required but unknown
+          ),
+        )
+        .toList();
   }
 }

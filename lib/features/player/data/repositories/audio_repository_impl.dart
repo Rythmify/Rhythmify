@@ -153,9 +153,11 @@ class AudioRepositoryImpl implements AudioRepository {
 
   @override
   Future<void> updateQueue(List<Track> tracks) async {
-    final currentIndex = _audioHandler.currentQueue.indexOf(_currentState.currentTrack!);
+    final currentIndex = _audioHandler.currentQueue.indexOf(
+      _currentState.currentTrack!,
+    );
     final effectiveIndex = currentIndex != -1 ? currentIndex : 0;
-    
+
     // We use loadQueue but try to maintain current track if it exists in new list
     await _audioHandler.loadQueue(tracks, initialIndex: effectiveIndex);
     _queueController.add(tracks);

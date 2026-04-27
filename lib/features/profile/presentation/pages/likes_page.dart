@@ -204,12 +204,16 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   onPressed: () {
                     if (filtered.isNotEmpty) {
                       final shuffled = List<Track>.from(filtered)..shuffle();
-                      ref.read(queueStateProvider.notifier).playQueue(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
                             tracks: shuffled,
                             initialIndex: 0,
                             context: QueueContext(
                               type: QueueSource.userLikes,
-                              targetUserId: widget.userId == 'me' ? null : widget.userId,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
                             ),
                           );
                     }
@@ -221,12 +225,16 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   backgroundColor: Colors.white,
                   onPressed: () {
                     if (filtered.isNotEmpty) {
-                      ref.read(queueStateProvider.notifier).playQueue(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
                             tracks: filtered,
                             initialIndex: 0,
                             context: QueueContext(
                               type: QueueSource.userLikes,
-                              targetUserId: widget.userId == 'me' ? null : widget.userId,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
                             ),
                           );
                     }
@@ -268,13 +276,16 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   key: Key('item_${filtered[index].id}'),
                   track: filtered[index],
                   onTap: () {
-                    ref.read(queueStateProvider.notifier).playQueue(
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playQueue(
                           tracks: filtered,
                           initialIndex: index,
                           context: QueueContext(
                             type: QueueSource.userLikes,
-                            targetUserId:
-                                widget.userId == 'me' ? null : widget.userId,
+                            targetUserId: widget.userId == 'me'
+                                ? null
+                                : widget.userId,
                           ),
                         );
                   },

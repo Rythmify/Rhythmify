@@ -387,7 +387,9 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                     if (isThisTrackLoaded) {
                       ref.read(playerStateProvider.notifier).togglePlayPause();
                     } else {
-                      ref.read(queueStateProvider.notifier).playQueue(
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
                             tracks: tracks,
                             initialIndex: tracks.indexOf(track),
                             context: QueueContext(

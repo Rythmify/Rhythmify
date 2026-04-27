@@ -106,7 +106,9 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
 
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
-      ref.read(queueStateProvider.notifier).playQueue(
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: filteredTracks,
             initialIndex: index,
             context: const QueueContext(type: QueueSource.userLikes),
@@ -123,7 +125,9 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
             onShuffle: () {
               if (filteredTracks.isNotEmpty) {
                 final shuffled = List<Track>.from(filteredTracks)..shuffle();
-                ref.read(queueStateProvider.notifier).playQueue(
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
                       tracks: shuffled,
                       initialIndex: 0,
                       context: const QueueContext(type: QueueSource.userLikes),

@@ -23,7 +23,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   @override
   Widget build(BuildContext context) {
     final queueState = ref.watch(queueStateProvider);
-    
+
     final history = queueState.history;
     final current = queueState.currentTrack;
     final allUpcoming = queueState.upcomingTracks;
@@ -86,20 +86,13 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               ),
             ),
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = history[index];
-                  return Opacity(
-                    opacity: 0.5,
-                    child: _QueueTile(
-                      item: item,
-                      isHistory: true,
-                      onTap: () {},
-                    ),
-                  );
-                },
-                childCount: history.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = history[index];
+                return Opacity(
+                  opacity: 0.5,
+                  child: _QueueTile(item: item, isHistory: true, onTap: () {}),
+                );
+              }, childCount: history.length),
             ),
           ],
 
@@ -145,7 +138,9 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
             SliverReorderableList(
               itemCount: manualUpcoming.length,
               onReorder: (oldIndex, newIndex) {
-                ref.read(queueStateProvider.notifier).reorder(oldIndex, newIndex);
+                ref
+                    .read(queueStateProvider.notifier)
+                    .reorder(oldIndex, newIndex);
               },
               itemBuilder: (context, index) {
                 final item = manualUpcoming[index];
@@ -157,7 +152,9 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                     child: _QueueTile(
                       item: item,
                       onTap: () {
-                        ref.read(queueStateProvider.notifier).playFromQueue(index);
+                        ref
+                            .read(queueStateProvider.notifier)
+                            .playFromQueue(index);
                       },
                     ),
                   ),
@@ -182,18 +179,17 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               ),
             ),
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = recommended[index];
-                  return _QueueTile(
-                    item: item,
-                    onTap: () {
-                      ref.read(queueStateProvider.notifier).playFromRecommended(index);
-                    },
-                  );
-                },
-                childCount: recommended.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = recommended[index];
+                return _QueueTile(
+                  item: item,
+                  onTap: () {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playFromRecommended(index);
+                  },
+                );
+              }, childCount: recommended.length),
             ),
           ],
 
@@ -249,10 +245,15 @@ class _QueueTile extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: track.coverImage != null &&
+                child:
+                    track.coverImage != null &&
                         track.coverImage!.startsWith('http')
                     ? Image.network(track.coverImage!, fit: BoxFit.cover)
-                    : const Icon(Icons.music_note, color: Colors.grey, size: 20),
+                    : const Icon(
+                        Icons.music_note,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -270,17 +271,16 @@ class _QueueTile extends StatelessWidget {
                     style: TextStyle(
                       color: isActive ? AppTheme.primaryBrand : Colors.white,
                       fontSize: 14,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isActive
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   Text(
                     track.artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ],
               ),
@@ -289,7 +289,11 @@ class _QueueTile extends StatelessWidget {
             if (isActive)
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Icon(Icons.equalizer, color: AppTheme.primaryBrand, size: 18),
+                child: Icon(
+                  Icons.equalizer,
+                  color: AppTheme.primaryBrand,
+                  size: 18,
+                ),
               ),
 
             // --- Drag Handle on the Right ---

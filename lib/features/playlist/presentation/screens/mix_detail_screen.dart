@@ -109,7 +109,9 @@ class _MixDetailBodyState extends ConsumerState<_MixDetailBody> {
   Future<void> _play(List<Track> list, int index) async {
     if (list.isEmpty || index >= list.length) return;
     try {
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: list,
             initialIndex: index,
             context: QueueContext(

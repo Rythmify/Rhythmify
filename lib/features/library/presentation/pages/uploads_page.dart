@@ -186,7 +186,9 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
 
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
-      ref.read(queueStateProvider.notifier).playQueue(
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: filteredTracks,
             initialIndex: index,
             context: const QueueContext(type: QueueSource.userTracks),
@@ -207,7 +209,9 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
             onShuffle: () {
               if (filteredTracks.isNotEmpty) {
                 final shuffled = List<Track>.from(filteredTracks)..shuffle();
-                ref.read(queueStateProvider.notifier).playQueue(
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
                       tracks: shuffled,
                       initialIndex: 0,
                       context: const QueueContext(type: QueueSource.userTracks),

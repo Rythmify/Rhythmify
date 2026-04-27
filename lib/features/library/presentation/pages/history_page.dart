@@ -156,28 +156,34 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               )
               .toList();
 
-    final filteredTracks = filtered.map((entry) => Track(
-      id: entry.trackId,
-      userId: entry.userId,
-      title: entry.title,
-      artist: entry.artistName,
-      audioUrl: entry.audioUrl ?? '',
-      streamUrl: entry.streamUrl,
-      duration: Duration(seconds: entry.durationSeconds),
-      playCount: entry.playCount,
-      isLiked: entry.isLiked,
-      isArtistFollowed: entry.isArtistFollowed,
-      createdAt: entry.playedAt,
-      coverImage: entry.artworkUrl,
-    )).toList();
+    final filteredTracks = filtered
+        .map(
+          (entry) => Track(
+            id: entry.trackId,
+            userId: entry.userId,
+            title: entry.title,
+            artist: entry.artistName,
+            audioUrl: entry.audioUrl ?? '',
+            streamUrl: entry.streamUrl,
+            duration: Duration(seconds: entry.durationSeconds),
+            playCount: entry.playCount,
+            isLiked: entry.isLiked,
+            isArtistFollowed: entry.isArtistFollowed,
+            createdAt: entry.playedAt,
+            coverImage: entry.artworkUrl,
+          ),
+        )
+        .toList();
 
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
-      ref.read(queueStateProvider.notifier).playQueue(
-        tracks: filteredTracks,
-        initialIndex: index,
-        context: const QueueContext(type: QueueSource.listeningHistory),
-      );
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: filteredTracks,
+            initialIndex: index,
+            context: const QueueContext(type: QueueSource.listeningHistory),
+          );
     }
 
     return CustomScrollView(
@@ -191,11 +197,15 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             onShuffle: () {
               if (filteredTracks.isNotEmpty) {
                 final shuffled = List<Track>.from(filteredTracks)..shuffle();
-                ref.read(queueStateProvider.notifier).playQueue(
-                  tracks: shuffled,
-                  initialIndex: 0,
-                  context: const QueueContext(type: QueueSource.listeningHistory),
-                );
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: shuffled,
+                      initialIndex: 0,
+                      context: const QueueContext(
+                        type: QueueSource.listeningHistory,
+                      ),
+                    );
               }
             },
             onPlay: () => playAt(0),
@@ -300,10 +310,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           ),
           IconButton(
             key: const Key('history_shuffle_icon_button'),
-            icon: const Icon(
-              Icons.shuffle,
-              color: AppTheme.textSecondary,
-            ),
+            icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
             onPressed: onShuffle,
           ),
           const SizedBox(width: 12),

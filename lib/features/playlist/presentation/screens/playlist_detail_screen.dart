@@ -47,7 +47,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
       final state = ref.read(playlistDetailProvider);
 
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: [fullTrack],
             initialIndex: 0,
             context: QueueContext(
@@ -68,10 +70,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     try {
       final List<Track> allTracks = [];
       for (final pt in tracks) {
-        allTracks.add(await ref.read(getTrackDetailsUseCaseProvider).call(pt.id));
+        allTracks.add(
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id),
+        );
       }
 
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: allTracks,
             initialIndex: index,
             context: QueueContext(
@@ -119,14 +125,16 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       // Shuffle locally before playing
       final shuffledTracks = List<Track>.from(allTracks)..shuffle();
 
-      await ref.read(queueStateProvider.notifier).playQueue(
-        tracks: shuffledTracks,
-        initialIndex: 0,
-        context: QueueContext(
-          type: _mapPlaylistTypeToQueueSource(state.playlist?.type),
-          sourceId: widget.playlistId,
-        ),
-      );
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: shuffledTracks,
+            initialIndex: 0,
+            context: QueueContext(
+              type: _mapPlaylistTypeToQueueSource(state.playlist?.type),
+              sourceId: widget.playlistId,
+            ),
+          );
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }

@@ -627,10 +627,10 @@ class PlaylistRemoteDatasource {
         queryParameters: {'limit': limit, 'offset': 0},
       );
       _log('← ${response.statusCode}');
-      
+
       final data = response.data!['data'] as Map<String, dynamic>;
       final tracks = data['tracks'] as List<dynamic>;
-      
+
       _log('← Got ${tracks.length} related tracks for $trackId');
       return _mapDiscoveryTracksToPlaylistTracks(tracks);
     } on DioException catch (e) {
