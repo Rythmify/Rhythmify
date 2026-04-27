@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import '../widgets/bottom_navigation.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

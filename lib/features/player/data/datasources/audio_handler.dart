@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/domain/entities/track.dart';
@@ -21,11 +22,14 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
         ), // Start playing fast
         bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
       ),
+
       darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true, // For iOS seamless playback
+        automaticallyWaitsToMinimizeStalling: true,
       ),
     ),
   );
+
+  final _playlist = ConcatenatingAudioSource(children: []);
 
   /// The current list of tracks in the playback queue.
   List<Track> _currentQueue = [];
@@ -37,6 +41,17 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Initializes listeners for playback events and current index changes to
   /// sync the [playbackState] and [mediaItem] with the system.
   Future<void> _init() async {
+    _player.processingStateStream.listen((state) async {
+      if (state == ProcessingState.completed) {
+        final currentIndex = _player.currentIndex;
+        if (currentIndex != null && currentIndex < _playlist.length - 1) {
+          // Hardware level auto-advance
+          await _player.seek(Duration.zero, index: currentIndex + 1);
+          _player.play();
+        }
+      }
+    });
+
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
       playbackState.add(
@@ -93,7 +108,25 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> updateTrackInfo(String id, Track updatedTrack) async {
     final index = _currentQueue.indexWhere((t) => t.id == id);
     if (index != -1) {
+      final oldTrack = _currentQueue[index];
       _currentQueue[index] = updatedTrack;
+
+      // --- DYNAMIC SOURCE REPLACEMENT (FIX FOR SILENT ARRAY SHIFT) ---
+      // If the track previously had no URL (was a placeholder) and now has one,
+      // hot-swap the AudioSource in the native playlist so the hardware
+      // index remains perfectly aligned with the UI index.
+      final oldUrl = (oldTrack.streamUrl ?? oldTrack.audioUrl).trim();
+      final newUrl = (updatedTrack.streamUrl ?? updatedTrack.audioUrl).trim();
+
+      if (oldUrl.isEmpty && newUrl.isNotEmpty) {
+        final newSource = _convertToAudioSources([
+          updatedTrack,
+        ], useCache: false).first;
+        if (index < _playlist.length) {
+          await _playlist.removeAt(index);
+          await _playlist.insert(index, newSource);
+        }
+      }
 
       if (_player.currentIndex == index) {
         mediaItem.add(
@@ -137,45 +170,106 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   List<Track> get currentQueue => _currentQueue;
 
   /// Loads a new set of [Track]s into the player and prepares for playback.
-  /// Loads a new set of [Track]s into the player and prepares for playback.
   Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
-    _currentQueue = tracks;
+    _currentQueue = List.from(tracks);
+    final audioSources = _convertToAudioSources(tracks);
 
-    final List<AudioSource> audioSources = [];
+    if (audioSources.isEmpty) return;
+
+    try {
+      // Clear and reload fully for a context change
+      await _playlist.clear();
+      await _playlist.addAll(audioSources);
+
+      final effectiveIndex = initialIndex < audioSources.length
+          ? initialIndex
+          : 0;
+
+      await _player.setAudioSource(
+        _playlist,
+        initialIndex: effectiveIndex,
+        initialPosition: Duration.zero,
+      );
+    } catch (e) {
+      debugPrint('[RythmifyAudioHandler] loadQueue error: $e');
+    }
+  }
+
+  /// Jumps to a specific index in the current native queue without re-loading.
+  Future<void> skipToIndex(int index) async {
+    if (index < 0 || index >= _playlist.length) {
+      return;
+    }
+    try {
+      await _player.seek(Duration.zero, index: index);
+      _player.play();
+    } catch (e) {
+      debugPrint('[RythmifyAudioHandler] skipToIndex error: $e');
+    }
+  }
+
+  /// Appends tracks to the end of the current queue.
+  Future<void> appendTracks(List<Track> tracks) async {
+    final audioSources = _convertToAudioSources(tracks, useCache: false);
+    if (audioSources.isEmpty) return;
+
+    final insertionIndex = _playlist.length;
+    _currentQueue.addAll(tracks);
+    await _playlist.addAll(audioSources);
+
+    // If the player reached 'completed' before the fetch finished
+    // we must manually kick-start it into the new tracks.
+    if (_player.processingState == ProcessingState.completed) {
+      await _player.seek(Duration.zero, index: insertionIndex);
+      _player.play();
+    }
+  }
+
+  List<AudioSource> _convertToAudioSources(
+    List<Track> tracks, {
+    bool useCache = true,
+  }) {
+    final List<AudioSource> sources = [];
 
     for (final track in tracks) {
       final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
 
       if (rawUrl.isEmpty) {
-        // Skip invalid tracks to prevent crash
+        // CRITICAL FIX: Never drop tracks. Inject a silent/dummy placeholder
+        // to maintain perfect 1:1 index alignment with the UI state.
+        // This placeholder will be hot-swapped via JIT resolution before playback.
+        sources.add(
+          AudioSource.uri(
+            Uri.parse('asset:///assets/audio/empty.mp3'),
+            tag: track.id,
+          ),
+        );
         continue;
       }
 
       if (rawUrl.startsWith('assets/')) {
-        audioSources.add(AudioSource.asset(rawUrl, tag: track.id));
+        sources.add(AudioSource.asset(rawUrl, tag: track.id));
       } else {
         final resolvedUri = _resolveTrackUri(rawUrl);
         if (resolvedUri != null) {
-          // ignore: experimental_member_use
-          audioSources.add(LockCachingAudioSource(resolvedUri, tag: track.id));
+          if (useCache) {
+            // ignore: experimental_member_use
+            sources.add(LockCachingAudioSource(resolvedUri, tag: track.id));
+          } else {
+            // Use regular URI source for background recommendations to avoid heavy caching overhead immediately
+            sources.add(AudioSource.uri(resolvedUri, tag: track.id));
+          }
+        } else {
+          sources.add(
+            AudioSource.uri(
+              Uri.parse('asset:///assets/audio/empty.mp3'),
+              tag: track.id,
+            ),
+          );
         }
       }
     }
-
-    if (audioSources.isEmpty) {
-      return;
-    }
-
-    // Ensure initialIndex is within bounds after potentially skipping tracks
-    final effectiveIndex = initialIndex < audioSources.length
-        ? initialIndex
-        : 0;
-
-    await _player.setAudioSources(
-      audioSources,
-      initialIndex: effectiveIndex,
-      initialPosition: Duration.zero,
-    );
+    return sources;
   }
 
   /// Clears the cached audio files from device storage to free up space.
@@ -231,7 +325,5 @@ Uri? _resolveArtworkUri(String rawUrl) {
       (parsed.scheme == 'http' || parsed.scheme == 'https')) {
     return parsed;
   }
-
-  // Avoid invalid asset/network URI values in system media metadata.
   return null;
 }

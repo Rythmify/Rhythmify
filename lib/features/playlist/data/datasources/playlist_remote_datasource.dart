@@ -1,6 +1,7 @@
 // lib/features/playlist/data/datasources/playlist_remote_datasource.dart
 
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
@@ -681,7 +682,7 @@ class PlaylistRemoteDatasource {
   // ============================================================
   Future<List<PlaylistTrack>> fetchRelatedTracks(
     String trackId, {
-    int limit = 50,
+    int limit = 20,
   }) async {
     _log('→ GET /tracks/$trackId/related  limit=$limit');
     try {
@@ -911,8 +912,10 @@ class PlaylistRemoteDatasource {
             playCount: (json['play_count'] as num?)?.toInt() ?? 0,
             position: startPosition + i,
             coverUrl: json['cover_image'] as String?,
-            isLiked: false,
+            isLiked: json['is_liked_by_me'] as bool? ?? false,
             isUnavailable: false,
+            streamUrl: json['stream_url'] as String?,
+            audioUrl: json['audio_url'] as String?,
           ),
         );
       } catch (e) {
@@ -945,8 +948,10 @@ class PlaylistRemoteDatasource {
             playCount: (json['play_count'] as num?)?.toInt() ?? 0,
             position: startPosition + i,
             coverUrl: json['cover_image'] as String?,
-            isLiked: false,
+            isLiked: json['is_liked_by_me'] as bool? ?? false,
             isUnavailable: false,
+            streamUrl: json['stream_url'] as String?,
+            audioUrl: json['audio_url'] as String?,
           ),
         );
       } catch (e) {
@@ -961,17 +966,17 @@ class PlaylistRemoteDatasource {
   // ============================================================
   void _log(String message) {
     // ignore: avoid_print
-    print('[DATASOURCE] $message');
+    debugPrint('[DATASOURCE] $message');
   }
 
   void _logError(String context, DioException e) {
     // ignore: avoid_print
-    print('[DATASOURCE] ❌ ERROR in $context');
+    debugPrint('[DATASOURCE] ❌ ERROR in $context');
     // ignore: avoid_print
-    print('[DATASOURCE]    Status: ${e.response?.statusCode}');
+    debugPrint('[DATASOURCE]    Status: ${e.response?.statusCode}');
     // ignore: avoid_print
-    print('[DATASOURCE]    Message: ${e.message}');
+    debugPrint('[DATASOURCE]    Message: ${e.message}');
     // ignore: avoid_print
-    print('[DATASOURCE]    Response body: ${e.response?.data}');
+    debugPrint('[DATASOURCE]    Response body: ${e.response?.data}');
   }
 }

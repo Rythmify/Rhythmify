@@ -11,4 +11,21 @@ abstract class PlaybackRepository {
 
   /// Synchronizes any pending offline history records with the backend.
   Future<void> syncPendingHistory();
+
+  /// Fetches the resolved queue context from the backend.
+  /// Used for "play" and "next_up" interactions.
+  Future<Map<String, dynamic>> fetchQueueContext({
+    required String interactionType,
+    required String sourceType,
+    String? sourceId,
+    String? targetUserId,
+  });
+
+  /// Synchronizes the current player state (current track and remaining queue) to the backend.
+  Future<void> syncPlayerState({
+    required String trackId,
+    required List<Map<String, dynamic>> queue,
+    int positionSeconds = 0,
+    double volume = 0.5,
+  });
 }
