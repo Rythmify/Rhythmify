@@ -35,6 +35,7 @@ class _LibraryPlaylistsScreenState
   final List<PlaylistEntity> _allPlaylists = [];
   final List<PlaylistEntity> _likedPlaylists = [];
   Set<String> _savedMixIds = {};
+  Set<String> _savedTrackRadioPlaylistIds = {};
   bool _loading = true;
 
   OverlayEntry? _overlayEntry;
@@ -52,40 +53,40 @@ class _LibraryPlaylistsScreenState
     super.dispose();
   }
 
-  // Returns current user's ID — used as fallback ownership check
   String _currentUserId() {
     final authState = ref.read(authProvider);
     return authState is AuthAuthenticated ? authState.user.id : '';
   }
 
-  // Determines if a playlist is owned by the current user.
-  // Checks isOwned flag first (set by fromJsonListOwned), then falls back
-  // to ownerId comparison in case the datasource returned fromJsonList instead.
   bool _isPlaylistOwned(PlaylistEntity playlist) {
     if (playlist.isOwned) return true;
     final uid = _currentUserId();
     return uid.isNotEmpty && playlist.ownerId == uid;
   }
 
-  Future<void> _loadAll() async {
+   Future<void> _loadAll() async {
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
-
+ 
     final savedMixes = await LocalSavedStore.instance.getMixes();
     _savedMixIds = savedMixes.map((m) => m.mixId).toSet();
-
+ 
+    // getTrackRadios now exists — no try/catch needed
+    final savedRadios = await LocalSavedStore.instance.getTrackRadios();
+    _savedTrackRadioPlaylistIds = savedRadios.map((r) => r.playlistId).toSet();
+ 
     await notifier.loadPlaylists();
     final created = ref.read(playlistListProvider).playlists;
-
+ 
     await notifier.loadLikedPlaylists();
     final liked = ref.read(playlistListProvider).playlists;
-
+ 
     final createdIds = created.map((p) => p.id).toSet();
     final merged = [
       ...created,
       ...liked.where((p) => !createdIds.contains(p.id)),
     ];
-
+ 
     if (mounted) {
       setState(() {
         _allPlaylists
@@ -97,9 +98,12 @@ class _LibraryPlaylistsScreenState
         _loading = false;
       });
     }
-
+ 
     await notifier.loadPlaylists();
   }
+
+  // ADD THIS METHOD to _LibraryPlaylistsScreenState
+// Place it directly after _loadAll() — before get _sourceList
 
   Future<void> _loadForFilter() async {
     setState(() => _loading = true);
@@ -159,15 +163,16 @@ class _LibraryPlaylistsScreenState
   }
 
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
-    final owned = _isPlaylistOwned(playlist);
-
-    if (owned) {
-      // Owned playlist → PlaylistDetailScreen with full edit access
+    // ── 1. OWNED playlist → full edit screen ──────────────────────────────
+    if (_isPlaylistOwned(playlist)) {
       context.push('/library/playlists/${playlist.id}', extra: true);
       return;
     }
 
-    // Non-owned: check if it was locally saved as a mix
+    // ── 2. SAVED MIX (liked from Mixed For You) ───────────────────────────
+    // These are persisted auto_generated playlists on the backend.
+    // Route to /home/mix/:id → MixDetailScreen which calls fetchMixTracks.
+    // If fetchMixTracks returns empty, MixDetailScreen falls back gracefully.
     if (_savedMixIds.contains(playlist.id)) {
       context.push(
         '/home/mix/${playlist.id}',
@@ -183,7 +188,18 @@ class _LibraryPlaylistsScreenState
       return;
     }
 
-    // Regular playlist liked from another user → non-owner view
+    // ── 3. SAVED TRACK RADIO (liked from More Of What You Like) ──────────
+    // These are track_radio playlists on the backend.
+    // Route to /home/playlist/:id as non-owner → PlaylistDetailScreen
+    // which calls fetchPlaylistTracks then falls back to fetchMixTracks.
+    // The /playlists/:id/tracks endpoint works for track_radio subtypes.
+    if (_savedTrackRadioPlaylistIds.contains(playlist.id)) {
+      context.push('/home/playlist/${playlist.id}', extra: false);
+      return;
+    }
+
+    // ── 4. REGULAR liked playlist from another user ───────────────────────
+    // This path already works correctly — no change.
     context.push('/home/playlist/${playlist.id}', extra: false);
   }
 
