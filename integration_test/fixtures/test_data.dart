@@ -38,7 +38,7 @@ const String validPassword = 'Yomna1234';
 
 // New user for registration
 final TestUser newUser = TestUser(
-  email: 'testinguser@gmail.com',
+  email: 'testingNewUser@gmail.com',
   password: 'NewUser1234',
   username: 'testing_user',
   month: 'June',

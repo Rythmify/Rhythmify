@@ -238,7 +238,6 @@ void main() {
       newUser.gender,
     );
     await tester.pumpAndSettle(const Duration(seconds: 5));
-
-    expect(registerPage.isOnValidEmailPage(), true);
+    expect(registerPage.isOnValidEmailPage(), true); //return false ??
   });
 }

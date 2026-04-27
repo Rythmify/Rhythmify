@@ -82,7 +82,7 @@ class RegisterPage extends BasePage {
 
   bool isOnLoginPage() => isVisible(authTitleText);
   bool isOnHomePage() => isVisible(homeScaffold);
-  bool isOnValidEmailPage() => isVisible(authVerifyEmailTitle);
+  bool isOnValidEmailPage() => isVisible(authVerifyEmailDescription);
   bool isEmailEmptyErrorVisible() => find.text('Please enter your email').evaluate().isNotEmpty;
   bool isInvalidEmailErrorVisible() => find.text('Please enter a valid email').evaluate().isNotEmpty;
   bool isPasswordEmptyErrorVisible() => find.text('Please enter a password').evaluate().isNotEmpty;
