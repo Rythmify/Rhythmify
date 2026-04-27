@@ -25,15 +25,15 @@ class PlaylistModel {
         : null;
 
     // isGeneratedMix: from subtype
-    final isGeneratedMix = subtype == 'auto_generated' ||
+    final isGeneratedMix =
+        subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending';
 
     // isTrackRadio: from backend 'type' field OR subtype
     // Backend returns type: "track_radio" — this is the reliable signal
-    final isTrackRadio = typeField == 'track_radio' ||
-        subtype == 'track_radio';
+    final isTrackRadio = typeField == 'track_radio' || subtype == 'track_radio';
 
     final entity = PlaylistEntity(
       id: json['playlist_id'] as String,

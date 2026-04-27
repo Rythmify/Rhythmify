@@ -62,11 +62,11 @@ class PlaylistRemoteDatasource {
   // playlists where the backend returns null/0.
   // ============================================================
   // In playlist_remote_datasource.dart:
-//
-// 1. Change fetchLikedPlaylists() to also load savedTrackRadios from local store
-// 2. Update _likedItemFromJson signature to accept both maps
-//
-// Replace fetchLikedPlaylists() and _likedItemFromJson with these two methods:
+  //
+  // 1. Change fetchLikedPlaylists() to also load savedTrackRadios from local store
+  // 2. Update _likedItemFromJson signature to accept both maps
+  //
+  // Replace fetchLikedPlaylists() and _likedItemFromJson with these two methods:
 
   Future<List<PlaylistEntity>> fetchLikedPlaylists({
     int limit = 50,
@@ -126,7 +126,8 @@ class PlaylistRemoteDatasource {
         : (localMix?.trackCount ?? localRadio?.trackCount ?? 0);
 
     // isGeneratedMix: backend subtype OR locally saved as a mix
-    final isGeneratedMix = subtype == 'auto_generated' ||
+    final isGeneratedMix =
+        subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
         subtype == 'curated_weekly' ||
         subtype == 'genre_trending' ||
@@ -136,7 +137,8 @@ class PlaylistRemoteDatasource {
     final isTrackRadio = subtype == 'track_radio' || localRadio != null;
 
     // Name: backend name → local mix title → local radio title → 'Untitled'
-    final name = json['name'] as String? ??
+    final name =
+        json['name'] as String? ??
         json['title'] as String? ??
         localMix?.title ??
         localRadio?.title ??
@@ -145,7 +147,8 @@ class PlaylistRemoteDatasource {
     return PlaylistEntity(
       id: id,
       name: name,
-      ownerName: json['display_name'] as String? ??
+      ownerName:
+          json['display_name'] as String? ??
           json['owner_name'] as String? ??
           localMix?.ownerName ??
           '',
@@ -167,6 +170,7 @@ class PlaylistRemoteDatasource {
       isTrackRadio: isTrackRadio,
     );
   }
+
   // ============================================================
   // ── FETCH: User Playlists
   // ============================================================
