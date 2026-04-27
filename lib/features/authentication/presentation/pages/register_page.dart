@@ -184,10 +184,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     ref.listen(authProvider, (previous, next) {
       if (next is AuthError) {
+        final isEmailExistsError = next.message.toLowerCase().contains(
+          'already exists',
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.message),
             backgroundColor: Colors.redAccent,
+            action: isEmailExistsError
+                ? SnackBarAction(
+                    label: 'Log in',
+                    textColor: Colors.white,
+                    onPressed: () => context.push(
+                      '/login/password',
+                      extra: _emailController.text.trim(),
+                    ),
+                  )
+                : null,
           ),
         );
       }

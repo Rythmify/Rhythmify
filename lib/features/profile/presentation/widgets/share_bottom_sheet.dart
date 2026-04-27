@@ -12,8 +12,13 @@ import 'profile_avatar.dart';
 
 class ShareBottomSheet extends ConsumerWidget {
   final ProfileEntity profile;
+  final bool isOwnProfile;
 
-  const ShareBottomSheet({super.key, required this.profile});
+  const ShareBottomSheet({
+    super.key,
+    required this.profile,
+    required this.isOwnProfile,
+  });
 
   String get _profileUrl => 'https://rythmify.com/users/${profile.id}';
 
@@ -198,69 +203,43 @@ class ShareBottomSheet extends ConsumerWidget {
             ),
           ),
 
-          /// ── Block user ─────────────────────────────────────────────
-          const SizedBox(height: 20),
-          GestureDetector(
-            key: const Key('profile_share_block_gesture'),
-            onTap: () {
-              Navigator.pop(context);
-              _confirmBlock(context, ref);
-            },
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.block_rounded,
-                  color: Colors.redAccent,
-                  size: 22,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Block user',
-                  style: AppTheme.bodyLarge.copyWith(color: Colors.redAccent),
-                ),
-              ],
+          if (!isOwnProfile) ...[
+            const SizedBox(height: 20),
+            GestureDetector(
+              key: const Key('profile_share_block_gesture'),
+              onTap: () {
+                Navigator.pop(context);
+                ref
+                    .read(publicProfileProvider(profile.id).notifier)
+                    .blockUser(
+                      profile.id,
+                      onError: (message) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                      },
+                    );
+              },
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.block_rounded,
+                    color: Colors.redAccent,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Block user',
+                    style: AppTheme.bodyLarge.copyWith(color: Colors.redAccent),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
-  }
-
-  /// Shows a confirmation dialog before blocking the user.
-  Future<void> _confirmBlock(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text('Block this user?', style: AppTheme.titleMedium),
-        content: Text(
-          'They won\'t see your profile and you won\'t see theirs.',
-          style: AppTheme.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              'Cancel',
-              style: AppTheme.labelLarge.copyWith(color: Colors.grey),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              'Block',
-              style: AppTheme.labelLarge.copyWith(color: Colors.redAccent),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      ref
-          .read(publicProfileProvider(profile.id).notifier)
-          .blockUser(profile.id);
-    }
   }
 
   /// ── Share button widget ──────────────────────────────────────

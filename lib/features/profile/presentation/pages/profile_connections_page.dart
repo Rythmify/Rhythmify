@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/usecases/get_user_connections_usecase.dart';
 import '../providers/profile_connections_provider.dart';
 import '../providers/profile_connections_state.dart';
+import '../providers/profile_provider.dart';
 import '../widgets/profile_user_list_tile.dart';
 
 /// Paginated profile connections screen for followers/following.
@@ -35,7 +39,9 @@ class _ProfileConnectionsPageState
   @override
   void initState() {
     super.initState();
-    Future.microtask(_loadInitial);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitial();
+    });
     _scrollController.addListener(_onScroll);
   }
 
@@ -55,7 +61,8 @@ class _ProfileConnectionsPageState
           userId: widget.userId,
           type: widget.type,
           refresh: true,
-        );
+        )
+        .then((_) => _syncFollowStateAndCounts());
   }
 
   /// Loads next page when near the end.
@@ -65,8 +72,33 @@ class _ProfileConnectionsPageState
         _scrollController.position.maxScrollExtent - 200) {
       ref
           .read(profileConnectionsProvider.notifier)
-          .loadConnections(userId: widget.userId, type: widget.type);
+          .loadConnections(userId: widget.userId, type: widget.type)
+          .then((_) => _syncFollowStateAndCounts());
     }
+  }
+
+  void _syncFollowStateAndCounts() {
+    final connectionsState = ref.read(profileConnectionsProvider);
+    if (connectionsState is! ProfileConnectionsLoaded) return;
+
+    final followState = ref.read(followStateProvider);
+    final followStateNotifier = ref.read(followStateProvider.notifier);
+    for (final user in connectionsState.users) {
+      if (followState.containsKey(user.id)) continue;
+      followStateNotifier.setFollowing(user.id, isFollowing: user.isFollowing);
+    }
+
+    final authState = ref.read(authProvider);
+    final isOwnProfile =
+        authState is AuthAuthenticated && authState.user.id == widget.userId;
+    final profileNotifier = isOwnProfile
+        ? ref.read(ownProfileProvider.notifier)
+        : ref.read(publicProfileProvider(widget.userId).notifier);
+
+    profileNotifier.syncConnectionsCount(
+      type: widget.type,
+      count: connectionsState.totalCount ?? connectionsState.users.length,
+    );
   }
 
   @override
