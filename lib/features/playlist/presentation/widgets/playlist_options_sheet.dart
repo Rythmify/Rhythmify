@@ -1,13 +1,4 @@
 // lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
-//
-// CHANGES vs original:
-//   + Like / Unlike — calls provider toggleLike(), shows filled heart when liked
-//   + Play next / Play last — calls playerStateProvider queue methods
-//   + Copy playlist — calls copyPlaylist(), navigates to the new playlist
-//   + Make private/public — reloads detail after toggling
-//   + Share sheet — Message, SMS, QR code, Copy link, WhatsApp, Snapchat
-//   + Send to (contacts row) — stubbed, ready for messaging module
-
 library;
 
 import 'package:flutter/material.dart';
@@ -27,29 +18,36 @@ class PlaylistOptionsSheet extends ConsumerWidget {
   const PlaylistOptionsSheet({
     super.key,
     required this.playlistId,
+    this.playlist,   // FIX: optional pre-loaded entity from library screen
     this.isOwner = false,
     this.onConverted,
   });
 
   final String playlistId;
+  final PlaylistEntity? playlist; // passed from library to avoid wrong playlist bug
   final bool isOwner;
   final void Function(PlaylistType newType)? onConverted;
 
-  // ── Share URL helpers ──────────────────────────────────────────────────────
-  String _buildShareUrl(PlaylistEntity playlist) {
-    // Private playlists: backend returns secret_token only to owner via
-    // fetchPlaylistDetail — not stored on entity yet. Share base URL for now.
-    return 'https://rythmify.com/playlists/${playlist.id}';
-  }
+  String _buildShareUrl(PlaylistEntity p) =>
+      'https://rythmify.com/playlists/${p.id}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // FIX: use the passed playlist entity if available (from library),
+    // otherwise fall back to playlistDetailProvider (from detail screen).
     final detailState = ref.watch(playlistDetailProvider);
-    final playlist = detailState.playlist;
-    if (playlist == null) return const SizedBox.shrink();
+    final resolvedPlaylist = playlist ?? detailState.playlist;
+
+    if (resolvedPlaylist == null) return const SizedBox.shrink();
+
+    // For like state: use detailState if we opened from detail screen,
+    // otherwise use the entity's own isLiked field.
+    final isLiked = playlist != null
+        ? resolvedPlaylist.isLiked
+        : detailState.isLiked;
 
     final sheetContext = context;
-    final shareUrl = _buildShareUrl(playlist);
+    final shareUrl = _buildShareUrl(resolvedPlaylist);
 
     return Container(
       decoration: const BoxDecoration(
@@ -71,7 +69,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               child: Row(
                 children: [
                   PlaylistCoverImage(
-                    playlist: playlist,
+                    playlist: resolvedPlaylist,
                     size: 56,
                     borderRadius: 4,
                   ),
@@ -81,7 +79,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          playlist.name,
+                          resolvedPlaylist.name,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -89,7 +87,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          playlist.ownerName,
+                          resolvedPlaylist.ownerName.isNotEmpty
+                              ? resolvedPlaylist.ownerName
+                              : 'You',
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 13,
@@ -104,24 +104,27 @@ class PlaylistOptionsSheet extends ConsumerWidget {
 
             const Divider(color: Colors.white12, height: 1),
 
-            // ── Share row (Send to + share options) ──────────────────────
-            _ShareRow(shareUrl: shareUrl, playlist: playlist),
+            // ── Share row ──────────────────────────────────────────────
+            _ShareRow(shareUrl: shareUrl, playlist: resolvedPlaylist),
 
             const Divider(color: Colors.white12, height: 1),
 
             // ── Like ──────────────────────────────────────────────────────
             OptionSheetTile(
               key: const Key('options_like'),
-              icon: detailState.isLiked
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              label: detailState.isLiked ? 'Liked' : 'Like',
-              color: detailState.isLiked
-                  ? const Color(0xFFFF5500)
-                  : Colors.white,
+              icon: isLiked ? Icons.favorite : Icons.favorite_border,
+              label: isLiked ? 'Liked' : 'Like',
+              color: isLiked ? const Color(0xFFFF5500) : Colors.white,
               onTap: () async {
                 Navigator.of(context).pop();
-                await ref.read(playlistDetailProvider.notifier).toggleLike();
+                // If opened from detail screen, use the notifier
+                if (playlist == null) {
+                  await ref
+                      .read(playlistDetailProvider.notifier)
+                      .toggleLike();
+                }
+                // If opened from library, the like state is read-only here.
+                // User should open the playlist detail to like/unlike.
               },
             ),
 
@@ -134,7 +137,6 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 final tracks = detailState.tracks;
                 if (tracks.isEmpty) return;
-                // Add first track of playlist next in queue
                 try {
                   final t = await ref
                       .read(getTrackDetailsUseCaseProvider)
@@ -166,11 +168,13 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               },
             ),
 
-            // ── Copy playlist ─────────────────────────────────────────────
+            // ── Copy ─────────────────────────────────────────────────────
+            // Works for owned playlists, mixes, and track radios.
+            // Creates a new owned playlist with the same tracks.
             OptionSheetTile(
               key: const Key('options_copy'),
               icon: Icons.copy_all,
-              label: 'Copy ${playlist.typeLabel.toLowerCase()}',
+              label: 'Copy ${resolvedPlaylist.typeLabel.toLowerCase()}',
               onTap: () async {
                 Navigator.of(context).pop();
                 _showCopyingSnackbar(sheetContext);
@@ -179,7 +183,8 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                     .copyPlaylist(playlistId);
                 if (newId != null && sheetContext.mounted) {
                   ScaffoldMessenger.of(sheetContext).hideCurrentSnackBar();
-                  sheetContext.push('/home/playlist/$newId', extra: true);
+                  // Navigate to the new owned playlist with full edit UI
+                  sheetContext.push('/library/playlists/$newId', extra: true);
                 }
               },
             ),
@@ -189,7 +194,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               OptionSheetTile(
                 key: const Key('options_edit'),
                 icon: Icons.edit_outlined,
-                label: 'Edit ${playlist.typeLabel.toLowerCase()}',
+                label: 'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
                 onTap: () {
                   Navigator.of(context).pop();
                   showModalBottomSheet(
@@ -207,22 +212,21 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               // ── Toggle privacy ─────────────────────────────────────────
               OptionSheetTile(
                 key: const Key('options_toggle_privacy'),
-                icon: playlist.isPublic
+                icon: resolvedPlaylist.isPublic
                     ? Icons.lock_outline
                     : Icons.lock_open_outlined,
-                label: playlist.isPublic
-                    ? 'Make ${playlist.typeLabel.toLowerCase()} private'
-                    : 'Make ${playlist.typeLabel.toLowerCase()} public',
+                label: resolvedPlaylist.isPublic
+                    ? 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} private'
+                    : 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} public',
                 onTap: () async {
                   Navigator.of(context).pop();
                   await ref
                       .read(playlistListProvider.notifier)
                       .updatePlaylist(
                         playlistId: playlistId,
-                        name: playlist.name,
-                        isPublic: !playlist.isPublic,
+                        name: resolvedPlaylist.name,
+                        isPublic: !resolvedPlaylist.isPublic,
                       );
-                  // Reload detail so the header reflects new privacy state
                   ref.read(playlistDetailProvider.notifier).reload();
                 },
               ),
@@ -231,7 +235,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               OptionSheetTile(
                 key: const Key('options_delete'),
                 icon: Icons.delete_outline,
-                label: 'Delete ${playlist.typeLabel.toLowerCase()}',
+                label: 'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
                 color: Colors.redAccent,
                 onTap: () {
                   showDialog(
@@ -239,20 +243,19 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                     builder: (_) => AlertDialog(
                       backgroundColor: const Color(0xFF1E1E1E),
                       title: Text(
-                        'Delete ${playlist.typeLabel.toLowerCase()}?',
+                        'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}?',
                         style: const TextStyle(color: Colors.white),
                       ),
                       content: Text(
                         'This cannot be undone.',
-                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                        style:
+                            TextStyle(color: Colors.grey[400], fontSize: 13),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(color: Colors.white54),
-                          ),
+                          child: const Text('Cancel',
+                              style: TextStyle(color: Colors.white54)),
                         ),
                         TextButton(
                           onPressed: () {
@@ -263,8 +266,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                                 .deletePlaylist(playlistId);
                           },
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.redAccent,
-                          ),
+                              foregroundColor: Colors.redAccent),
                           child: const Text('Delete'),
                         ),
                       ],
@@ -292,8 +294,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// SHARE ROW WIDGET
-// Matches the screenshot: Send To row + share icons row
+// SHARE ROW
 // ════════════════════════════════════════════════════════════════════════════
 
 class _ShareRow extends StatelessWidget {
@@ -309,7 +310,6 @@ class _ShareRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── SHARE label ────────────────────────────────────────────────
           Text(
             'SHARE',
             style: TextStyle(
@@ -320,8 +320,6 @@ class _ShareRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-
-          // ── Share icons row ────────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -329,12 +327,12 @@ class _ShareRow extends StatelessWidget {
                 _ShareIcon(
                   icon: Icons.send_outlined,
                   label: 'Message',
-                  onTap: () => _shareViaSystem(context),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.sms_outlined,
                   label: 'SMS',
-                  onTap: () => _shareSms(context),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.qr_code_2,
@@ -344,27 +342,33 @@ class _ShareRow extends StatelessWidget {
                 _ShareIcon(
                   icon: Icons.link,
                   label: 'Copy link',
-                  onTap: () => _copyLink(context),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: shareUrl));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
                 ),
                 _ShareIcon(
-                  // WhatsApp green circle
                   icon: Icons.chat,
                   label: 'WhatsApp',
                   backgroundColor: const Color(0xFF25D366),
-                  onTap: () => _shareWhatsApp(context),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
-                  // Snapchat yellow circle
                   icon: Icons.photo_camera,
                   label: 'Snapchat',
                   backgroundColor: const Color(0xFFFFFC00),
                   iconColor: Colors.black,
-                  onTap: () => _shareSnapchat(context),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.more_horiz,
                   label: 'More',
-                  onTap: () => _shareViaSystem(context),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
               ],
             ),
@@ -374,35 +378,6 @@ class _ShareRow extends StatelessWidget {
     );
   }
 
-  void _shareViaSystem(BuildContext context) {
-    Share.share(shareUrl, subject: playlist.name);
-  }
-
-  void _shareSms(BuildContext context) {
-    // On iOS this opens Messages; on Android opens default SMS app
-    Share.share(shareUrl, subject: playlist.name);
-  }
-
-  void _copyLink(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: shareUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _shareWhatsApp(BuildContext context) {
-    Share.share(shareUrl, subject: playlist.name);
-  }
-
-  void _shareSnapchat(BuildContext context) {
-    // Snapchat doesn't have a standard deep-link for sharing URLs;
-    // fall back to system share sheet.
-    Share.share(shareUrl, subject: playlist.name);
-  }
-
   void _showQrCode(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -410,14 +385,11 @@ class _ShareRow extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
       ),
-      builder: (_) => _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
+      builder: (_) =>
+          _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
     );
   }
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// Individual share icon button
-// ════════════════════════════════════════════════════════════════════════════
 
 class _ShareIcon extends StatelessWidget {
   const _ShareIcon({
@@ -452,21 +424,15 @@ class _ShareIcon extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 11),
-            ),
+            Text(label,
+                style:
+                    const TextStyle(color: Colors.white, fontSize: 11)),
           ],
         ),
       ),
     );
   }
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// QR Code sheet — uses a simple text-based placeholder
-// Replace with qr_flutter package if you want a real QR image
-// ════════════════════════════════════════════════════════════════════════════
 
 class _QrCodeSheet extends StatelessWidget {
   const _QrCodeSheet({required this.url, required this.playlistName});
@@ -492,8 +458,6 @@ class _QrCodeSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // QR placeholder — swap for qr_flutter widget if desired:
-          // QrImageView(data: url, size: 200, backgroundColor: Colors.white)
           Container(
             width: 200,
             height: 200,
@@ -520,17 +484,13 @@ class _QrCodeSheet extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: url));
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Link copied')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Link copied')));
               },
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white30),
-              ),
-              child: const Text(
-                'Copy link',
-                style: TextStyle(color: Colors.white),
-              ),
+                  side: const BorderSide(color: Colors.white30)),
+              child: const Text('Copy link',
+                  style: TextStyle(color: Colors.white)),
             ),
           ),
           const SizedBox(height: 8),
