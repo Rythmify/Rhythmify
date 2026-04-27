@@ -4,6 +4,7 @@ import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/genre_tab.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:ui';
 import '../providers/home_providers.dart';
@@ -257,7 +258,10 @@ class GenreTabView extends ConsumerWidget {
         if (genre.genreId == initialGenreId) {
           return Padding(
             padding: const EdgeInsets.only(left: 20),
-            child: _TrendingHorizontalColumns(tracks: initialTracks),
+            child: _TrendingHorizontalColumns(
+              tracks: initialTracks,
+              genreId: initialGenreId,
+            ),
           );
         }
 
@@ -266,7 +270,10 @@ class GenreTabView extends ConsumerWidget {
         return asyncTracks.when(
           data: (genreTabTracks) => Padding(
             padding: const EdgeInsets.only(left: 20),
-            child: _TrendingHorizontalColumns(tracks: genreTabTracks.tracks),
+            child: _TrendingHorizontalColumns(
+              tracks: genreTabTracks.tracks,
+              genreId: genre.genreId,
+            ),
           ),
           loading: () => const TrendingGenreShimmer(),
           error: (e, _) => Center(
@@ -285,8 +292,12 @@ class GenreTabView extends ConsumerWidget {
 
 class _TrendingHorizontalColumns extends ConsumerWidget {
   final List<Track> tracks;
+  final String genreId;
 
-  const _TrendingHorizontalColumns({required this.tracks});
+  const _TrendingHorizontalColumns({
+    required this.tracks,
+    required this.genreId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -381,6 +392,10 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                           .playQueue(
                             tracks: tracks,
                             initialIndex: tracks.indexOf(track),
+                            context: QueueContext(
+                              type: QueueSource.trending,
+                              sourceId: genreId,
+                            ),
                           );
                     }
                   },

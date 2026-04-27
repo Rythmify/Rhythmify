@@ -7,6 +7,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../track_upload/presentation/providers/upload_track_provider.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 // ── Added for artist name fix ──
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
@@ -47,6 +50,7 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
 
   /// Triggers paginated load when the user scrolls within 200 px of the bottom.
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref.read(uploadsProvider.notifier).load();
@@ -178,6 +182,19 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
               )
               .toList();
 
+    final filteredTracks = filtered.map((e) => e.track).toList();
+
+    void playAt(int index) {
+      if (filteredTracks.isEmpty) return;
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: filteredTracks,
+            initialIndex: index,
+            context: const QueueContext(type: QueueSource.userTracks),
+          );
+    }
+
     return CustomScrollView(
       key: const Key('uploads_scroll_view'),
       controller: _scrollController,
@@ -189,8 +206,19 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
             usedMinutes: _computeUsedMinutes(state),
             limitMinutes: _kUploadLimitMinutes,
             onUpload: _handleUploadButtonPress,
-            onShuffle: () {},
-            onPlay: () {},
+            onShuffle: () {
+              if (filteredTracks.isNotEmpty) {
+                final shuffled = List<Track>.from(filteredTracks)..shuffle();
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: shuffled,
+                      initialIndex: 0,
+                      context: const QueueContext(type: QueueSource.userTracks),
+                    );
+              }
+            },
+            onPlay: () => playAt(0),
           ),
         ),
 
@@ -220,7 +248,11 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
                         )
                       : const SizedBox.shrink();
                 }
-                return TrackCard(track: filtered[index].track);
+                return TrackCard(
+                  key: Key('uploads_item_${filteredTracks[index].id}_$index'),
+                  track: filteredTracks[index],
+                  onTap: () => playAt(index),
+                );
               },
             ),
           ),

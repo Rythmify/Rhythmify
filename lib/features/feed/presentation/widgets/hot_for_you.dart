@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:ui'; // Ensure this is imported for ImageFilter
+import 'dart:ui';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/domain/entities/track.dart';
 
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 import '../providers/home_providers.dart';
 import 'shimmers/hot_for_you_shimmer.dart';
@@ -164,8 +166,14 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                                   .togglePlayPause();
                             } else {
                               ref
-                                  .read(playerStateProvider.notifier)
-                                  .loadAndPlayQueue([widget.track]);
+                                  .read(queueStateProvider.notifier)
+                                  .playQueue(
+                                    tracks: [widget.track],
+                                    initialIndex: 0,
+                                    context: const QueueContext(
+                                      type: QueueSource.trending,
+                                    ),
+                                  );
                             }
                           },
                         ),

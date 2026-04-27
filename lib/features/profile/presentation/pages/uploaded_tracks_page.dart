@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 class UploadedTracksPage extends ConsumerStatefulWidget {
   final String userId;
@@ -168,6 +170,65 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
               ),
             ),
           ),
+          // ── Action row ─────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                const Spacer(),
+                IconButton(
+                  key: const Key('uploaded_tracks_shuffle_button'),
+                  icon: const Icon(
+                    Icons.shuffle,
+                    color: AppTheme.textSecondary,
+                  ),
+                  onPressed: () {
+                    if (filtered.isNotEmpty) {
+                      final shuffled = List<Track>.from(filtered)..shuffle();
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
+                            tracks: shuffled,
+                            initialIndex: 0,
+                            context: QueueContext(
+                              type: QueueSource.userTracks,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
+                            ),
+                          );
+                    }
+                  },
+                ),
+                FloatingActionButton.small(
+                  key: const Key('uploaded_tracks_play_all_fab'),
+                  heroTag: 'uploaded_tracks_play',
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    if (filtered.isNotEmpty) {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playQueue(
+                            tracks: filtered,
+                            initialIndex: 0,
+                            context: QueueContext(
+                              type: QueueSource.userTracks,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
+                            ),
+                          );
+                    }
+                  },
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.black,
+                    size: 22,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -193,7 +254,16 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
                   onTap: () {
                     ref
                         .read(queueStateProvider.notifier)
-                        .playQueue(tracks: filtered, initialIndex: index);
+                        .playQueue(
+                          tracks: filtered,
+                          initialIndex: index,
+                          context: QueueContext(
+                            type: QueueSource.userTracks,
+                            targetUserId: widget.userId == 'me'
+                                ? null
+                                : widget.userId,
+                          ),
+                        );
                   },
                 );
               },

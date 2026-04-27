@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 
 /// A horizontally scrollable list of trending tracks shown in the All tab.
 /// Tracks are grouped into chunks of 3, each chunk rendered as a vertical column
 /// in a 350px-wide page — creating a paginated horizontal scroll effect.
 class TrendingTracks extends ConsumerWidget {
-  const TrendingTracks({super.key, required this.tracks});
+  const TrendingTracks({super.key, required this.tracks, this.genreId});
   final List<Track> tracks;
+  final String? genreId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -114,6 +116,10 @@ class TrendingTracks extends ConsumerWidget {
                             .playQueue(
                               tracks: tracks,
                               initialIndex: tracks.indexOf(track),
+                              context: QueueContext(
+                                type: QueueSource.trending,
+                                sourceId: genreId,
+                              ),
                             );
                       }
                     },

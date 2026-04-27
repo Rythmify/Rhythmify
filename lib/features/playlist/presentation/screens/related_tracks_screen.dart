@@ -8,7 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../feed/presentation/providers/home_providers.dart';
-import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/saved_content_provider.dart';
@@ -152,8 +153,15 @@ class _BodyState extends ConsumerState<_Body> {
     if (list.isEmpty || index >= list.length) return;
     try {
       await ref
-          .read(playerStateProvider.notifier)
-          .loadAndPlayQueue(list, initialIndex: index);
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: list,
+            initialIndex: index,
+            context: QueueContext(
+              type: QueueSource.station,
+              sourceId: widget.sourceId,
+            ),
+          );
     } catch (e) {
       debugPrint('[RelatedTracks] play failed: $e');
     }

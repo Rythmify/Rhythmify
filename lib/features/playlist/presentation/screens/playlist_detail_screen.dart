@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../player/presentation/providers/player_provider.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
@@ -42,26 +44,62 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       final fullTrack = await ref
           .read(getTrackDetailsUseCaseProvider)
           .call(pt.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        fullTrack,
-      ], initialIndex: 0);
+
+      final state = ref.read(playlistDetailProvider);
+
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: [fullTrack],
+            initialIndex: 0,
+            context: QueueContext(
+              type: _mapPlaylistTypeToQueueSource(state.playlist?.type),
+              sourceId: widget.playlistId,
+            ),
+          );
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to fetch/play "${pt.title}": $e');
     }
   }
 
   Future<void> _playFrom(int index) async {
-    final tracks = ref.read(playlistDetailProvider).tracks;
+    final state = ref.read(playlistDetailProvider);
+    final tracks = state.tracks;
     if (tracks.isEmpty || index >= tracks.length) return;
+
     try {
-      final clickedTrack = await ref
-          .read(getTrackDetailsUseCaseProvider)
-          .call(tracks[index].id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        clickedTrack,
-      ], initialIndex: 0);
+      final List<Track> allTracks = [];
+      for (final pt in tracks) {
+        allTracks.add(
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id),
+        );
+      }
+
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: allTracks,
+            initialIndex: index,
+            context: QueueContext(
+              type: _mapPlaylistTypeToQueueSource(state.playlist?.type),
+              sourceId: widget.playlistId,
+            ),
+          );
     } catch (e) {
       debugPrint('[PlaylistDetail] Failed to play: $e');
+    }
+  }
+
+  QueueSource _mapPlaylistTypeToQueueSource(PlaylistType? type) {
+    switch (type) {
+      case PlaylistType.playlist:
+        return QueueSource.playlist;
+      case PlaylistType.album:
+        return QueueSource.album;
+      case PlaylistType.station:
+        return QueueSource.station;
+      default:
+        return QueueSource.playlist;
     }
   }
 
@@ -72,16 +110,31 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   }
 
   Future<void> _shuffle() async {
-    final tracks = ref.read(playlistDetailProvider).tracks;
+    final state = ref.read(playlistDetailProvider);
+    final tracks = state.tracks;
     if (tracks.isEmpty) return;
-    final shuffled = List.of(tracks)..shuffle();
+
     try {
-      final clickedTrack = await ref
-          .read(getTrackDetailsUseCaseProvider)
-          .call(shuffled.first.id);
-      await ref.read(playerStateProvider.notifier).loadAndPlayQueue([
-        clickedTrack,
-      ], initialIndex: 0);
+      final List<Track> allTracks = [];
+      for (final pt in tracks) {
+        allTracks.add(
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id),
+        );
+      }
+
+      // Shuffle locally before playing
+      final shuffledTracks = List<Track>.from(allTracks)..shuffle();
+
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: shuffledTracks,
+            initialIndex: 0,
+            context: QueueContext(
+              type: _mapPlaylistTypeToQueueSource(state.playlist?.type),
+              sourceId: widget.playlistId,
+            ),
+          );
     } catch (e) {
       debugPrint('[PlaylistDetail] shuffle failed: $e');
     }

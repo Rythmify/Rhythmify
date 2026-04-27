@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/domain/entities/track.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// Likes page matching SoundCloud's layout.
 ///
@@ -201,10 +203,19 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   ),
                   onPressed: () {
                     if (filtered.isNotEmpty) {
+                      final shuffled = List<Track>.from(filtered)..shuffle();
                       ref
                           .read(queueStateProvider.notifier)
-                          .playQueue(tracks: filtered, initialIndex: 0);
-                      ref.read(queueStateProvider.notifier).toggleShuffle();
+                          .playQueue(
+                            tracks: shuffled,
+                            initialIndex: 0,
+                            context: QueueContext(
+                              type: QueueSource.userLikes,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
+                            ),
+                          );
                     }
                   },
                 ),
@@ -216,7 +227,16 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                     if (filtered.isNotEmpty) {
                       ref
                           .read(queueStateProvider.notifier)
-                          .playQueue(tracks: filtered, initialIndex: 0);
+                          .playQueue(
+                            tracks: filtered,
+                            initialIndex: 0,
+                            context: QueueContext(
+                              type: QueueSource.userLikes,
+                              targetUserId: widget.userId == 'me'
+                                  ? null
+                                  : widget.userId,
+                            ),
+                          );
                     }
                   },
                   child: const Icon(
@@ -258,7 +278,16 @@ class _LikesPageState extends ConsumerState<LikesPage> {
                   onTap: () {
                     ref
                         .read(queueStateProvider.notifier)
-                        .playQueue(tracks: filtered, initialIndex: index);
+                        .playQueue(
+                          tracks: filtered,
+                          initialIndex: index,
+                          context: QueueContext(
+                            type: QueueSource.userLikes,
+                            targetUserId: widget.userId == 'me'
+                                ? null
+                                : widget.userId,
+                          ),
+                        );
                   },
                 );
               },

@@ -1,5 +1,6 @@
 // lib/features/playlist/data/models/playlist_track_model.dart
 
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/playlist_track.dart';
 
 class PlaylistTrackModel {
@@ -60,6 +61,6 @@ class PlaylistTrackModel {
 
   static void _debugPrint(String message) {
     // ignore: avoid_print
-    print('[TRACK MODEL] $message');
+    debugPrint('[TRACK MODEL] $message');
   }
 }
