@@ -272,6 +272,22 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     }
   }
 
+  /// Moves to a specific track index in the current native queue.
+  Future<void> skipToAbsoluteIndex(int index) async {
+    await ref.read(audioRepositoryProvider).skipToIndex(index);
+    await ref.read(playTrackUseCaseProvider).call();
+  }
+
+  /// Replaces the native player's queue metadata silently.
+  Future<void> updateNativeQueue(List<Track> tracks, {int? newIndex}) async {
+    // If a new index is provided, we use loadQueue to sync both list and position
+    if (newIndex != null) {
+      await ref.read(audioRepositoryProvider).loadQueue(tracks, initialIndex: newIndex);
+    } else {
+      await ref.read(audioRepositoryProvider).updateQueue(tracks);
+    }
+  }
+
   /// Toggles between playing and paused states.
   void togglePlayPause() {
     if (state.status == PlayerStatus.playing) {

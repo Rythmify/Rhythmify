@@ -618,7 +618,7 @@ class PlaylistRemoteDatasource {
   // ============================================================
   Future<List<PlaylistTrack>> fetchRelatedTracks(
     String trackId, {
-    int limit = 50,
+    int limit = 20,
   }) async {
     _log('→ GET /tracks/$trackId/related  limit=$limit');
     try {
@@ -627,9 +627,12 @@ class PlaylistRemoteDatasource {
         queryParameters: {'limit': limit, 'offset': 0},
       );
       _log('← ${response.statusCode}');
-      final data = response.data!['data'] as List<dynamic>;
-      _log('← Got ${data.length} related tracks for $trackId');
-      return _mapDiscoveryTracksToPlaylistTracks(data);
+      
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final tracks = data['tracks'] as List<dynamic>;
+      
+      _log('← Got ${tracks.length} related tracks for $trackId');
+      return _mapDiscoveryTracksToPlaylistTracks(tracks);
     } on DioException catch (e) {
       _logError('fetchRelatedTracks($trackId) failed', e);
       return [];

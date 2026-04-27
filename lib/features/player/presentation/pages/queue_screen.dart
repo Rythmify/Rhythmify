@@ -28,8 +28,9 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
     final history = queueState.history;
     final current = queueState.currentTrack;
     final upcoming = queueState.upcomingTracks;
+    final recommended = queueState.recommendedTracks;
 
-    if (current == null && upcoming.isEmpty && history.isEmpty) {
+    if (current == null && upcoming.isEmpty && history.isEmpty && recommended.isEmpty) {
       return Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
@@ -166,7 +167,51 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               },
             ),
           ],
-          
+
+          // --- RECOMMENDED SECTION ---
+          if (recommended.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Recommended for you',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final item = recommended[index];
+                  return _QueueTile(
+                    item: item,
+                    onTap: () {
+                      ref.read(queueStateProvider.notifier).playFromRecommended(index);
+                    },
+                  );
+                },
+                childCount: recommended.length,
+              ),
+            ),
+          ],
+
+          if (queueState.isLoadingRecommendations)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+              ),
+            ),
+
           const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
         ],
       ),

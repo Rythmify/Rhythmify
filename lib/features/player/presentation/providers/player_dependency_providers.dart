@@ -18,6 +18,9 @@ import '../../domain/usecases/record_listening_history_use_case.dart';
 import '../../domain/usecases/sync_history_use_case.dart';
 import '../../domain/usecases/fetch_queue_context_usecase.dart';
 import '../../domain/usecases/sync_player_state_usecase.dart';
+import '../../domain/usecases/get_related_tracks_usecase.dart';
+import '../../domain/usecases/append_tracks_usecase.dart';
+import '../../../playlist/presentation/providers/playlist_provider.dart';
 
 // --- DATA Providers ---
 
@@ -133,4 +136,12 @@ final fetchQueueContextUseCaseProvider = Provider(
 
 final syncPlayerStateUseCaseProvider = Provider(
   (ref) => SyncPlayerStateUseCase(ref.read(playbackRepositoryProvider)),
+);
+
+final getRelatedTracksUseCaseProvider = Provider(
+  (ref) => GetRelatedTracksUseCase(ref.read(playlistDatasourceProvider)),
+);
+
+final appendTracksUseCaseProvider = Provider(
+  (ref) => AppendTracksUseCase(ref.read(audioRepositoryProvider)),
 );

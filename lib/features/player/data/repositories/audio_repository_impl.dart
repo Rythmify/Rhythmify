@@ -142,6 +142,25 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> skipToPrevious() => _audioHandler.skipToPrevious();
 
   @override
+  Future<void> appendTracks(List<Track> tracks) async {
+    await _audioHandler.appendTracks(tracks);
+    _queueController.add(_audioHandler.currentQueue);
+  }
+
+  @override
+  Future<void> skipToIndex(int index) => _audioHandler.skipToIndex(index);
+
+  @override
+  Future<void> updateQueue(List<Track> tracks) async {
+    final currentIndex = _audioHandler.currentQueue.indexOf(_currentState.currentTrack!);
+    final effectiveIndex = currentIndex != -1 ? currentIndex : 0;
+    
+    // We use loadQueue but try to maintain current track if it exists in new list
+    await _audioHandler.loadQueue(tracks, initialIndex: effectiveIndex);
+    _queueController.add(tracks);
+  }
+
+  @override
   Future<void> setShuffleMode(bool enabled) async {
     _updateState(_currentState.copyWith(isShuffleModeEnabled: enabled));
   }

@@ -50,7 +50,7 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
       await _apiClient.dio.post('/me/listening-history', data: record.toJson());
     } on DioException catch (e) {
       _handleDioError(e, 'recordHistory');
-      rethrow;
+      // Silently fail for background history recording
     }
   }
 
@@ -74,7 +74,8 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       _handleDioError(e, 'fetchQueueContext');
-      rethrow;
+      // Return a safe empty structure if fetch fails
+      return {'data': {'queue': []}};
     }
   }
 
@@ -97,7 +98,7 @@ class PlaybackRemoteDataSourceImpl implements PlaybackRemoteDataSource {
       );
     } on DioException catch (e) {
       _handleDioError(e, 'syncPlayerState');
-      rethrow;
+      // Silently fail for background state synchronization
     }
   }
 
