@@ -12,6 +12,7 @@ import 'package:rythmify/features/settings/presentation/pages/imported_music_pro
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/upgrade_icon_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/delete_account_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -473,6 +474,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                       GoRoute(
                         path: 'account',
                         builder: (context, state) => const AccountScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'delete-account',
+                            builder: (context, state) =>
+                                const DeleteAccountScreen(),
+                          ),
+                        ]
                       ),
                       GoRoute(
                         path: 'basic-settings',

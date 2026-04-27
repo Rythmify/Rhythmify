@@ -97,7 +97,7 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                       const SizedBox(height: 24),
                       ElevatedButton( //the button
                         key: Key('app_icon_subscribe_button'),
-                        onPressed: (){}, //TODO
+                        onPressed: () => context.push('/upgrade'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -108,7 +108,7 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                           elevation: 0
                         ),
                         child: const Text(
-                          'Loading failed, tap to retry',
+                          'Get Premium',
                           style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),
                         )
                       ),
@@ -116,7 +116,7 @@ class _UpgradeIconState extends State<UpgradeIconScreen>{
                       const SizedBox(height: 16),
                       Center(
                         child: GestureDetector(
-                          onTap: (){},
+                          onTap: () => context.push('/upgrade'),
                           child: const Text(
                             'See all plans',
                             style: TextStyle(
