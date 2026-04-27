@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../track/presentation/widgets/track_card.dart';
 import '../providers/queue_provider.dart';
 import '../../domain/entities/queue_item.dart';
 
@@ -151,7 +150,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               itemBuilder: (context, index) {
                 final item = manualUpcoming[index];
                 return ReorderableDelayedDragStartListener(
-                  key: ValueKey(item.queueItemId ?? item.track.id + index.toString()),
+                  key: ValueKey(item.queueItemId),
                   index: index,
                   child: _QueueTile(
                     item: item,
@@ -230,27 +229,71 @@ class _QueueTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final track = item.track;
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
         child: Row(
           children: [
-            if (!isHistory && !isActive) ...[
-              const Icon(Icons.drag_handle, color: Colors.grey, size: 20),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: IgnorePointer(
-                child: TrackCard(
-                  track: item.track,
-                ),
+            // --- Artwork ---
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.grey[900],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: track.coverImage != null &&
+                        track.coverImage!.startsWith('http')
+                    ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                    : const Icon(Icons.music_note, color: Colors.grey, size: 20),
               ),
             ),
+            const SizedBox(width: 12),
+
+            // --- Smaller Text ---
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    track.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isActive ? AppTheme.primaryBrand : Colors.white,
+                      fontSize: 14,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  Text(
+                    track.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             if (isActive)
               const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(Icons.equalizer, color: AppTheme.primaryBrand, size: 18),
+              ),
+
+            // --- Drag Handle on the Right ---
+            if (!isHistory && !isActive)
+              const Padding(
                 padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.equalizer, color: AppTheme.primaryBrand),
+                child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),
               ),
           ],
         ),

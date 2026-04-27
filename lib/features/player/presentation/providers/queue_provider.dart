@@ -68,11 +68,9 @@ class QueueNotifier extends Notifier<AppQueueState> {
             .toList();
 
         if (newRelated.isNotEmpty) {
-          // 1. SILENTLY append to native player queue (Hardware sync)
+
           await ref.read(appendTracksUseCaseProvider).call(newRelated.map((e) => e.track).toList());
 
-          // 2. Validate alignment: Only add to UI if hardware has expanded its truth.
-          // This prevents "Ghost Tracks" from appearing in the UI if hardware rejected them.
           final nativeQueue = ref.read(audioRepositoryProvider).currentQueue;
           final validNewRelated = newRelated.where((r) => nativeQueue.any((nt) => nt.id == r.track.id)).toList();
 
@@ -108,7 +106,16 @@ class QueueNotifier extends Notifier<AppQueueState> {
     _lastFetchedRelatedId = null;
 
     // --- STEP 1: OPTIMISTIC LOCAL UI ---
-    final localItems = tracks.map((t) => QueueItem(track: t)).toList();
+    final localItems = tracks.asMap().entries.map((entry) {
+      final t = entry.value;
+      final idx = entry.key;
+      return QueueItem(
+        track: t,
+        // Assign a stable unique ID for the UI
+        queueItemId: 'opt_${t.id}_${DateTime.now().millisecondsSinceEpoch}_$idx',
+      );
+    }).toList();
+    
     final history = localItems.sublist(0, initialIndex);
     final currentItem = localItems[initialIndex];
     final upcoming = localItems.sublist(initialIndex + 1);

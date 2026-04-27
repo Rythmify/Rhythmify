@@ -14,17 +14,16 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The underlying audio player instance.
   final AudioPlayer _player = AudioPlayer(
     audioLoadConfiguration: const AudioLoadConfiguration(
+
       androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
+        minBufferDuration: Duration(seconds: 30),  // Buffer 30 seconds ahead
         maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
-        bufferForPlaybackDuration: Duration(
-          milliseconds: 500,
-        ), // Start playing fast
+        bufferForPlaybackDuration: Duration(milliseconds: 500,), // Start playing fast
         bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
       ),
+
       darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true, // For iOS seamless playback
-      ),
+        automaticallyWaitsToMinimizeStalling: true ),
     ),
   );
 
@@ -178,7 +177,6 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Jumps to a specific index in the current native queue without re-loading.
   Future<void> skipToIndex(int index) async {
     if (index < 0 || index >= _playlist.length) {
-      debugPrint('[RythmifyAudioHandler] skipToIndex out of bounds: $index (max ${_playlist.length})');
       return;
     }
     try {
@@ -190,7 +188,8 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   /// Appends tracks to the end of the current queue.
-  Future<void> appendTracks(List<Track> tracks) async {
+  Future<void> appendTracks(List<Track> tracks) async
+  {
     final audioSources = _convertToAudioSources(tracks, useCache: false);
     if (audioSources.isEmpty) return;
 
@@ -198,9 +197,10 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     _currentQueue.addAll(tracks);
     await _playlist.addAll(audioSources);
 
-    // CRITICAL FIX: If the player reached 'completed' before the fetch finished,
+    // If the player reached 'completed' before the fetch finished
     // we must manually kick-start it into the new tracks.
-    if (_player.processingState == ProcessingState.completed) {
+    if (_player.processingState == ProcessingState.completed)
+    {
       await _player.seek(Duration.zero, index: insertionIndex);
       _player.play();
     }
@@ -274,17 +274,16 @@ Uri? _resolveTrackUri(String rawUrl) {
   return null;
 }
 
-Uri? _resolveArtworkUri(String rawUrl) {
+Uri? _resolveArtworkUri(String rawUrl)
+{
   final trimmed = rawUrl.trim();
   if (trimmed.isEmpty) return null;
 
   final parsed = Uri.tryParse(trimmed);
-  if (parsed != null &&
-      parsed.hasScheme &&
-      (parsed.scheme == 'http' || parsed.scheme == 'https')) {
-    return parsed;
-  }
-
-  // Avoid invalid asset/network URI values in system media metadata.
+  if (parsed != null && parsed.hasScheme && 
+     (parsed.scheme == 'http' || parsed.scheme == 'https'))
+     {
+        return parsed;
+     }
   return null;
 }
