@@ -46,15 +46,9 @@ class FeedListState extends ConsumerState<FeedList> {
       _nowPlayingTrackId = null;
     });
 
-    final playerState = ref.read(playerStateProvider);
-    final isAlreadyLoaded = playerState.currentTrack?.id == track.id;
-    if (isAlreadyLoaded) {
-      if (playerState.status != PlayerStatus.playing) {
-        ref.read(playerStateProvider.notifier).togglePlayPause();
-      }
-    } else {
-      ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
-    }
+    // Always load — even if same track ID, the URL may be different
+    // (previewUrl vs streamUrl). Let the player handle deduplication.
+    ref.read(playerStateProvider.notifier).loadAndPlayPreview(track);
   }
 
   void _deactivatePreviewMode() {
@@ -104,27 +98,28 @@ class FeedListState extends ConsumerState<FeedList> {
 
   void _onPageChangedInPreviewMode(Track track) {
     // Just load and play the new track; preview mode stays active.
-    ref.read(playerStateProvider.notifier).loadAndPlayQueue([track]);
+    ref.read(playerStateProvider.notifier).loadAndPlayPreview(track);
     // Keep _nowPlayingTrackId null — this is preview, not full play.
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  Track _trackFrom(FeedItemEntity item) => Track(
+  Track _trackFrom(FeedItemEntity item, {bool preview = false}) => Track(
     id: item.track.id,
     userId: item.user.id,
     title: item.track.title,
     artist: item.user.displayName,
     artistPfp: item.user.avatar,
-    audioUrl: item.track.audioUrl,
-    streamUrl: item.track.streamUrl,
+    // Preview uses previewUrl, full play uses streamUrl ?? audioUrl
+    audioUrl: preview
+        ? (item.track.previewUrl ?? item.track.streamUrl ?? item.track.audioUrl)
+        : (item.track.streamUrl ?? item.track.audioUrl),
     coverImage: item.track.coverUrl,
     duration: Duration(seconds: item.track.duration),
     createdAt: item.createdAt,
     playCount: item.track.playCount,
     likeCount: item.track.likeCount,
   );
-
   @override
   Widget build(BuildContext context) {
     ref.listen(playerStateProvider, (prev, next) {
@@ -179,7 +174,9 @@ class FeedListState extends ConsumerState<FeedList> {
           itemCount: items.length,
           onPageChanged: (index) {
             if (_previewMode) {
-              _onPageChangedInPreviewMode(_trackFrom(items[index]));
+              _onPageChangedInPreviewMode(
+                _trackFrom(items[index], preview: true),
+              );
             } else if (_nowPlayingTrackId != null) {
               // Scrolled away from a full-play card — keep audio playing
               // but clear the "Now Playing" label since that card is gone.
@@ -209,7 +206,9 @@ class FeedListState extends ConsumerState<FeedList> {
                     if (_previewMode) {
                       _deactivatePreviewMode();
                     } else {
-                      _activatePreviewMode(_trackFrom(items[index]));
+                      _activatePreviewMode(
+                        _trackFrom(items[index], preview: true),
+                      );
                     }
                   },
                 ),
@@ -241,7 +240,9 @@ class FeedListState extends ConsumerState<FeedList> {
         itemCount: items.length,
         onPageChanged: (index) {
           if (_previewMode) {
-            _onPageChangedInPreviewMode(_trackFrom(items[index]));
+            _onPageChangedInPreviewMode(
+              _trackFrom(items[index], preview: true),
+            );
           } else if (_nowPlayingTrackId != null) {
             setState(() => _nowPlayingTrackId = null);
           }
@@ -268,7 +269,9 @@ class FeedListState extends ConsumerState<FeedList> {
                   if (_previewMode) {
                     _deactivatePreviewMode();
                   } else {
-                    _activatePreviewMode(_trackFrom(items[index]));
+                    _activatePreviewMode(
+                      _trackFrom(items[index], preview: true),
+                    );
                   }
                 },
               ),
