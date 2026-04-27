@@ -52,6 +52,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final Map<String, SharedEmbed> _embedCache = {};
   late DataSourcesSockets _socket;
   Timer? _urlDetectionTimer;
+  Timer? _blockPollTimer;
 
   @override
   void initState() {
@@ -75,6 +76,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _socket.setOnReconnectedToRoom(() {
           if (mounted) _setupSocketListeners(widget.conv!.conversationId);
         });
+        _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+          if (mounted && widget.conv?.participantId != null) {
+            ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+          }
+        });
       });
     }
   }
@@ -91,6 +97,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _setupSocketListeners(String conversationId) {
+    _socket.onUserBlocked((_) {
+      if (mounted && widget.conv?.participantId != null) {
+        ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+      }
+    });
     _socket.onMessageReceived((data) {
       print('🔥 onMessageReceived fired: $data');
       if (mounted) {
@@ -133,6 +144,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.clearConversationListeners();
     _scrollController.dispose();
     controller.dispose();
+    _blockPollTimer?.cancel();
     super.dispose();
   }
 
@@ -184,6 +196,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   builder: (_) => PopUpMenuWidget(
                     participantId: participantId,
                     parentContext: context,
+                    onBlocked: widget.conv != null
+                        ? () => _socket.leaveConversation(
+                              widget.conv!.conversationId,
+                            )
+                        : null,
                   ),
                   backgroundColor: const Color(0xFF121212),
                 );

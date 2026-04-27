@@ -160,9 +160,15 @@ class DataSourcesSockets {
     _socket?.on('message:stop_typing', (data) => callback(data));
   }
 
+  void onUserBlocked(Function(Map<String,dynamic>) callback){
+    _socket?.off('user:blocked');
+    _socket?.on('user:blocked',(data)=>callback(data as Map<String,dynamic>));
+  }
+
   void clearConversationListeners() {
     _socket?.off('message:received');
     _socket?.off('message:read_updated');
+    _socket?.off('user:blocked');
     _onReconnectedToRoom = null;
   }
 
