@@ -18,13 +18,14 @@ class PlaylistOptionsSheet extends ConsumerWidget {
   const PlaylistOptionsSheet({
     super.key,
     required this.playlistId,
-    this.playlist,   // FIX: optional pre-loaded entity from library screen
+    this.playlist, // FIX: optional pre-loaded entity from library screen
     this.isOwner = false,
     this.onConverted,
   });
 
   final String playlistId;
-  final PlaylistEntity? playlist; // passed from library to avoid wrong playlist bug
+  final PlaylistEntity?
+  playlist; // passed from library to avoid wrong playlist bug
   final bool isOwner;
   final void Function(PlaylistType newType)? onConverted;
 
@@ -119,9 +120,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 // If opened from detail screen, use the notifier
                 if (playlist == null) {
-                  await ref
-                      .read(playlistDetailProvider.notifier)
-                      .toggleLike();
+                  await ref.read(playlistDetailProvider.notifier).toggleLike();
                 }
                 // If opened from library, the like state is read-only here.
                 // User should open the playlist detail to like/unlike.
@@ -248,14 +247,15 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                       ),
                       content: Text(
                         'This cannot be undone.',
-                        style:
-                            TextStyle(color: Colors.grey[400], fontSize: 13),
+                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel',
-                              style: TextStyle(color: Colors.white54)),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: Colors.white54),
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
@@ -266,7 +266,8 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                                 .deletePlaylist(playlistId);
                           },
                           style: TextButton.styleFrom(
-                              foregroundColor: Colors.redAccent),
+                            foregroundColor: Colors.redAccent,
+                          ),
                           child: const Text('Delete'),
                         ),
                       ],
@@ -385,8 +386,7 @@ class _ShareRow extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
       ),
-      builder: (_) =>
-          _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
+      builder: (_) => _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
     );
   }
 }
@@ -424,9 +424,10 @@ class _ShareIcon extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(label,
-                style:
-                    const TextStyle(color: Colors.white, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -484,13 +485,17 @@ class _QrCodeSheet extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: url));
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied')));
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
               style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white30)),
-              child: const Text('Copy link',
-                  style: TextStyle(color: Colors.white)),
+                side: const BorderSide(color: Colors.white30),
+              ),
+              child: const Text(
+                'Copy link',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           const SizedBox(height: 8),
