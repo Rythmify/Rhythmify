@@ -49,6 +49,9 @@ class AppPlayerState extends Equatable {
   /// The current loop mode (e.g., 'off', 'all', 'one').
   final String loopMode;
 
+  /// The current index of the track in the native hardware queue.
+  final int? queueIndex;
+
   const AppPlayerState({
     this.status = PlayerStatus.initial,
     this.currentTrack,
@@ -57,6 +60,7 @@ class AppPlayerState extends Equatable {
     this.duration = Duration.zero,
     this.isShuffleModeEnabled = false,
     this.loopMode = 'off',
+    this.queueIndex,
   });
 
   /// Returns a copy of the current state with the given fields replaced.
@@ -68,6 +72,7 @@ class AppPlayerState extends Equatable {
     Duration? duration,
     bool? isShuffleModeEnabled,
     String? loopMode,
+    int? queueIndex,
   }) {
     return AppPlayerState(
       status: status ?? this.status,
@@ -77,6 +82,7 @@ class AppPlayerState extends Equatable {
       duration: duration ?? this.duration,
       isShuffleModeEnabled: isShuffleModeEnabled ?? this.isShuffleModeEnabled,
       loopMode: loopMode ?? this.loopMode,
+      queueIndex: queueIndex ?? this.queueIndex,
     );
   }
 
@@ -89,5 +95,6 @@ class AppPlayerState extends Equatable {
     duration,
     isShuffleModeEnabled,
     loopMode,
+    queueIndex,
   ];
 }

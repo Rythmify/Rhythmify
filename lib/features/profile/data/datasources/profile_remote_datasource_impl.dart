@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
+import '../models/follow_status_model.dart';
 import 'profile_remote_datasource.dart';
 
 // coverage:ignore-file
@@ -20,6 +22,15 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
       final response = await client.dio.get(endpoint);
       final data = Map<String, dynamic>.from(response.data['data'] as Map);
+      if (kDebugMode && userId == 'me') {
+        debugPrint(
+          '[ProfileRemoteDatasource] /users/me raw counts: '
+          'followers_count=${data['followers_count']}, '
+          'following_count=${data['following_count']}, '
+          'followersCount=${data['followersCount']}, '
+          'followingCount=${data['followingCount']}',
+        );
+      }
 
       // GET /users/{id} does not include is_following — only GET /users/me does.
       // For public profiles, call the dedicated follow-status endpoint and merge
@@ -39,6 +50,17 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       }
 
       return ProfileModel.fromJson(data);
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<FollowStatusModel> getFollowStatus(String userId) async {
+    try {
+      final response = await client.dio.get('/users/$userId/follow-status');
+      return FollowStatusModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -156,6 +178,26 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<void> unfollowUser({required String userId}) async {
     try {
       await client.dio.delete('/users/$userId/follow');
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> blockUser({required String userId}) async {
+    try {
+      await client.dio.post('/users/$userId/block');
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> unblockUser({required String userId}) async {
+    try {
+      await client.dio.delete('/users/$userId/block');
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

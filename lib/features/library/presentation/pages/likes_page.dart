@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
+import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// Your Likes page matching SoundCloud's layout.
 ///
@@ -30,10 +33,13 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(likesProvider.notifier).load();
-    }
+    if (!_scrollController.hasClients) return;
+    try {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(likesProvider.notifier).load();
+      }
+    } catch (_) {}
   }
 
   @override
@@ -96,13 +102,40 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
               )
               .toList();
 
+    final filteredTracks = filtered.map((e) => e.track).toList();
+
+    void playAt(int index) {
+      if (filteredTracks.isEmpty) return;
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: filteredTracks,
+            initialIndex: index,
+            context: const QueueContext(type: QueueSource.userLikes),
+          );
+    }
+
     return CustomScrollView(
       key: const Key('library_likes_scroll_view'),
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
-          child: _LikesHeader(onShuffle: () {}, onPlay: () {}),
+          child: _LikesHeader(
+            onShuffle: () {
+              if (filteredTracks.isNotEmpty) {
+                final shuffled = List<Track>.from(filteredTracks)..shuffle();
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: shuffled,
+                      initialIndex: 0,
+                      context: const QueueContext(type: QueueSource.userLikes),
+                    );
+              }
+            },
+            onPlay: () => playAt(0),
+          ),
         ),
 
         if (state.tracks.isEmpty && !state.isLoading)
@@ -126,7 +159,11 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
                         )
                       : const SizedBox.shrink();
                 }
-                return TrackCard(track: filtered[index].track);
+                return TrackCard(
+                  key: Key('likes_item_${filteredTracks[index].id}_$index'),
+                  track: filteredTracks[index],
+                  onTap: () => playAt(index),
+                );
               },
             ),
           ),

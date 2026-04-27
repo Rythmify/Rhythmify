@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/player_provider.dart';
 import '../providers/queue_provider.dart';
+import '../../domain/entities/queue_item.dart';
 import '../widgets/scrolling_artwork_background.dart';
 import '../widgets/playback_overlay_controls.dart';
 import '../widgets/track_info_box.dart';
@@ -9,7 +10,6 @@ import 'package:rythmify/features/comments/presentation/widgets/floating_comment
 import '../widgets/player_action_bar.dart';
 import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/domain/entities/track.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 
 /// The main immersive playback page of the application.
@@ -51,13 +51,14 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
   @override
   Widget build(BuildContext context) {
     final queue = ref.watch(queueStateProvider);
-    final allTracks = [
+    // Continuous list: History + Current + Upcoming (which now includes Recommendations)
+    final allItems = [
       ...queue.history,
       if (queue.currentTrack != null) queue.currentTrack!,
       ...queue.upcomingTracks,
     ];
 
-    if (queue.currentTrack == null || allTracks.isEmpty) {
+    if (queue.currentTrack == null || allItems.isEmpty) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
@@ -94,7 +95,7 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
       body: PageView.builder(
         key: const Key('player_full_player_pageview'),
         controller: _pageController,
-        itemCount: allTracks.length,
+        itemCount: allItems.length,
         onPageChanged: (index) {
           if (index != _currentPage) {
             _currentPage = index;
@@ -102,14 +103,15 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
           }
         },
         itemBuilder: (context, index) {
-          final track = allTracks[index];
-          final isCurrent = track.id == queue.currentTrack?.id;
+          final item = allItems[index];
+          final isCurrent = item.track.id == queue.currentTrack?.track.id;
 
           return _PlayerTrackPage(
-            track: track,
+            item: item,
             isCurrent: isCurrent,
             onCollapse: widget.onCollapse,
-            onNavigateBehindTrack: () => _triggerNavigation(context, track.id),
+            onNavigateBehindTrack: () =>
+                _triggerNavigation(context, item.track.id),
           );
         },
       ),
@@ -118,13 +120,13 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
 }
 
 class _PlayerTrackPage extends ConsumerWidget {
-  final Track track;
+  final QueueItem item;
   final bool isCurrent;
   final VoidCallback? onCollapse;
   final VoidCallback onNavigateBehindTrack;
 
   const _PlayerTrackPage({
-    required this.track,
+    required this.item,
     required this.isCurrent,
     this.onCollapse,
     required this.onNavigateBehindTrack,
@@ -132,6 +134,7 @@ class _PlayerTrackPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final track = item.track;
     return GestureDetector(
       key: Key('player_track_page_gesture_detector_${track.id}'),
       onTap: () {

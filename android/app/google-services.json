@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "456932364376-4q1tgrmle3g23m5r9rb7d1080fqnic2p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rythmify",
+            "certificate_hash": "de755235b8efb8b7883a23bec0cd8a069cc96e6b"
+          }
+        },
+        {
           "client_id": "456932364376-hmgop09n9k985moaq35vsppqn5ohvjdo.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -37,6 +45,13 @@
             {
               "client_id": "456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "456932364376-6msrjr0ue7uqs84psq74p26neje7o1ct.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.rythmify"
+              }
             }
           ]
         }
@@ -45,3 +60,8 @@
   ],
   "configuration_version": "1"
 }
+
+
+
+
+

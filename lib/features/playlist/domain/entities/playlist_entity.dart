@@ -19,10 +19,11 @@ class PlaylistEntity {
     this.likeCount = 0,
     this.repostCount = 0,
     this.isLiked = false,
-    this.seedTrackTitle,
+    this.isOwned = false,
+    this.isGeneratedMix = false,
+    this.isTrackRadio = false,
     this.seedArtistName,
     this.releaseYear,
-    this.isOwned = false,
   });
 
   final String id;
@@ -39,14 +40,17 @@ class PlaylistEntity {
   final int likeCount;
   final int repostCount;
   final bool isLiked;
-  final String? seedTrackTitle;
-  final String? seedArtistName;
-  final String? releaseYear;
   final bool isOwned;
+  final bool isGeneratedMix;
+  final bool isTrackRadio;
+  final String? seedArtistName;
+  final int? releaseYear;
 
-  // ── Label helpers ──────────────────────────────────────────────────────────
+  // ── Computed getters ──────────────────────────────────────────────────────
 
   String get typeLabel {
+    if (isGeneratedMix) return 'Mix';
+    if (isTrackRadio) return 'Radio';
     switch (type) {
       case PlaylistType.playlist:
         return 'Playlist';
@@ -57,64 +61,70 @@ class PlaylistEntity {
     }
   }
 
-  String get formattedDuration {
-    final h = totalDuration.inHours;
-    final m = totalDuration.inMinutes % 60;
-    final s = totalDuration.inSeconds % 60;
-    final mm = m.toString().padLeft(2, '0');
-    final ss = s.toString().padLeft(2, '0');
-    if (h > 0) return '$h:$mm:$ss';
-    return '$mm:$ss';
-  }
-
-  String get subtitleLine =>
-      '$typeLabel · $trackCount ${trackCount == 1 ? 'track' : 'tracks'} · $formattedDuration';
-
   String get detailSubtitle {
     switch (type) {
-      case PlaylistType.album:
-        final year = releaseYear ?? createdAt.year.toString();
-        return '$year · Album';
-      case PlaylistType.station:
-        return 'Artist Station · $formattedDuration · $trackCount tracks';
       case PlaylistType.playlist:
-        return subtitleLine;
+        return '$trackCount tracks';
+      case PlaylistType.album:
+        return 'Album · $trackCount tracks';
+      case PlaylistType.station:
+        return 'Station · $trackCount tracks';
     }
   }
 
-  // ── copyWith ───────────────────────────────────────────────────────────────
+  String get subtitleLine {
+    if (isGeneratedMix) return 'Mix · $trackCount tracks';
+    if (isTrackRadio) return 'Radio · $trackCount tracks';
+    switch (type) {
+      case PlaylistType.playlist:
+        return 'Playlist · $trackCount tracks';
+      case PlaylistType.album:
+        return 'Album · $trackCount tracks';
+      case PlaylistType.station:
+        return 'Station · $trackCount tracks';
+    }
+  }
 
   PlaylistEntity copyWith({
+    String? id,
     String? name,
+    String? ownerName,
+    String? ownerId,
     bool? isPublic,
-    String? description,
-    String? coverUrl,
+    PlaylistType? type,
     int? trackCount,
     Duration? totalDuration,
+    DateTime? createdAt,
+    String? coverUrl,
+    bool clearCover = false,
+    String? description,
+    int? likeCount,
+    int? repostCount,
     bool? isLiked,
     bool? isOwned,
-    PlaylistType? type,
+    bool? isGeneratedMix,
+    bool? isTrackRadio,
     String? seedArtistName,
-    String? releaseYear,
-    bool clearCover = false,
+    int? releaseYear,
   }) {
     return PlaylistEntity(
-      id: id,
+      id: id ?? this.id,
       name: name ?? this.name,
-      ownerName: ownerName,
-      ownerId: ownerId,
+      ownerName: ownerName ?? this.ownerName,
+      ownerId: ownerId ?? this.ownerId,
       isPublic: isPublic ?? this.isPublic,
       type: type ?? this.type,
       trackCount: trackCount ?? this.trackCount,
       totalDuration: totalDuration ?? this.totalDuration,
-      createdAt: createdAt,
+      createdAt: createdAt ?? this.createdAt,
       coverUrl: clearCover ? null : (coverUrl ?? this.coverUrl),
       description: description ?? this.description,
-      likeCount: likeCount,
-      repostCount: repostCount,
+      likeCount: likeCount ?? this.likeCount,
+      repostCount: repostCount ?? this.repostCount,
       isLiked: isLiked ?? this.isLiked,
       isOwned: isOwned ?? this.isOwned,
-      seedTrackTitle: seedTrackTitle,
+      isGeneratedMix: isGeneratedMix ?? this.isGeneratedMix,
+      isTrackRadio: isTrackRadio ?? this.isTrackRadio,
       seedArtistName: seedArtistName ?? this.seedArtistName,
       releaseYear: releaseYear ?? this.releaseYear,
     );

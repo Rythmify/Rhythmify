@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/premium_provider.dart';
 import '../widgets/premium_widgets.dart';
@@ -13,7 +14,7 @@ const _kPlans = [
     periodBg: Color(0xFF9B4DCA),
     name: 'Artist Pro ★',
     price: 'EGP 164.99/month',
-    planId: 2,
+    planId: 'premium',
     features: [
       'Unlimited track uploads',
       'Get paid directly and more fairly',
@@ -26,7 +27,7 @@ const _kPlans = [
     periodBg: Color(0xFFFF5500),
     name: 'Artist Pro ★',
     price: 'EGP 1,149.99/year',
-    planId: 2,
+    planId: 'premium',
     features: [
       'Unlimited track uploads',
       'Get paid directly and more fairly',
@@ -39,7 +40,7 @@ const _kPlans = [
     periodBg: Color(0xFFCC2200),
     name: 'Artist ★',
     price: 'EGP 65.00/month',
-    planId: 2,
+    planId: 'premium',
     features: [
       '3 hours of uploads',
       '2 distributed and monetized tracks per month',
@@ -52,7 +53,7 @@ const _kPlans = [
     periodBg: Color(0xFFFF5500),
     name: 'Artist ★',
     price: 'EGP 479.99/year',
-    planId: 2,
+    planId: 'premium',
     features: [
       '3 hours of uploads',
       '2 distributed and monetized tracks per month',
@@ -104,7 +105,6 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
     return _kPalettes[idx];
   }
 
-  // The bottom colored strip color = top color of current gradient
   Color get _stripColor => _gradient[0];
 
   @override
@@ -114,7 +114,6 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
     final botPad = mq.padding.bottom;
 
     return Scaffold(
-      // Scaffold bg = current gradient top color so colored strip behind player is visible
       backgroundColor: _stripColor,
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 400),
@@ -169,18 +168,10 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               ),
 
               // ── Plan cards ─────────────────────────────────────────────
-              // LayoutBuilder gives us the screen width so PageView knows
-              // exactly how tall its children are — zero overflow.
               LayoutBuilder(
                 builder: (context, constraints) {
                   final cardWidth = constraints.maxWidth * 0.92;
                   return SizedBox(
-                    // Height measured from a representative card at this width.
-                    // We use an off-screen key measurement approach: just set a
-                    // tall enough value and let the cards' intrinsic sizes live
-                    // inside. Because the parent is a SingleChildScrollView
-                    // Column, PageView MUST have a bounded height — we give it
-                    // one based on the content we know fits.
                     height: _cardHeight(cardWidth),
                     child: PageView.builder(
                       controller: _pageCtrl,
@@ -194,9 +185,23 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                           name: p.name,
                           price: p.price,
                           features: p.features,
-                          onSubscribe: () => ref
-                              .read(premiumProvider.notifier)
-                              .checkout(p.planId),
+                          onSubscribe: () {
+                            final plans = ref.read(premiumProvider).plans;
+                            final premiumPlan = plans.firstWhere(
+                              (pl) => pl.isPremium,
+                              orElse: () =>
+                                  plans.isNotEmpty ? plans.last : plans.first,
+                            );
+                            context.push(
+                              '/upgrade/checkout',
+                              extra: {
+                                'planId': premiumPlan.planId,
+                                'planName': p.name,
+                                'price': p.price,
+                                'features': List<String>.from(p.features),
+                              },
+                            );
+                          },
                         );
                       },
                     ),
@@ -235,14 +240,10 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               ),
               const SizedBox(height: 10),
 
-              // ── Dark info section (PDF pages 6-8) ───────────────────────
-              // Sharp top edge (no border radius) — colored strip above it
-              // is whatever the gradient shows through the gap.
+              // ── Dark info section ───────────────────────────────────────
               _DarkInfoSection(botPad: botPad),
 
-              // ── Colored bottom strip — same color as card background ────
-              // Sits below dark section, fills the space above the mini-player.
-              // When user scrolls to bottom, this strip is visible behind player.
+              // ── Colored bottom strip ────────────────────────────────────
               AnimatedContainer(
                 duration: const Duration(milliseconds: 400),
                 height: 160 + botPad,
@@ -261,21 +262,11 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
     );
   }
 
-  // Compute card height from known content:
-  // tags(20) + gap(8) + name(26) + price(22) + gap(12)
-  // + 4 features × (lineH≈40 + bottom12) = 4×52=208
-  // + gap(12) + button(46) + gap(8) + cancel(18) + gap(3) + restrictions(18)
-  // + card padding top+bottom(28) = total ≈ 489 — use 500 for safety
-  double _cardHeight(double cardWidth) {
-    // Wider cards = less text wrapping = slightly shorter, but 500 is safe
-    // for all screen widths >= 320px
-    return 500;
-  }
+  double _cardHeight(double cardWidth) => 500;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PLAN CARD — sharp corners (radius 0), features spaced, cancel+restrictions
-//             on separate lines
+// PLAN CARD
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _PlanCard extends StatelessWidget {
@@ -302,13 +293,12 @@ class _PlanCard extends StatelessWidget {
       child: Container(
         decoration: const BoxDecoration(
           color: Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.zero, // SHARP edges, no curve
+          borderRadius: BorderRadius.zero,
         ),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Tags
             Row(
               children: [
                 _SharpTag(label: 'FOR ARTISTS', bg: const Color(0xFF2F80ED)),
@@ -317,8 +307,6 @@ class _PlanCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-
-            // Name + price
             Text(
               name,
               style: GoogleFonts.inter(
@@ -337,8 +325,6 @@ class _PlanCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-
-            // Features — generous spacing
             ...features.map(
               (f) => Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -364,10 +350,7 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Subscribe now
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -376,8 +359,7 @@ class _PlanCard extends StatelessWidget {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   elevation: 0,
-                  shape:
-                      const StadiumBorder(), // rounded pill — only rounded element
+                  shape: const StadiumBorder(),
                 ),
                 onPressed: onSubscribe,
                 child: Text(
@@ -390,15 +372,11 @@ class _PlanCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Cancel anytime — own line
             Text(
               'Cancel anytime.',
               style: GoogleFonts.inter(fontSize: 13, color: Colors.white60),
             ),
             const SizedBox(height: 4),
-
-            // Restrictions apply — own line, blue
             GestureDetector(
               onTap: () => showRestrictionsSheet(context),
               child: Text(
@@ -417,7 +395,7 @@ class _PlanCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SHARP TAG — radius 0
+// SHARP TAG
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SharpTag extends StatelessWidget {
@@ -429,7 +407,7 @@ class _SharpTag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: bg, // no border radius at all
+      color: bg,
       child: Text(
         label,
         style: GoogleFonts.inter(
@@ -444,9 +422,7 @@ class _SharpTag extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DARK INFO SECTION — PDF pages 6-8
-// Sharp top edge (no border radius). Colored strip peeks above via the gap
-// between the PageView section and this container.
+// DARK INFO SECTION
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DarkInfoSection extends StatefulWidget {
@@ -478,7 +454,7 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF121212), // sharp top — no border radius
+      color: const Color(0xFF121212),
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,6 +516,8 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                   width: 150,
                   height: 150,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      const Icon(Icons.person, color: Colors.white24, size: 52),
                 ),
               ),
             ),

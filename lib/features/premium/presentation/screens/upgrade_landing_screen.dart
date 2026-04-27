@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/premium_widgets.dart';
+import '../providers/premium_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // YOUR ASSET NAMES — only change these 3 lines
@@ -18,11 +20,11 @@ const _kPortraitAsset = 'assets/images/dreadsguy.jpeg'; // guy with dreads
 // LANDING SCREEN
 // ─────────────────────────────────────────────────────────────────────────────
 
-class UpgradeLandingScreen extends StatelessWidget {
+class UpgradeLandingScreen extends ConsumerWidget {
   const UpgradeLandingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
     final size = MediaQuery.of(context).size;
@@ -111,7 +113,7 @@ class UpgradeLandingScreen extends StatelessWidget {
           Positioned(
             left: 20,
             right: 20,
-            bottom: 80 + botPad,
+            bottom: 155 + botPad,
             child: const _Content(),
           ),
         ],
@@ -183,11 +185,11 @@ class _PhotoCard extends StatelessWidget {
 // CONTENT — tags + headline + price + buttons
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _Content extends StatelessWidget {
+class _Content extends ConsumerWidget {
   const _Content();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,20 +208,20 @@ class _Content extends StatelessWidget {
         Text(
           'Unlock artist tools\n& unlimited\nuploads.',
           style: GoogleFonts.inter(
-            fontSize: 36,
+            fontSize: 28,
             fontWeight: FontWeight.w900,
             color: Colors.white,
             height: 1.08,
-            letterSpacing: -0.8,
+            letterSpacing: -0.6,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         // Price line
         Text(
           'EGP 164.99/month. Cancel anytime.',
           style: GoogleFonts.inter(
-            fontSize: 13,
+            fontSize: 12,
             color: Colors.white70,
             fontWeight: FontWeight.w400,
           ),
@@ -231,18 +233,18 @@ class _Content extends StatelessWidget {
           child: Text(
             'Restrictions apply.',
             style: GoogleFonts.inter(
-              fontSize: 13,
+              fontSize: 12,
               color: const Color(0xFF2F80ED),
               fontWeight: FontWeight.w400,
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
 
         // Continue button
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 46,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -250,18 +252,39 @@ class _Content extends StatelessWidget {
               elevation: 0,
               shape: const StadiumBorder(),
             ),
-            onPressed: () => context.push('/upgrade/checkout'),
+            onPressed: () {
+              // Resolve the premium plan UUID from the backend
+              final plans = ref.read(premiumProvider).plans;
+              final premiumPlan = plans.firstWhere(
+                (p) => p.isPremium,
+                orElse: () => plans.isNotEmpty ? plans.last : plans.first,
+              );
+              context.push(
+                '/upgrade/checkout',
+                extra: {
+                  'planId': premiumPlan.planId,
+                  'planName': 'Artist Pro ★',
+                  'price': 'EGP 164.99/month',
+                  'features': [
+                    'Unlimited track uploads',
+                    'Get paid directly and more fairly',
+                    'Discover and connect with your biggest fans',
+                    'Unlimited distribution to all major streaming and social platforms',
+                  ],
+                },
+              );
+            },
             child: Text(
               'Continue',
               style: GoogleFonts.inter(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // See all plans
         Center(
@@ -270,14 +293,13 @@ class _Content extends StatelessWidget {
             child: Text(
               'See all plans',
               style: GoogleFonts.inter(
-                fontSize: 15,
+                fontSize: 13,
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 50),
       ],
     );
   }
@@ -303,7 +325,7 @@ class _Tag extends StatelessWidget {
       child: Text(
         label,
         style: GoogleFonts.inter(
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.w700,
           color: Colors.white,
           letterSpacing: 0.2,

@@ -1,28 +1,41 @@
 // coverage:ignore-file
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../domain/entities/profile_entity.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../providers/profile_provider.dart';
 import 'profile_avatar.dart';
 
-class ShareBottomSheet extends StatelessWidget {
+class ShareBottomSheet extends ConsumerWidget {
   final ProfileEntity profile;
+  final bool isOwnProfile;
 
-  const ShareBottomSheet({super.key, required this.profile});
+  const ShareBottomSheet({
+    super.key,
+    required this.profile,
+    required this.isOwnProfile,
+  });
 
   String get _profileUrl => 'https://rythmify.com/users/${profile.id}';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        MediaQuery.of(context).padding.bottom +
+            64, // Extra padding for miniplayer
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -189,6 +202,41 @@ class ShareBottomSheet extends StatelessWidget {
               ],
             ),
           ),
+
+          if (!isOwnProfile) ...[
+            const SizedBox(height: 20),
+            GestureDetector(
+              key: const Key('profile_share_block_gesture'),
+              onTap: () {
+                Navigator.pop(context);
+                ref
+                    .read(publicProfileProvider(profile.id).notifier)
+                    .blockUser(
+                      profile.id,
+                      onError: (message) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                      },
+                    );
+              },
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.block_rounded,
+                    color: Colors.redAccent,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Block user',
+                    style: AppTheme.bodyLarge.copyWith(color: Colors.redAccent),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

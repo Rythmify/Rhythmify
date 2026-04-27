@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../track/presentation/widgets/track_card.dart';
 import '../providers/queue_provider.dart';
+import '../../domain/entities/queue_item.dart';
 
 class QueueScreen extends ConsumerStatefulWidget {
   const QueueScreen({super.key});
@@ -15,28 +15,32 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // Call fetch more if backend was available
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final queueState = ref.watch(queueStateProvider);
-    final upcomingTracks = queueState.upcomingTracks;
+
+    final history = queueState.history;
+    final current = queueState.currentTrack;
+    final allUpcoming = queueState.upcomingTracks;
+
+    // Split upcoming into manual vs auto-discovery
+    final manualUpcoming = allUpcoming.where((t) => !t.isRecommended).toList();
+    final recommended = allUpcoming.where((t) => t.isRecommended).toList();
+
+    if (current == null && allUpcoming.isEmpty && history.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: const Center(
+          child: Text('Queue is empty', style: TextStyle(color: Colors.grey)),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -44,7 +48,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'Up Next',
+          'Queue',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -63,57 +67,244 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
           ),
         ],
       ),
-      body: upcomingTracks.isEmpty
-          ? const Center(
-              child: Text(
-                'Queue is empty',
-                style: TextStyle(color: Colors.grey),
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          // --- HISTORY SECTION ---
+          if (history.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Recently Played',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            )
-          : ReorderableListView.builder(
-              key: const Key('player_queue_listview'),
-              scrollController: _scrollController,
-              itemCount: upcomingTracks.length,
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = history[index];
+                return Opacity(
+                  opacity: 0.5,
+                  child: _QueueTile(item: item, isHistory: true, onTap: () {}),
+                );
+              }, childCount: history.length),
+            ),
+          ],
+
+          // --- CURRENT SECTION ---
+          if (current != null) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Now Playing',
+                  style: TextStyle(
+                    color: AppTheme.primaryBrand,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: _QueueTile(
+                item: current,
+                isActive: true,
+                onTap: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+
+          // --- UPCOMING SECTION ---
+          if (manualUpcoming.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Next Up',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SliverReorderableList(
+              itemCount: manualUpcoming.length,
               onReorder: (oldIndex, newIndex) {
                 ref
                     .read(queueStateProvider.notifier)
                     .reorder(oldIndex, newIndex);
               },
               itemBuilder: (context, index) {
-                final track = upcomingTracks[index];
-                return Padding(
-                  key: ValueKey(track.id), // Important for ReorderableListView
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.drag_handle, color: Colors.grey),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: GestureDetector(
-                          key: Key(
-                            'player_queue_track_gesture_detector_${track.id}',
-                          ),
-                          onTap: () {
-                            ref
-                                .read(queueStateProvider.notifier)
-                                .playFromQueue(index);
-                          },
-                          child: IgnorePointer(
-                            child: TrackCard(
-                              key: Key('player_queue_track_card_${track.id}'),
-                              track: track,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                final item = manualUpcoming[index];
+                return ReorderableDelayedDragStartListener(
+                  key: ValueKey(item.queueItemId),
+                  index: index,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: _QueueTile(
+                      item: item,
+                      onTap: () {
+                        ref
+                            .read(queueStateProvider.notifier)
+                            .playFromQueue(index);
+                      },
+                    ),
                   ),
                 );
               },
             ),
+          ],
+
+          // --- RECOMMENDED SECTION ---
+          if (recommended.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Recommended for you',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = recommended[index];
+                return _QueueTile(
+                  item: item,
+                  onTap: () {
+                    ref
+                        .read(queueStateProvider.notifier)
+                        .playFromRecommended(index);
+                  },
+                );
+              }, childCount: recommended.length),
+            ),
+          ],
+
+          if (queueState.isLoadingRecommendations)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+              ),
+            ),
+
+          const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+        ],
+      ),
+    );
+  }
+}
+
+class _QueueTile extends StatelessWidget {
+  final QueueItem item;
+  final bool isActive;
+  final bool isHistory;
+  final VoidCallback onTap;
+
+  const _QueueTile({
+    required this.item,
+    this.isActive = false,
+    this.isHistory = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final track = item.track;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+        child: Row(
+          children: [
+            // --- Artwork ---
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.grey[900],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child:
+                    track.coverImage != null &&
+                        track.coverImage!.startsWith('http')
+                    ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                    : const Icon(
+                        Icons.music_note,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // --- Smaller Text ---
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    track.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isActive ? AppTheme.primaryBrand : Colors.white,
+                      fontSize: 14,
+                      fontWeight: isActive
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  Text(
+                    track.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+            if (isActive)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  Icons.equalizer,
+                  color: AppTheme.primaryBrand,
+                  size: 18,
+                ),
+              ),
+
+            // --- Drag Handle on the Right ---
+            if (!isHistory && !isActive)
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

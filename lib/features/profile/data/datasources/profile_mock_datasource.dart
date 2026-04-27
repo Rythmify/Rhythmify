@@ -2,6 +2,7 @@ import 'dart:math';
 import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
+import '../models/follow_status_model.dart';
 import 'profile_remote_datasource.dart';
 
 /// In-memory profile datasource for local development and repeatable tests.
@@ -291,6 +292,20 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
   }
 
   @override
+  Future<FollowStatusModel> getFollowStatus(String userId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    const simulateBlocked = false; // ← toggle for UI dev
+
+    return const FollowStatusModel(
+      isFollowing: false,
+      isFollowedBy: false,
+      isBlocking: simulateBlocked,
+      isBlockedBy: false,
+    );
+  }
+
+  @override
   Future<ProfileModel> updateProfile({
     required String displayName,
     required String username,
@@ -390,6 +405,16 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
   @override
   Future<void> unfollowUser({required String userId}) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+  }
+
+  @override
+  Future<void> blockUser({required String userId}) async {
+    return;
+  }
+
+  @override
+  Future<void> unblockUser({required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 600));
   }
 

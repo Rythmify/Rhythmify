@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/profile_entity.dart';
+import '../../domain/entities/follow_status.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
@@ -42,6 +43,12 @@ class ProfileLoaded extends ProfileState {
   /// The loaded profile data.
   final ProfileEntity profile;
 
+  /// The relationship between the authenticated user and the viewed profile.
+  ///
+  /// When [FollowStatus.isBlocking] is `true`, the profile page renders
+  /// [BlockedUserScreen] instead of any account information.
+  final FollowStatus followStatus;
+
   /// Tracks uploaded by the user.
   final List<Track> uploadedTracks;
   final bool isLoadingUploads;
@@ -64,8 +71,14 @@ class ProfileLoaded extends ProfileState {
   /// Whether a save operation (update, upload, delete) is in progress.
   final bool isSaving;
 
+  /// Whether the authenticated user has just blocked this profile locally.
+  ///
+  /// This is an optimistic UI flag set immediately on block action.
+  final bool isBlocked;
+
   const ProfileLoaded({
     required this.profile,
+    this.followStatus = FollowStatus.empty,
     this.uploadedTracks = const [],
     this.isLoadingUploads = false,
     this.hasMoreUploads = true,
@@ -78,10 +91,12 @@ class ProfileLoaded extends ProfileState {
     this.playlists = const [],
     this.isLoadingPlaylists = false,
     this.isSaving = false,
+    this.isBlocked = false,
   });
 
   ProfileLoaded copyWith({
     ProfileEntity? profile,
+    FollowStatus? followStatus,
     List<Track>? uploadedTracks,
     bool? isLoadingUploads,
     bool? hasMoreUploads,
@@ -94,9 +109,11 @@ class ProfileLoaded extends ProfileState {
     List<PlaylistEntity>? playlists,
     bool? isLoadingPlaylists,
     bool? isSaving,
+    bool? isBlocked,
   }) {
     return ProfileLoaded(
       profile: profile ?? this.profile,
+      followStatus: followStatus ?? this.followStatus,
       uploadedTracks: uploadedTracks ?? this.uploadedTracks,
       isLoadingUploads: isLoadingUploads ?? this.isLoadingUploads,
       hasMoreUploads: hasMoreUploads ?? this.hasMoreUploads,
@@ -109,12 +126,14 @@ class ProfileLoaded extends ProfileState {
       playlists: playlists ?? this.playlists,
       isLoadingPlaylists: isLoadingPlaylists ?? this.isLoadingPlaylists,
       isSaving: isSaving ?? this.isSaving,
+      isBlocked: isBlocked ?? this.isBlocked,
     );
   }
 
   @override
   List<Object?> get props => [
     profile,
+    followStatus,
     uploadedTracks,
     isLoadingUploads,
     hasMoreUploads,
@@ -127,6 +146,7 @@ class ProfileLoaded extends ProfileState {
     playlists,
     isLoadingPlaylists,
     isSaving,
+    isBlocked,
   ];
 }
 

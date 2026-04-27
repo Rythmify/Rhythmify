@@ -1,9 +1,20 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/subscription_plan.dart';
 import '../../domain/entities/user_subscription.dart';
 import '../../data/datasources/premium_remote_datasource.dart';
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// FREE PLAN HARD LIMITS  (from OpenAPI spec)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const kFreeTrackLimit = 3; // POST /tracks → 403 SUBSCRIPTION_LIMIT_REACHED
+const kFreePlaylistLimit = 2; // enforced client-side before POST /playlists
+const kFreeCanDownload = false;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
 
 class PremiumState {
   final UserSubscription? subscription;
@@ -22,8 +33,20 @@ class PremiumState {
     this.checkoutSuccess = false,
   });
 
+  // ── Core premium flag ──────────────────────────────────────────────────────
   bool get isPremium => subscription?.isPremium ?? false;
   bool get isFree => !isPremium;
+
+  // ── Feature gates — checked before any gated action ───────────────────────
+  bool get canUploadMoreTracks => isPremium; // free capped at kFreeTrackLimit
+  bool get canCreateMorePlaylists =>
+      isPremium; // free capped at kFreePlaylistLimit
+  bool get canDownload => isPremium;
+  bool get canListenOffline => isPremium;
+
+  // ── Subscription display helpers ───────────────────────────────────────────
+  String? get endDate => subscription?.endDate;
+  bool get isCanceled => subscription?.isCanceled ?? false;
 
   PremiumState copyWith({
     UserSubscription? subscription,
@@ -48,13 +71,14 @@ class PremiumState {
   }
 }
 
-// ── Notifier ──────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFIER
+// ─────────────────────────────────────────────────────────────────────────────
 
 class PremiumNotifier extends Notifier<PremiumState> {
   @override
   PremiumState build() {
-    // Kick off initial load
-    Future.microtask(() => _init());
+    Future.microtask(_init);
     return const PremiumState();
   }
 
@@ -81,27 +105,65 @@ class PremiumNotifier extends Notifier<PremiumState> {
       final sub = await _ds.fetchMySubscription();
       state = state.copyWith(subscription: sub, isLoading: false);
     } catch (e) {
-      // 404 means no active subscription – that's fine
+      // 404 = no active subscription — free tier, not an error
       state = state.copyWith(isLoading: false, clearSubscription: true);
     }
   }
 
-  Future<void> checkout(int planId) async {
+  /// Called from CheckoutScreen after user confirms payment.
+  /// Flow: POST /subscriptions/checkout → POST /subscriptions/mock-confirm/{id}
+  Future<void> checkout(String planId) async {
     state = state.copyWith(
       isCheckingOut: true,
       clearError: true,
       checkoutSuccess: false,
     );
     try {
-      final session = await _ds.startCheckout(planId);
-      await _ds.confirmMockPayment(session.transactionId);
+      String transactionId;
+
+      try {
+        // Step 1: Try creating a new checkout session
+        final session = await _ds.startCheckout(planId);
+        transactionId = session.transactionId;
+      } on DioException catch (e) {
+        // 409 = pending checkout already exists — skip checkout, fetch existing
+        final code = e.response?.data?['error']?['code'] as String?;
+        if (e.response?.statusCode == 409 &&
+            code == 'SUBSCRIPTION_CHECKOUT_PENDING') {
+          final pendingId = await _ds.fetchPendingTransactionId(planId);
+          if (pendingId == null) {
+            state = state.copyWith(
+              isCheckingOut: false,
+              error: 'Could not find pending transaction. Please try again.',
+            );
+            return;
+          }
+          transactionId = pendingId;
+          // Go straight to mock-confirm — do NOT call checkout again
+        } else {
+          rethrow;
+        }
+      }
+
+      // Step 2: Confirm the transaction (mock Stripe webhook)
+      await _ds.confirmMockPayment(transactionId);
+
+      // Step 3: Refresh — subscription is now active
       await loadMySubscription();
+
       state = state.copyWith(isCheckingOut: false, checkoutSuccess: true);
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?['error']?['message'] as String? ??
+          e.message ??
+          'Payment failed. Please try again.';
+      state = state.copyWith(isCheckingOut: false, error: message);
     } catch (e) {
       state = state.copyWith(isCheckingOut: false, error: e.toString());
     }
   }
 
+  /// Cancel sets auto_renew=false. User keeps premium until end_date.
   Future<void> cancel() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -112,18 +174,32 @@ class PremiumNotifier extends Notifier<PremiumState> {
     }
   }
 
-  void clearCheckoutSuccess() {
-    state = state.copyWith(checkoutSuccess: false);
-  }
+  void clearCheckoutSuccess() => state = state.copyWith(checkoutSuccess: false);
 }
 
-// ── Providers ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// PROVIDERS
+// ─────────────────────────────────────────────────────────────────────────────
 
 final premiumProvider = NotifierProvider<PremiumNotifier, PremiumState>(
   PremiumNotifier.new,
 );
 
-/// Convenience provider — import this in any feature to gate premium content.
+/// Quick boolean — import this anywhere to gate a feature.
+/// Usage:  final isPremium = ref.watch(isPremiumProvider);
 final isPremiumProvider = Provider<bool>((ref) {
   return ref.watch(premiumProvider).isPremium;
+});
+
+/// Granular gate providers — use these instead of rolling your own checks.
+final canUploadTracksProvider = Provider<bool>((ref) {
+  return ref.watch(premiumProvider).canUploadMoreTracks;
+});
+
+final canCreatePlaylistsProvider = Provider<bool>((ref) {
+  return ref.watch(premiumProvider).canCreateMorePlaylists;
+});
+
+final canDownloadProvider = Provider<bool>((ref) {
+  return ref.watch(premiumProvider).canDownload;
 });
