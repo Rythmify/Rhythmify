@@ -275,13 +275,29 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// Moves to a specific track index in the current native queue.
   Future<void> skipToAbsoluteIndex(int index) async {
     final repository = ref.read(audioRepositoryProvider);
+    final nativeQueue = repository.currentQueue;
+
+    if (index < 0 || index >= nativeQueue.length) {
+      debugPrint('[PlayerNotifier] skipToAbsoluteIndex out of bounds: $index');
+      return;
+    }
+
+    final targetTrack = nativeQueue[index];
     
-    // If hardware queue is shorter than the index we want to skip to,
-    // it means the hardware is out of sync with the UI (usually after auto-discovery).
-    if (index >= repository.currentQueue.length) {
-      debugPrint('[PlayerNotifier] Native queue out of sync. Reloading...');
-      // This is a safety fallback. 
-      // Ideally, the QueueNotifier handles this via updateNativeQueue.
+    // Safety Net: If the track somehow lacks a URL (e.g. discovery race condition),
+    // resolve it just-in-time before skipping.
+    if ((targetTrack.streamUrl ?? targetTrack.audioUrl).isEmpty) {
+      debugPrint('[PlayerNotifier] targetTrack at $index lacks URL. Resolving JIT...');
+      try {
+        final streamUrl = await ref.read(initiatePlaybackUseCaseProvider).call(targetTrack.id);
+        final resolvedTrack = targetTrack.copyWith(streamUrl: streamUrl);
+        
+        // Update both local mirror and hardware metadata
+        _queue[index] = resolvedTrack;
+        await repository.updateTrackInfo(targetTrack.id, resolvedTrack);
+      } catch (e) {
+        debugPrint('[PlayerNotifier] JIT URL resolution failed for ${targetTrack.id}: $e');
+      }
     }
 
     await repository.skipToIndex(index);

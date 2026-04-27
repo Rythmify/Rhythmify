@@ -16,7 +16,8 @@ class GetRelatedTracksUseCase {
       title: pt.title,
       artist: pt.artistName,
       userId: '', // Required but unknown from pt
-      audioUrl: '', // Will be resolved by player if needed
+      audioUrl: pt.audioUrl ?? '', 
+      streamUrl: pt.streamUrl,
       duration: pt.duration,
       playCount: pt.playCount,
       isLiked: pt.isLiked,

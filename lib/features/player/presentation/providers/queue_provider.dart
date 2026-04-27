@@ -29,20 +29,22 @@ class QueueNotifier extends Notifier<AppQueueState> {
     return const AppQueueState();
   }
 
-  /// Automatically fetches related tracks when the queue is near the end.
+  /// Proactively fetches discovery tracks BEFORE the manual queue ends.
   Future<void> _checkAndFetchRelated() async {
     final upcoming = state.upcomingTracks;
     final current = state.currentTrack;
 
     if (current == null) return;
 
-    // Trigger if 3 or fewer tracks left in the TOTAL native queue
-    if (upcoming.length <= 3 &&
+    // Threshold: Fetch when total remaining tracks are 5 or fewer.
+    // This ensures discovery items are appended to hardware BEFORE reaching 'completed'.
+    final totalRemaining = upcoming.length;
+    
+    if (totalRemaining <= 5 &&
         !state.isLoadingRecommendations &&
         _lastFetchedRelatedId != current.track.id) {
       
       _lastFetchedRelatedId = current.track.id;
-      
       state = state.copyWith(isLoadingRecommendations: true);
 
       try {
@@ -66,19 +68,28 @@ class QueueNotifier extends Notifier<AppQueueState> {
             .toList();
 
         if (newRelated.isNotEmpty) {
-          // 1. Append to native player queue
+          // 1. SILENTLY append to native player queue (Hardware sync)
           await ref.read(appendTracksUseCaseProvider).call(newRelated.map((e) => e.track).toList());
 
-          // 2. Append to local state
-          state = state.copyWith(
-            upcomingTracks: [...state.upcomingTracks, ...newRelated],
-            isLoadingRecommendations: false,
-          );
+          // 2. Validate alignment: Only add to UI if hardware has expanded its truth.
+          // This prevents "Ghost Tracks" from appearing in the UI if hardware rejected them.
+          final nativeQueue = ref.read(audioRepositoryProvider).currentQueue;
+          final validNewRelated = newRelated.where((r) => nativeQueue.any((nt) => nt.id == r.track.id)).toList();
+
+          if (validNewRelated.isNotEmpty) {
+            state = state.copyWith(
+              upcomingTracks: [...state.upcomingTracks, ...validNewRelated],
+              isLoadingRecommendations: false,
+            );
+          } else {
+            debugPrint('[QueueNotifier] Hardware rejected all discovery tracks (missing URLs). UI sync skipped.');
+            state = state.copyWith(isLoadingRecommendations: false);
+          }
         } else {
           state = state.copyWith(isLoadingRecommendations: false);
         }
       } catch (e) {
-        debugPrint('[QueueNotifier] Failed to auto-fetch related tracks: $e');
+        debugPrint('[QueueNotifier] Proactive fetch failed: $e');
         state = state.copyWith(isLoadingRecommendations: false);
       }
     }

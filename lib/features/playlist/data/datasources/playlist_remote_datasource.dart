@@ -857,8 +857,10 @@ class PlaylistRemoteDatasource {
             playCount: (json['play_count'] as num?)?.toInt() ?? 0,
             position: startPosition + i,
             coverUrl: json['cover_image'] as String?,
-            isLiked: false,
+            isLiked: json['is_liked_by_me'] as bool? ?? false,
             isUnavailable: false,
+            streamUrl: json['stream_url'] as String?,
+            audioUrl: json['audio_url'] as String?,
           ),
         );
       } catch (e) {
@@ -891,8 +893,10 @@ class PlaylistRemoteDatasource {
             playCount: (json['play_count'] as num?)?.toInt() ?? 0,
             position: startPosition + i,
             coverUrl: json['cover_image'] as String?,
-            isLiked: false,
+            isLiked: json['is_liked_by_me'] as bool? ?? false,
             isUnavailable: false,
+            streamUrl: json['stream_url'] as String?,
+            audioUrl: json['audio_url'] as String?,
           ),
         );
       } catch (e) {

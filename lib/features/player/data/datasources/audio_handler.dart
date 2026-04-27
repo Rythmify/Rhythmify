@@ -40,11 +40,12 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Initializes listeners for playback events and current index changes to
   /// sync the [playbackState] and [mediaItem] with the system.
   Future<void> _init() async {
-    _player.processingStateStream.listen((state) {
+    _player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
         final currentIndex = _player.currentIndex;
         if (currentIndex != null && currentIndex < _playlist.length - 1) {
-          _player.seekToNext();
+          // Hardware level auto-advance
+          await _player.seek(Duration.zero, index: currentIndex + 1);
           _player.play();
         }
       }
@@ -157,6 +158,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     if (audioSources.isEmpty) return;
 
     try {
+      // Clear and reload fully for a context change
       await _playlist.clear();
       await _playlist.addAll(audioSources);
 
@@ -175,9 +177,13 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   /// Jumps to a specific index in the current native queue without re-loading.
   Future<void> skipToIndex(int index) async {
-    if (index < 0 || index >= _currentQueue.length) return;
+    if (index < 0 || index >= _playlist.length) {
+      debugPrint('[RythmifyAudioHandler] skipToIndex out of bounds: $index (max ${_playlist.length})');
+      return;
+    }
     try {
       await _player.seek(Duration.zero, index: index);
+      _player.play();
     } catch (e) {
       debugPrint('[RythmifyAudioHandler] skipToIndex error: $e');
     }
@@ -188,14 +194,14 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     final audioSources = _convertToAudioSources(tracks, useCache: false);
     if (audioSources.isEmpty) return;
 
-    final oldLength = _playlist.length;
+    final insertionIndex = _playlist.length;
     _currentQueue.addAll(tracks);
     await _playlist.addAll(audioSources);
 
-    // If the player stopped because it reached the end, but we just added more,
-    // we must manually trigger play on the NEWLY added items.
+    // CRITICAL FIX: If the player reached 'completed' before the fetch finished,
+    // we must manually kick-start it into the new tracks.
     if (_player.processingState == ProcessingState.completed) {
-      await _player.seek(Duration.zero, index: oldLength);
+      await _player.seek(Duration.zero, index: insertionIndex);
       _player.play();
     }
   }
