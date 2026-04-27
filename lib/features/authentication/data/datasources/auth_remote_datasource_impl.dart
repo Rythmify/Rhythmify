@@ -483,8 +483,26 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// - `RATE_LIMIT_EXCEEDED`
   /// - `VALIDATION_FAILED`
   void _handleDioError(DioException e) {
+    final statusCode = e.response?.statusCode;
     final errorCode = e.response?.data?['error']?['code'] as String?;
     final errorMessage = e.response?.data?['error']?['message'] as String?;
+    final topLevelError = e.response?.data?['error'];
+    final topLevelMessage = e.response?.data?['message'] as String?;
+    final combinedMessage = [
+      errorCode,
+      errorMessage,
+      topLevelError?.toString(),
+      topLevelMessage,
+    ].whereType<String>().join(' ').toLowerCase();
+
+    if (statusCode == 409 ||
+        errorCode == 'EMAIL_ALREADY_EXISTS' ||
+        errorCode == 'AUTH_EMAIL_ALREADY_EXISTS' ||
+        (statusCode == 400 && combinedMessage.contains('already exists')) ||
+        combinedMessage.contains('email_already_exists') ||
+        combinedMessage.contains('already exists')) {
+      throw Exception('EMAIL_ALREADY_EXISTS');
+    }
 
     switch (errorCode) {
       case 'AUTH_INVALID_CREDENTIALS':
