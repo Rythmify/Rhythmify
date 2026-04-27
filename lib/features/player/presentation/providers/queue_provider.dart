@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/queue_state.dart';
+import '../../domain/entities/queue_item.dart';
 import 'player_provider.dart';
+import 'player_dependency_providers.dart';
 
 final queueStateProvider = NotifierProvider<QueueNotifier, AppQueueState>(() {
   return QueueNotifier();
@@ -10,7 +12,6 @@ final queueStateProvider = NotifierProvider<QueueNotifier, AppQueueState>(() {
 class QueueNotifier extends Notifier<AppQueueState> {
   @override
   AppQueueState build() {
-    // Optionally: listen to playerStateProvider to keep queue in sync with native auto-advancement
     ref.listen(playerStateProvider, (previous, next) {
       if (previous?.currentTrack?.id != next.currentTrack?.id &&
           next.currentTrack != null) {
@@ -18,93 +19,177 @@ class QueueNotifier extends Notifier<AppQueueState> {
       }
     });
 
-    // Rehydrate from local storage here if implemented
-
     return const AppQueueState();
   }
 
-  void playQueue({
+  /// 1. Instant local playback.
+  /// 2. Background fetch full context.
+  /// 3. Correct local state by slicing around the tapped track.
+  /// 4. Correct backend state via syncPlayerState.
+  Future<void> playQueue({
     required List<Track> tracks,
     required int initialIndex,
     QueueContext? context,
-  }) {
+  }) async {
     if (tracks.isEmpty || initialIndex < 0 || initialIndex >= tracks.length) {
       return;
     }
 
-    final history = tracks.sublist(0, initialIndex);
-    final currentTrack = tracks[initialIndex];
-    final upcomingTracks = tracks.sublist(initialIndex + 1);
+    final tappedTrack = tracks[initialIndex];
+
+    // --- STEP 1: OPTIMISTIC LOCAL UI ---
+    final localItems = tracks.map((t) => QueueItem(track: t)).toList();
+    final history = localItems.sublist(0, initialIndex);
+    final currentItem = localItems[initialIndex];
+    final upcoming = localItems.sublist(initialIndex + 1);
 
     state = state.copyWith(
       context: context,
       history: history,
-      currentTrack: currentTrack,
-      upcomingTracks: upcomingTracks,
-      unShuffledUpcomingTracks: upcomingTracks,
+      currentTrack: currentItem,
+      upcomingTracks: upcoming,
+      unShuffledUpcomingTracks: upcoming,
       isShuffled: false,
-      currentPage: 1,
     );
 
-    // Command the native player
+    // Command native player instantly
     ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(tracks, initialIndex: initialIndex);
+
+    // --- STEP 2: BACKGROUND CONTEXT FETCH ---
+    if (context == null || context.type == QueueSource.unknown) return;
+
+    try {
+      final response = await ref.read(fetchQueueContextUseCaseProvider).call(
+        interactionType: 'play',
+        sourceType: context.type.name,
+        sourceId: context.sourceId,
+        targetUserId: context.targetUserId,
+      );
+
+      final data = response['data'] as Map<String, dynamic>;
+      final rawQueue = data['queue'] as List<dynamic>;
+
+      // Map everything to QueueItems
+      final List<QueueItem> fullContextItems =
+          rawQueue.map((item) => QueueItem.fromJson(item as Map<String, dynamic>)).toList();
+
+      // --- STEP 3: ARRAY SLICING (The Fix) ---
+      // Find where our tapped track exists in the full backend context
+      final actualIndexInContext = fullContextItems.indexWhere(
+        (item) => item.track.id == tappedTrack.id,
+      );
+
+      if (actualIndexInContext != -1) {
+        final serverHistory = fullContextItems.sublist(0, actualIndexInContext);
+        final serverCurrent = fullContextItems[actualIndexInContext];
+        final serverUpcoming = fullContextItems.sublist(actualIndexInContext + 1);
+
+        // --- STEP 4: BACKEND SYNC ---
+        // Tell the backend that the user is actually at this track, and send the REMAINING queue.
+        ref.read(syncPlayerStateUseCaseProvider).call(
+          trackId: tappedTrack.id,
+          queue: serverUpcoming.map((e) => e.toJson()).toList(),
+        );
+
+        // --- STEP 5: SILENT STATE UPDATE ---
+        state = state.copyWith(
+          history: serverHistory,
+          currentTrack: serverCurrent,
+          upcomingTracks: serverUpcoming,
+          unShuffledUpcomingTracks: serverUpcoming,
+        );
+      }
+    } catch (e) {
+      // Background fetch failed, we keep using the local optimistic queue
+    }
+  }
+
+  /// Appends tracks to the "next_up" bucket via backend.
+  Future<void> addToNextUp({
+    required String sourceType,
+    String? sourceId,
+  }) async {
+    try {
+      final response = await ref.read(fetchQueueContextUseCaseProvider).call(
+        interactionType: 'next_up',
+        sourceType: sourceType,
+        sourceId: sourceId,
+      );
+
+      final data = response['data'] as Map<String, dynamic>;
+      final rawQueue = data['queue'] as List<dynamic>;
+
+      // These items are tagged as 'next_up' by the backend
+      final newItems =
+          rawQueue.map((item) => QueueItem.fromJson(item as Map<String, dynamic>)).toList();
+
+      // Merge into state: Insert right after currently playing, before 'context' items.
+      final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
+
+      // Simple implementation: Put them at the very front of upcoming.
+      // This ensures they are played next.
+      final updatedUpcoming = [...newItems, ...currentUpcoming];
+
+      state = state.copyWith(
+        upcomingTracks: updatedUpcoming,
+        unShuffledUpcomingTracks: updatedUpcoming, // Reset unshuffled to reflect new additions
+      );
+    } catch (e) {
+      // Fallback or error handling
+    }
   }
 
   void _syncWithPlayer(Track activeTrack) {
-    if (state.currentTrack?.id == activeTrack.id) return;
+    if (state.currentTrack?.track.id == activeTrack.id) return;
 
-    // Track advanced automatically (e.g. by native queue)
-    final newHistory = List<Track>.from(state.history);
+    final newHistory = List<QueueItem>.from(state.history);
     if (state.currentTrack != null) {
       newHistory.add(state.currentTrack!);
     }
 
-    final newUpcoming = List<Track>.from(state.upcomingTracks);
-    if (newUpcoming.isNotEmpty && newUpcoming.first.id == activeTrack.id) {
-      newUpcoming.removeAt(0);
+    final newUpcoming = List<QueueItem>.from(state.upcomingTracks);
+    QueueItem? nextItem;
+
+    if (newUpcoming.isNotEmpty && newUpcoming.first.track.id == activeTrack.id) {
+      nextItem = newUpcoming.removeAt(0);
+    } else {
+      // If native player skipped to something else (e.g. manual tap in notification)
+      nextItem = QueueItem(track: activeTrack);
     }
 
     state = state.copyWith(
       history: newHistory,
-      currentTrack: activeTrack,
+      currentTrack: nextItem,
       upcomingTracks: newUpcoming,
     );
   }
 
   void nextTrack() {
     if (state.upcomingTracks.isEmpty) return;
-
-    // We can rely on PlayerNotifier to natively skip to next.
-    // The ref.listen above will handle our local queue state update once the native player actually advances.
     ref.read(playerStateProvider.notifier).skipToNext();
   }
 
   void previousTrack() {
     if (state.history.isEmpty) {
-      // Just seek to beginning if no history
       ref.read(playerStateProvider.notifier).seek(Duration.zero);
       return;
     }
 
-    // We rely on native player to go to previous.
-    // However, if the native player queue is out of sync or just restarts the track,
-    // we might need to handle it. For now, try native.
     ref.read(playerStateProvider.notifier).skipToPrevious();
 
-    // Manual state rollback in case native doesn't emit properly for history
-    final newUpcoming = List<Track>.from(state.upcomingTracks);
+    final newUpcoming = List<QueueItem>.from(state.upcomingTracks);
     if (state.currentTrack != null) {
       newUpcoming.insert(0, state.currentTrack!);
     }
 
-    final newHistory = List<Track>.from(state.history);
-    final prevTrack = newHistory.removeLast();
+    final newHistory = List<QueueItem>.from(state.history);
+    final prevItem = newHistory.removeLast();
 
     state = state.copyWith(
       history: newHistory,
-      currentTrack: prevTrack,
+      currentTrack: prevItem,
       upcomingTracks: newUpcoming,
     );
   }
@@ -113,46 +198,18 @@ class QueueNotifier extends Notifier<AppQueueState> {
     if (state.upcomingTracks.isEmpty) return;
 
     if (state.isShuffled) {
-      // Restore original order
       state = state.copyWith(
         isShuffled: false,
         upcomingTracks: List.from(state.unShuffledUpcomingTracks),
       );
     } else {
-      // Shuffle the upcoming tracks
-      final shuffled = List<Track>.from(state.upcomingTracks)..shuffle();
+      final shuffled = List<QueueItem>.from(state.upcomingTracks)..shuffle();
       state = state.copyWith(
         isShuffled: true,
         unShuffledUpcomingTracks: List.from(state.upcomingTracks),
         upcomingTracks: shuffled,
       );
     }
-
-    // Note: Re-injecting to the native player without restarting the current track
-    // would require an update to the underlying AudioHandler.
-    // For a pure client-side Riverpod prototype, the state updates the UI.
-  }
-
-  void appendTracks(List<Track> newTracks) {
-    final updatedUpcoming = List<Track>.from(state.upcomingTracks)
-      ..addAll(newTracks);
-
-    List<Track> updatedUnshuffled;
-    if (state.isShuffled) {
-      updatedUnshuffled = List<Track>.from(state.unShuffledUpcomingTracks)
-        ..addAll(newTracks);
-      // We could optionally shuffle the newly appended tracks into the existing ones
-    } else {
-      updatedUnshuffled = updatedUpcoming;
-    }
-
-    state = state.copyWith(
-      upcomingTracks: updatedUpcoming,
-      unShuffledUpcomingTracks: updatedUnshuffled,
-      currentPage: state.currentPage + 1,
-    );
-
-    // Again, syncing to native player queue is complex without resetting current track.
   }
 
   void reorder(int oldIndex, int newIndex) {
@@ -163,33 +220,34 @@ class QueueNotifier extends Notifier<AppQueueState> {
       return;
     }
 
-    final list = List<Track>.from(state.upcomingTracks);
+    final list = List<QueueItem>.from(state.upcomingTracks);
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
-    final track = list.removeAt(oldIndex);
-    list.insert(newIndex, track);
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
 
-    state = state.copyWith(upcomingTracks: list);
-    // UI updates dynamically
+    state = state.copyWith(
+      upcomingTracks: list,
+      unShuffledUpcomingTracks: list, // Keeping them in sync for simplicity
+    );
   }
 
   void playFromQueue(int index) {
     if (index < 0 || index >= state.upcomingTracks.length) return;
 
-    final targetTrack = state.upcomingTracks[index];
+    final targetItem = state.upcomingTracks[index];
 
-    // Prepare all tracks for the native player to reconstruct its queue
     final allTracks = [
-      ...state.history,
-      if (state.currentTrack != null) state.currentTrack!,
-      ...state.upcomingTracks,
+      ...state.history.map((e) => e.track),
+      if (state.currentTrack != null) state.currentTrack!.track,
+      ...state.upcomingTracks.map((e) => e.track),
     ];
 
     final globalIndex = state.history.length + 1 + index;
 
-    // Push state immediately
-    final newHistory = List<Track>.from(state.history);
+    // Push local state update
+    final newHistory = List<QueueItem>.from(state.history);
     if (state.currentTrack != null) newHistory.add(state.currentTrack!);
     newHistory.addAll(state.upcomingTracks.sublist(0, index));
 
@@ -197,41 +255,55 @@ class QueueNotifier extends Notifier<AppQueueState> {
 
     state = state.copyWith(
       history: newHistory,
-      currentTrack: targetTrack,
+      currentTrack: targetItem,
       upcomingTracks: newUpcoming,
+      unShuffledUpcomingTracks: newUpcoming,
     );
 
-    // Command native player to load the full queue and start at the target index
+    // Command native player
     ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(allTracks, initialIndex: globalIndex);
+
+    // Sync to backend that we jumped
+    ref.read(syncPlayerStateUseCaseProvider).call(
+      trackId: targetItem.track.id,
+      queue: newUpcoming.map((e) => e.toJson()).toList(),
+    );
   }
 
   void skipToIndex(int index) {
-    final allTracks = [
+    final allItems = [
       ...state.history,
       if (state.currentTrack != null) state.currentTrack!,
       ...state.upcomingTracks,
     ];
 
-    if (index < 0 || index >= allTracks.length) return;
+    if (index < 0 || index >= allItems.length) return;
 
-    final targetTrack = allTracks[index];
-    if (targetTrack.id == state.currentTrack?.id) return;
+    final targetItem = allItems[index];
+    if (targetItem.track.id == state.currentTrack?.track.id) return;
 
-    final newHistory = allTracks.sublist(0, index);
-    final newUpcoming = allTracks.sublist(index + 1);
+    final newHistory = allItems.sublist(0, index);
+    final newUpcoming = allItems.sublist(index + 1);
 
     state = state.copyWith(
       history: newHistory,
-      currentTrack: targetTrack,
+      currentTrack: targetItem,
       upcomingTracks: newUpcoming,
+      unShuffledUpcomingTracks: newUpcoming,
     );
 
-    // Command native player to seek to this index in its queue
-    // Just re-loading for now as it's the safest way to sync
+    final allTracks = allItems.map((e) => e.track).toList();
+
     ref
         .read(playerStateProvider.notifier)
         .loadAndPlayQueue(allTracks, initialIndex: index);
+
+    // Sync to backend
+    ref.read(syncPlayerStateUseCaseProvider).call(
+      trackId: targetItem.track.id,
+      queue: newUpcoming.map((e) => e.toJson()).toList(),
+    );
   }
 }

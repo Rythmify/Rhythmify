@@ -16,6 +16,8 @@ import '../../domain/usecases/update_track_info_usecase.dart';
 import '../../domain/usecases/initiate_playback_use_case.dart';
 import '../../domain/usecases/record_listening_history_use_case.dart';
 import '../../domain/usecases/sync_history_use_case.dart';
+import '../../domain/usecases/fetch_queue_context_usecase.dart';
+import '../../domain/usecases/sync_player_state_usecase.dart';
 
 // --- DATA Providers ---
 
@@ -123,4 +125,12 @@ final recordListeningHistoryUseCaseProvider = Provider(
 
 final syncHistoryUseCaseProvider = Provider(
   (ref) => SyncHistoryUseCase(ref.read(playbackRepositoryProvider)),
+);
+
+final fetchQueueContextUseCaseProvider = Provider(
+  (ref) => FetchQueueContextUseCase(ref.read(playbackRepositoryProvider)),
+);
+
+final syncPlayerStateUseCaseProvider = Provider(
+  (ref) => SyncPlayerStateUseCase(ref.read(playbackRepositoryProvider)),
 );

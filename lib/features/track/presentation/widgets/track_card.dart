@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import 'bottom_sheets/track_options_modal.dart';
 
 /// [TrackCard] is a UI component that displays a summary of a track.
@@ -20,6 +21,11 @@ class TrackCard extends ConsumerWidget {
   /// Optional external tap callback.
   final VoidCallback? onTap;
 
+  /// Optional context for the track (e.g. source_id and type).
+  /// If provided and [onTap] is null, clicking the card will play the track
+  /// with its full background context.
+  final QueueContext? queueContext;
+
   /// Whether to observe player state and show dynamic playback status.
   final bool observePlayerState;
 
@@ -28,6 +34,7 @@ class TrackCard extends ConsumerWidget {
     super.key,
     required this.track,
     this.onTap,
+    this.queueContext,
     this.observePlayerState = true,
   });
 
@@ -64,9 +71,11 @@ class TrackCard extends ConsumerWidget {
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {
-          ref
-              .read(queueStateProvider.notifier)
-              .playQueue(tracks: [track], initialIndex: 0);
+          ref.read(queueStateProvider.notifier).playQueue(
+                tracks: [track],
+                initialIndex: 0,
+                context: queueContext,
+              );
         }
       },
       child: Padding(

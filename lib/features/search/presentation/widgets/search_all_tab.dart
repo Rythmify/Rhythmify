@@ -10,6 +10,8 @@ import '../../../../core/domain/entities/track.dart';
 import '../../../../core/utils/formatters.dart';
 import '../pages/search_seeall_page.dart';
 import '../widgets/search_tracks_tab.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/top_result.dart';
 
@@ -384,19 +386,31 @@ class _TopResultCard extends StatelessWidget {
 }
 
 /// Shows up to the first 3 tracks from the results as [TrackTile] rows.
-class _TracksSection extends StatelessWidget {
+class _TracksSection extends ConsumerWidget {
   const _TracksSection({required this.tracks});
   final List<Track> tracks;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       key: const Key('all_tab_tracks_section'),
       children: tracks.take(3).toList().asMap().entries.map((e) {
         return Padding(
           key: Key('all_tab_track_${e.key}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: TrackCard(track: e.value),
+          child: TrackCard(
+            track: e.value,
+            onTap: () {
+              ref.read(queueStateProvider.notifier).playQueue(
+                    tracks: tracks,
+                    initialIndex: e.key,
+                    context: QueueContext(
+                      type: QueueSource.search,
+                      sourceId: ref.read(searchQueryProvider),
+                    ),
+                  );
+            },
+          ),
         );
       }).toList(),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// [HomeTopTrackCard] is a UI component used in the Home screen to display
 /// recently listened tracks in a grid-like layout.
@@ -29,9 +30,11 @@ class HomeTopTrackCard extends ConsumerWidget {
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {
-          ref
-              .read(queueStateProvider.notifier)
-              .playQueue(tracks: [track], initialIndex: 0);
+          ref.read(queueStateProvider.notifier).playQueue(
+                tracks: [track],
+                initialIndex: 0,
+                context: const QueueContext(type: QueueSource.listeningHistory),
+              );
         }
       },
       child: Container(

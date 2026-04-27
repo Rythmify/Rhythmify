@@ -12,6 +12,7 @@ import '../../../../../core/error/error_handler.dart';
 import '../../../../../core/utils/ui_utils.dart';
 import '../../providers/track_interaction_provider.dart';
 import '../../providers/track_sync_provider.dart';
+import '../../../../player/presentation/providers/queue_provider.dart';
 import '../../../../messaging/presentation/providers/conversations_provider.dart';
 import '../../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../../authentication/presentation/providers/auth_state.dart';
@@ -287,7 +288,16 @@ class TrackOptionsModal extends ConsumerWidget {
                     key: const Key('track_options_action_play_next_inkwell'),
                     icon: Icons.playlist_play,
                     label: 'Play Next',
-                    onTap: () {},
+                    onTap: () {
+                      ref.read(queueStateProvider.notifier).addToNextUp(
+                            sourceType: 'track',
+                            sourceId: syncedTrack.id,
+                          );
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to Next Up')),
+                      );
+                    },
                   ),
                   _buildActionRow(
                     key: const Key('track_options_action_play_last_inkwell'),
