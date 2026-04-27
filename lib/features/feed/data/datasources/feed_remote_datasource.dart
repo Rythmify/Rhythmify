@@ -50,6 +50,7 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
   FeedItemModel? _parseItem(Map<String, dynamic> json) {
     final trackJson = json['track'] as Map<String, dynamic>?;
     final playlistJson = json['playlist'] as Map<String, dynamic>?;
+    final userJson = json['user'] as Map<String, dynamic>;
 
     final resolvedTrack =
         trackJson ??
@@ -59,12 +60,16 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
 
     if (resolvedTrack == null) return null;
 
+    final trackOwnerJson =
+        resolvedTrack['user'] as Map<String, dynamic>? ?? userJson;
+
     return FeedItemModel(
       id: json['id'] as String,
       type: json['type'] as String,
       contentType: json['content_type'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
-      user: FeedUserModel.fromJson(json['user'] as Map<String, dynamic>),
+      user: FeedUserModel.fromJson(userJson),
+      trackOwner: FeedUserModel.fromJson(trackOwnerJson),
       track: FeedTrackModel.fromJson(resolvedTrack),
       playlist: playlistJson != null
           ? FeedPlaylistModel.fromJson(playlistJson)
@@ -80,18 +85,22 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
     final label = reasonJson['label'] as String? ?? 'Discovered for you';
     final artistJson = trackJson['artist'] as Map<String, dynamic>? ?? {};
 
+    final ownerUser = FeedUserModel(
+      id: artistJson['id'] as String? ?? '',
+      username: artistJson['username'] as String? ?? '',
+      displayName: artistJson['username'] as String? ?? '',
+      avatar: artistJson['profile_picture'] as String?,
+      followers: 0,
+      isVerified: false,
+    );
+
     return FeedItemModel(
       id: json['id'] as String,
       type: 'discover',
       contentType: 'track',
       createdAt: DateTime.now(),
-      user: FeedUserModel(
-        id: artistJson['id'] as String? ?? '',
-        username: artistJson['username'] as String? ?? '',
-        displayName: artistJson['username'] as String? ?? '',
-        followers: 0,
-        isVerified: false,
-      ),
+      user: ownerUser, // for discover, poster = track owner
+      trackOwner: ownerUser,
       track: FeedTrackModel.fromJson(trackJson),
       discoverLabel: label,
     );

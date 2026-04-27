@@ -387,4 +387,19 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     await ref.read(pauseTrackUseCaseProvider).call();
     await ref.read(seekPositionUseCaseProvider).call(Duration.zero);
   }
+
+  /// Loads a preview track directly without calling initiatePlayback.
+  /// Used for tap-to-preview in the feed where we already have the previewUrl.
+  Future<void> loadAndPlayPreview(Track track) async {
+    _queue
+      ..clear()
+      ..add(track);
+    _currentIndex = 0;
+
+    await ref.read(loadQueueUseCaseProvider).call([track], initialIndex: 0);
+    await ref.read(playTrackUseCaseProvider).call();
+
+    // Fetch waveform in background so it's ready if user taps bottom info
+    _updateTrackInBackground(track.id);
+  }
 }
