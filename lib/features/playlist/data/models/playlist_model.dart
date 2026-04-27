@@ -5,15 +5,35 @@ import '../../domain/entities/playlist_entity.dart';
 class PlaylistModel {
   static PlaylistEntity fromJson(
     Map<String, dynamic> json, {
-    bool isOwned = false, // caller sets this — true for filter=created
+    bool isOwned = false,
   }) {
     debugPrintPlaylist('RAW JSON received: $json');
 
     final subtype = json['subtype'] as String? ?? 'playlist';
+
+    // KEY FIX: also read the top-level 'type' field from the backend.
+    // The backend returns type: "track_radio" for track radio playlists
+    // even when subtype is "playlist". This is the reliable signal.
+    final typeField = json['type'] as String? ?? '';
+
     final playlistType = _typeFromSubtype(subtype);
-    final releaseYear = (json['release_date'] as String?)?.isNotEmpty == true
-        ? (json['release_date'] as String).substring(0, 4)
+
+    // releaseYear parsed as int? from release_date string
+    final releaseDateStr = json['release_date'] as String?;
+    final releaseYear = (releaseDateStr != null && releaseDateStr.length >= 4)
+        ? int.tryParse(releaseDateStr.substring(0, 4))
         : null;
+
+    // isGeneratedMix: from subtype
+    final isGeneratedMix =
+        subtype == 'auto_generated' ||
+        subtype == 'curated_daily' ||
+        subtype == 'curated_weekly' ||
+        subtype == 'genre_trending';
+
+    // isTrackRadio: from backend 'type' field OR subtype
+    // Backend returns type: "track_radio" — this is the reliable signal
+    final isTrackRadio = typeField == 'track_radio' || subtype == 'track_radio';
 
     final entity = PlaylistEntity(
       id: json['playlist_id'] as String,
@@ -32,6 +52,8 @@ class PlaylistModel {
       repostCount: (json['repost_count'] as num?)?.toInt() ?? 0,
       releaseYear: releaseYear,
       isOwned: isOwned,
+      isGeneratedMix: isGeneratedMix,
+      isTrackRadio: isTrackRadio,
     );
 
     debugPrintPlaylist(
@@ -39,8 +61,11 @@ class PlaylistModel {
       'id: ${entity.id}  '
       'type: ${entity.type}  '
       'subtype: $subtype  '
+      'typeField: $typeField  '
       'isLiked: ${entity.isLiked}  '
       'isOwned: ${entity.isOwned}  '
+      'isGeneratedMix: ${entity.isGeneratedMix}  '
+      'isTrackRadio: ${entity.isTrackRadio}  '
       'tracks: ${entity.trackCount}  '
       'cover: ${entity.coverUrl ?? "none"}',
     );
@@ -66,7 +91,6 @@ class PlaylistModel {
     }
   }
 
-  // Used by fetchMyPlaylists(filter: 'created') — marks all as owned
   static List<PlaylistEntity> fromJsonListOwned(List<dynamic> list) {
     debugPrintPlaylist('Parsing list of ${list.length} owned playlists...');
     return list
@@ -75,7 +99,6 @@ class PlaylistModel {
         .toList();
   }
 
-  // Used by other callers that don't know ownership (search results etc.)
   static List<PlaylistEntity> fromJsonList(List<dynamic> list) {
     debugPrintPlaylist('Parsing list of ${list.length} playlists...');
     return list.cast<Map<String, dynamic>>().map(fromJson).toList();

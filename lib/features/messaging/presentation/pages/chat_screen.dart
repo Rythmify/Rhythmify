@@ -92,7 +92,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _setupSocketListeners(String conversationId) {
     _socket.onMessageReceived((data) {
-      print('🔥 onMessageReceived fired: $data');
+      debugPrint('🔥 onMessageReceived fired: $data');
+
       if (mounted) {
         final message = MessageModel.fromJson(
           data['message'] as Map<String, dynamic>,
@@ -721,15 +722,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final pending = <({String segment, String type})>[];
     for (final m in _trackUrlRegex.allMatches(text)) {
       final seg = m.group(1)!;
-      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg)) {
         continue;
+      }
       if (_embedCache.containsKey(seg)) continue;
       pending.add((segment: seg, type: 'track'));
     }
+
     for (final m in _playlistUrlRegex.allMatches(text)) {
       final seg = m.group(1)!;
-      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg))
+      if (_selectedEmbeds.any((e) => e.embedId == seg || e.embedName == seg)) {
         continue;
+      }
       if (_embedCache.containsKey(seg)) continue;
       pending.add((segment: seg, type: 'playlist'));
     }

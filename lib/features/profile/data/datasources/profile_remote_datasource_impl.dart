@@ -4,6 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
+import '../models/follow_status_model.dart';
 import 'profile_remote_datasource.dart';
 
 // coverage:ignore-file
@@ -39,6 +40,17 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       }
 
       return ProfileModel.fromJson(data);
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<FollowStatusModel> getFollowStatus(String userId) async {
+    try {
+      final response = await client.dio.get('/users/$userId/follow-status');
+      return FollowStatusModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -156,6 +168,26 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   Future<void> unfollowUser({required String userId}) async {
     try {
       await client.dio.delete('/users/$userId/follow');
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> blockUser({required String userId}) async {
+    try {
+      await client.dio.post('/users/$userId/block');
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> unblockUser({required String userId}) async {
+    try {
+      await client.dio.delete('/users/$userId/block');
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;

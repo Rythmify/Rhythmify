@@ -4,6 +4,7 @@ import 'package:rythmify/features/track/presentation/widgets/track_card.dart';
 import '../providers/search_providers.dart';
 import 'track_tile.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// Search results tab displaying the tracks list from [searchResultsProvider].
 /// Renders a loading spinner, error message, empty state, or a scrollable list of [TrackTile].
@@ -42,7 +43,14 @@ class TracksTab extends ConsumerWidget {
             onTap: () {
               ref
                   .read(queueStateProvider.notifier)
-                  .playQueue(tracks: data.tracks, initialIndex: i);
+                  .playQueue(
+                    tracks: data.tracks,
+                    initialIndex: i,
+                    context: QueueContext(
+                      type: QueueSource.search,
+                      sourceId: ref.read(searchQueryProvider),
+                    ),
+                  );
             },
           ),
         );

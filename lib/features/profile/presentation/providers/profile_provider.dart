@@ -8,6 +8,9 @@ import '../../domain/usecases/upload_cover_photo_usecase.dart';
 import '../../domain/usecases/delete_cover_photo_usecase.dart';
 import '../../domain/usecases/get_follow_user_usecase.dart';
 import '../../domain/usecases/get_unfollow_user_usecase.dart';
+import '../../domain/usecases/get_follow_status_usecase.dart';
+import '../../domain/usecases/get_block_user_usecase.dart';
+import '../../domain/usecases/get_unblock_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../domain/usecases/get_uploaded_tracks_usecase.dart';
 import '../../domain/usecases/get_reposted_tracks_usecase.dart';
@@ -67,6 +70,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
   late final GetLikedTracksUseCase _getLikedTracks;
   late final GetUploadedTracksUseCase _getUploadedTracks;
   late final GetRepostedTracksUseCase _getRepostedTracks;
+  late final GetFollowStatusUseCase _getFollowStatus;
+  late final GetBlockUserUseCase _blockUser;
+  late final GetUnblockUserUseCase _unblockUser;
 
   int _likesPage = 1;
   int _uploadsPage = 1;
@@ -107,6 +113,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     _getLikedTracks = GetLikedTracksUseCase(repository);
     _getUploadedTracks = GetUploadedTracksUseCase(repository);
     _getRepostedTracks = GetRepostedTracksUseCase(repository);
+    _getFollowStatus = GetFollowStatusUseCase(repository);
+    _blockUser = GetBlockUserUseCase(repository);
+    _unblockUser = GetUnblockUserUseCase(repository);
 
     return const ProfileInitial();
   }
@@ -135,7 +144,19 @@ class ProfileNotifier extends Notifier<ProfileState> {
         // Brand new profile state
         state = ProfileLoaded(profile: profile);
       }
+      _loadFollowStatus(userId);
     });
+  }
+
+  /// Loads the follow/block status alongside the profile data.
+  ///
+  /// This must be called before rendering the profile page so the UI
+  /// knows whether to show the blocked screen or the real profile.
+  Future<void> _loadFollowStatus(String userId) async {
+    final status = await _getFollowStatus(userId);
+    if (state is ProfileLoaded) {
+      state = (state as ProfileLoaded).copyWith(followStatus: status);
+    }
   }
 
   Future<void> loadPreviews(String userId) async {
@@ -500,5 +521,54 @@ class ProfileNotifier extends Notifier<ProfileState> {
       (_) => state = previous,
       (profile) => state = previous.copyWith(profile: profile),
     );
+  }
+
+  Future<void> blockUser(String userId) async {
+    // ── Optimistic Update ──────────────────────────────────────────────────
+    // Immediately show the blocked screen and clear follow flags (blocking
+    // terminates following relationships).
+    final previous = state;
+    if (state is ProfileLoaded) {
+      final current = state as ProfileLoaded;
+      state = current.copyWith(
+        followStatus: current.followStatus.copyWith(
+          isBlocking: true,
+          isFollowing: false,
+          isFollowedBy: false,
+        ),
+      );
+    }
+
+    final result = await _blockUser(userId: userId);
+
+    if (result.isLeft()) {
+      // Rollback on failure
+      state = previous;
+    } else {
+      // Final sync with backend to ensure flags are authoritative
+      await _loadFollowStatus(userId);
+    }
+  }
+
+  Future<void> unblockUser(String userId) async {
+    // ── Optimistic Update ──────────────────────────────────────────────────
+    // Immediately hide the blocked screen.
+    final previous = state;
+    if (state is ProfileLoaded) {
+      final current = state as ProfileLoaded;
+      state = current.copyWith(
+        followStatus: current.followStatus.copyWith(isBlocking: false),
+      );
+    }
+
+    final result = await _unblockUser(userId: userId);
+
+    if (result.isLeft()) {
+      // Rollback on failure
+      state = previous;
+    } else {
+      // Final sync with backend
+      await _loadFollowStatus(userId);
+    }
   }
 }

@@ -11,6 +11,7 @@ import 'package:rythmify/features/track_upload/presentation/widgets/cover_image_
 import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/core/domain/entities/track.dart' as track_entity;
+import 'package:rythmify/features/premium/domain/premium_gate.dart';
 
 /// Screen: UploadTrackScreen
 class UploadTrackScreen extends ConsumerStatefulWidget {
@@ -231,6 +232,9 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
           },
           onError: (error) {
             if (context.mounted) {
+              if (PremiumGate.handleError(context, error)) {
+                return;
+              }
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: Colors.red.shade800,

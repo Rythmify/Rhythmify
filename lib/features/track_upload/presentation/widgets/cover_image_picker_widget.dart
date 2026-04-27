@@ -53,23 +53,10 @@ class CoverImagePickerWidget extends ConsumerWidget {
         ),
         child: (hasLocalArtwork || hasRemoteArtwork)
             ? null
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.add_rounded,
-                    color: AppTheme.primaryBrand,
-                    size: 28,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Add\nartwork',
-                    textAlign: TextAlign.center,
-                    style: AppTheme.labelSmall.copyWith(
-                      color: AppTheme.primaryBrand,
-                    ),
-                  ),
-                ],
+            : const Icon(
+                Icons.camera_alt_outlined,
+                color: Colors.white38,
+                size: 28,
               ),
       ),
     );
