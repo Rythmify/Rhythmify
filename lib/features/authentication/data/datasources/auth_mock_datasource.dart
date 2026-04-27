@@ -102,6 +102,14 @@ class AuthMockDatasource implements AuthRemoteDatasource {
   @override
   Future<UserModel> signInWithGoogle() async {
     await Future.delayed(const Duration(seconds: 1));
+    final googleEmail = 'karim@rythmify.com';
+    final exists = _mockUsers.any(
+      (u) => u['email'] == googleEmail.trim().toLowerCase(),
+    );
+    if (exists) {
+      throw Exception('EMAIL_ALREADY_EXISTS');
+    }
+
     return const UserModel(
       id: 'user-001',
       email: 'karim@gmail.com',

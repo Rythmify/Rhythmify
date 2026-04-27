@@ -39,11 +39,13 @@ class ProfileModel extends ProfileEntity {
       json,
       primaryKey: 'followers_count',
       fallbackKey: 'follower_count',
+      secondaryFallbackKey: 'followersCount',
     );
     final followingCount = _readCount(
       json,
       primaryKey: 'following_count',
       fallbackKey: 'following_count_total',
+      secondaryFallbackKey: 'followingCount',
     );
     final tracksCount = json['tracks_count'] as int? ?? 0;
     final isFollowing = json['is_following'] as bool? ?? false;
@@ -96,11 +98,13 @@ class ProfileModel extends ProfileEntity {
     Map<String, dynamic> json, {
     required String primaryKey,
     String? fallbackKey,
+    String? secondaryFallbackKey,
   }) {
     int parse(dynamic value) {
       if (value is int) return value;
       if (value is double) return value.toInt();
       if (value is String) return int.tryParse(value) ?? 0;
+      if (value is List) return value.length;
       return 0;
     }
 
@@ -109,6 +113,9 @@ class ProfileModel extends ProfileEntity {
     }
     if (fallbackKey != null && json.containsKey(fallbackKey)) {
       return parse(json[fallbackKey]);
+    }
+    if (secondaryFallbackKey != null && json.containsKey(secondaryFallbackKey)) {
+      return parse(json[secondaryFallbackKey]);
     }
     return 0;
   }

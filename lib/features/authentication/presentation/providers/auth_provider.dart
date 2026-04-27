@@ -228,8 +228,12 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthLoading();
     final result = await _signInWithGoogle();
     result.fold(
-      (failure) => state = AuthError(failure.message),
-      (basicUser) async => _fetchAndEmitFullProfile(basicUser),
+      (failure) {
+        state = AuthError(failure.message);
+      },
+      (basicUser) async {
+        await _fetchAndEmitFullProfile(basicUser);
+      },
     );
   }
 
