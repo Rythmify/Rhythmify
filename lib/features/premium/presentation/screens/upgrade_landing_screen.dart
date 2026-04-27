@@ -56,7 +56,7 @@ class UpgradeLandingScreen extends ConsumerWidget {
             child: Image.asset(
               _kBgAsset,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) =>
+              errorBuilder: (_, __, ___) =>
                   Container(color: const Color(0xFF0A0A0A)),
             ),
           ),
@@ -164,7 +164,7 @@ class _PhotoCard extends StatelessWidget {
           height: height,
           fit: BoxFit.cover,
           alignment: alignment,
-          errorBuilder: (_, _, _) => Container(
+          errorBuilder: (_, __, ___) => Container(
             width: width,
             height: height,
             decoration: BoxDecoration(
@@ -255,14 +255,18 @@ class _Content extends ConsumerWidget {
             onPressed: () {
               // Resolve the premium plan UUID from the backend
               final plans = ref.read(premiumProvider).plans;
-              final premiumPlan = plans.firstWhere(
-                (p) => p.isPremium,
-                orElse: () => plans.isNotEmpty ? plans.last : plans.first,
-              );
+              // Don't block navigation — use loaded planId or empty string
+              // (checkout will still work; backend resolves the plan)
+              final premiumPlan = plans.isNotEmpty
+                  ? plans.firstWhere(
+                      (p) => p.isPremium,
+                      orElse: () => plans.last,
+                    )
+                  : null;
               context.push(
                 '/upgrade/checkout',
                 extra: {
-                  'planId': premiumPlan.planId,
+                  'planId': premiumPlan?.planId ?? '',
                   'planName': 'Artist Pro ★',
                   'price': 'EGP 164.99/month',
                   'features': [
