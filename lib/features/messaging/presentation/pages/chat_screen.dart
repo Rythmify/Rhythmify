@@ -569,7 +569,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       final sameSender = curr.senderId == prev.senderId;
       final closeInTime =
-          curr.createdAt.difference(prev.createdAt).inSeconds.abs() <= 5;
+          curr.createdAt.difference(prev.createdAt).inMilliseconds.abs() <= 1000;
 
       if (sameSender && closeInTime) {
         currentGroup.add(curr);
