@@ -9,6 +9,9 @@ import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
+  import '../../../authentication/presentation/providers/auth_provider.dart';
+  import '../../../authentication/presentation/providers/auth_state.dart';
+ 
 
 final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
   return PlaylistRemoteDatasource(apiClient.dio);
@@ -357,64 +360,63 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
   @override
   PlaylistDetailState build() => const PlaylistDetailState(isLoading: true);
-
-  Future<void> init(String playlistId) async {
+Future<void> init(String playlistId) async {
     _currentPlaylistId = playlistId;
     state = const PlaylistDetailState(isLoading: true);
-
+ 
+    // Resolve current user info for owner name display
+    final authState = ref.read(authProvider);
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserName =
+        authState is AuthAuthenticated ? authState.user.displayName : null;
+ 
     try {
-      final playlist = await _ds.fetchPlaylistDetail(playlistId);
-
-      debugPrint(
-        '[DETAIL] playlist: "${playlist.name}" '
-        'isOwned: ${playlist.isOwned} '
-        'isGeneratedMix: ${playlist.isGeneratedMix} '
-        'isTrackRadio: ${playlist.isTrackRadio} '
-        'type: ${playlist.type}',
+      final playlist = await _ds.fetchPlaylistDetail(
+        playlistId,
+        currentUserId: currentUserId,
+        currentUserName: currentUserName,
       );
-
+ 
+      debugPrint('[DETAIL] playlist: "${playlist.name}" '
+          'isOwned: ${playlist.isOwned} '
+          'isGeneratedMix: ${playlist.isGeneratedMix} '
+          'isTrackRadio: ${playlist.isTrackRadio} '
+          'ownerName: "${playlist.ownerName}" '
+          'type: ${playlist.type}');
+ 
       List<PlaylistTrack> tracks = [];
-
+ 
       if (playlist.type == PlaylistType.station) {
-        // ── Artist station ─────────────────────────────────────────────────
         if (playlist.seedArtistName != null) {
           tracks = await _fetchStationTracks(playlist.seedArtistName!);
         } else {
           tracks = await _ds.fetchPlaylistTracks(playlistId);
         }
       } else if (playlist.isTrackRadio) {
-        // ── Track radio (More of what you like) ───────────────────────────
-        // Use GET /playlists/:id/radio-tracks — the dedicated endpoint that
-        // returns DiscoveryTrack objects for this track_radio subtype.
-        // Falls back to fetchPlaylistTracks if radio-tracks returns empty.
         debugPrint(
-          '[DETAIL] isTrackRadio=true → fetchRadioTracks($playlistId)',
-        );
+            '[DETAIL] isTrackRadio=true → fetchRadioTracks($playlistId)');
         tracks = await _ds.fetchRadioTracks(playlistId);
         if (tracks.isEmpty) {
           debugPrint(
-            '[DETAIL] radio-tracks empty, falling back to fetchPlaylistTracks',
-          );
+              '[DETAIL] radio-tracks empty, falling back to fetchPlaylistTracks');
           tracks = await _ds.fetchPlaylistTracks(playlistId);
         }
         debugPrint('[DETAIL] ✅ Track radio: ${tracks.length} tracks');
       } else {
-        // ── Regular playlist or generated mix ─────────────────────────────
         tracks = await _ds.fetchPlaylistTracks(playlistId);
-
+ 
         if (tracks.isEmpty) {
-          // Generated mix: try /home/mixes/:id as fallback
           debugPrint('[DETAIL] tracks empty, trying fetchMixTracks fallback');
           final mixTracks = await _ds.fetchMixTracks(playlistId);
           if (mixTracks.isNotEmpty) {
             tracks = mixTracks;
             debugPrint(
-              '[DETAIL] ✅ Got ${tracks.length} tracks from mix fallback',
-            );
+                '[DETAIL] ✅ Got ${tracks.length} tracks from mix fallback');
           }
         }
       }
-
+ 
       _cache.createWithId(
         id: playlist.id,
         name: playlist.name,
@@ -426,15 +428,10 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
       for (final t in tracks) {
         _cache.addTrack(playlistId: playlistId, track: t);
       }
-
-      debugPrint(
-        '[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks  '
-        'suggestions only load if screen calls loadSuggestionsIfOwner()',
-      );
-
-      // KEY FIX: NO auto-suggestion loading here regardless of tracks.isEmpty.
-      // Suggestions are ONLY loaded when PlaylistDetailScreen explicitly calls
-      // loadSuggestionsIfOwner() — which only happens when widget.isOwner=true.
+ 
+      debugPrint('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
+ 
+      // KEY FIX: NO auto-suggestion loading regardless of tracks.isEmpty.
       state = PlaylistDetailState(
         playlist: playlist,
         tracks: tracks,

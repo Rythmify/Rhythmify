@@ -9,6 +9,9 @@ import '../models/playlist_model.dart';
 import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
 import '../../data/local/local_saved_store.dart';
+  import '../../../../core/network/api_client.dart';
+  import '../../../authentication/presentation/providers/auth_provider.dart';
+  import '../../../authentication/presentation/providers/auth_state.dart';
 
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
@@ -207,7 +210,11 @@ class PlaylistRemoteDatasource {
   // ============================================================
   // ── FETCH: Single Playlist Detail
   // ============================================================
-  Future<PlaylistEntity> fetchPlaylistDetail(String playlistId) async {
+    Future<PlaylistEntity> fetchPlaylistDetail(
+    String playlistId, {
+    String? currentUserId,       // auth user's id — to detect "is this mine?"
+    String? currentUserName,     // auth user's displayName — shown as "You" alt
+  }) async {
     _log('→ GET /playlists/$playlistId');
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -216,14 +223,29 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      return PlaylistModel.fromJson(data);
+      final playlist = PlaylistModel.fromJson(data);
+ 
+      // Resolve the owner display name:
+      // - If this playlist belongs to the current user, use their display name.
+      // - Otherwise call GET /users/:id to get the owner's public display name.
+      // - Falls back gracefully if the request fails.
+      final ownerId = playlist.ownerId;
+      String ownerName = '';
+ 
+      if (currentUserId != null && ownerId == currentUserId) {
+        // It's the current user's playlist
+        ownerName = currentUserName ?? '';
+      } else if (ownerId.isNotEmpty) {
+        // It's someone else's playlist — fetch their public profile
+        ownerName = await _fetchUserDisplayName(ownerId);
+      }
+ 
+      return playlist.copyWith(ownerName: ownerName);
     } on DioException catch (e) {
       _logError('fetchPlaylistDetail($playlistId) failed', e);
       rethrow;
     }
-  }
-
-  // ============================================================
+  }  // ============================================================
   // ── FETCH: Tracks Inside a Playlist
   // Used for owned playlists (regular subtype).
   // ============================================================
@@ -964,7 +986,20 @@ class PlaylistRemoteDatasource {
     }
     return result;
   }
-
+  Future<String> _fetchUserDisplayName(String userId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/users/$userId',
+      );
+      final data = response.data!['data'] as Map<String, dynamic>;
+      return data['display_name'] as String? ??
+          data['username'] as String? ??
+          '';
+    } catch (e) {
+      _log('_fetchUserDisplayName($userId) failed: $e');
+      return '';
+    }
+  }
   // ============================================================
   // ── LOGGING
   // ============================================================
