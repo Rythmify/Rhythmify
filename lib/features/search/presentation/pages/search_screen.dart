@@ -97,6 +97,7 @@ class SearchScreen extends ConsumerWidget {
                     ),
                   ),
             ),
+          const SizedBox(height: 30),
         ],
       ),
     );

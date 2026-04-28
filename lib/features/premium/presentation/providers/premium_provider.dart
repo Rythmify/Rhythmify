@@ -121,16 +121,31 @@ class PremiumNotifier extends Notifier<PremiumState> {
     try {
       String transactionId;
 
+      // Resolve planId — if empty, fetch plans and find premium UUID
+      // Fallback to known backend UUID if plans endpoint returns empty
+      const _kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
+      String resolvedPlanId = planId;
+      if (resolvedPlanId.isEmpty) {
+        if (state.plans.isEmpty) await loadPlans();
+        final premiumPlan = state.plans.isNotEmpty
+            ? state.plans.firstWhere(
+                (p) => p.isPremium,
+                orElse: () => state.plans.last,
+              )
+            : null;
+        resolvedPlanId = premiumPlan?.planId ?? _kFallbackPremiumPlanId;
+      }
+
       try {
         // Step 1: Try creating a new checkout session
-        final session = await _ds.startCheckout(planId);
+        final session = await _ds.startCheckout(resolvedPlanId);
         transactionId = session.transactionId;
       } on DioException catch (e) {
         // 409 = pending checkout already exists — skip checkout, fetch existing
         final code = e.response?.data?['error']?['code'] as String?;
         if (e.response?.statusCode == 409 &&
             code == 'SUBSCRIPTION_CHECKOUT_PENDING') {
-          final pendingId = await _ds.fetchPendingTransactionId(planId);
+          final pendingId = await _ds.fetchPendingTransactionId(resolvedPlanId);
           if (pendingId == null) {
             state = state.copyWith(
               isCheckingOut: false,

@@ -187,15 +187,16 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                           features: p.features,
                           onSubscribe: () {
                             final plans = ref.read(premiumProvider).plans;
-                            final premiumPlan = plans.firstWhere(
-                              (pl) => pl.isPremium,
-                              orElse: () =>
-                                  plans.isNotEmpty ? plans.last : plans.first,
-                            );
+                            final premiumPlan = plans.isNotEmpty
+                                ? plans.firstWhere(
+                                    (pl) => pl.isPremium,
+                                    orElse: () => plans.last,
+                                  )
+                                : null;
                             context.push(
                               '/upgrade/checkout',
                               extra: {
-                                'planId': premiumPlan.planId,
+                                'planId': premiumPlan?.planId ?? '',
                                 'planName': p.name,
                                 'price': p.price,
                                 'features': List<String>.from(p.features),
@@ -516,7 +517,7 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                   width: 150,
                   height: 150,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
+                  errorBuilder: (_, __, ___) =>
                       const Icon(Icons.person, color: Colors.white24, size: 52),
                 ),
               ),

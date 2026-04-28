@@ -25,48 +25,51 @@ class FeedCardBottomInfo extends ConsumerWidget {
   });
 
   void _handlePlayTap(BuildContext context, WidgetRef ref) {
-    final playerState = ref.read(playerStateProvider);
-    final isThisTrackLoaded = playerState.currentTrack?.id == item.track.id;
-    final isFirstEverLoad = playerState.currentTrack == null;
+    final existingTrack = ref.read(playerStateProvider).currentTrack;
+    final existingWaveform = existingTrack?.id == item.track.id
+        ? existingTrack?.waveformData
+        : null;
 
-    if (!isThisTrackLoaded) {
-      final track = Track(
-        id: item.track.id,
-        userId: item.user.id,
-        title: item.track.title,
-        artist: item.user.displayName,
-        artistPfp: item.user.avatar,
-        audioUrl: item.track.streamUrl ?? item.track.audioUrl,
-        coverImage: item.track.coverUrl,
-        duration: Duration(seconds: item.track.duration),
-        createdAt: item.createdAt,
-        playCount: item.track.playCount,
-        likeCount: item.track.likeCount,
-      );
-
-      // Use queueStateProvider so FullPlayerPage sees the track immediately
-      ref
-          .read(queueStateProvider.notifier)
-          .playQueue(tracks: [track], initialIndex: 0);
-
-      onPlay?.call();
-
-      if (isFirstEverLoad) {
-        Future.doWhile(() async {
-          await Future.delayed(const Duration(milliseconds: 100));
-          final current = ref.read(playerStateProvider).currentTrack;
-          if (current?.id == item.track.id) {
-            playerSheetNotifier.value?.call();
-            return false;
-          }
-          return true;
-        });
-      }
-      return;
-    }
+    final track = Track(
+      id: item.track.id,
+      userId: item.trackOwner.id,
+      title: item.track.title,
+      artist: item.trackOwner.displayName,
+      artistPfp: item.trackOwner.avatar,
+      audioUrl: item.track.streamUrl ?? item.track.audioUrl,
+      coverImage: item.track.coverUrl,
+      duration: Duration(seconds: item.track.duration),
+      createdAt: item.createdAt,
+      playCount: item.track.playCount,
+      likeCount: item.track.likeCount,
+      waveformData: existingWaveform,
+    );
 
     onPlay?.call();
-    playerSheetNotifier.value?.call();
+    ref
+        .read(queueStateProvider.notifier)
+        .playQueue(tracks: [track], initialIndex: 0);
+
+    // If waveform not ready yet, wait for it then update the player state
+    if (existingWaveform == null) {
+      _waitForWaveformThenUpdate(ref, item.track.id);
+    }
+  }
+
+  void _waitForWaveformThenUpdate(
+    WidgetRef ref,
+    String trackId, {
+    int attempts = 0,
+  }) {
+    if (attempts > 40) return; // give up after 2 seconds
+
+    Future.delayed(const Duration(milliseconds: 50), () {
+      final current = ref.read(playerStateProvider).currentTrack;
+      if (current?.id == trackId && current?.waveformData != null) {
+        return;
+      }
+      _waitForWaveformThenUpdate(ref, trackId, attempts: attempts + 1);
+    });
   }
 
   @override
@@ -123,16 +126,17 @@ class FeedCardBottomInfo extends ConsumerWidget {
                       children: [
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              context.push('/home/profile/${item.user.id}'),
+                          onTap: () => context.push(
+                            '/home/profile/${item.trackOwner.id}',
+                          ),
                           child: CircleAvatar(
                             key: const Key('feed_card_bottom_info_avatar'),
                             radius: 14,
                             backgroundColor: Colors.white24,
-                            backgroundImage: item.user.avatar != null
-                                ? NetworkImage(item.user.avatar!)
+                            backgroundImage: item.trackOwner.avatar != null
+                                ? NetworkImage(item.trackOwner.avatar!)
                                 : null,
-                            child: item.user.avatar == null
+                            child: item.trackOwner.avatar == null
                                 ? const Icon(
                                     key: Key(
                                       'feed_card_bottom_info_avatar_icon',
@@ -147,11 +151,12 @@ class FeedCardBottomInfo extends ConsumerWidget {
                         const SizedBox(width: 8),
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () =>
-                              context.push('/home/profile/${item.user.id}'),
+                          onTap: () => context.push(
+                            '/home/profile/${item.trackOwner.id}',
+                          ),
                           child: Text(
                             key: const Key('feed_card_bottom_info_username'),
-                            item.user.displayName,
+                            item.trackOwner.displayName,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -182,5 +187,3 @@ class FeedCardBottomInfo extends ConsumerWidget {
     );
   }
 }
-
-// Removed private _FollowButton class as it's replaced by unified FollowButton

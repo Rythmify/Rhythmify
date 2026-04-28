@@ -41,7 +41,18 @@ class TapToPreviewState extends ConsumerState<TapToPreview> {
         title: widget.item.track.title,
         artist: widget.item.user.displayName,
         artistPfp: widget.item.user.avatar,
-        audioUrl: widget.item.track.audioUrl,
+        audioUrl:
+            widget
+                .item
+                .track
+                .previewUrl // <-- use previewUrl
+                ??
+            widget
+                .item
+                .track
+                .streamUrl // <-- fallback to streamUrl
+                ??
+            widget.item.track.audioUrl, // <-- final fallback
         coverImage: widget.item.track.coverUrl,
         duration: Duration(seconds: widget.item.track.duration),
         createdAt: widget.item.createdAt,

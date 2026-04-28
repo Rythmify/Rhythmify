@@ -78,8 +78,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, 130 + botPad),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + botPad),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -201,7 +201,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 24),
 
             // ── Error message ─────────────────────────────────────────
             if (state.error != null) ...[
