@@ -52,43 +52,38 @@ void main() {
       expect(notificationsPage.isNotificationsScreenVisible(), true);
     });
 
-
-    // FILTER — COMMENTS
     // ─── TC-NOTIF-003 | Filter by Comments → only comment notifications ───
     await tryTest('TC-NOTIF-003 | Filter by Comments → only comment notifications', () async {
       await notificationsPage.tapFilterIcon();
-      await tester.pumpAndSettle(const Duration(seconds: 1));
       await notificationsPage.tapFilterComments();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      debugPrint('Notification tiles found: ${find.byKey(const Key(notificationTileInkwell)).evaluate().length}');
+      await notificationsPage.waitForNotificationsToLoad();
+      debugPrint('TC-NOTIF-003 tile count: ${find.byKey(const Key(notificationTileInkwell)).evaluate().length}');
       expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-        reason: 'Filter should be applied — list or empty message visible');
+          reason: 'Filter should be applied — list or empty message visible');
     });
-
 
     // ─── TC-NOTIF-004 | Tap a comment notification → track page opens ─────
     await tryTest('TC-NOTIF-004 | Tap a comment notification → track page opens', () async {
-if (notificationsPage.hasNotificationItems()) {
-      await notificationsPage.tapFirstNotification();
-      expect(notificationsPage.isOnTrackPage(), true,
-          reason: 'Tapping a comment notification should open the track page');
-      await notificationsPage.tapBack();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-      expect(notificationsPage.isNotificationsScreenVisible(), true);
-    } else {
-      debugPrint('TC-NOTIF-004: no comment notifications on test account, skipping');
-    }
+      if (notificationsPage.hasNotificationItems()) {
+        await notificationsPage.tapFirstNotification();
+        expect(notificationsPage.isOnTrackPage(), true,
+            reason: 'Tapping a comment notification should open the track page');
+        await notificationsPage.tapTrackPageBack();
+        await tester.pumpAndSettle(const Duration(seconds: 2));
+        expect(notificationsPage.isNotificationsScreenVisible(), true);
+      } else {
+        debugPrint('TC-NOTIF-004: no comment notifications on test account, skipping');
+      }
     });
 
-    // FILTER — LIKES
     // ─── TC-NOTIF-006 | Filter by Likes → only like notifications ─────────
     await tryTest('TC-NOTIF-006 | Filter by Likes → only like notifications', () async {
       await notificationsPage.tapFilterIcon();
-      await tester.pumpAndSettle(const Duration(seconds: 1));
       await notificationsPage.tapFilterLikes();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await notificationsPage.waitForNotificationsToLoad();
+      debugPrint('TC-NOTIF-006 tile count: ${find.byKey(const Key(notificationTileInkwell)).evaluate().length}');
       expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-      reason: 'Filter should be applied — list or empty message visible');
+          reason: 'Filter should be applied — list or empty message visible');
     });
 
     // ─── TC-NOTIF-007 | Tap a like notification → track page opens ────────
@@ -97,9 +92,7 @@ if (notificationsPage.hasNotificationItems()) {
         await notificationsPage.tapFirstNotification();
         expect(notificationsPage.isOnTrackPage(), true,
             reason: 'Tapping a like notification should open the track page');
-
-        // ─── TC-NOTIF-008 | Back → notifications screen ───────────────────────
-        await notificationsPage.tapBack();
+        await notificationsPage.tapTrackPageBack();
         await tester.pumpAndSettle(const Duration(seconds: 2));
         expect(notificationsPage.isNotificationsScreenVisible(), true);
       } else {
@@ -107,16 +100,14 @@ if (notificationsPage.hasNotificationItems()) {
       }
     });
 
-
-    // FILTER — FOLLOWING
     // ─── TC-NOTIF-009 | Filter by Following → only following notifications ─
     await tryTest('TC-NOTIF-009 | Filter by Following → only following notifications', () async {
       await notificationsPage.tapFilterIcon();
-      await tester.pumpAndSettle(const Duration(seconds: 1));
       await notificationsPage.tapFilterFollowing();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await notificationsPage.waitForNotificationsToLoad();
+      debugPrint('TC-NOTIF-009 tile count: ${find.byKey(const Key(notificationTileInkwell)).evaluate().length}');
       expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-        reason: 'Filter should be applied — list or empty message visible');
+          reason: 'Filter should be applied — list or empty message visible');
     });
 
     // ─── TC-NOTIF-010 | Tap a following notification → profile page opens ─
@@ -125,26 +116,22 @@ if (notificationsPage.hasNotificationItems()) {
         await notificationsPage.tapFirstNotification();
         expect(notificationsPage.isOnProfilePage(), true,
             reason: 'Tapping a follow notification should open the user profile');
-
-        // ─── TC-NOTIF-011 | Back → notifications screen ───────────────────────
-        await notificationsPage.tapBack();
+        await notificationsPage.tapProfilePageBack();
         await tester.pumpAndSettle(const Duration(seconds: 2));
+        expect(notificationsPage.isNotificationsScreenVisible(), true);
       } else {
-        debugPrint('TC-NOTIF-010: no following notifications on test account, skipping tap');
+        debugPrint('TC-NOTIF-010: no following notifications on test account, skipping');
       }
-      //expect(notificationsPage.isNotificationsScreenVisible(), true);
     });
 
-
-    // FILTER — REPOSTS
     // ─── TC-NOTIF-012 | Filter by Reposts → only repost notifications ─────
     await tryTest('TC-NOTIF-012 | Filter by Reposts → only repost notifications', () async {
       await notificationsPage.tapFilterIcon();
-      await tester.pumpAndSettle(const Duration(seconds: 1));
       await notificationsPage.tapFilterReposts();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await notificationsPage.waitForNotificationsToLoad();
+      debugPrint('TC-NOTIF-012 tile count: ${find.byKey(const Key(notificationTileInkwell)).evaluate().length}');
       expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-        reason: 'Filter should be applied — list or empty message visible');
+          reason: 'Filter should be applied — list or empty message visible');
     });
 
     // ─── TC-NOTIF-013 | Tap a repost notification → track page opens ──────
@@ -153,53 +140,52 @@ if (notificationsPage.hasNotificationItems()) {
         await notificationsPage.tapFirstNotification();
         expect(notificationsPage.isOnTrackPage(), true,
             reason: 'Tapping a repost notification should open the track page');
-
-        // ─── TC-NOTIF-014 | Back → notifications screen ───────────────────────
-        await notificationsPage.tapBack();
+        await notificationsPage.tapTrackPageBack();
         await tester.pumpAndSettle(const Duration(seconds: 2));
-        //expect(notificationsPage.isNotificationsScreenVisible(), true);
+        expect(notificationsPage.isNotificationsScreenVisible(), true);
       } else {
-        debugPrint('TC-NOTIF-013: no repost notifications on test account, skipping tap');
+        debugPrint('TC-NOTIF-013: no repost notifications on test account, skipping');
       }
     });
 
-    // // FILTER — REACTIONS
-    // // ─── TC-NOTIF-015 | Filter by Reactions → only reaction notifications ─────
-    // await tryTest('TC-NOTIF-015 | Filter by Reactions → only reaction notifications', () async {
-    //   await notificationsPage.tapFilterIcon();
-    //   await tester.pumpAndSettle(const Duration(seconds: 1));
-    //   await notificationsPage.tapFilterReactions();
-    //   await tester.pumpAndSettle(const Duration(seconds: 3));
-    //   expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-    //     reason: 'Filter should be applied — list or empty message visible');
-    // });
-
-    // // ─── TC-NOTIF-016 | Tap a reaction notification → track page opens ──────
-    // await tryTest('TC-NOTIF-016 | Tap a reaction notification → track page opens', () async {
-    //   if (notificationsPage.hasNotificationItems()) {
-    //     await notificationsPage.tapFirstNotification();
-    //     expect(notificationsPage.isOnTrackPage(), true,
-    //         reason: 'Tapping a reaction notification should open the track page');
-
-    //     // ─── TC-NOTIF-017 | Back → notifications screen ───────────────────────
-    //   await notificationsPage.tapBack();
-    //   await tester.pumpAndSettle(const Duration(seconds: 2));
-    //   //expect(notificationsPage.isNotificationsScreenVisible(), true);
-    // });
-
-    // FILTER — SHOW ALL
-    // ─── TC-NOTIF-018 | Filter → Show all → all notifications visible ─────
-    await tryTest('TC-NOTIF-018 | Filter → Show all → all notifications visible', () async {
+    // FILTER — REACTIONS --> expected to fail because cross team still not implemented 
+    // ─── TC-NOTIF-015 | Filter by Reactions → only reaction notifications ─────
+    await tryTest('TC-NOTIF-015 | Filter by Reactions → only reaction notifications', () async {
       await notificationsPage.tapFilterIcon();
       await tester.pumpAndSettle(const Duration(seconds: 1));
+      await notificationsPage.tapFilterReactions();
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      expect(notificationsPage.isFilterAppliedSuccessfully(), true,
+        reason: 'Filter should be applied — list or empty message visible');
+    });
+
+    // ─── TC-NOTIF-016 | Tap a reaction notification → track page opens ──────
+    await tryTest('TC-NOTIF-016 | Tap a reaction notification → track page opens', () async {
+      if (notificationsPage.hasNotificationItems()) {
+        await notificationsPage.tapFirstNotification();
+        expect(notificationsPage.isOnTrackPage(), true,
+            reason: 'Tapping a reaction notification should open the track page');
+
+        // ─── TC-NOTIF-017 | Back → notifications screen ───────────────────────
+        await notificationsPage.tapBack();
+        await tester.pumpAndSettle(const Duration(seconds: 2));
+        expect(notificationsPage.isNotificationsScreenVisible(), true);
+      } else {
+        debugPrint('TC-NOTIF-016: no reaction notifications on test account, skipping');
+      }
+    });
+
+    // ─── TC-NOTIF-015 | Filter → Show all → all notifications visible ─────
+    await tryTest('TC-NOTIF-015 | Filter → Show all → all notifications visible', () async {
+      await notificationsPage.tapFilterIcon();
       await notificationsPage.tapFilterShowAll();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-      expect(notificationsPage.isNotificationsScreenVisible(), true,
+      await notificationsPage.waitForNotificationsToLoad();
+      expect(notificationsPage.isFilterAppliedSuccessfully(), true,
           reason: 'All notifications should be shown after Show All');
     });
 
-    // ─── TC-NOTIF-019 | Back → home page ─────────────────────────────────
-    await tryTest('TC-NOTIF-019 | Back from notifications returns to home page', () async {
+    // ─── TC-NOTIF-016 | Back → home page ─────────────────────────────────
+    await tryTest('TC-NOTIF-016 | Back from notifications → home page', () async {
       await notificationsPage.tapBack();
       await tester.pumpAndSettle(const Duration(seconds: 2));
       expect(notificationsPage.isHomePageVisible(), true,

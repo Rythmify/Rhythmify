@@ -9,6 +9,8 @@ class NotificationsPage extends BasePage {
   // ── Navigation ─────────────────────────────────────────────────────────────
   Future<void> tapNotificationIcon()  async => await tapByKey(homeNotificationsButton);
   Future<void> tapBack()              async => await tapByKey(notificationsBackButton);
+  Future<void> tapTrackPageBack()     async => await tapByKey(behindTheTrackBackButton);
+  Future<void> tapProfilePageBack()   async => await tapByKey(publicProfileBackButton);
 
   // ── Scroll ─────────────────────────────────────────────────────────────────
   Future<void> scrollDown() async {
@@ -22,12 +24,34 @@ class NotificationsPage extends BasePage {
   }
 
   // ── Filter ─────────────────────────────────────────────────────────────────
-  Future<void> tapFilterIcon()              async => await tapByKey(notificationsFilterIcon);
-  Future<void> tapFilterComments()          async => await tapByKey(notificationsFilterComments);
-  Future<void> tapFilterLikes()             async => await tapByKey(notificationsFilterLikes);
-  Future<void> tapFilterFollowing()         async => await tapByKey(notificationsFilterFollowing);
-  Future<void> tapFilterReposts()           async => await tapByKey(notificationsFilterReposts);
-  Future<void> tapFilterShowAll()           async => await tapByKey(notificationsFilterShowAll);
+  Future<void> tapFilterIcon() async {
+    await tapByKey(notificationsFilterIcon);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+  } 
+  Future<void> tapFilterComments() async {
+    await tapByKey(notificationsFilterComments);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  Future<void> tapFilterLikes()  async {
+    await tapByKey(notificationsFilterLikes);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  Future<void> tapFilterFollowing() async {
+    await tapByKey(notificationsFilterFollowing);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } 
+  Future<void> tapFilterReposts()  async {
+    await tapByKey(notificationsFilterReposts);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  Future<void> tapFilterReactions()  async {
+    await tapByKey(notificationsFilterReactions);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  Future<void> tapFilterShowAll() async {
+    await tapByKey(notificationsFilterShowAll);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
 
   // ── Tap first notification in list ─────────────────────────────────────────
   Future<void> tapFirstNotification() async {
@@ -38,8 +62,51 @@ class NotificationsPage extends BasePage {
       return;
     }
     debugPrint('tapFirstNotification: found ${finder.evaluate().length} tiles, tapping first');
+    // ensure the first tile is scrolled into view before tapping
+    await tester.ensureVisible(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
     await tester.tap(finder.first, warnIfMissed: false);
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pumpAndSettle(const Duration(seconds: 4));
+  }
+
+  Future<void> waitForNotificationsToLoad() async {
+    // first wait for bottom sheet to fully dismiss (filter button reappears)
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 300));
+      final filterVisible = find
+          .byKey(const Key(notificationsFilterIcon))
+          .evaluate()
+          .isNotEmpty;
+      debugPrint('waitForNotifications: filterVisible=$filterVisible');
+      if (filterVisible) break;
+    }
+
+    // then wait for tiles or empty state
+    for (int i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final isLoading = find
+          .byKey(const Key(notificationsLoadingIndicator))
+          .evaluate()
+          .isNotEmpty;
+
+      final hasTiles = find
+          .byKey(const Key(notificationTileInkwell))
+          .evaluate()
+          .isNotEmpty;
+
+      final isEmpty = find
+          .text('Switch to showing all to see recent notifications')
+          .evaluate()
+          .isNotEmpty;
+
+      debugPrint('waitForNotifications: loading=$isLoading tiles=$hasTiles empty=$isEmpty');
+
+      if (!isLoading && (hasTiles || isEmpty)) break;
+    }
+
+    await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   // ── Visibility checks ──────────────────────────────────────────────────────
@@ -56,8 +123,11 @@ class NotificationsPage extends BasePage {
       find.text('Switch to showing all to see recent notifications')
           .evaluate().isNotEmpty;
 
-  bool hasNotificationItems() =>
-    find.byKey(const Key(notificationTileInkwell)).evaluate().isNotEmpty;
+  bool hasNotificationItems() {
+    final count = find.byKey(const Key(notificationTileInkwell)).evaluate().length;
+    debugPrint('hasNotificationItems: $count tiles found');
+    return count > 0;
+  }
 
   bool isOnTrackPage()   => isVisible(behindTheTrackBackButton);
   bool isOnProfilePage() => isVisible(profileAvatarGesture);
