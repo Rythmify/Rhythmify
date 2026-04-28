@@ -53,10 +53,10 @@ void main() {
 
     // ─── TC-SEARCH-003 | Tap a Vibe card → land on vibe detail screen ────
     await tryTest('TC-SEARCH-003 | Tap a Vibe card → land on vibe detail screen', () async {
-      await searchPage.tapVibeCard('Ambient');
+      await searchPage.tapVibeCard('Alternative Rock');
       await tester.pumpAndSettle(const Duration(seconds: 3));
+      expect(searchPage.isVibePageScreenVisible(), true);
     });
-    expect(searchPage.isVibePageScreenVisible(), true);
 
     // ─── TC-SEARCH-004 | All inner tabs are tappable ─────────────────────────
     // ─── TC-SEARCH-005 | Scroll up and down inside vibe detail ───────────
@@ -82,7 +82,7 @@ void main() {
 
     // ─── TC-SEARCH-006 | Back → main search screen ───────────────────────
     await tryTest('TC-SEARCH-006 | Back from vibe detail to main search screen', () async {
-      await searchPage.GenreBackButton();
+      await searchPage.genreBackButton();
       await tester.pumpAndSettle(const Duration(seconds: 2));
       expect(searchPage.isSearchScreenVisible(), true);
     });
@@ -99,10 +99,10 @@ void main() {
 
     // ─── TC-SEARCH-008 | Type "z" → no results in suggestions ───────────
     await tryTest('TC-SEARCH-008 | No results message appears for unlikely query', () async {
-      await searchPage.typeQuery('z');
+      await searchPage.typeQuery('zhsyg');
       await tester.pumpAndSettle(const Duration(seconds: 2));
       expect(searchPage.isNoResultsVisible(), true,
-          reason: 'Typing "z" should show "No results found" in suggestions');
+          reason: 'Typing "zhsyg" should show "No results found" in suggestions');
     });
 
     // ─── TC-SEARCH-009 | Search "Yo" → submit → results screen ──────────
@@ -124,7 +124,8 @@ void main() {
     // ─── TC-SEARCH-012 | Play a track from results ────────────────────────
     await tryTest('TC-SEARCH-012 | Play a track from results and show mini player', () async {
       await searchPage.tapFirstTrackInResults();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      // pump instead of pumpAndSettle — audio playback prevents the frame loop from settling
+      await tester.pump(const Duration(seconds: 2));
       expect(searchPage.isMiniPlayerVisible(), true,
           reason: 'Mini player should appear after playing a track');
     });
@@ -156,6 +157,8 @@ void main() {
       expect(searchPage.isSearchScreenVisible(), true,
           reason: 'Clearing search should return to the vibes screen');
     });
+
+    await searchPage.pausePlayback();
 
     FlutterError.onError = originalOnError;
     if (failures.isNotEmpty) {

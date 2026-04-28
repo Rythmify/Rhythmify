@@ -48,12 +48,12 @@ class SearchPage extends BasePage {
   Future<void> tapAlbumsVibeTab() async => await tapByKey(genreTabAlbums);
 
   Future<void> scrollVibeDetailDown() async {
-    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, -400));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, -600));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   Future<void> scrollVibeDetailUp() async {
-    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, 400));
+    await tester.drag(find.byKey(const Key(genrePage)), const Offset(0, 600));
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
@@ -67,7 +67,7 @@ class SearchPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
-  Future<void> GenreBackButton() async => await tapByKey(genreBackButton);
+  Future<void> genreBackButton() async => await tapByKey(genreBackButton);
 
   // ── Search results — tab bar (All / Tracks / Profiles / Playlists / Albums) ─
   Future<void> tapAllResultsTab() async => await tapByKey(searchTabAll);
@@ -96,16 +96,34 @@ class SearchPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
-  // TODO: replace key when cross-team implements it
-  Future<void> tapFirstTrackInResults() async => await tapByKey(searchFirstTrackPlayButton);
+  Future<void> pausePlayback() async {
+    final btn = find.byKey(
+      const Key('player_mini_progress_button_toggle_play_pause_gesturedetector'),
+    );
+    if (btn.evaluate().isEmpty) return;
+    await tester.tap(btn, warnIfMissed: false);
+    await tester.pump(const Duration(seconds: 2));
+  }
+
+  Future<void> tapFirstTrackInResults() async {
+    // _TracksSection in AllTab wraps each result in Padding(key: Key('all_tab_track_N')).
+    // Tapping the Padding propagates to the TrackCard InkWell inside it.
+    final firstTrack = find.byKey(const Key('all_tab_track_0'));
+    if (firstTrack.evaluate().isEmpty) {
+      throw StateError('No tracks found in search results All tab');
+    }
+    await tester.ensureVisible(firstTrack);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(firstTrack, warnIfMissed: false);
+    await tester.pump(const Duration(seconds: 3));
+  }
 
   // ── Visibility checks ──────────────────────────────────────────────────────
   bool isSearchScreenVisible()     => isVisible(searchScreen);
   bool isSuggestionListVisible()   => isVisible(searchSuggestionsList);
   bool isNoResultsVisible()        => find.text('No results found').evaluate().isNotEmpty;
-  
-  bool isVibePageScreenVisible() => isVisible(genrePage);
+
+  bool isVibePageScreenVisible()   => isVisible(genrePage);
   bool isResultsScreenVisible()    => isVisible(searchTabView);
-  // TODO: replace keys when cross-team implements them
-  bool isMiniPlayerVisible()       => isVisible(searchMiniPlayerBar);
+  bool isMiniPlayerVisible()       => isVisible(playerMiniPlayerGesture) || isVisible(coreMiniPlayerWidget);
 }
