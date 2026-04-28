@@ -490,6 +490,8 @@ class _LibraryPlaylistsScreenState
     );
   }
 
+  // REPLACE _showOptions in library_playlists_screen.dart with this:
+
   void _showOptions(
     BuildContext context,
     PlaylistEntity playlist,
@@ -499,12 +501,24 @@ class _LibraryPlaylistsScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // KEY FIX: pass the playlist entity so the sheet loads the correct
-      // playlist — not whatever playlistDetailProvider last held.
       builder: (_) => PlaylistOptionsSheet(
         playlistId: playlist.id,
         playlist: playlist,
         isOwner: isOwner,
+        // When converted to album, navigate to album library
+        onConverted: (newType) {
+          switch (newType) {
+            case PlaylistType.album:
+              context.go('/library/albums');
+            case PlaylistType.station:
+              context.go('/library/stations');
+            case PlaylistType.playlist:
+              // Already on playlist screen, just reload
+              _loadAll();
+          }
+        },
+        // When deleted, just reload the list
+        onDeleted: _loadAll,
       ),
     );
   }

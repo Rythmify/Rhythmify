@@ -160,16 +160,44 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     }
   }
 
-  Future<String?> copyPlaylist(String playlistId) async {
-    final original = _cache.getById(playlistId);
-    if (original == null) return null;
-    final copyName = 'Copy of ${original.name}';
+// REPLACE the existing copyPlaylist method in PlaylistListNotifier
+// in lib/features/playlist/presentation/providers/playlist_provider.dart
+
+  Future<String?> copyPlaylist(
+    String sourcePlaylistId, {
+    String? overrideName,
+    bool? overridePublic,
+    PlaylistEntity? sourceEntity,
+  }) async {
+    final cached = _cache.getById(sourcePlaylistId);
+    final source = sourceEntity ?? cached;
+    final copyName = overrideName ?? 'Copy of ${source?.name ?? 'Playlist'}';
+    final isPublic = overridePublic ?? source?.isPublic ?? true;
+
     try {
+      // 1. Create the new empty playlist with the given name
       final created = await _ds.createPlaylist(
         name: copyName,
-        isPublic: original.isPublic,
+        isPublic: isPublic,
       );
-      final tracks = await _ds.fetchPlaylistTracks(playlistId);
+
+      // 2. Fetch tracks from the correct endpoint based on source type
+      List<PlaylistTrack> tracks = [];
+      if (source?.isTrackRadio == true) {
+        tracks = await _ds.fetchRadioTracks(sourcePlaylistId);
+        if (tracks.isEmpty) {
+          tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
+        }
+      } else if (source?.isGeneratedMix == true) {
+        tracks = await _ds.fetchMixTracks(sourcePlaylistId);
+        if (tracks.isEmpty) {
+          tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
+        }
+      } else {
+        tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
+      }
+
+      // 3. Add each track to the new playlist
       for (final track in tracks) {
         try {
           await _ds.addTrackToPlaylist(
@@ -178,6 +206,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
           );
         } catch (_) {}
       }
+
+      // 4. Sync cache and reload owned playlists
       _cache.createWithId(
         id: created.id,
         name: created.name,
@@ -186,8 +216,10 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         ownerId: created.ownerId,
       );
       await loadPlaylists();
+      debugPrint('[LIST] ✅ Copied ${tracks.length} tracks → ${created.id}');
       return created.id;
     } catch (e) {
+      debugPrint('[LIST] ❌ copyPlaylist: $e');
       return null;
     }
   }
