@@ -97,10 +97,14 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   void _showShareSheet(BuildContext context, ProfileLoaded state) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => ShareBottomSheet(profile: state.profile),
+      builder: (_) => ShareBottomSheet(
+        profile: state.profile,
+        isOwnProfile: _resolvedUserId == 'me',
+      ),
     );
   }
 
@@ -120,7 +124,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     // ── Block guard ────────────────────────────────────────────────────────
     // If the authenticated user has blocked this account, show the blocked
     // screen immediately with no profile data exposed.
-    if (profileState is ProfileLoaded && profileState.followStatus.isBlocking) {
+    if (profileState is ProfileLoaded &&
+        (profileState.isBlocked || profileState.followStatus.isBlocking)) {
       return BlockedUserScreen(userId: _resolvedUserId);
     }
 
@@ -259,12 +264,30 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   ProfileStatsRow(
                     followersCount: state.profile.followersCount,
                     followingCount: state.profile.followingCount,
-                    onFollowersTap: () => context.push(
-                      '/home/profile/${state.profile.id}/followers',
-                    ),
-                    onFollowingTap: () => context.push(
-                      '/home/profile/${state.profile.id}/following',
-                    ),
+                    onFollowersTap: () async {
+                      await context.push(
+                        '/home/profile/${state.profile.id}/followers',
+                      );
+                      if (!mounted) return;
+                      final notifier = _resolvedUserId == 'me'
+                          ? ref.read(ownProfileProvider.notifier)
+                          : ref.read(
+                              publicProfileProvider(_resolvedUserId).notifier,
+                            );
+                      await notifier.loadProfile(userId: _resolvedUserId);
+                    },
+                    onFollowingTap: () async {
+                      await context.push(
+                        '/home/profile/${state.profile.id}/following',
+                      );
+                      if (!mounted) return;
+                      final notifier = _resolvedUserId == 'me'
+                          ? ref.read(ownProfileProvider.notifier)
+                          : ref.read(
+                              publicProfileProvider(_resolvedUserId).notifier,
+                            );
+                      await notifier.loadProfile(userId: _resolvedUserId);
+                    },
                   ),
                   const SizedBox(height: 16),
                   Row(

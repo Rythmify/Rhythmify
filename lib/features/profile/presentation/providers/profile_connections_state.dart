@@ -38,11 +38,15 @@ class ProfileConnectionsLoaded extends ProfileConnectionsState {
   /// Indicates if there are more pages to fetch.
   final bool hasMore;
 
+  /// Total available items from backend pagination metadata, if provided.
+  final int? totalCount;
+
   /// Creates [ProfileConnectionsLoaded].
   const ProfileConnectionsLoaded({
     required this.users,
     required this.isLoadingMore,
     required this.hasMore,
+    this.totalCount,
   });
 
   /// Creates an updated copy of the current state.
@@ -50,11 +54,14 @@ class ProfileConnectionsLoaded extends ProfileConnectionsState {
     List<ProfileUserSummary>? users,
     bool? isLoadingMore,
     bool? hasMore,
+    int? totalCount,
+    bool clearTotalCount = false,
   }) {
     return ProfileConnectionsLoaded(
       users: users ?? this.users,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
+      totalCount: clearTotalCount ? null : totalCount ?? this.totalCount,
     );
   }
 }

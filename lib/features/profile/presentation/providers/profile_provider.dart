@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
@@ -14,6 +15,7 @@ import '../../domain/usecases/get_unblock_user_usecase.dart';
 import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../domain/usecases/get_uploaded_tracks_usecase.dart';
 import '../../domain/usecases/get_reposted_tracks_usecase.dart';
+import '../../domain/usecases/get_user_connections_usecase.dart';
 import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
@@ -83,14 +85,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _uploadsRequestVersion = 0;
   int _repostsRequestVersion = 0;
 
-  /// Tracks whether this notifier was ever loaded with userId = 'me'.
-  ///
-  /// Used in [followUser] / [unfollowUser] to decide whether to call
-  /// `GET /users/me` or `GET /users/{id}` when refreshing the profile.
-  /// `GET /users/me` is authoritative for follower/following counts on
-  /// the own profile; using the UUID endpoint can return stale values.
-  bool _loadedAsMe = false;
-
   PlaylistRemoteDatasource get _playlistDs =>
       ref.read(playlistDatasourceProvider);
 
@@ -121,9 +115,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> loadProfile({required String userId}) async {
-    // ── Track whether this notifier is being used for the own profile ────
-    if (userId == 'me') _loadedAsMe = true;
-
     final current = state;
     final isSameUser =
         current is ProfileLoaded &&
@@ -465,17 +456,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _followUser(userId: userId);
     if (result.isRight()) {
-      // Use 'me' endpoint for own profile — GET /users/me returns authoritative
-      // follower counts, whereas GET /users/{uuid} can return a stale value
-      // which makes the count appear doubled after navigating back.
-      final refreshId = _loadedAsMe ? 'me' : current.profile.id;
-      await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
-
-      // Also refresh the authenticated user's own profile if viewing someone else's profile
-      // This ensures our own following count is updated
-      if (_loadedAsMe == false && refreshId != 'me') {
-        ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
-      }
+      state = current.copyWith(
+        profile: current.profile.copyWith(
+          isFollowing: true,
+          followersCount: current.profile.followersCount + 1,
+        ),
+      );
+      _updateOwnFollowingCount(1);
     } else {
       state = current;
     }
@@ -493,61 +480,64 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     if (result.isRight()) {
-      // Same fix as followUser — always use 'me' for own profile refreshes.
-      final refreshId = _loadedAsMe ? 'me' : current.profile.id;
-      await _refreshProfileSnapshot(previous: current, refreshId: refreshId);
-
-      // Also refresh the authenticated user's own profile if viewing someone else's profile
-      // This ensures our own following count is updated
-      if (_loadedAsMe == false && refreshId != 'me') {
-        ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
-      }
+      final nextFollowers = current.profile.followersCount > 0
+          ? current.profile.followersCount - 1
+          : 0;
+      state = current.copyWith(
+        profile: current.profile.copyWith(
+          isFollowing: false,
+          followersCount: nextFollowers,
+        ),
+      );
+      _updateOwnFollowingCount(-1);
     } else {
       state = current;
     }
   }
 
-  /// Reloads the currently displayed profile from backend and preserves tracks.
-  ///
-  /// [refreshId] must be `'me'` for the authenticated user's own profile, or
-  /// the user's UUID for a public profile. Using the correct ID ensures the
-  /// right endpoint is called (`GET /users/me` vs `GET /users/{id}`).
-  Future<void> _refreshProfileSnapshot({
-    required ProfileLoaded previous,
-    required String refreshId,
-  }) async {
-    final profileResult = await _getProfile(userId: refreshId);
-    profileResult.fold(
-      (_) => state = previous,
-      (profile) => state = previous.copyWith(profile: profile),
+  void _updateOwnFollowingCount(int delta) {
+    final ownState = ref.read(ownProfileProvider);
+    if (ownState is! ProfileLoaded) return;
+    final nextCount = ownState.profile.followingCount + delta;
+    ref.read(ownProfileProvider.notifier).state = ownState.copyWith(
+      profile: ownState.profile.copyWith(
+        followingCount: nextCount < 0 ? 0 : nextCount,
+      ),
     );
   }
 
-  Future<void> blockUser(String userId) async {
-    // ── Optimistic Update ──────────────────────────────────────────────────
-    // Immediately show the blocked screen and clear follow flags (blocking
-    // terminates following relationships).
-    final previous = state;
-    if (state is ProfileLoaded) {
-      final current = state as ProfileLoaded;
-      state = current.copyWith(
-        followStatus: current.followStatus.copyWith(
-          isBlocking: true,
-          isFollowing: false,
-          isFollowedBy: false,
-        ),
-      );
-    }
+  void syncConnectionsCount({
+    required ProfileConnectionsType type,
+    required int count,
+  }) {
+    final current = state;
+    if (current is! ProfileLoaded) return;
+    final safeCount = count < 0 ? 0 : count;
+    state = current.copyWith(
+      profile: type == ProfileConnectionsType.followers
+          ? current.profile.copyWith(followersCount: safeCount)
+          : current.profile.copyWith(followingCount: safeCount),
+    );
+  }
 
-    final result = await _blockUser(userId: userId);
+  void blockUser(String userId, {void Function(String message)? onError}) {
+    if (state is! ProfileLoaded) return;
 
-    if (result.isLeft()) {
-      // Rollback on failure
-      state = previous;
-    } else {
-      // Final sync with backend to ensure flags are authoritative
-      await _loadFollowStatus(userId);
-    }
+    final current = state as ProfileLoaded;
+    state = current.copyWith(
+      isBlocked: true,
+      followStatus: current.followStatus.copyWith(
+        isBlocking: true,
+        isFollowing: false,
+        isFollowedBy: false,
+      ),
+    );
+
+    unawaited(
+      _blockUser(userId: userId).then((result) {
+        result.fold((failure) => onError?.call(failure.message), (_) {});
+      }),
+    );
   }
 
   Future<void> unblockUser(String userId) async {

@@ -71,6 +71,11 @@ class ProfileLoaded extends ProfileState {
   /// Whether a save operation (update, upload, delete) is in progress.
   final bool isSaving;
 
+  /// Whether the authenticated user has just blocked this profile locally.
+  ///
+  /// This is an optimistic UI flag set immediately on block action.
+  final bool isBlocked;
+
   const ProfileLoaded({
     required this.profile,
     this.followStatus = FollowStatus.empty,
@@ -86,6 +91,7 @@ class ProfileLoaded extends ProfileState {
     this.playlists = const [],
     this.isLoadingPlaylists = false,
     this.isSaving = false,
+    this.isBlocked = false,
   });
 
   ProfileLoaded copyWith({
@@ -103,6 +109,7 @@ class ProfileLoaded extends ProfileState {
     List<PlaylistEntity>? playlists,
     bool? isLoadingPlaylists,
     bool? isSaving,
+    bool? isBlocked,
   }) {
     return ProfileLoaded(
       profile: profile ?? this.profile,
@@ -119,6 +126,7 @@ class ProfileLoaded extends ProfileState {
       playlists: playlists ?? this.playlists,
       isLoadingPlaylists: isLoadingPlaylists ?? this.isLoadingPlaylists,
       isSaving: isSaving ?? this.isSaving,
+      isBlocked: isBlocked ?? this.isBlocked,
     );
   }
 
@@ -138,6 +146,7 @@ class ProfileLoaded extends ProfileState {
     playlists,
     isLoadingPlaylists,
     isSaving,
+    isBlocked,
   ];
 }
 
