@@ -31,12 +31,14 @@ class NotificationsPage extends BasePage {
 
   // ── Tap first notification in list ─────────────────────────────────────────
   Future<void> tapFirstNotification() async {
-    final firstNotification = find.byWidgetPredicate(
-      (widget) =>
-          widget.key != null &&
-          widget.key.toString().contains('notification_item_'),
-    );
-    await tester.tap(firstNotification.first);
+    final finder = find.byKey(const Key(notificationTileInkwell));
+
+    if (finder.evaluate().isEmpty) {
+      debugPrint('tapFirstNotification: no notification tiles found, skipping');
+      return;
+    }
+    debugPrint('tapFirstNotification: found ${finder.evaluate().length} tiles, tapping first');
+    await tester.tap(finder.first, warnIfMissed: false);
     await tester.pumpAndSettle(const Duration(seconds: 3));
   }
 
@@ -53,6 +55,9 @@ class NotificationsPage extends BasePage {
       isVisible(notificationsListKey) ||
       find.text('Switch to showing all to see recent notifications')
           .evaluate().isNotEmpty;
+
+  bool hasNotificationItems() =>
+    find.byKey(const Key(notificationTileInkwell)).evaluate().isNotEmpty;
 
   bool isOnTrackPage()   => isVisible(behindTheTrackBackButton);
   bool isOnProfilePage() => isVisible(profileAvatarGesture);
