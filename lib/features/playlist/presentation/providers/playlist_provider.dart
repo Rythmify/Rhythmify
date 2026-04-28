@@ -176,40 +176,58 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     final source = sourceEntity ?? cached;
     final copyName = overrideName ?? 'Copy of ${source?.name ?? 'Playlist'}';
     final isPublic = overridePublic ?? source?.isPublic ?? true;
-
+ 
     try {
-      // 1. Create the new empty playlist with the given name
+      // 1. Create the new empty owned playlist with the chosen name
       final created = await _ds.createPlaylist(
         name: copyName,
         isPublic: isPublic,
       );
-
+ 
       // 2. Fetch tracks from the correct endpoint based on source type
       List<PlaylistTrack> tracks = [];
-      if (source?.isTrackRadio == true) {
+ 
+      if (source?.type == PlaylistType.station) {
+        // Artist station — fetch via seedArtistName (which holds the artist ID)
+        final artistId = source?.seedArtistName;
+        if (artistId != null && artistId.isNotEmpty) {
+          tracks = await _ds.fetchStationTracks(artistId, limit: 50);
+        }
+        debugPrint('[COPY] Station: fetched ${tracks.length} tracks');
+      } else if (source?.isTrackRadio == true) {
+        // Track radio (More of what you like)
         tracks = await _ds.fetchRadioTracks(sourcePlaylistId);
         if (tracks.isEmpty) {
           tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
         }
+        debugPrint('[COPY] Track radio: fetched ${tracks.length} tracks');
       } else if (source?.isGeneratedMix == true) {
+        // Generated mix (Daily/Weekly/genre mix)
         tracks = await _ds.fetchMixTracks(sourcePlaylistId);
         if (tracks.isEmpty) {
           tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
         }
+        debugPrint('[COPY] Generated mix: fetched ${tracks.length} tracks');
       } else {
+        // Regular owned or liked playlist
         tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
+        debugPrint('[COPY] Playlist: fetched ${tracks.length} tracks');
       }
-
-      // 3. Add each track to the new playlist
+ 
+      // 3. Add each track to the new playlist sequentially
+      int added = 0;
       for (final track in tracks) {
         try {
           await _ds.addTrackToPlaylist(
             playlistId: created.id,
             trackId: track.id,
           );
-        } catch (_) {}
+          added++;
+        } catch (_) {
+          // Skip unavailable or duplicate tracks silently
+        }
       }
-
+ 
       // 4. Sync cache and reload owned playlists
       _cache.createWithId(
         id: created.id,
@@ -219,10 +237,11 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         ownerId: created.ownerId,
       );
       await loadPlaylists();
-      debugPrint('[LIST] ✅ Copied ${tracks.length} tracks → ${created.id}');
+      debugPrint(
+          '[COPY] ✅ Created "${created.name}" with $added/${tracks.length} tracks → ${created.id}');
       return created.id;
     } catch (e) {
-      debugPrint('[LIST] ❌ copyPlaylist: $e');
+      debugPrint('[COPY] ❌ copyPlaylist: $e');
       return null;
     }
   }
