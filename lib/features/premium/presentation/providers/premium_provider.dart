@@ -24,6 +24,9 @@ class PremiumState {
   final String? error;
   final bool checkoutSuccess;
 
+  final bool
+  isInitialized; // true after both loadPlans + loadMySubscription complete
+
   const PremiumState({
     this.subscription,
     this.plans = const [],
@@ -31,6 +34,7 @@ class PremiumState {
     this.isCheckingOut = false,
     this.error,
     this.checkoutSuccess = false,
+    this.isInitialized = false,
   });
 
   // ── Core premium flag ──────────────────────────────────────────────────────
@@ -57,6 +61,7 @@ class PremiumState {
     bool? checkoutSuccess,
     bool clearError = false,
     bool clearSubscription = false,
+    bool? isInitialized,
   }) {
     return PremiumState(
       subscription: clearSubscription
@@ -67,6 +72,7 @@ class PremiumState {
       isCheckingOut: isCheckingOut ?? this.isCheckingOut,
       error: clearError ? null : (error ?? this.error),
       checkoutSuccess: checkoutSuccess ?? this.checkoutSuccess,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 }
@@ -87,6 +93,8 @@ class PremiumNotifier extends Notifier<PremiumState> {
   Future<void> _init() async {
     await loadPlans();
     await loadMySubscription();
+    // Mark init complete — gate screen uses this to know subscription check is done
+    state = state.copyWith(isInitialized: true);
   }
 
   Future<void> loadPlans() async {
@@ -121,16 +129,40 @@ class PremiumNotifier extends Notifier<PremiumState> {
     try {
       String transactionId;
 
+      // Resolve planId — if empty, fetch plans and find premium UUID
+      // Fallback to known backend UUID if plans endpoint returns empty
+      const _kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
+      String resolvedPlanId = planId;
+      if (resolvedPlanId.isEmpty) {
+        if (state.plans.isEmpty) await loadPlans();
+        final premiumPlan = state.plans.isNotEmpty
+            ? state.plans.firstWhere(
+                (p) => p.isPremium,
+                orElse: () => state.plans.last,
+              )
+            : null;
+        resolvedPlanId = premiumPlan?.planId ?? _kFallbackPremiumPlanId;
+      }
+
       try {
         // Step 1: Try creating a new checkout session
-        final session = await _ds.startCheckout(planId);
+        final session = await _ds.startCheckout(resolvedPlanId);
         transactionId = session.transactionId;
       } on DioException catch (e) {
-        // 409 = pending checkout already exists — skip checkout, fetch existing
         final code = e.response?.data?['error']?['code'] as String?;
+
+        // Already active — treat as success
+        if (e.response?.statusCode == 409 &&
+            code == 'SUBSCRIPTION_ALREADY_ACTIVE') {
+          await loadMySubscription();
+          state = state.copyWith(isCheckingOut: false, checkoutSuccess: true);
+          return;
+        }
+
+        // Pending checkout exists — fetch and confirm it
         if (e.response?.statusCode == 409 &&
             code == 'SUBSCRIPTION_CHECKOUT_PENDING') {
-          final pendingId = await _ds.fetchPendingTransactionId(planId);
+          final pendingId = await _ds.fetchPendingTransactionId(resolvedPlanId);
           if (pendingId == null) {
             state = state.copyWith(
               isCheckingOut: false,

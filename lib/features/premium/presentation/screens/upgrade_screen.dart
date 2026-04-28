@@ -187,15 +187,16 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                           features: p.features,
                           onSubscribe: () {
                             final plans = ref.read(premiumProvider).plans;
-                            final premiumPlan = plans.firstWhere(
-                              (pl) => pl.isPremium,
-                              orElse: () =>
-                                  plans.isNotEmpty ? plans.last : plans.first,
-                            );
+                            final premiumPlan = plans.isNotEmpty
+                                ? plans.firstWhere(
+                                    (pl) => pl.isPremium,
+                                    orElse: () => plans.last,
+                                  )
+                                : null;
                             context.push(
                               '/upgrade/checkout',
                               extra: {
-                                'planId': premiumPlan.planId,
+                                'planId': premiumPlan?.planId ?? '',
                                 'planName': p.name,
                                 'price': p.price,
                                 'features': List<String>.from(p.features),
@@ -242,6 +243,32 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
 
               // ── Dark info section ───────────────────────────────────────
               _DarkInfoSection(botPad: botPad),
+
+              // ── Manage subscription button — always visible ───────────
+              Container(
+                color: const Color(0xFF121212),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFF5500)),
+                      shape: const RoundedRectangleBorder(),
+                      foregroundColor: const Color(0xFFFF5500),
+                    ),
+                    onPressed: () => context.push('/cancellation'),
+                    child: Text(
+                      'Manage subscription',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFFF5500),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
               // ── Colored bottom strip ────────────────────────────────────
               AnimatedContainer(
@@ -516,7 +543,7 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                   width: 150,
                   height: 150,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
+                  errorBuilder: (_, __, ___) =>
                       const Icon(Icons.person, color: Colors.white24, size: 52),
                 ),
               ),

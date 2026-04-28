@@ -3,7 +3,9 @@ class FeedItemEntity {
   final String type;
   final String contentType;
   final DateTime createdAt;
-  final FeedUserEntity user;
+  final FeedUserEntity user; // poster/reposter
+  final FeedUserEntity
+  trackOwner; // track owner (may be same as user for posts)
   final FeedTrackEntity track;
   final FeedPlaylistEntity? playlist;
   final String? discoverLabel;
@@ -14,6 +16,7 @@ class FeedItemEntity {
     required this.contentType,
     required this.createdAt,
     required this.user,
+    required this.trackOwner,
     required this.track,
     this.playlist,
     this.discoverLabel,
@@ -46,7 +49,8 @@ class FeedTrackEntity {
   final int likeCount;
   final String? coverUrl;
   final String audioUrl;
-  final String? streamUrl; // added
+  final String? streamUrl;
+  final String? previewUrl;
   final String uploaderUsername;
 
   const FeedTrackEntity({
@@ -57,7 +61,8 @@ class FeedTrackEntity {
     required this.likeCount,
     this.coverUrl,
     required this.audioUrl,
-    this.streamUrl, // added
+    this.streamUrl,
+    this.previewUrl,
     required this.uploaderUsername,
   });
 }

@@ -14,25 +14,25 @@ class VibesDto {
     Color(0xFFFF9800),
     Color.fromARGB(255, 255, 15, 167),
   ];
-  static const Map<String, String> _images = {
-    'hip-hop & rap': 'assets/images/vibes_2.jpeg',
-    'electronic': 'assets/images/vibes_1.jpeg',
-    'ambient': 'assets/images/vibes_pop.jpeg',
-    'r&b / soul': 'assets/images/vibes_6.jpeg',
-    'indie': 'assets/images/vibes_3.jpeg',
-    'lo-fi': 'assets/images/vibes_4.jpeg',
-    'synth-pop': 'assets/images/vibes_techno.jpeg',
-    'jazz': 'assets/images/vibes_5.jpeg',
-  };
+  static const List<String> _images = [
+    'assets/images/vibes_2.jpeg',
+    'assets/images/vibes_1.jpeg',
+    'assets/images/vibes_8.jpeg',
+    'assets/images/vibes_6.jpeg',
+    'assets/images/vibes_3.jpeg',
+    'assets/images/vibes_4.jpeg',
+    'assets/images/vibes_7.jpeg',
+    'assets/images/vibes_5.jpeg',
+    'assets/images/vibes_9.jpeg',
+    'assets/images/vibes_10.jpeg',
+  ];
 
   static VibeCategory parseVibeCategory(Map<String, dynamic> json, int index) {
     final name = json['name'] as String;
-    final image =
-        _images[name.toLowerCase()] ?? 'assets/images/placeholder.png';
     return VibeCategory(
       id: json['id'] as String,
       title: name,
-      imagePath: image,
+      imagePath: _images[index % _images.length], // cycles, never breaks
       height: _heights[index % _heights.length],
       color: _colors[index % _colors.length],
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/features/messaging/data/repositories/mock_conversations.dart';
-import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 import 'package:rythmify/features/messaging/presentation/pages/likes_playlists_screen.dart';
 import 'package:rythmify/features/playlist/presentation/screens/playlist_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/account_screen.dart';
@@ -11,6 +10,8 @@ import 'package:rythmify/features/settings/presentation/pages/app_icon_screen.da
 import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/upgrade_icon_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/delete_account_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -47,7 +48,6 @@ import '../../core/domain/entities/track.dart';
 
 //  Player imports
 import '../../features/player/presentation/pages/full_player_page.dart';
-import '../../features/player/presentation/pages/queue_screen.dart';
 
 //  Comments imports
 import '../../features/comments/presentation/pages/comments_screen.dart';
@@ -98,6 +98,7 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/premium/presentation/screens/upgrade_screen.dart';
 import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
 import '../../features/premium/presentation/screens/checkout_screen.dart';
+import '../../features/premium/presentation/screens/cancellation_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -260,14 +261,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                         routes: [
                           GoRoute(
                             path: 'likes-playlists',
-                            builder: (context, state) {
-                              final initial = state.extra is List<SharedEmbed>
-                                  ? state.extra as List<SharedEmbed>
-                                  : const <SharedEmbed>[];
-                              return LikesPlaylistsScreen(
-                                initialSelected: initial,
-                              );
-                            },
+                            builder: (context, state) =>
+                                const LikesPlaylistsScreen(),
                           ),
                         ],
                       ),
@@ -472,6 +467,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                       GoRoute(
                         path: 'account',
                         builder: (context, state) => const AccountScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'delete-account',
+                            builder: (context, state) =>
+                                const DeleteAccountScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'basic-settings',
@@ -481,6 +483,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                           GoRoute(
                             path: 'app-icons',
                             builder: (context, state) => const AppIconScreen(),
+                            routes: [
+                              GoRoute(
+                                path: 'premium-apps',
+                                builder: (context, state) =>
+                                    const UpgradeIconScreen(),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -598,31 +607,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'plans',
                     builder: (context, state) => const UpgradeScreen(),
                   ),
-                  // "Continue" from landing screen — default Artist Pro Monthly
-                  // "Subscribe now" from any plan card — plan data passed via extra
-                  GoRoute(
-                    path: 'checkout',
-                    builder: (context, state) {
-                      final extra = state.extra as Map<String, dynamic>? ?? {};
-                      return CheckoutScreen(
-                        planId:
-                            extra['planId'] as String? ??
-                            '', // UUID from backend
-                        planName:
-                            extra['planName'] as String? ?? 'Artist Pro ★',
-                        price: extra['price'] as String? ?? 'EGP 164.99/month',
-                        features: List<String>.from(
-                          extra['features'] as List? ??
-                              [
-                                'Unlimited track uploads',
-                                'Get paid directly and more fairly',
-                                'Discover and connect with your biggest fans',
-                                'Unlimited distribution to all major streaming and social platforms',
-                              ],
-                        ),
-                      );
-                    },
-                  ),
+                  // checkout moved to root level so it renders above nav bar
                 ],
               ),
             ],
@@ -631,15 +616,37 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // ── Root Level Pages (render ON TOP of nav bar — intentional) ────────
+      // ── Checkout — root level so it appears above the nav bar ─────────
+      GoRoute(
+        path: '/upgrade/checkout',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CheckoutScreen(
+            planId: extra['planId'] as String? ?? '',
+            planName: extra['planName'] as String? ?? 'Artist Pro ★',
+            price: extra['price'] as String? ?? 'EGP 164.99/month',
+            features: List<String>.from(
+              extra['features'] as List? ??
+                  [
+                    'Unlimited track uploads',
+                    'Get paid directly and more fairly',
+                    'Discover and connect with your biggest fans',
+                    'Unlimited distribution to all major streaming and social platforms',
+                  ],
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/cancellation',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CancellationScreen(),
+      ),
       GoRoute(
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
-      ),
-      GoRoute(
-        path: '/queue',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const QueueScreen(),
       ),
       GoRoute(
         path: '/comments/:trackId',
