@@ -89,6 +89,15 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Future.microtask(() {
+      if (!mounted) return;
+      _profileNotifier.loadProfile(userId: _resolvedUserId);
+    });
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -107,6 +116,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       ),
     );
   }
+
+  ProfileNotifier get _profileNotifier => _resolvedUserId == 'me'
+      ? ref.read(ownProfileProvider.notifier)
+      : ref.read(publicProfileProvider(_resolvedUserId).notifier);
 
   @override
   Widget build(BuildContext context) {
@@ -265,28 +278,24 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     followersCount: state.profile.followersCount,
                     followingCount: state.profile.followingCount,
                     onFollowersTap: () async {
-                      await context.push(
-                        '/home/profile/${state.profile.id}/followers',
-                      );
-                      if (!mounted) return;
-                      final notifier = _resolvedUserId == 'me'
-                          ? ref.read(ownProfileProvider.notifier)
-                          : ref.read(
-                              publicProfileProvider(_resolvedUserId).notifier,
+                      await context
+                          .push('/home/profile/${state.profile.id}/followers')
+                          .then((_) {
+                            if (!mounted) return;
+                            _profileNotifier.loadProfile(
+                              userId: _resolvedUserId,
                             );
-                      await notifier.loadProfile(userId: _resolvedUserId);
+                          });
                     },
                     onFollowingTap: () async {
-                      await context.push(
-                        '/home/profile/${state.profile.id}/following',
-                      );
-                      if (!mounted) return;
-                      final notifier = _resolvedUserId == 'me'
-                          ? ref.read(ownProfileProvider.notifier)
-                          : ref.read(
-                              publicProfileProvider(_resolvedUserId).notifier,
+                      await context
+                          .push('/home/profile/${state.profile.id}/following')
+                          .then((_) {
+                            if (!mounted) return;
+                            _profileNotifier.loadProfile(
+                              userId: _resolvedUserId,
                             );
-                      await notifier.loadProfile(userId: _resolvedUserId);
+                          });
                     },
                   ),
                   const SizedBox(height: 16),
@@ -295,7 +304,13 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       if (isOwnProfile)
                         GestureDetector(
                           key: const Key('public_profile_edit_gesture'),
-                          onTap: () => context.push('/home/profile/edit'),
+                          onTap: () =>
+                              context.push('/home/profile/edit').then((_) {
+                                if (!mounted) return;
+                                _profileNotifier.loadProfile(
+                                  userId: _resolvedUserId,
+                                );
+                              }),
                           child: const Icon(
                             Icons.edit_outlined,
                             color: AppTheme.textSecondary,

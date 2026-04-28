@@ -507,7 +507,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
     if (start >= _mockProfiles.length) return [];
     return _mockProfiles
         .sublist(start, end)
-        .map((user) => ProfileUserSummaryModel.fromJson(user))
+        .map(
+          (user) => ProfileUserSummaryModel.fromJson(user, isFollowing: false),
+        )
         .toList();
   }
 
@@ -524,7 +526,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
     return _mockProfiles.reversed
         .toList()
         .sublist(start, end)
-        .map((user) => ProfileUserSummaryModel.fromJson(user))
+        .map(
+          (user) => ProfileUserSummaryModel.fromJson(user, isFollowing: true),
+        )
         .toList();
   }
 }

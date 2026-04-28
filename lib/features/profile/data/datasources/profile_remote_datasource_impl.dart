@@ -291,6 +291,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
           .map(
             (user) => ProfileUserSummaryModel.fromJson(
               Map<String, dynamic>.from(user as Map),
+              isFollowing: false,
             ),
           )
           .toList();
@@ -316,6 +317,7 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
           .map(
             (user) => ProfileUserSummaryModel.fromJson(
               Map<String, dynamic>.from(user as Map),
+              isFollowing: true,
             ),
           )
           .toList();

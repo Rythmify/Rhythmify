@@ -480,13 +480,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     if (result.isRight()) {
-      final nextFollowers = current.profile.followersCount > 0
-          ? current.profile.followersCount - 1
-          : 0;
       state = current.copyWith(
         profile: current.profile.copyWith(
           isFollowing: false,
-          followersCount: nextFollowers,
+          followersCount: (current.profile.followersCount - 1).clamp(0, 999999),
         ),
       );
       _updateOwnFollowingCount(-1);

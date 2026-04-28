@@ -186,7 +186,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref.read(ownProfileProvider.notifier).uploadAvatar(filePath: image.path);
+      await ref
+          .read(ownProfileProvider.notifier)
+          .uploadAvatar(filePath: image.path);
+      if (!mounted) return;
+      await _reloadOwnProfile();
     }
   }
 
@@ -202,9 +206,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref
+      await ref
           .read(ownProfileProvider.notifier)
           .uploadCoverPhoto(filePath: image.path);
+      if (!mounted) return;
+      await _reloadOwnProfile();
     }
   }
 
@@ -226,10 +232,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           bio: _bioController.text.trim(),
         );
 
-    // Navigate back after successful save
+    await _reloadOwnProfile();
+
+    // Navigate back after successful save.
     if (mounted) {
       context.pop();
     }
+  }
+
+  Future<void> _reloadOwnProfile() async {
+    await ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
   }
 
   /// Shows a bottom sheet with a scrollable country list.
