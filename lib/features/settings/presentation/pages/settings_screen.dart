@@ -83,45 +83,45 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 18),
-          SettingsOptionsTileWidget(
-            //9- Analytics
-            key: Key('option_Analytics'),
-            title: 'Analytics',
-            onTap: () {
-              context.push('/library/settings/analytics');
-            },
-          ),
-          SettingsOptionsTileWidget(
-            //10- Communications
-            key: Key('option_Communications'),
-            title: 'Communications',
-            onTap: () {
-              context.push('/library/settings/Communications');
-            },
-          ),
-          SettingsOptionsTileWidget(
-            //11- Advertising
-            key: Key('option_Advertising'),
-            title: 'Advertising',
-            onTap: () {
-              context.push('/library/settings/Advesrtising');
-            },
-          ),
-          const SizedBox(height: 18),
-          SettingsOptionsTileWidget(
-            //12- Support
-            key: Key('option_Support'),
-            title: 'Support',
-            onTap: () {},
-          ),
-          SettingsOptionsTileWidget(
-            //13- Legal
-            key: Key('option_Legal'),
-            title: 'Legal',
-            onTap: () {
-              context.push('/library/settings/Legal');
-            },
-          ),
+          // SettingsOptionsTileWidget(
+          //   //9- Analytics
+          //   key: Key('option_Analytics'),
+          //   title: 'Analytics',
+          //   onTap: () {
+          //     context.push('/library/settings/analytics');
+          //   },
+          // ),
+          // SettingsOptionsTileWidget(
+          //   //10- Communications
+          //   key: Key('option_Communications'),
+          //   title: 'Communications',
+          //   onTap: () {
+          //     context.push('/library/settings/Communications');
+          //   },
+          // ),
+          // SettingsOptionsTileWidget(
+          //   //11- Advertising
+          //   key: Key('option_Advertising'),
+          //   title: 'Advertising',
+          //   onTap: () {
+          //     context.push('/library/settings/Advesrtising');
+          //   },
+          // ),
+          // const SizedBox(height: 18),
+          // SettingsOptionsTileWidget(
+          //   //12- Support
+          //   key: Key('option_Support'),
+          //   title: 'Support',
+          //   onTap: () {},
+          // ),
+          // SettingsOptionsTileWidget(
+          //   //13- Legal
+          //   key: Key('option_Legal'),
+          //   title: 'Legal',
+          //   onTap: () {
+          //     context.push('/library/settings/Legal');
+          //   },
+          // ),
           const SizedBox(height: 14),
           SignOutButtonWidget(),
           const SizedBox(height: 8),

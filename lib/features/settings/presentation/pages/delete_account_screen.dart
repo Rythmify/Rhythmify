@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
+import 'package:rythmify/features/settings/presentation/providers/settings_providers.dart';
 
 /// Warns the user about permanent account deletion consequences.
 /// Shows a confirmation dialog before proceeding with account deletion.
-class DeleteAccountScreen extends StatelessWidget {
+class DeleteAccountScreen extends ConsumerWidget {
   const DeleteAccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: Text('Delete account'), centerTitle: false),
+      appBar: AppBar(title: const Text('Delete account'), centerTitle: false),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -26,7 +31,7 @@ class DeleteAccountScreen extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           ElevatedButton(
-            key: Key('settings_sign_out_button'),
+            key: const Key('settings_sign_out_button'),
             onPressed: () async {
               final confirmSignOut = await showDialog<bool>(
                 context: context,
@@ -72,7 +77,14 @@ class DeleteAccountScreen extends StatelessWidget {
                   ],
                 ),
               );
-              if (confirmSignOut == true) {}
+              if (confirmSignOut == true) {
+                await ref.read(settingsRepositoryProvider).deleteMyAccount();
+                await ref.read(playerStateProvider.notifier).stopPlayback();
+                await ref.read(authProvider.notifier).signOutUser();
+                if (context.mounted) {
+                  context.go('/onboarding');
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF47C9A),
@@ -83,7 +95,7 @@ class DeleteAccountScreen extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: Text(
+            child: const Text(
               'Delete account',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
