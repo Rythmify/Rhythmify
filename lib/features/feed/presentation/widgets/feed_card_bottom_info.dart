@@ -5,7 +5,6 @@ import '../../domain/entities/feed_item.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../providers/feed_providers.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/widgets/follow_button.dart';
