@@ -314,6 +314,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   }) async {
     await Future.delayed(const Duration(seconds: 1));
 
@@ -330,6 +333,9 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       'city': city,
       'country': country,
       'bio': bio,
+      'instagram_url': instagramUrl ?? '',
+      'facebook_url': facebookUrl ?? '',
+      'github_url': githubUrl ?? '',
     };
 
     // ── Update in list too ────────────────────────────

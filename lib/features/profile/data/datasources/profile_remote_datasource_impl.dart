@@ -22,6 +22,12 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       final endpoint = userId == 'me' ? '/users/me' : '/users/$userId';
       final response = await client.dio.get(endpoint);
       final data = Map<String, dynamic>.from(response.data['data'] as Map);
+      if (userId == 'me') {
+        final webProfiles = await _getOwnWebProfilesByPlatform();
+        data['instagram_url'] = webProfiles['instagram'];
+        data['facebook_url'] = webProfiles['facebook'];
+        data['github_url'] = webProfiles['github'];
+      }
       if (kDebugMode && userId == 'me') {
         debugPrint(
           '[ProfileRemoteDatasource] /users/me raw counts: '
@@ -59,6 +65,14 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
   @override
   Future<FollowStatusModel> getFollowStatus(String userId) async {
     try {
+      if (userId == 'me') {
+        return const FollowStatusModel(
+          isFollowing: false,
+          isFollowedBy: false,
+          isBlocking: false,
+          isBlockedBy: false,
+        );
+      }
       final response = await client.dio.get('/users/$userId/follow-status');
       return FollowStatusModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -76,6 +90,9 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   }) async {
     try {
       final response = await client.dio.patch(
@@ -91,7 +108,18 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         },
       );
 
-      return ProfileModel.fromJson(response.data['data']);
+      await _syncOwnWebProfiles(
+        instagramUrl: instagramUrl,
+        facebookUrl: facebookUrl,
+        githubUrl: githubUrl,
+      );
+
+      final data = Map<String, dynamic>.from(response.data['data'] as Map);
+      final webProfiles = await _getOwnWebProfilesByPlatform();
+      data['instagram_url'] = webProfiles['instagram'];
+      data['facebook_url'] = webProfiles['facebook'];
+      data['github_url'] = webProfiles['github'];
+      return ProfileModel.fromJson(data);
     } on DioException catch (e) {
       _handleDioError(e);
       rethrow;
@@ -384,6 +412,8 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         data['followers'],
         data['following'],
         data['data'],
+        data['profiles'],
+        data['web_profiles'],
       ];
       for (final candidate in candidates) {
         if (candidate is List) {
@@ -396,5 +426,119 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
     }
 
     return const [];
+  }
+
+  Future<void> _syncOwnWebProfiles({
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
+  }) async {
+    final desired = <String, String>{
+      if (instagramUrl != null && instagramUrl.trim().isNotEmpty)
+        'instagram': instagramUrl.trim(),
+      if (facebookUrl != null && facebookUrl.trim().isNotEmpty)
+        'facebook': facebookUrl.trim(),
+      if (githubUrl != null && githubUrl.trim().isNotEmpty)
+        'github': githubUrl.trim(),
+    };
+
+    final existing = await _getOwnWebProfiles();
+    final trackedPlatforms = {'instagram', 'facebook', 'github'};
+
+    for (final platform in trackedPlatforms) {
+      final existingForPlatform = existing.where((item) {
+        final p = _extractWebProfilePlatform(item);
+        return p == platform;
+      }).toList();
+      final wantedUrl = desired[platform];
+
+      if (wantedUrl == null) {
+        for (final item in existingForPlatform) {
+          final profileId = _extractWebProfileId(item);
+          if (profileId == null) continue;
+          await client.dio.delete('/users/me/web-profiles/$profileId');
+        }
+        continue;
+      }
+
+      final hasWanted = existingForPlatform.any(
+        (item) => _extractWebProfileUrl(item) == wantedUrl,
+      );
+
+      for (final item in existingForPlatform) {
+        final profileId = _extractWebProfileId(item);
+        if (profileId == null) continue;
+        final url = _extractWebProfileUrl(item);
+        if (!hasWanted || url != wantedUrl) {
+          await client.dio.delete('/users/me/web-profiles/$profileId');
+        }
+      }
+
+      if (!hasWanted) {
+        await _createWebProfile(platform: platform, url: wantedUrl);
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _getOwnWebProfiles() async {
+    final response = await client.dio.get('/users/me/web-profiles');
+    return _extractListPayload(response.data);
+  }
+
+  Future<Map<String, String>> _getOwnWebProfilesByPlatform() async {
+    final items = await _getOwnWebProfiles();
+    final out = <String, String>{};
+    for (final item in items) {
+      final platform = _extractWebProfilePlatform(item);
+      final url = _extractWebProfileUrl(item);
+      if (platform == null || url == null) continue;
+      if (platform == 'instagram' ||
+          platform == 'facebook' ||
+          platform == 'github') {
+        out[platform] = url;
+      }
+    }
+    return out;
+  }
+
+  Future<void> _createWebProfile({
+    required String platform,
+    required String url,
+  }) async {
+    await client.dio.post(
+      '/users/me/web-profiles',
+      data: {'platform': platform, 'url': url},
+    );
+  }
+
+  String? _extractWebProfileId(Map<String, dynamic> item) {
+    final id =
+        item['profile_id'] ??
+        item['id'] ??
+        item['web_profile_id'] ??
+        item['uuid'];
+    return id?.toString();
+  }
+
+  String? _extractWebProfilePlatform(Map<String, dynamic> item) {
+    final raw =
+        item['type'] ??
+        item['platform'] ??
+        item['name'] ??
+        item['provider'] ??
+        item['profile_type'];
+    if (raw == null) return null;
+    return raw.toString().trim().toLowerCase();
+  }
+
+  String? _extractWebProfileUrl(Map<String, dynamic> item) {
+    final raw =
+        item['url'] ??
+        item['link'] ??
+        item['profile_url'] ??
+        item['web_url'] ??
+        item['value'];
+    final value = raw?.toString().trim();
+    return (value == null || value.isEmpty) ? null : value;
   }
 }

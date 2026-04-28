@@ -121,6 +121,23 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       ? ref.read(ownProfileProvider.notifier)
       : ref.read(publicProfileProvider(_resolvedUserId).notifier);
 
+  void _openMessageThread(ProfileEntity profile) {
+    final authState = ref.read(authProvider);
+    if (authState is! AuthAuthenticated) {
+      context.push('/sign-in');
+      return;
+    }
+
+    context.go(
+      '/home/inbox/chat/new',
+      extra: {
+        'conv': null,
+        'newParticipantId': profile.id,
+        'newParticipantName': profile.displayName,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileState = _resolvedUserId == 'me'
@@ -247,6 +264,16 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                     state.profile.displayName,
                     style: AppTheme.headlineLarge,
                   ),
+                  if (state.profile.username != null &&
+                      state.profile.username!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '@${state.profile.username!}',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   if (state.profile.city != null ||
                       state.profile.country != null)
@@ -257,6 +284,15 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       ].where((e) => e != null && e.isNotEmpty).join(', '),
                       style: AppTheme.bodyMedium,
                     ),
+                  if (state.profile.bio != null &&
+                      state.profile.bio!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      state.profile.bio!,
+                      key: const Key('public_profile_bio_text'),
+                      style: AppTheme.bodyMedium,
+                    ),
+                  ],
                   if (isOwnProfile &&
                       _showIncompleteBanner &&
                       _isProfileIncomplete(state.profile)) ...[
@@ -318,11 +354,49 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           ),
                         )
                       else
-                        FollowButton(
-                          key: Key(
-                            'public_profile_follow_button_${state.profile.id}',
-                          ),
-                          targetUserId: state.profile.id,
+                        Row(
+                          children: [
+                            FollowButton(
+                              key: Key(
+                                'public_profile_follow_button_${state.profile.id}',
+                              ),
+                              targetUserId: state.profile.id,
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              key: Key(
+                                'public_profile_message_button_${state.profile.id}',
+                              ),
+                              onTap: () => _openMessageThread(state.profile),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.chat_bubble_outline,
+                                      size: 14,
+                                      color: Colors.black,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Message',
+                                      style: AppTheme.labelLarge.copyWith(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       const Spacer(),
                       GestureDetector(
