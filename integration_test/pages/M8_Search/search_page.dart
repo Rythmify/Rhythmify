@@ -67,7 +67,7 @@ class SearchPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
-  Future<void> genreBackButton() async => await tapByKey(genreBackButton);
+  Future<void> GenreBackButton() async => await tapByKey(genreBackButton);
 
   // ── Search results — tab bar (All / Tracks / Profiles / Playlists / Albums) ─
   Future<void> tapAllResultsTab() async => await tapByKey(searchTabAll);

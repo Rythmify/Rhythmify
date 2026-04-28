@@ -82,7 +82,7 @@ void main() {
 
     // ─── TC-SEARCH-006 | Back → main search screen ───────────────────────
     await tryTest('TC-SEARCH-006 | Back from vibe detail to main search screen', () async {
-      await searchPage.genreBackButton();
+      await searchPage.GenreBackButton();
       await tester.pumpAndSettle(const Duration(seconds: 2));
       expect(searchPage.isSearchScreenVisible(), true);
     });
