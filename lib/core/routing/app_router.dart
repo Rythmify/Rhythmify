@@ -98,6 +98,7 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/premium/presentation/screens/upgrade_screen.dart';
 import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
 import '../../features/premium/presentation/screens/checkout_screen.dart';
+import '../../features/premium/presentation/screens/cancellation_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -636,6 +637,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: '/cancellation',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CancellationScreen(),
       ),
       GoRoute(
         path: '/player',

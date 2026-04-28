@@ -244,6 +244,32 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               // ── Dark info section ───────────────────────────────────────
               _DarkInfoSection(botPad: botPad),
 
+              // ── Manage subscription button — always visible ───────────
+              Container(
+                color: const Color(0xFF121212),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFF5500)),
+                      shape: const RoundedRectangleBorder(),
+                      foregroundColor: const Color(0xFFFF5500),
+                    ),
+                    onPressed: () => context.push('/cancellation'),
+                    child: Text(
+                      'Manage subscription',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFFF5500),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // ── Colored bottom strip ────────────────────────────────────
               AnimatedContainer(
                 duration: const Duration(milliseconds: 400),
