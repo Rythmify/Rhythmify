@@ -59,6 +59,13 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = await remoteDatasource.signInWithGoogle();
       return Right(user);
     } catch (e) {
+      if (e.toString().contains('EMAIL_ALREADY_EXISTS')) {
+        return const Left(
+          AuthFailure(
+            'An account with this email already exists. Please log in instead.',
+          ),
+        );
+      }
       return Left(_mapError(e.toString()));
     }
   }

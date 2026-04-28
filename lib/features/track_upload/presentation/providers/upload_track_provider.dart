@@ -103,6 +103,7 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   // Replace initDraft with this version that also starts upload
   void initDraft({
     required String artistId,
+    required String artistName,
     required String localAudioPath,
     required Duration duration,
     required String fileName,
@@ -118,7 +119,7 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
         duration: duration,
         audioFileName: fileName,
         title: nameWithoutExtension,
-        artist: 'Your Name',
+        artist: artistName,
         // Start as uploading immediately
         status: UploadStatus.draft,
         uploadProgress: 0.0,

@@ -22,7 +22,9 @@ class PlaylistTrack {
     this.coverUrl,
     this.isLiked = false,
     this.isUnavailable = false,
-    this.addedAt, // ← NEW: mapped from added_at in backend response
+    this.addedAt,
+    this.streamUrl,
+    this.audioUrl,
   });
 
   final String id;
@@ -46,7 +48,9 @@ class PlaylistTrack {
   /// True when the track is geo-restricted or removed from the platform.
   /// Shows a pin icon + "Not available" in the UI.
   final bool isUnavailable;
-  final DateTime? addedAt; // ← NEW
+  final DateTime? addedAt;
+  final String? streamUrl;
+  final String? audioUrl;
 
   // ── Formatted helpers ──────────────────────────────────────────────────────
 
@@ -67,7 +71,12 @@ class PlaylistTrack {
   }
   // ── copyWith ────────────────────────────────────────────────────────────────
 
-  PlaylistTrack copyWith({int? position, bool? isLiked}) {
+  PlaylistTrack copyWith({
+    int? position,
+    bool? isLiked,
+    String? streamUrl,
+    String? audioUrl,
+  }) {
     return PlaylistTrack(
       id: id,
       trackId: trackId,
@@ -80,6 +89,8 @@ class PlaylistTrack {
       isLiked: isLiked ?? this.isLiked,
       isUnavailable: isUnavailable,
       addedAt: addedAt,
+      streamUrl: streamUrl ?? this.streamUrl,
+      audioUrl: audioUrl ?? this.audioUrl,
     );
   }
 
@@ -100,6 +111,8 @@ class PlaylistTrack {
       isLiked: track.isLiked,
       isUnavailable: false,
       addedAt: null,
+      streamUrl: track.streamUrl,
+      audioUrl: track.audioUrl,
     );
   }
 }

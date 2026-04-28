@@ -61,4 +61,34 @@ class PlaybackRepositoryImpl implements PlaybackRepository {
       );
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> fetchQueueContext({
+    required String interactionType,
+    required String sourceType,
+    String? sourceId,
+    String? targetUserId,
+  }) async {
+    return await _remoteDataSource.fetchQueueContext(
+      interactionType: interactionType,
+      sourceType: sourceType,
+      sourceId: sourceId,
+      targetUserId: targetUserId,
+    );
+  }
+
+  @override
+  Future<void> syncPlayerState({
+    required String trackId,
+    required List<Map<String, dynamic>> queue,
+    int positionSeconds = 0,
+    double volume = 0.5,
+  }) async {
+    await _remoteDataSource.syncPlayerState(
+      trackId: trackId,
+      queue: queue,
+      positionSeconds: positionSeconds,
+      volume: volume,
+    );
+  }
 }

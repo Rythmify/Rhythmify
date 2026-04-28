@@ -7,6 +7,7 @@ class FeedItemModel extends FeedItemEntity {
     required super.contentType,
     required super.createdAt,
     required super.user,
+    required super.trackOwner,
     required super.track,
     super.playlist,
     super.discoverLabel,
@@ -25,12 +26,17 @@ class FeedItemModel extends FeedItemEntity {
 
     if (resolvedTrack == null) return null;
 
+    // Track owner is nested inside the track object
+    final trackOwnerJson =
+        resolvedTrack['user'] as Map<String, dynamic>? ?? userJson;
+
     return FeedItemModel(
       id: json['id'] as String,
       type: json['type'] as String,
       contentType: json['content_type'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
-      user: FeedUserModel.fromJson(userJson),
+      user: FeedUserModel.fromJson(userJson), // poster/reposter
+      trackOwner: FeedUserModel.fromJson(trackOwnerJson), // track owner
       track: FeedTrackModel.fromJson(resolvedTrack),
       playlist: playlistJson != null
           ? FeedPlaylistModel.fromJson(playlistJson)
@@ -54,7 +60,7 @@ class FeedUserModel extends FeedUserEntity {
       id: json['id'] as String,
       username: json['username'] as String,
       displayName: json['displayName'] as String? ?? json['username'] as String,
-      avatar: json['avatar'] as String?,
+      avatar: json['profile_picture'] as String? ?? json['avatar'] as String?,
       followers: json['followers'] as int? ?? 0,
       isVerified: json['isVerified'] as bool? ?? false,
     );
@@ -70,7 +76,8 @@ class FeedTrackModel extends FeedTrackEntity {
     required super.likeCount,
     super.coverUrl,
     required super.audioUrl,
-    super.streamUrl, // add
+    super.streamUrl,
+    super.previewUrl,
     required super.uploaderUsername,
   });
 
@@ -86,8 +93,9 @@ class FeedTrackModel extends FeedTrackEntity {
       coverUrl: json['cover_image'] as String? ?? json['coverUrl'] as String?,
       audioUrl:
           json['audio_url'] as String? ?? json['audioUrl'] as String? ?? '',
-      streamUrl:
-          json['stream_url'] as String? ?? json['streamUrl'] as String?, // add
+      streamUrl: json['stream_url'] as String? ?? json['streamUrl'] as String?,
+      previewUrl:
+          json['preview_url'] as String? ?? json['previewUrl'] as String?,
       uploaderUsername: artistJson['username'] as String? ?? '',
     );
   }

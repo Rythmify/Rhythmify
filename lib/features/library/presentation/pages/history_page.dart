@@ -4,6 +4,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// Listening history page matching SoundCloud's layout.
 ///
@@ -31,7 +33,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   void _onScroll() {
-    if (!mounted) return;
+    if (!mounted || !_scrollController.hasClients) return;
     try {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -154,6 +156,36 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               )
               .toList();
 
+    final filteredTracks = filtered
+        .map(
+          (entry) => Track(
+            id: entry.trackId,
+            userId: entry.userId,
+            title: entry.title,
+            artist: entry.artistName,
+            audioUrl: entry.audioUrl ?? '',
+            streamUrl: entry.streamUrl,
+            duration: Duration(seconds: entry.durationSeconds),
+            playCount: entry.playCount,
+            isLiked: entry.isLiked,
+            isArtistFollowed: entry.isArtistFollowed,
+            createdAt: entry.playedAt,
+            coverImage: entry.artworkUrl,
+          ),
+        )
+        .toList();
+
+    void playAt(int index) {
+      if (filteredTracks.isEmpty) return;
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: filteredTracks,
+            initialIndex: index,
+            context: const QueueContext(type: QueueSource.listeningHistory),
+          );
+    }
+
     return CustomScrollView(
       key: const Key('history_scroll_view'),
       controller: _scrollController,
@@ -162,8 +194,21 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         SliverToBoxAdapter(
           child: _historyHeader(
             onClear: _confirmClear,
-            onShuffle: () {},
-            onPlay: () {},
+            onShuffle: () {
+              if (filteredTracks.isNotEmpty) {
+                final shuffled = List<Track>.from(filteredTracks)..shuffle();
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: shuffled,
+                      initialIndex: 0,
+                      context: const QueueContext(
+                        type: QueueSource.listeningHistory,
+                      ),
+                    );
+              }
+            },
+            onPlay: () => playAt(0),
           ),
         ),
 
@@ -192,23 +237,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       : const SizedBox.shrink();
                 }
 
-                final entry = filtered[index];
-                final track = Track(
-                  id: entry.trackId,
-                  userId: entry.userId,
-                  title: entry.title,
-                  artist: entry.artistName,
-                  audioUrl: entry.audioUrl ?? '',
-                  streamUrl: entry.streamUrl,
-                  duration: Duration(seconds: entry.durationSeconds),
-                  playCount: entry.playCount,
-                  isLiked: entry.isLiked,
-                  isArtistFollowed: entry.isArtistFollowed,
-                  createdAt: entry.playedAt,
-                  coverImage: entry.artworkUrl,
+                return TrackCard(
+                  key: Key('history_item_${filteredTracks[index].id}_$index'),
+                  track: filteredTracks[index],
+                  onTap: () => playAt(index),
                 );
-
-                return TrackCard(track: track);
               },
             ),
           ),
@@ -274,6 +307,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               color: AppTheme.textSecondary,
             ),
             onPressed: onClear,
+          ),
+          IconButton(
+            key: const Key('history_shuffle_icon_button'),
+            icon: const Icon(Icons.shuffle, color: AppTheme.textSecondary),
+            onPressed: onShuffle,
           ),
           const SizedBox(width: 12),
           GestureDetector(

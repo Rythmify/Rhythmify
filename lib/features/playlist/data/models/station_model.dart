@@ -2,6 +2,7 @@
 // FILE: lib/features/playlist/data/models/station_model.dart
 // ============================================================
 
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/playlist_entity.dart';
 
 class StationModel {
@@ -61,6 +62,6 @@ class StationModel {
 
   static void _debugPrint(String message) {
     // ignore: avoid_print
-    print('[STATION MODEL] $message');
+    debugPrint('[STATION MODEL] $message');
   }
 }

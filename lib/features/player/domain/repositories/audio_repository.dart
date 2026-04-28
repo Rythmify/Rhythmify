@@ -39,6 +39,15 @@ abstract class AudioRepository {
   /// Skips to the previous track or restarts the current track if enough time has passed.
   Future<void> skipToPrevious();
 
+  /// Appends tracks to the end of the current queue without restarting playback.
+  Future<void> appendTracks(List<Track> tracks);
+
+  /// Jumps to a specific index in the current native queue.
+  Future<void> skipToIndex(int index);
+
+  /// Replaces the current queue metadata without restarting playback if possible.
+  Future<void> updateQueue(List<Track> tracks);
+
   /// Toggles the shuffle mode of the player.
   Future<void> setShuffleMode(bool enabled);
 

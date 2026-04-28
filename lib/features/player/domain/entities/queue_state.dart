@@ -1,41 +1,50 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/domain/entities/track.dart';
+import 'queue_item.dart';
 
 enum QueueSource {
   playlist,
   album,
+  track,
+  mix,
   station,
-  search,
+  genre,
   userLikes,
   trending,
   feed,
+  listeningHistory,
+  reposts,
+  userTracks,
+  search,
   unknown,
 }
 
 class QueueContext extends Equatable {
   final QueueSource type;
-  final String sourceId;
+  final String? sourceId;
+  final String? targetUserId;
   final Map<String, dynamic>? queryParams;
 
   const QueueContext({
     required this.type,
-    required this.sourceId,
+    this.sourceId,
+    this.targetUserId,
     this.queryParams,
   });
 
   @override
-  List<Object?> get props => [type, sourceId, queryParams];
+  List<Object?> get props => [type, sourceId, targetUserId, queryParams];
 }
 
 class AppQueueState extends Equatable {
   final QueueContext? context;
-  final List<Track> history;
-  final Track? currentTrack;
-  final List<Track> upcomingTracks;
-  final List<Track> unShuffledUpcomingTracks;
+  final List<QueueItem> history;
+  final QueueItem? currentTrack;
+  final List<QueueItem> upcomingTracks;
+  final List<QueueItem> unShuffledUpcomingTracks;
   final bool isShuffled;
   final bool hasMore;
   final int currentPage;
+  final bool isLoadingRecommendations;
 
   const AppQueueState({
     this.context,
@@ -46,17 +55,19 @@ class AppQueueState extends Equatable {
     this.isShuffled = false,
     this.hasMore = false,
     this.currentPage = 1,
+    this.isLoadingRecommendations = false,
   });
 
   AppQueueState copyWith({
     QueueContext? context,
-    List<Track>? history,
-    Track? currentTrack,
-    List<Track>? upcomingTracks,
-    List<Track>? unShuffledUpcomingTracks,
+    List<QueueItem>? history,
+    QueueItem? currentTrack,
+    List<QueueItem>? upcomingTracks,
+    List<QueueItem>? unShuffledUpcomingTracks,
     bool? isShuffled,
     bool? hasMore,
     int? currentPage,
+    bool? isLoadingRecommendations,
   }) {
     return AppQueueState(
       context: context ?? this.context,
@@ -68,6 +79,8 @@ class AppQueueState extends Equatable {
       isShuffled: isShuffled ?? this.isShuffled,
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
+      isLoadingRecommendations:
+          isLoadingRecommendations ?? this.isLoadingRecommendations,
     );
   }
 
@@ -81,5 +94,6 @@ class AppQueueState extends Equatable {
     isShuffled,
     hasMore,
     currentPage,
+    isLoadingRecommendations,
   ];
 }

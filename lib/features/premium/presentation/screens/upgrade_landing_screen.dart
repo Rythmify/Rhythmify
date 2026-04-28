@@ -255,14 +255,18 @@ class _Content extends ConsumerWidget {
             onPressed: () {
               // Resolve the premium plan UUID from the backend
               final plans = ref.read(premiumProvider).plans;
-              final premiumPlan = plans.firstWhere(
-                (p) => p.isPremium,
-                orElse: () => plans.isNotEmpty ? plans.last : plans.first,
-              );
+              // Don't block navigation — use loaded planId or empty string
+              // (checkout will still work; backend resolves the plan)
+              final premiumPlan = plans.isNotEmpty
+                  ? plans.firstWhere(
+                      (p) => p.isPremium,
+                      orElse: () => plans.last,
+                    )
+                  : null;
               context.push(
                 '/upgrade/checkout',
                 extra: {
-                  'planId': premiumPlan.planId,
+                  'planId': premiumPlan?.planId ?? '',
                   'planName': 'Artist Pro ★',
                   'price': 'EGP 164.99/month',
                   'features': [

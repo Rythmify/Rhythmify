@@ -27,10 +27,7 @@ class FeedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(playerStateProvider);
-    final isThisTrackNowPlaying =
-        nowPlayingTrackId == item.track.id &&
-        playerState.currentTrack?.id == item.track.id;
+    final isThisTrackNowPlaying = nowPlayingTrackId == item.track.id;
     final showTapToPreview = !previewMode && !isThisTrackNowPlaying;
 
     return Stack(

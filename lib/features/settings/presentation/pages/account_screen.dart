@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/settings/presentation/providers/get_email_provider.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
 
@@ -12,7 +13,7 @@ class AccountScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String myEmail = '';
+    final String myEmail = ref.watch(getEmailProvider);
 
     return Theme(
       data: Theme.of(context).copyWith(

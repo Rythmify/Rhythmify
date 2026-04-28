@@ -410,7 +410,7 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
 
   @override
   Future<void> blockUser({required String userId}) async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    return;
   }
 
   @override

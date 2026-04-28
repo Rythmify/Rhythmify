@@ -1,6 +1,8 @@
 import 'package:dynamic_app_icon_flutter_plus/dynamic_app_icon_flutter_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rythmify/features/premium/presentation/providers/premium_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/icon_tile_widget.dart';
 
@@ -71,14 +73,14 @@ const List<_IconOption> _icons = [
 
 const _prefKey = 'selected_app_icon';
 
-class AppIconScreen extends StatefulWidget {
+class AppIconScreen extends ConsumerStatefulWidget {
   const AppIconScreen({super.key});
 
   @override
-  State<AppIconScreen> createState() => _AppIconScreenState();
+  ConsumerState<AppIconScreen> createState() => _AppIconScreenState();
 }
 
-class _AppIconScreenState extends State<AppIconScreen> {
+class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   String? _selectedKey;
 
   @override
@@ -95,8 +97,8 @@ class _AppIconScreenState extends State<AppIconScreen> {
   }
 
   Future<void> _selectIcon(_IconOption option) async {
-    if (option.isPremium) {
-      context.push('/upgrade');
+    if (option.isPremium && !ref.read(isPremiumProvider)) {
+      context.push('/library/settings/basic-settings/app-icons/premium-apps');
       return;
     }
     if (_selectedKey == option.iconKey) return;
@@ -121,6 +123,8 @@ class _AppIconScreenState extends State<AppIconScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userIsPremium = ref.watch(isPremiumProvider);
+
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: const Color(0xFF3A3A3A),
@@ -135,7 +139,7 @@ class _AppIconScreenState extends State<AppIconScreen> {
             return IconTileWidget(
               name: option.name,
               assetPath: option.assetPath,
-              isPremium: option.isPremium,
+              isPremium: option.isPremium && !userIsPremium,
               isSelected: _selectedKey == option.iconKey,
               onTap: () => _selectIcon(option),
             );

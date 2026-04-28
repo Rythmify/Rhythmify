@@ -78,8 +78,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, 130 + botPad),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + botPad),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -201,7 +201,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 24),
 
             // ── Error message ─────────────────────────────────────────
             if (state.error != null) ...[
@@ -288,16 +288,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 void _showSuccessSheet(BuildContext context) {
+  // Capture the router before showing the sheet — the sheet's BuildContext
+  // won't have access to the shell navigator otherwise
+  final router = GoRouter.of(context);
   showModalBottomSheet(
     context: context,
     isDismissible: false,
     enableDrag: false,
     backgroundColor: Colors.transparent,
-    builder: (_) => _SuccessSheet(),
+    builder: (_) => _SuccessSheet(router: router),
   );
 }
 
 class _SuccessSheet extends StatelessWidget {
+  final GoRouter router;
+  const _SuccessSheet({required this.router});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -353,9 +359,13 @@ class _SuccessSheet extends StatelessWidget {
                 shape: const StadiumBorder(),
               ),
               onPressed: () {
-                Navigator.pop(context); // close success sheet
-                Navigator.pop(context); // close checkout screen
-                context.go('/home'); // redirect to home
+                // Close sheet + checkout screen, then navigate to upgrade tab
+                // popUntil root, then go to /upgrade which shows CancellationScreen
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).popUntil((route) => route.isFirst);
+                router.go('/upgrade');
               },
               child: Text(
                 'Start exploring',
