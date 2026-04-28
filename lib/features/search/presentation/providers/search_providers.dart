@@ -32,6 +32,29 @@ final getSearchResultsProvider = Provider(
   (ref) => GetSearchResults(ref.watch(searchRepositoryProvider)),
 );
 
+final searchTracksProvider = FutureProvider.autoDispose<SearchResults>((ref) async {
+  final query = ref.watch(searchQueryProvider);
+  if (query.trim().isEmpty) return const SearchResults(tracks: []);
+  return ref.read(getSearchResultsProvider).callTyped(query, 'tracks');
+});
+
+final searchProfilesProvider = FutureProvider.autoDispose<SearchResults>((ref) async {
+  final query = ref.watch(searchQueryProvider);
+  if (query.trim().isEmpty) return const SearchResults(tracks: []);
+  return ref.read(getSearchResultsProvider).callTyped(query, 'users');
+});
+
+final searchPlaylistsProvider = FutureProvider.autoDispose<SearchResults>((ref) async {
+  final query = ref.watch(searchQueryProvider);
+  if (query.trim().isEmpty) return const SearchResults(tracks: []);
+  return ref.read(getSearchResultsProvider).callTyped(query, 'playlists');
+});
+
+final searchAlbumsProvider = FutureProvider.autoDispose<SearchResults>((ref) async {
+  final query = ref.watch(searchQueryProvider);
+  if (query.trim().isEmpty) return const SearchResults(tracks: []);
+  return ref.read(getSearchResultsProvider).callTyped(query, 'albums');
+});
 // ── State notifiers ───────────────────────────────────────────────────────────
 
 /// Holds the current text in the search bar.

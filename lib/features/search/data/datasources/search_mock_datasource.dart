@@ -193,6 +193,18 @@ class SearchRemoteSourceMock implements SearchRemoteSource {
   }
 
   @override
+  Future<SearchResults> getSearchResultsTyped(String query, String type) async {
+    // Reuse the same mock data, just filter by type
+    final results = await getSearchResults(query);
+    return SearchResults(
+      tracks: type == 'tracks' ? results.tracks : [],
+      profiles: type == 'users' ? results.profiles : [],
+      playlists: type == 'playlists' ? results.playlists : [],
+      albums: type == 'albums' ? results.albums : [],
+    );
+  }
+
+  @override
   Future<SearchResults> getSearchResults(String query) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final q = query.toLowerCase().trim();
