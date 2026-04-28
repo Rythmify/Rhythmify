@@ -43,6 +43,7 @@ void main() {
       // ── Play a track → mini player appears immediately ─────────────────────
       await tryTest('TC-COMMENTS-000 | Play a track and verify mini player appears', () async {
         await playerPage.playFromHotForYou();
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         expect(playerPage.isMiniPlayerVisible(), true);
       });
 
@@ -106,8 +107,73 @@ void main() {
         }
       });
 
-      // ── TC-COMMENTS-008 | Tap the track-min timestamp → seek player ───────
-      // ── TC-COMMENTS-009 | ⋮ menu on the comments — all options tappable ──────
+      // ── TC-COMMENTS-008 | "Play from" in the ⋮ menu seeks the player ────────
+      await tryTest('TC-COMMENTS-008 | Tap "Play from" in comment ⋮ menu to seek the player', () async {
+        // Collapse replies first so tapMoreOnFirstComment hits a top-level comment
+        if (commentsPage.isShowLessVisible()) {
+          await commentsPage.tapShowLess();
+        }
+        await commentsPage.tapMoreOnFirstComment();
+        expect(commentsPage.isPlayFromOptionVisible(), true,
+            reason: '"Play from X:XX" option must appear in the action sheet');
+        await commentsPage.tapPlayFromOption();
+        expect(commentsPage.isCommentsScreenVisible(), true,
+            reason: 'Comments screen must stay open after seeking');
+      });
+
+      // ── TC-COMMENTS-009 | ⋮ menu — Copy and View profile ────────────────
+      await tryTest('TC-COMMENTS-009 | Comment ⋮ menu: Copy is tappable and View profile navigates correctly', () async {
+        // Collapse replies so only top-level comment ⋮ buttons are visible
+        if (commentsPage.isShowLessVisible()) {
+          await commentsPage.tapShowLess();
+        }
+        await commentsPage.tapMoreOnFirstComment();
+        expect(commentsPage.isBottomSheetOptionVisible('View profile'), true,
+            reason: '"View profile" must appear in the action sheet');
+        expect(commentsPage.isBottomSheetOptionVisible('Copy'), true,
+            reason: '"Copy" must appear in the action sheet');
+
+        // Copy — safe, no navigation
+        await commentsPage.tapCopyOption();
+
+        // View profile — navigates away from comments
+        await commentsPage.tapMoreOnFirstComment();
+        await commentsPage.tapViewProfileOption();
+
+        // Return: tap mini player → full player → comment icon
+        await commentsPage.returnToCommentsScreen();
+        expect(commentsPage.isCommentsScreenVisible(), true,
+            reason: 'Comments screen must be visible after returning from profile');
+      });
+
+      // ── TC-COMMENTS-013 | Delete the reply ───────────────────────────────
+      await tryTest('TC-COMMENTS-013 | Delete the reply and verify it is removed', () async {
+        // Expand replies so the reply card is visible
+        if (!commentsPage.isShowLessVisible()) {
+          await commentsPage.tapShowReplies();
+        }
+        // The reply is the last ⋮ in the expanded list
+        await commentsPage.tapMoreOnLastVisible();
+        expect(commentsPage.isDeleteCommentOptionVisible(), true,
+            reason: '"Delete comment" must appear for own reply');
+        await commentsPage.tapDeleteCommentOption();
+        expect(commentsPage.isCommentVisible('reply test'), false,
+            reason: '"reply test" should no longer appear after deletion');
+      });
+
+      // ── TC-COMMENTS-014 | Delete the comment ─────────────────────────────
+      await tryTest('TC-COMMENTS-014 | Delete "test comment" and verify it is removed', () async {
+        // Collapse replies (if any remain) so we target the top-level comment
+        if (commentsPage.isShowLessVisible()) {
+          await commentsPage.tapShowLess();
+        }
+        await commentsPage.tapMoreOnFirstComment();
+        expect(commentsPage.isDeleteCommentOptionVisible(), true,
+            reason: '"Delete comment" must appear for own comment');
+        await commentsPage.tapDeleteCommentOption();
+        expect(commentsPage.isCommentVisible('test comment'), false,
+            reason: '"test comment" should no longer appear after deletion');
+      });
 
       // ── TC-COMMENTS-010 | Scroll the comments list ───────────────────────
       await tryTest('TC-COMMENTS-010 | Scroll the comments list', () async {
@@ -118,19 +184,19 @@ void main() {
 
       
       await tryTest('TC-COMMENTS-010/011/012 | Sort comments by Newest, Oldest, Track Time', () async {
-        // ── TC-COMMENTS-010 | Sort by Newest ─────────────────────────────────
-        await commentsPage.tapSortIcon();
-        await commentsPage.selectSortOption('Newest');
-        expect(commentsPage.isCommentsScreenVisible(), true);
-
-        // ── TC-COMMENTS-011 | Sort by Oldest ─────────────────────────────────
+        // ── TC-COMMENTS-010 | Sort by Oldest ─────────────────────────────────
         await commentsPage.tapSortIcon();
         await commentsPage.selectSortOption('Oldest');
         expect(commentsPage.isCommentsScreenVisible(), true);
 
-        // ── TC-COMMENTS-012 | Sort by Track Time ─────────────────────────────
+        // ── TC-COMMENTS-011 | Sort by Track Time ─────────────────────────────
         await commentsPage.tapSortIcon();
         await commentsPage.selectSortOption('Track Time');
+        expect(commentsPage.isCommentsScreenVisible(), true);
+
+        // ── TC-COMMENTS-012 | Sort by Newest ─────────────────────────────────
+        await commentsPage.tapSortIcon();
+        await commentsPage.selectSortOption('Newest');
         expect(commentsPage.isCommentsScreenVisible(), true);
       });
 

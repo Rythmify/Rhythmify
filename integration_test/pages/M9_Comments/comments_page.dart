@@ -20,6 +20,16 @@ class CommentsPage extends BasePage {
     await tester.pump(const Duration(seconds: 1));
   }
 
+  /// Re-opens the Comments screen after navigating away (e.g. "View profile").
+  /// Taps the mini player → full player opens → taps the comment icon.
+  Future<void> returnToCommentsScreen() async {
+    if (isCommentsScreenVisible()) return;
+    await tester.tap(find.byKey(const Key(playerMiniPlayerGesture)));
+    await tester.pump(const Duration(seconds: 3));
+    await tapByKeyNow(playerActionBarCommentIcon);
+    await tester.pump(const Duration(seconds: 3));
+  }
+
   // ── Floating Comment Bar (Full Player screen) ──────────────────────────────
 
   /// Taps one of the three preset emoji buttons (🔥 / 👏 / 🥺) in the
@@ -100,21 +110,50 @@ class CommentsPage extends BasePage {
   /// typically the innermost / most-recently-added reply when replies are
   /// expanded).
   Future<void> tapMoreOnLastVisible() async {
-    final icons = find.byIcon(Icons.more_vert);
-    await tester.tap(icons.last);
-    await tester.pump(const Duration(seconds: 1));
+    final moreFinder = find.byWidgetPredicate(
+      (w) => w.key?.toString().contains(commentCardMoreInkwellPrefix) == true,
+    );
+    await tester.tap(moreFinder.last);
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Taps the ⋮ (more_vert) icon on the first comment in the list.
   Future<void> tapMoreOnFirstComment() async {
-    await tester.tap(find.byIcon(Icons.more_vert).first);
-    await tester.pump(const Duration(seconds: 1));
+    final moreFinder = find.byWidgetPredicate(
+      (w) => w.key?.toString().contains(commentCardMoreInkwellPrefix) == true,
+    );
+    await tester.tap(moreFinder.first);
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Taps an option inside the comment action bottom sheet by its label text.
   Future<void> tapBottomSheetOption(String label) async {
     await tester.tap(find.text(label));
     await tester.pump(const Duration(seconds: 2));
+  }
+
+  /// Taps the "Play from X:XX" option in the comment action bottom sheet.
+  Future<void> tapPlayFromOption() async {
+    await tapByKeyNow(commentActionPlayFromInkwell);
+    await tester.pump(const Duration(seconds: 2));
+  }
+
+  /// Taps the "View profile" option in the comment action bottom sheet.
+  Future<void> tapViewProfileOption() async {
+    await tapByKeyNow(commentActionViewProfileInkwell);
+    await tester.pump(const Duration(seconds: 3));
+  }
+
+  /// Taps the "Copy" option in the comment action bottom sheet.
+  Future<void> tapCopyOption() async {
+    await tapByKeyNow(commentActionCopyInkwell);
+    await tester.pump(const Duration(seconds: 1));
+  }
+
+  /// Taps the "Delete comment" option in the comment action bottom sheet.
+  Future<void> tapDeleteCommentOption() async {
+    await tapByKeyNow(commentActionDeleteInkwell);
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Dismisses a visible bottom sheet by tapping outside its bounds.
@@ -175,4 +214,12 @@ class CommentsPage extends BasePage {
   /// True when [label] text is currently shown in a bottom sheet row.
   bool isBottomSheetOptionVisible(String label) =>
       find.text(label).evaluate().isNotEmpty;
+
+  /// True when the "Play from X:XX" inkwell is visible in the bottom sheet.
+  bool isPlayFromOptionVisible() =>
+      find.byKey(const Key(commentActionPlayFromInkwell)).evaluate().isNotEmpty;
+
+  /// True when the "Delete comment" inkwell is visible in the bottom sheet.
+  bool isDeleteCommentOptionVisible() =>
+      find.byKey(const Key(commentActionDeleteInkwell)).evaluate().isNotEmpty;
 }

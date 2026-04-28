@@ -313,6 +313,21 @@ const String commentsFireEmoji              = 'comments_fire_emoji_text';
 const String commentsClapEmoji              = 'comments_clap_emoji_text';
 const String commentsPleadingEmoji          = 'comments_pleading_emoji_text';
 
+// --- Comment Card (dynamic prefix — append comment.id at runtime) ---
+// e.g. 'comment_card_more_42_inkwell', 'comment_card_like_42_icon_button'
+const String commentCardMoreInkwellPrefix      = 'comment_card_more_';
+const String commentCardLikeIconButtonPrefix   = 'comment_card_like_';
+const String commentCardReplyGesturePrefix     = 'comment_card_reply_';
+const String commentCardShowRepliesPrefix      = 'comment_card_show_replies_';
+
+// --- Comment Action Bottom Sheet ---
+const String commentActionPlayFromInkwell      = 'comment_action_play_from_inkwell';
+const String commentActionViewProfileInkwell   = 'comment_action_view_profile_inkwell';
+const String commentActionCopyInkwell          = 'comment_action_copy_inkwell';
+const String commentActionDeleteInkwell        = 'comment_action_delete_inkwell';
+const String commentActionReportInkwell        = 'comment_action_report_inkwell';
+const String commentActionToggleBlockInkwell   = 'comment_action_toggle_block_inkwell';
+
 // ── Library — Likes ───────────────────────────────────────────────────────────
 const String libraryLikesBackButton         = 'library_likes_back_button';
 const String libraryLikesSearchBar          = 'library_likes_search_bar';

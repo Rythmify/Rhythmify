@@ -19,7 +19,7 @@ class PlayerPage extends BasePage {
   /// Taps the mini player bar to open the full player.
   Future<void> openFullPlayer() async {
     await tester.tap(find.byKey(const Key(playerMiniPlayerGesture)));
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Taps the collapse (arrow-down) button to close the full player.
