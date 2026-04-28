@@ -8,9 +8,9 @@ import '../../data/datasources/premium_remote_datasource.dart';
 // FREE PLAN HARD LIMITS  (from OpenAPI spec)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const kFreeTrackLimit = 3; // POST /tracks → 403 SUBSCRIPTION_LIMIT_REACHED
-const kFreePlaylistLimit = 2; // enforced client-side before POST /playlists
-const kFreeCanDownload = false;
+const kFreeTrackLimit    = 3;   // POST /tracks → 403 SUBSCRIPTION_LIMIT_REACHED
+const kFreePlaylistLimit = 2;   // enforced client-side before POST /playlists
+const kFreeCanDownload   = false;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE
@@ -24,6 +24,8 @@ class PremiumState {
   final String? error;
   final bool checkoutSuccess;
 
+  final bool isInitialized; // true after both loadPlans + loadMySubscription complete
+
   const PremiumState({
     this.subscription,
     this.plans = const [],
@@ -31,16 +33,16 @@ class PremiumState {
     this.isCheckingOut = false,
     this.error,
     this.checkoutSuccess = false,
+    this.isInitialized = false,
   });
 
   // ── Core premium flag ──────────────────────────────────────────────────────
   bool get isPremium => subscription?.isPremium ?? false;
-  bool get isFree => !isPremium;
+  bool get isFree    => !isPremium;
 
   // ── Feature gates — checked before any gated action ───────────────────────
-  bool get canUploadMoreTracks => isPremium; // free capped at kFreeTrackLimit
-  bool get canCreateMorePlaylists =>
-      isPremium; // free capped at kFreePlaylistLimit
+  bool get canUploadMoreTracks => isPremium;   // free capped at kFreeTrackLimit
+  bool get canCreateMorePlaylists => isPremium; // free capped at kFreePlaylistLimit
   bool get canDownload => isPremium;
   bool get canListenOffline => isPremium;
 
@@ -57,16 +59,16 @@ class PremiumState {
     bool? checkoutSuccess,
     bool clearError = false,
     bool clearSubscription = false,
+    bool? isInitialized,
   }) {
     return PremiumState(
-      subscription: clearSubscription
-          ? null
-          : (subscription ?? this.subscription),
+      subscription: clearSubscription ? null : (subscription ?? this.subscription),
       plans: plans ?? this.plans,
       isLoading: isLoading ?? this.isLoading,
       isCheckingOut: isCheckingOut ?? this.isCheckingOut,
       error: clearError ? null : (error ?? this.error),
       checkoutSuccess: checkoutSuccess ?? this.checkoutSuccess,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 }
@@ -87,6 +89,8 @@ class PremiumNotifier extends Notifier<PremiumState> {
   Future<void> _init() async {
     await loadPlans();
     await loadMySubscription();
+    // Mark init complete — gate screen uses this to know subscription check is done
+    state = state.copyWith(isInitialized: true);
   }
 
   Future<void> loadPlans() async {
@@ -114,10 +118,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
   /// Flow: POST /subscriptions/checkout → POST /subscriptions/mock-confirm/{id}
   Future<void> checkout(String planId) async {
     state = state.copyWith(
-      isCheckingOut: true,
-      clearError: true,
-      checkoutSuccess: false,
-    );
+        isCheckingOut: true, clearError: true, checkoutSuccess: false);
     try {
       String transactionId;
 
@@ -141,16 +142,24 @@ class PremiumNotifier extends Notifier<PremiumState> {
         final session = await _ds.startCheckout(resolvedPlanId);
         transactionId = session.transactionId;
       } on DioException catch (e) {
-        // 409 = pending checkout already exists — skip checkout, fetch existing
         final code = e.response?.data?['error']?['code'] as String?;
+
+        // Already active — treat as success
+        if (e.response?.statusCode == 409 &&
+            code == 'SUBSCRIPTION_ALREADY_ACTIVE') {
+          await loadMySubscription();
+          state = state.copyWith(isCheckingOut: false, checkoutSuccess: true);
+          return;
+        }
+
+        // Pending checkout exists — fetch and confirm it
         if (e.response?.statusCode == 409 &&
             code == 'SUBSCRIPTION_CHECKOUT_PENDING') {
           final pendingId = await _ds.fetchPendingTransactionId(resolvedPlanId);
           if (pendingId == null) {
             state = state.copyWith(
-              isCheckingOut: false,
-              error: 'Could not find pending transaction. Please try again.',
-            );
+                isCheckingOut: false,
+                error: 'Could not find pending transaction. Please try again.');
             return;
           }
           transactionId = pendingId;
@@ -168,10 +177,9 @@ class PremiumNotifier extends Notifier<PremiumState> {
 
       state = state.copyWith(isCheckingOut: false, checkoutSuccess: true);
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['error']?['message'] as String? ??
-          e.message ??
-          'Payment failed. Please try again.';
+      final message = e.response?.data?['error']?['message'] as String?
+          ?? e.message
+          ?? 'Payment failed. Please try again.';
       state = state.copyWith(isCheckingOut: false, error: message);
     } catch (e) {
       state = state.copyWith(isCheckingOut: false, error: e.toString());
@@ -189,7 +197,8 @@ class PremiumNotifier extends Notifier<PremiumState> {
     }
   }
 
-  void clearCheckoutSuccess() => state = state.copyWith(checkoutSuccess: false);
+  void clearCheckoutSuccess() =>
+      state = state.copyWith(checkoutSuccess: false);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

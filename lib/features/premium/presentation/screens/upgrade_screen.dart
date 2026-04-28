@@ -143,11 +143,8 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                       color: Colors.black26,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.white,
-                      size: 15,
-                    ),
+                    child: const Icon(Icons.arrow_back_ios_new,
+                        color: Colors.white, size: 15),
                   ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -168,47 +165,42 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               ),
 
               // ── Plan cards ─────────────────────────────────────────────
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final cardWidth = constraints.maxWidth * 0.92;
-                  return SizedBox(
-                    height: _cardHeight(cardWidth),
-                    child: PageView.builder(
-                      controller: _pageCtrl,
-                      itemCount: _kPlans.length,
-                      onPageChanged: (p) => setState(() => _activePlan = p),
-                      itemBuilder: (_, i) {
-                        final p = _kPlans[i];
-                        return _PlanCard(
-                          periodTag: p.period,
-                          periodBg: p.periodBg,
-                          name: p.name,
-                          price: p.price,
-                          features: p.features,
-                          onSubscribe: () {
-                            final plans = ref.read(premiumProvider).plans;
-                            final premiumPlan = plans.isNotEmpty
-                                ? plans.firstWhere(
-                                    (pl) => pl.isPremium,
-                                    orElse: () => plans.last,
-                                  )
-                                : null;
-                            context.push(
-                              '/upgrade/checkout',
-                              extra: {
-                                'planId': premiumPlan?.planId ?? '',
-                                'planName': p.name,
-                                'price': p.price,
-                                'features': List<String>.from(p.features),
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+              LayoutBuilder(builder: (context, constraints) {
+                final cardWidth = constraints.maxWidth * 0.92;
+                return SizedBox(
+                  height: _cardHeight(cardWidth),
+                  child: PageView.builder(
+                    controller: _pageCtrl,
+                    itemCount: _kPlans.length,
+                    onPageChanged: (p) => setState(() => _activePlan = p),
+                    itemBuilder: (_, i) {
+                      final p = _kPlans[i];
+                      return _PlanCard(
+                        periodTag: p.period,
+                        periodBg: p.periodBg,
+                        name: p.name,
+                        price: p.price,
+                        features: p.features,
+                        onSubscribe: () {
+                          final plans = ref.read(premiumProvider).plans;
+                          final premiumPlan = plans.isNotEmpty
+                              ? plans.firstWhere((pl) => pl.isPremium, orElse: () => plans.last)
+                              : null;
+                          context.push(
+                            '/upgrade/checkout',
+                            extra: {
+                              'planId': premiumPlan?.planId ?? '',
+                              'planName': p.name,
+                              'price': p.price,
+                              'features': List<String>.from(p.features),
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              }),
 
               // ── Dots ───────────────────────────────────────────────────
               Padding(
@@ -233,16 +225,39 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
 
               // ── Down chevron ────────────────────────────────────────────
               const Center(
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.white70,
-                  size: 28,
-                ),
+                child: Icon(Icons.keyboard_arrow_down,
+                    color: Colors.white70, size: 28),
               ),
               const SizedBox(height: 10),
 
               // ── Dark info section ───────────────────────────────────────
               _DarkInfoSection(botPad: botPad),
+
+              // ── Manage subscription button — always visible ───────────
+              Container(
+                color: const Color(0xFF121212),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFF5500)),
+                      shape: const RoundedRectangleBorder(),
+                      foregroundColor: const Color(0xFFFF5500),
+                    ),
+                    onPressed: () => context.push('/cancellation'),
+                    child: Text(
+                      'Manage subscription',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFFF5500),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
               // ── Colored bottom strip ────────────────────────────────────
               AnimatedContainer(
@@ -300,57 +315,44 @@ class _PlanCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                _SharpTag(label: 'FOR ARTISTS', bg: const Color(0xFF2F80ED)),
-                const SizedBox(width: 6),
-                _SharpTag(label: periodTag, bg: periodBg),
-              ],
-            ),
+            Row(children: [
+              _SharpTag(label: 'FOR ARTISTS', bg: const Color(0xFF2F80ED)),
+              const SizedBox(width: 6),
+              _SharpTag(label: periodTag, bg: periodBg),
+            ]),
             const SizedBox(height: 10),
-            Text(
-              name,
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-              ),
-            ),
+            Text(name,
+                style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white)),
             const SizedBox(height: 2),
-            Text(
-              price,
-              style: GoogleFonts.inter(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
+            Text(price,
+                style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
             const SizedBox(height: 14),
-            ...features.map(
-              (f) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2),
-                      child: Icon(Icons.check, color: Colors.white, size: 15),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        f,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: Colors.white,
-                          height: 1.45,
-                        ),
+            ...features.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(Icons.check, color: Colors.white, size: 15),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(f,
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: Colors.white,
+                                height: 1.45)),
+                      ),
+                    ],
+                  ),
+                )),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -363,30 +365,20 @@ class _PlanCard extends StatelessWidget {
                   shape: const StadiumBorder(),
                 ),
                 onPressed: onSubscribe,
-                child: Text(
-                  'Subscribe now',
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
+                child: Text('Subscribe now',
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              'Cancel anytime.',
-              style: GoogleFonts.inter(fontSize: 13, color: Colors.white60),
-            ),
+            Text('Cancel anytime.',
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.white60)),
             const SizedBox(height: 4),
             GestureDetector(
               onTap: () => showRestrictionsSheet(context),
-              child: Text(
-                'Restrictions apply',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: const Color(0xFF2F80ED),
-                ),
-              ),
+              child: Text('Restrictions apply',
+                  style: GoogleFonts.inter(
+                      fontSize: 13, color: const Color(0xFF2F80ED))),
             ),
           ],
         ),
@@ -409,15 +401,12 @@ class _SharpTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: bg,
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          letterSpacing: 0.2,
-        ),
-      ),
+      child: Text(label,
+          style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.2)),
     );
   }
 }
@@ -439,15 +428,13 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
   static const _faqs = [
     {
       'q': "What's the difference between fan and artist plans?",
-      'a':
-          'Our fan-oriented plans are designed for those who primarily visit '
+      'a': 'Our fan-oriented plans are designed for those who primarily visit '
           'the site to listen to music. Artist plans offer unique features '
           'designed to help artists create and distribute their music and content.',
     },
     {
       'q': 'Can I purchase an annual plan and/or family plan?',
-      'a':
-          'Unfortunately we do not currently offer an annual or family plan '
+      'a': 'Unfortunately we do not currently offer an annual or family plan '
           'option for purchase in the app.',
     },
   ];
@@ -460,41 +447,32 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Rythmify supports\nindependent artists',
-            style: GoogleFonts.inter(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              height: 1.2,
-            ),
-          ),
+          Text('Rythmify supports\nindependent artists',
+              style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.2)),
           const SizedBox(height: 14),
           Text(
             'From fan-powered royalties to our audience-building artist plans, '
             'your subscription helps support the Rythmify global community.',
             style: GoogleFonts.inter(
-              fontSize: 14,
-              color: Colors.white70,
-              height: 1.65,
-            ),
+                fontSize: 14, color: Colors.white70, height: 1.65),
           ),
           const SizedBox(height: 22),
           Text(
             '"It\'s such a simple idea. Your monthly fees get split up between the songs"',
             style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              fontStyle: FontStyle.italic,
-              height: 1.5,
-            ),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                fontStyle: FontStyle.italic,
+                height: 1.5),
           ),
           const SizedBox(height: 6),
-          Text(
-            '– Rythmify artist',
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.white54),
-          ),
+          Text('– Rythmify artist',
+              style: GoogleFonts.inter(fontSize: 13, color: Colors.white54)),
           const SizedBox(height: 30),
           Center(
             child: Container(
@@ -524,14 +502,11 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
             ),
           ),
           const SizedBox(height: 36),
-          Text(
-            'Frequently asked questions',
-            style: GoogleFonts.inter(
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
+          Text('Frequently asked questions',
+              style: GoogleFonts.inter(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white)),
           const SizedBox(height: 16),
           ...List.generate(
             _faqs.length,
@@ -546,15 +521,12 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            _faqs[i]['q']!,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              height: 1.3,
-                            ),
-                          ),
+                          child: Text(_faqs[i]['q']!,
+                              style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  height: 1.3)),
                         ),
                         const SizedBox(width: 8),
                         Icon(
@@ -571,14 +543,11 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                 if (_faqOpen[i])
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      _faqs[i]['a']!,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: Colors.white70,
-                        height: 1.6,
-                      ),
-                    ),
+                    child: Text(_faqs[i]['a']!,
+                        style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.white70,
+                            height: 1.6)),
                   ),
                 const Divider(color: Colors.white12, height: 1),
               ],
