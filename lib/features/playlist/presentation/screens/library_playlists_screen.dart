@@ -128,24 +128,26 @@ class _LibraryPlaylistsScreenState
     }
   }
 
-  
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
     // KEY FIX: filter out albums — they belong in the albums screen, not here.
     // Track radios and mixes are allowed (they show as Radio/Mix label).
     var result = input
-        .where((p) =>
-            p.type == PlaylistType.playlist ||
-            p.isGeneratedMix ||
-            p.isTrackRadio)
+        .where(
+          (p) =>
+              p.type == PlaylistType.playlist ||
+              p.isGeneratedMix ||
+              p.isTrackRadio,
+        )
         .toList();
- 
+
     if (_searchQuery.isNotEmpty) {
       result = result
-          .where((p) =>
-              p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+            (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
           .toList();
     }
- 
+
     switch (_sort) {
       case _SortOption.recentlyAdded:
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -155,12 +157,12 @@ class _LibraryPlaylistsScreenState
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       case _SortOption.playlistName:
         result.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     }
- 
+
     return result;
   }
-
 
   void _onPlaylistTap(BuildContext context, PlaylistEntity playlist) {
     if (_isPlaylistOwned(playlist)) {

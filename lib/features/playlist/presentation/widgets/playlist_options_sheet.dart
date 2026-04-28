@@ -47,9 +47,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
     final shareUrl = _buildShareUrl(resolvedPlaylist);
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.72,  // taller default — shows all options comfortably
+      initialChildSize: 0.72, // taller default — shows all options comfortably
       minChildSize: 0.40,
-      maxChildSize: 0.85,      // can stretch but won't cover full screen
+      maxChildSize: 0.85, // can stretch but won't cover full screen
       expand: false,
       builder: (_, scrollController) => Container(
         decoration: const BoxDecoration(
@@ -69,9 +69,10 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 child: Row(
                   children: [
                     PlaylistCoverImage(
-                        playlist: resolvedPlaylist,
-                        size: 56,
-                        borderRadius: 4),
+                      playlist: resolvedPlaylist,
+                      size: 56,
+                      borderRadius: 4,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -80,16 +81,19 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                           Text(
                             resolvedPlaylist.name,
                             style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600),
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           Text(
                             resolvedPlaylist.ownerName.isNotEmpty
                                 ? resolvedPlaylist.ownerName
                                 : 'You',
                             style: TextStyle(
-                                color: Colors.grey[500], fontSize: 13),
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -170,10 +174,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   _showCopyingSnackbar(context);
                   final newId = await ref
                       .read(playlistListProvider.notifier)
-                      .copyPlaylist(
-                        playlistId,
-                        sourceEntity: resolvedPlaylist,
-                      );
+                      .copyPlaylist(playlistId, sourceEntity: resolvedPlaylist);
                   if (newId != null && context.mounted) {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     context.push('/library/playlists/$newId', extra: true);
@@ -186,8 +187,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 OptionSheetTile(
                   key: const Key('options_edit'),
                   icon: Icons.edit_outlined,
-                  label:
-                      'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  label: 'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
                   onTap: () {
                     Navigator.of(context).pop();
                     showModalBottomSheet(
@@ -228,8 +228,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 OptionSheetTile(
                   key: const Key('options_delete'),
                   icon: Icons.delete_outline,
-                  label:
-                      'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  label: 'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
                   color: Colors.redAccent,
                   onTap: () =>
                       _showDeleteConfirm(context, ref, resolvedPlaylist),
@@ -265,8 +264,10 @@ class PlaylistOptionsSheet extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -277,8 +278,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   .deletePlaylist(playlistId);
               onDeleted?.call();
             },
-            style:
-                TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
             child: const Text('Delete'),
           ),
         ],
@@ -330,14 +330,12 @@ class _ShareRow extends StatelessWidget {
                 _ShareIcon(
                   icon: Icons.send_outlined,
                   label: 'Message',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.sms_outlined,
                   label: 'SMS',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.qr_code_2,
@@ -361,22 +359,19 @@ class _ShareRow extends StatelessWidget {
                   icon: Icons.chat,
                   label: 'WhatsApp',
                   backgroundColor: const Color(0xFF25D366),
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.photo_camera,
                   label: 'Snapchat',
                   backgroundColor: const Color(0xFFFFFC00),
                   iconColor: Colors.black,
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.more_horiz,
                   label: 'More',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
               ],
             ),
@@ -393,8 +388,7 @@ class _ShareRow extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
       ),
-      builder: (_) =>
-          _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
+      builder: (_) => _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
     );
   }
 }
@@ -432,9 +426,10 @@ class _ShareIcon extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -460,27 +455,31 @@ class _QrCodeSheet extends StatelessWidget {
           Text(
             playlistName,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600),
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 24),
           Container(
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: const Center(
               child: Icon(Icons.qr_code_2, size: 160, color: Colors.black),
             ),
           ),
           const SizedBox(height: 16),
-          Text(url,
-              style: TextStyle(color: Colors.grey[500], fontSize: 11),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
+          Text(
+            url,
+            style: TextStyle(color: Colors.grey[500], fontSize: 11),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -488,13 +487,17 @@ class _QrCodeSheet extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: url));
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied')));
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
               style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white30)),
-              child: const Text('Copy link',
-                  style: TextStyle(color: Colors.white)),
+                side: const BorderSide(color: Colors.white30),
+              ),
+              child: const Text(
+                'Copy link',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           const SizedBox(height: 8),

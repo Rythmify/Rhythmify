@@ -44,10 +44,13 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
   Future<void> _fetchAndPlay(PlaylistTrack pt) async {
     try {
-      final fullTrack =
-          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id);
+      final fullTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(pt.id);
       final state = ref.read(playlistDetailProvider);
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: [fullTrack],
             initialIndex: 0,
             context: QueueContext(
@@ -67,10 +70,13 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     try {
       final List<Track> allTracks = [];
       for (final pt in tracks) {
-        allTracks
-            .add(await ref.read(getTrackDetailsUseCaseProvider).call(pt.id));
+        allTracks.add(
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id),
+        );
       }
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: allTracks,
             initialIndex: index,
             context: QueueContext(
@@ -109,11 +115,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     try {
       final List<Track> allTracks = [];
       for (final pt in tracks) {
-        allTracks
-            .add(await ref.read(getTrackDetailsUseCaseProvider).call(pt.id));
+        allTracks.add(
+          await ref.read(getTrackDetailsUseCaseProvider).call(pt.id),
+        );
       }
       final shuffledTracks = List<Track>.from(allTracks)..shuffle();
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: shuffledTracks,
             initialIndex: 0,
             context: QueueContext(
@@ -143,12 +152,15 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   }
 
   String _buildSubtitle(
-      PlaylistEntity playlist, int trackCount, String duration) {
+    PlaylistEntity playlist,
+    int trackCount,
+    String duration,
+  ) {
     final label = playlist.isGeneratedMix
         ? 'Mix'
         : playlist.isTrackRadio
-            ? 'Radio'
-            : playlist.typeLabel;
+        ? 'Radio'
+        : playlist.typeLabel;
     final tracks = trackCount == 1 ? '1 track' : '$trackCount tracks';
     if (duration.isNotEmpty && trackCount > 0) {
       return '$label · $tracks · $duration';
@@ -176,7 +188,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     final playlist = state.playlist;
 
     // Suggestions only for owned regular playlists — never radios or mixes
-    final canShowSuggestions = widget.isOwner &&
+    final canShowSuggestions =
+        widget.isOwner &&
         !state.isLoading &&
         playlist != null &&
         !playlist.isTrackRadio &&
@@ -195,8 +208,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       return const Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-            child:
-                CircularProgressIndicator(color: AppTheme.primaryBrand)),
+          child: CircularProgressIndicator(color: AppTheme.primaryBrand),
+        ),
       );
     }
 
@@ -204,14 +217,17 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       return Scaffold(
         backgroundColor: AppTheme.background,
         body: Center(
-            child: Text('Playlist not found', style: AppTheme.bodyMedium)),
+          child: Text('Playlist not found', style: AppTheme.bodyMedium),
+        ),
       );
     }
 
-    final coverUrl = playlist.coverUrl ??
+    final coverUrl =
+        playlist.coverUrl ??
         (state.tracks.isNotEmpty ? state.tracks.first.coverUrl : null);
 
-    final showSuggestionsSection = widget.isOwner &&
+    final showSuggestionsSection =
+        widget.isOwner &&
         !playlist.isTrackRadio &&
         !playlist.isGeneratedMix &&
         playlist.type == PlaylistType.playlist &&
@@ -230,7 +246,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               coverUrl: coverUrl,
               trackCount: state.tracks.length,
               subtitle: _buildSubtitle(
-                  playlist, state.tracks.length, durationText),
+                playlist,
+                state.tracks.length,
+                durationText,
+              ),
               isOwner: widget.isOwner,
               onBack: () => context.pop(),
               onLike: () =>
@@ -286,15 +305,19 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   if (showSuggestionsSection) ...[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-                      child: Text('Suggestions for your new playlist',
-                          style: AppTheme.titleLarge),
+                      child: Text(
+                        'Suggestions for your new playlist',
+                        style: AppTheme.titleLarge,
+                      ),
                     ),
                     if (state.isSuggestionsLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
                         child: Center(
                           child: CircularProgressIndicator(
-                              color: AppTheme.primaryBrand, strokeWidth: 2),
+                            color: AppTheme.primaryBrand,
+                            strokeWidth: 2,
+                          ),
                         ),
                       )
                     else
@@ -305,8 +328,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                           onTap: () => _fetchAndPlay(s),
                           trailingWidget: IconButton(
                             key: Key('add_suggestion_${s.id}'),
-                            icon: const Icon(Icons.add_box_outlined,
-                                color: AppTheme.textSecondary, size: 26),
+                            icon: const Icon(
+                              Icons.add_box_outlined,
+                              color: AppTheme.textSecondary,
+                              size: 26,
+                            ),
                             onPressed: () => ref
                                 .read(playlistDetailProvider.notifier)
                                 .addSuggestion(s),
@@ -327,10 +353,13 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.surface,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
-                            child: Text('Refresh suggestions',
-                                style: AppTheme.bodyNormal),
+                            child: Text(
+                              'Refresh suggestions',
+                              style: AppTheme.bodyNormal,
+                            ),
                           ),
                         ),
                       ),
@@ -353,8 +382,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.queue_music,
-              color: AppTheme.textSecondary, size: 48),
+          const Icon(
+            Icons.queue_music,
+            color: AppTheme.textSecondary,
+            size: 48,
+          ),
           const SizedBox(height: 12),
           Text(
             widget.isOwner
@@ -412,8 +444,11 @@ class _PlaylistHeader extends StatelessWidget {
             children: [
               IconButton(
                 key: const Key('playlist_detail_back_button'),
-                icon: const Icon(Icons.chevron_left,
-                    color: AppTheme.textPrimary, size: 28),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: AppTheme.textPrimary,
+                  size: 28,
+                ),
                 onPressed: onBack,
               ),
               _CoverImage(coverUrl: coverUrl, name: playlist.name, size: 52),
@@ -443,10 +478,10 @@ class _PlaylistHeader extends StatelessWidget {
                           child: Text(
                             playlist.type == PlaylistType.station
                                 ? (playlist.seedArtistName ??
-                                    playlist.ownerName)
+                                      playlist.ownerName)
                                 : playlist.ownerName.isNotEmpty
-                                    ? playlist.ownerName
-                                    : 'You',
+                                ? playlist.ownerName
+                                : 'You',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTheme.labelSmall.copyWith(
@@ -477,9 +512,7 @@ class _PlaylistHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      playlist.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
+                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
                       color: playlist.isLiked
                           ? AppTheme.primaryBrand
                           : AppTheme.textPrimary,
@@ -503,16 +536,22 @@ class _PlaylistHeader extends StatelessWidget {
               // More button
               IconButton(
                 key: const Key('playlist_detail_more_button'),
-                icon: const Icon(Icons.more_horiz,
-                    color: AppTheme.textPrimary, size: 24),
+                icon: const Icon(
+                  Icons.more_horiz,
+                  color: AppTheme.textPrimary,
+                  size: 24,
+                ),
                 onPressed: onMore,
               ),
               // Copy button (non-owned only)
               if (onCopy != null)
                 IconButton(
                   key: const Key('playlist_detail_copy_button'),
-                  icon: const Icon(Icons.copy_all,
-                      color: AppTheme.textSecondary, size: 22),
+                  icon: const Icon(
+                    Icons.copy_all,
+                    color: AppTheme.textSecondary,
+                    size: 22,
+                  ),
                   onPressed: onCopy,
                   tooltip: 'Copy to my playlists',
                 ),
@@ -520,8 +559,11 @@ class _PlaylistHeader extends StatelessWidget {
               // Shuffle
               IconButton(
                 key: const Key('playlist_detail_shuffle_button'),
-                icon: const Icon(Icons.shuffle,
-                    color: AppTheme.textSecondary, size: 24),
+                icon: const Icon(
+                  Icons.shuffle,
+                  color: AppTheme.textSecondary,
+                  size: 24,
+                ),
                 onPressed: onShuffle,
               ),
               // Play
@@ -535,8 +577,11 @@ class _PlaylistHeader extends StatelessWidget {
                     color: AppTheme.lighterSurface,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.play_arrow,
-                      color: AppTheme.textPrimary, size: 26),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: AppTheme.textPrimary,
+                    size: 26,
+                  ),
                 ),
               ),
             ],
@@ -558,8 +603,7 @@ class _CopyPlaylistSheet extends ConsumerStatefulWidget {
   final void Function(String newPlaylistId) onCreated;
 
   @override
-  ConsumerState<_CopyPlaylistSheet> createState() =>
-      _CopyPlaylistSheetState();
+  ConsumerState<_CopyPlaylistSheet> createState() => _CopyPlaylistSheetState();
 }
 
 class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
@@ -572,7 +616,8 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
     super.initState();
     _isPublic = widget.sourceEntity.isPublic;
     _nameController = TextEditingController(
-        text: 'Copy of ${widget.sourceEntity.name}');
+      text: 'Copy of ${widget.sourceEntity.name}',
+    );
     _nameController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _nameController.text.length,
@@ -633,8 +678,9 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2)),
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -642,12 +688,17 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             autofocus: true,
             maxLength: 100,
             style: const TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               border: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey)),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
               focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)),
+                borderSide: BorderSide(color: Colors.white),
+              ),
               counterStyle: TextStyle(color: Colors.grey[600]),
             ),
             onChanged: (_) => setState(() {}),
@@ -656,12 +707,15 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Make this playlist public',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 15)),
+              Text(
+                'Make this playlist public',
+                style: TextStyle(color: Colors.grey[400], fontSize: 15),
+              ),
               Switch(
                 value: _isPublic,
-                onChanged:
-                    _isCreating ? null : (v) => setState(() => _isPublic = v),
+                onChanged: _isCreating
+                    ? null
+                    : (v) => setState(() => _isPublic = v),
                 activeThumbColor: const Color(0xFFFF5500),
               ),
             ],
@@ -671,31 +725,37 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
-              onPressed:
-                  _nameController.text.trim().isEmpty || _isCreating
-                      ? null
-                      : _onCreate,
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
+                  borderRadius: BorderRadius.circular(25),
+                ),
               ),
               child: _isCreating
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Text('Create playlist',
-                      style: TextStyle(color: Colors.white, fontSize: 15)),
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed:
-                _isCreating ? null : () => Navigator.of(context).pop(),
-            child: Text('Cancel',
-                style: TextStyle(color: Colors.grey[500], fontSize: 15)),
+            onPressed: _isCreating ? null : () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
           ),
         ],
       ),
@@ -705,8 +765,11 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
 
 // ── Cover image widget ────────────────────────────────────────────────────────
 class _CoverImage extends StatelessWidget {
-  const _CoverImage(
-      {required this.coverUrl, required this.name, required this.size});
+  const _CoverImage({
+    required this.coverUrl,
+    required this.name,
+    required this.size,
+  });
 
   final String? coverUrl;
   final String name;
@@ -719,26 +782,31 @@ class _CoverImage extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: coverUrl != null &&
+        child:
+            coverUrl != null &&
                 coverUrl!.isNotEmpty &&
                 coverUrl!.startsWith('http')
-            ? Image.network(coverUrl!, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder())
+            ? Image.network(
+                coverUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
             : _placeholder(),
       ),
     );
   }
 
   Widget _placeholder() => Container(
-        color: AppTheme.surface,
-        child: Center(
-          child: Text(
-            name.isNotEmpty ? name[0].toUpperCase() : 'P',
-            style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 20,
-                fontWeight: FontWeight.w700),
-          ),
+    color: AppTheme.surface,
+    child: Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'P',
+        style: const TextStyle(
+          color: AppTheme.textSecondary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
         ),
-      );
+      ),
+    ),
+  );
 }

@@ -9,9 +9,8 @@ import '../../data/datasources/playlist_remote_datasource.dart';
 import '../../data/mock/playlist_mock_data.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
-  import '../../../authentication/presentation/providers/auth_provider.dart';
-  import '../../../authentication/presentation/providers/auth_state.dart';
- 
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
 
 final playlistDatasourceProvider = Provider<PlaylistRemoteDatasource>((ref) {
   return PlaylistRemoteDatasource(apiClient.dio);
@@ -163,8 +162,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     }
   }
 
-// REPLACE the existing copyPlaylist method in PlaylistListNotifier
-// in lib/features/playlist/presentation/providers/playlist_provider.dart
+  // REPLACE the existing copyPlaylist method in PlaylistListNotifier
+  // in lib/features/playlist/presentation/providers/playlist_provider.dart
 
   Future<String?> copyPlaylist(
     String sourcePlaylistId, {
@@ -176,17 +175,17 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
     final source = sourceEntity ?? cached;
     final copyName = overrideName ?? 'Copy of ${source?.name ?? 'Playlist'}';
     final isPublic = overridePublic ?? source?.isPublic ?? true;
- 
+
     try {
       // 1. Create the new empty owned playlist with the chosen name
       final created = await _ds.createPlaylist(
         name: copyName,
         isPublic: isPublic,
       );
- 
+
       // 2. Fetch tracks from the correct endpoint based on source type
       List<PlaylistTrack> tracks = [];
- 
+
       if (source?.type == PlaylistType.station) {
         // Artist station — fetch via seedArtistName (which holds the artist ID)
         final artistId = source?.seedArtistName;
@@ -213,7 +212,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
         tracks = await _ds.fetchPlaylistTracks(sourcePlaylistId);
         debugPrint('[COPY] Playlist: fetched ${tracks.length} tracks');
       }
- 
+
       // 3. Add each track to the new playlist sequentially
       int added = 0;
       for (final track in tracks) {
@@ -227,7 +226,7 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
           // Skip unavailable or duplicate tracks silently
         }
       }
- 
+
       // 4. Sync cache and reload owned playlists
       _cache.createWithId(
         id: created.id,
@@ -238,7 +237,8 @@ class PlaylistListNotifier extends Notifier<PlaylistListState> {
       );
       await loadPlaylists();
       debugPrint(
-          '[COPY] ✅ Created "${created.name}" with $added/${tracks.length} tracks → ${created.id}');
+        '[COPY] ✅ Created "${created.name}" with $added/${tracks.length} tracks → ${created.id}',
+      );
       return created.id;
     } catch (e) {
       debugPrint('[COPY] ❌ copyPlaylist: $e');
@@ -379,33 +379,37 @@ class PlaylistDetailNotifier extends Notifier<PlaylistDetailState> {
 
   @override
   PlaylistDetailState build() => const PlaylistDetailState(isLoading: true);
-Future<void> init(String playlistId) async {
+  Future<void> init(String playlistId) async {
     _currentPlaylistId = playlistId;
     state = const PlaylistDetailState(isLoading: true);
- 
+
     // Resolve current user info for owner name display
     final authState = ref.read(authProvider);
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : null;
-    final currentUserName =
-        authState is AuthAuthenticated ? authState.user.displayName : null;
- 
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+    final currentUserName = authState is AuthAuthenticated
+        ? authState.user.displayName
+        : null;
+
     try {
       final playlist = await _ds.fetchPlaylistDetail(
         playlistId,
         currentUserId: currentUserId,
         currentUserName: currentUserName,
       );
- 
-      debugPrint('[DETAIL] playlist: "${playlist.name}" '
-          'isOwned: ${playlist.isOwned} '
-          'isGeneratedMix: ${playlist.isGeneratedMix} '
-          'isTrackRadio: ${playlist.isTrackRadio} '
-          'ownerName: "${playlist.ownerName}" '
-          'type: ${playlist.type}');
- 
+
+      debugPrint(
+        '[DETAIL] playlist: "${playlist.name}" '
+        'isOwned: ${playlist.isOwned} '
+        'isGeneratedMix: ${playlist.isGeneratedMix} '
+        'isTrackRadio: ${playlist.isTrackRadio} '
+        'ownerName: "${playlist.ownerName}" '
+        'type: ${playlist.type}',
+      );
+
       List<PlaylistTrack> tracks = [];
- 
+
       if (playlist.type == PlaylistType.station) {
         if (playlist.seedArtistName != null) {
           tracks = await _fetchStationTracks(playlist.seedArtistName!);
@@ -414,28 +418,31 @@ Future<void> init(String playlistId) async {
         }
       } else if (playlist.isTrackRadio) {
         debugPrint(
-            '[DETAIL] isTrackRadio=true → fetchRadioTracks($playlistId)');
+          '[DETAIL] isTrackRadio=true → fetchRadioTracks($playlistId)',
+        );
         tracks = await _ds.fetchRadioTracks(playlistId);
         if (tracks.isEmpty) {
           debugPrint(
-              '[DETAIL] radio-tracks empty, falling back to fetchPlaylistTracks');
+            '[DETAIL] radio-tracks empty, falling back to fetchPlaylistTracks',
+          );
           tracks = await _ds.fetchPlaylistTracks(playlistId);
         }
         debugPrint('[DETAIL] ✅ Track radio: ${tracks.length} tracks');
       } else {
         tracks = await _ds.fetchPlaylistTracks(playlistId);
- 
+
         if (tracks.isEmpty) {
           debugPrint('[DETAIL] tracks empty, trying fetchMixTracks fallback');
           final mixTracks = await _ds.fetchMixTracks(playlistId);
           if (mixTracks.isNotEmpty) {
             tracks = mixTracks;
             debugPrint(
-                '[DETAIL] ✅ Got ${tracks.length} tracks from mix fallback');
+              '[DETAIL] ✅ Got ${tracks.length} tracks from mix fallback',
+            );
           }
         }
       }
- 
+
       _cache.createWithId(
         id: playlist.id,
         name: playlist.name,
@@ -447,9 +454,9 @@ Future<void> init(String playlistId) async {
       for (final t in tracks) {
         _cache.addTrack(playlistId: playlistId, track: t);
       }
- 
+
       debugPrint('[DETAIL] ✅ "${playlist.name}" — ${tracks.length} tracks');
- 
+
       // KEY FIX: NO auto-suggestion loading regardless of tracks.isEmpty.
       state = PlaylistDetailState(
         playlist: playlist,
