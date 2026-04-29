@@ -182,7 +182,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                         sourceEntity: resolvedPlaylist,
                         onCreated: (newId) {
                           context.push(
-                              '/library/playlists/$newId', extra: true);
+                            '/library/playlists/$newId',
+                            extra: true,
+                          );
                         },
                       ),
                     );
@@ -236,16 +238,14 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 OptionSheetTile(
                   key: const Key('options_delete'),
                   icon: Icons.delete_outline,
-                  label:
-                      'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  label: 'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
                   color: Colors.redAccent,
                   onTap: () =>
                       _showDeleteConfirm(context, ref, resolvedPlaylist),
                 ),
               ],
 
-              SizedBox(
-                  height: MediaQuery.of(context).padding.bottom + 120),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
             ],
           ),
         ),
@@ -273,8 +273,10 @@ class PlaylistOptionsSheet extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -285,8 +287,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                   .deletePlaylist(playlistId);
               onDeleted?.call();
             },
-            style:
-                TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
             child: const Text('Delete'),
           ),
         ],
@@ -309,8 +310,7 @@ class _CopyPlaylistSheet extends ConsumerStatefulWidget {
   final void Function(String newPlaylistId) onCreated;
 
   @override
-  ConsumerState<_CopyPlaylistSheet> createState() =>
-      _CopyPlaylistSheetState();
+  ConsumerState<_CopyPlaylistSheet> createState() => _CopyPlaylistSheetState();
 }
 
 class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
@@ -323,7 +323,8 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
     super.initState();
     _isPublic = widget.sourceEntity.isPublic;
     _nameController = TextEditingController(
-        text: 'Copy of ${widget.sourceEntity.name}');
+      text: 'Copy of ${widget.sourceEntity.name}',
+    );
     _nameController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _nameController.text.length,
@@ -384,8 +385,9 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2)),
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -393,14 +395,17 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             autofocus: true,
             maxLength: 100,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w500),
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               border: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey)),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
               focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)),
+                borderSide: BorderSide(color: Colors.white),
+              ),
               counterStyle: TextStyle(color: Colors.grey[600]),
             ),
             onChanged: (_) => setState(() {}),
@@ -409,8 +414,10 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Make this playlist public',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 15)),
+              Text(
+                'Make this playlist public',
+                style: TextStyle(color: Colors.grey[400], fontSize: 15),
+              ),
               Switch(
                 value: _isPublic,
                 onChanged: _isCreating
@@ -425,31 +432,37 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
-              onPressed:
-                  _nameController.text.trim().isEmpty || _isCreating
-                      ? null
-                      : _onCreate,
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.white54),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
+                  borderRadius: BorderRadius.circular(25),
+                ),
               ),
               child: _isCreating
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Text('Create playlist',
-                      style: TextStyle(color: Colors.white, fontSize: 15)),
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed:
-                _isCreating ? null : () => Navigator.of(context).pop(),
-            child: Text('Cancel',
-                style: TextStyle(color: Colors.grey[500], fontSize: 15)),
+            onPressed: _isCreating ? null : () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
           ),
         ],
       ),
@@ -491,14 +504,12 @@ class _ShareRow extends StatelessWidget {
                 _ShareIcon(
                   icon: Icons.send_outlined,
                   label: 'Message',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.sms_outlined,
                   label: 'SMS',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.qr_code_2,
@@ -522,22 +533,19 @@ class _ShareRow extends StatelessWidget {
                   icon: Icons.chat,
                   label: 'WhatsApp',
                   backgroundColor: const Color(0xFF25D366),
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.photo_camera,
                   label: 'Snapchat',
                   backgroundColor: const Color(0xFFFFFC00),
                   iconColor: Colors.black,
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
                 _ShareIcon(
                   icon: Icons.more_horiz,
                   label: 'More',
-                  onTap: () =>
-                      Share.share(shareUrl, subject: playlist.name),
+                  onTap: () => Share.share(shareUrl, subject: playlist.name),
                 ),
               ],
             ),
@@ -554,8 +562,7 @@ class _ShareRow extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
       ),
-      builder: (_) =>
-          _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
+      builder: (_) => _QrCodeSheet(url: shareUrl, playlistName: playlist.name),
     );
   }
 }
@@ -593,8 +600,10 @@ class _ShareIcon extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 6),
-            Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 11)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -620,27 +629,31 @@ class _QrCodeSheet extends StatelessWidget {
           Text(
             playlistName,
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600),
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 24),
           Container(
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: const Center(
               child: Icon(Icons.qr_code_2, size: 160, color: Colors.black),
             ),
           ),
           const SizedBox(height: 16),
-          Text(url,
-              style: TextStyle(color: Colors.grey[500], fontSize: 11),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
+          Text(
+            url,
+            style: TextStyle(color: Colors.grey[500], fontSize: 11),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -648,13 +661,17 @@ class _QrCodeSheet extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: url));
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied')));
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
               style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white30)),
-              child: const Text('Copy link',
-                  style: TextStyle(color: Colors.white)),
+                side: const BorderSide(color: Colors.white30),
+              ),
+              child: const Text(
+                'Copy link',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           const SizedBox(height: 8),

@@ -10,7 +10,6 @@ import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
 import '../../data/local/local_saved_store.dart';
 
-
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
   final Dio _dio;
@@ -215,12 +214,12 @@ class PlaylistRemoteDatasource {
       // Cross-check LocalSavedStore using the same API as fetchLikedPlaylists.
       if (!playlist.isTrackRadio) {
         final savedRadios = await LocalSavedStore.instance.getTrackRadios();
-        final isLocalRadio =
-            savedRadios.any((r) => r.playlistId == playlistId);
+        final isLocalRadio = savedRadios.any((r) => r.playlistId == playlistId);
         if (isLocalRadio) {
           playlist = playlist.copyWith(isTrackRadio: true);
           _log(
-              '[DETAIL] Enriched isTrackRadio=true from LocalSavedStore for $playlistId');
+            '[DETAIL] Enriched isTrackRadio=true from LocalSavedStore for $playlistId',
+          );
         }
       }
 
@@ -300,8 +299,7 @@ class PlaylistRemoteDatasource {
   Future<Map<String, dynamic>> fetchTrackById(String trackId) async {
     _log('→ GET /tracks/$trackId (fetching full track for player)');
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>('/tracks/$trackId');
+      final response = await _dio.get<Map<String, dynamic>>('/tracks/$trackId');
       _log('← ${response.statusCode}  track ready for player');
       return response.data!['data'] as Map<String, dynamic>;
     } on DioException catch (e) {
@@ -369,8 +367,7 @@ class PlaylistRemoteDatasource {
         filename: 'cover.jpg',
       );
     }
-    _log(
-        '→ PATCH /playlists/$playlistId  fields: ${fields.keys.toList()}');
+    _log('→ PATCH /playlists/$playlistId  fields: ${fields.keys.toList()}');
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/playlists/$playlistId',
@@ -422,8 +419,7 @@ class PlaylistRemoteDatasource {
       _log('← ${response.statusCode}  ✅ Track $trackId added');
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {
-        _log(
-            '⚠️ Track $trackId already exists in playlist $playlistId (409)');
+        _log('⚠️ Track $trackId already exists in playlist $playlistId (409)');
         return;
       }
       _logError('addTrackToPlaylist failed', e);
@@ -460,8 +456,7 @@ class PlaylistRemoteDatasource {
     final items = orderedTrackIds
         .asMap()
         .entries
-        .map((entry) =>
-            {'track_id': entry.value, 'position': entry.key + 1})
+        .map((entry) => {'track_id': entry.value, 'position': entry.key + 1})
         .toList();
     _log(
       '→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks',
@@ -817,11 +812,7 @@ class PlaylistRemoteDatasource {
           (genreId) => _dio
               .get<Map<String, dynamic>>(
                 '/genres/$genreId/tracks',
-                queryParameters: {
-                  'limit': 20,
-                  'offset': 0,
-                  'sort': 'popular'
-                },
+                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
               )
               .catchError((e) {
                 _log('Genre $genreId fetch failed, skipping: $e');
@@ -861,8 +852,7 @@ class PlaylistRemoteDatasource {
         }
       }
 
-      _log(
-          '← Got ${allTracks.length} unique real tracks across all genres');
+      _log('← Got ${allTracks.length} unique real tracks across all genres');
       if (allTracks.isEmpty) return [];
       allTracks.shuffle();
       return _mapDiscoveryTracksToPlaylistTracks(
@@ -882,8 +872,7 @@ class PlaylistRemoteDatasource {
     int limit = 5,
   }) async {
     final all = await fetchRecommendedTracks(limit: 20);
-    final filtered =
-        all.where((t) => !excludeIds.contains(t.id)).toList();
+    final filtered = all.where((t) => !excludeIds.contains(t.id)).toList();
     filtered.shuffle();
     return filtered.take(limit).toList();
   }
@@ -895,12 +884,10 @@ class PlaylistRemoteDatasource {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/home');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final trendingByGenre =
-          data['trending_by_genre'] as Map<String, dynamic>;
+      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
       final genres = trendingByGenre['genres'] as List<dynamic>;
       return genres
-          .map((g) =>
-              (g as Map<String, dynamic>)['genre_id'] as String?)
+          .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
           .where((id) => id != null && id.isNotEmpty)
           .cast<String>()
           .toList();
@@ -925,16 +912,14 @@ class PlaylistRemoteDatasource {
         final json = rawList[i] as Map<String, dynamic>;
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) {
-          _log(
-              '  Skipping track at index $i — no id. Keys: ${json.keys}');
+          _log('  Skipping track at index $i — no id. Keys: ${json.keys}');
           continue;
         }
         result.add(
           PlaylistTrack(
             id: id,
             title: json['title'] as String? ?? 'Unknown Title',
-            artistName:
-                json['artist_name'] as String? ?? 'Unknown Artist',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
             duration: Duration(
               seconds: (json['duration'] as num?)?.toInt() ?? 0,
             ),
@@ -970,8 +955,7 @@ class PlaylistRemoteDatasource {
           PlaylistTrack(
             id: id,
             title: json['title'] as String? ?? 'Unknown Title',
-            artistName:
-                json['artist_name'] as String? ?? 'Unknown Artist',
+            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
             duration: Duration(
               seconds: (json['duration'] as num?)?.toInt() ?? 0,
             ),
@@ -993,8 +977,7 @@ class PlaylistRemoteDatasource {
 
   Future<String> _fetchUserDisplayName(String userId) async {
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>('/users/$userId');
+      final response = await _dio.get<Map<String, dynamic>>('/users/$userId');
       final data = response.data!['data'] as Map<String, dynamic>;
       return data['display_name'] as String? ??
           data['username'] as String? ??

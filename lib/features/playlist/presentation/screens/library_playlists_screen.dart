@@ -26,8 +26,7 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
       _LibraryPlaylistsScreenState();
 }
 
-class _LibraryPlaylistsScreenState
-    extends ConsumerState<LibraryPlaylistsScreen>
+class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
     with WidgetsBindingObserver {
   String _searchQuery = '';
   _SortOption _sort = _SortOption.recentlyAdded;
@@ -183,8 +182,9 @@ class _LibraryPlaylistsScreenState
         '/home/mix/${playlist.id}',
         extra: {
           'title': playlist.name,
-          'ownerName':
-              playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
+          'ownerName': playlist.ownerName.isNotEmpty
+              ? playlist.ownerName
+              : 'You',
           'coverUrl': playlist.coverUrl,
           'trackCount': playlist.trackCount,
           'mixType': 'genre',
@@ -227,8 +227,7 @@ class _LibraryPlaylistsScreenState
           children: [
             Positioned(
               top: offset.dy + size.height + 4,
-              right:
-                  MediaQuery.of(context).size.width - offset.dx - size.width,
+              right: MediaQuery.of(context).size.width - offset.dx - size.width,
               child: GestureDetector(
                 onTap: () {},
                 child: Material(
@@ -330,8 +329,7 @@ class _LibraryPlaylistsScreenState
                           ),
                           child: TextField(
                             key: const Key('library_playlists_search_field'),
-                            onChanged: (v) =>
-                                setState(() => _searchQuery = v),
+                            onChanged: (v) => setState(() => _searchQuery = v),
                             style: AppTheme.bodyNormal,
                             decoration: InputDecoration(
                               hintText: 'Search $totalCount playlists',
@@ -362,7 +360,8 @@ class _LibraryPlaylistsScreenState
                         key: _filterIconKey,
                         icon: Icon(
                           Icons.tune,
-                          color: (_sort != _SortOption.recentlyAdded ||
+                          color:
+                              (_sort != _SortOption.recentlyAdded ||
                                   _filter != _FilterOption.all)
                               ? AppTheme.primaryBrand
                               : AppTheme.textSecondary,
@@ -464,17 +463,13 @@ class _LibraryPlaylistsScreenState
                                 )
                               : ListView.builder(
                                   key: const Key('library_playlists_list'),
-                                  padding:
-                                      const EdgeInsets.only(bottom: 140),
+                                  padding: const EdgeInsets.only(bottom: 140),
                                   itemCount: filtered.length,
                                   itemBuilder: (context, index) {
                                     final playlist = filtered[index];
-                                    final isOwner =
-                                        _isPlaylistOwned(playlist);
+                                    final isOwner = _isPlaylistOwned(playlist);
                                     return _PlaylistListTile(
-                                      key: Key(
-                                        'playlist_tile_${playlist.id}',
-                                      ),
+                                      key: Key('playlist_tile_${playlist.id}'),
                                       playlist: playlist,
                                       isOwner: isOwner,
                                       onTap: () =>
@@ -614,8 +609,7 @@ class _FilterDropdown extends StatelessWidget {
               checked: sort == _SortOption.playlistName,
               onTap: () => onSortChanged(_SortOption.playlistName),
             ),
-            const Divider(
-                height: 1, thickness: 1, color: Color(0xFF3A3A3A)),
+            const Divider(height: 1, thickness: 1, color: Color(0xFF3A3A3A)),
             _DropdownItem(
               label: 'All playlists',
               checked: filter == _FilterOption.all,
@@ -676,8 +670,7 @@ class _DropdownItem extends StatelessWidget {
                       ? AppTheme.textPrimary
                       : AppTheme.textSecondary,
                   fontSize: 15,
-                  fontWeight:
-                      checked ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: checked ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ),
@@ -729,8 +722,7 @@ class _PlaylistListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(
-                playlist: playlist, size: 60, borderRadius: 0),
+            PlaylistCoverImage(playlist: playlist, size: 60, borderRadius: 0),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -770,8 +762,7 @@ class _PlaylistListTile extends StatelessWidget {
             ),
             IconButton(
               key: Key('playlist_tile_more_${playlist.id}'),
-              icon: const Icon(
-                  Icons.more_vert, color: AppTheme.textSecondary),
+              icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
               onPressed: onMoreTap,
             ),
           ],
