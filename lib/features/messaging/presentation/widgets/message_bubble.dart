@@ -27,6 +27,7 @@ class MessageBubble extends ConsumerWidget {
   final String? embedId;
   final String? embedType;
   final String? userAvatar;
+  final bool showAvatar;
   final BorderRadius borderRadius;
 
   const MessageBubble({
@@ -37,6 +38,7 @@ class MessageBubble extends ConsumerWidget {
     this.embedType,
     required this.senderId,
     this.userAvatar,
+    this.showAvatar = true,
     required this.borderRadius,
   });
 
@@ -64,7 +66,9 @@ class MessageBubble extends ConsumerWidget {
             : MainAxisAlignment.start,
         children: [
           if (!isMe) ...[
-            Avatar(img: userAvatar, radius: 18),
+            showAvatar
+                ? Avatar(img: userAvatar, radius: 18)
+                : const SizedBox(width: 36),
             const SizedBox(width: 10),
           ],
           Flexible(
