@@ -165,14 +165,13 @@ class PlaylistOptionsSheet extends ConsumerWidget {
               ),
 
               // ── Copy ────────────────────────────────────────────────────
-              // FIX: shows the name-entry sheet instead of copying silently
               OptionSheetTile(
                 key: const Key('options_copy'),
                 icon: Icons.copy_all,
                 label: 'Copy ${resolvedPlaylist.typeLabel.toLowerCase()}',
                 onTap: () {
                   Navigator.of(context).pop();
-                  // Wait for sheet to fully dismiss before showing the next one
+                  // Small delay so sheet fully dismisses before next one opens
                   Future.delayed(const Duration(milliseconds: 150), () {
                     if (!context.mounted) return;
                     showModalBottomSheet(
@@ -196,8 +195,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 OptionSheetTile(
                   key: const Key('options_edit'),
                   icon: Icons.edit_outlined,
-                  label:
-                      'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  label: 'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
                   onTap: () {
                     Navigator.of(context).pop();
                     showModalBottomSheet(
@@ -299,8 +297,6 @@ class PlaylistOptionsSheet extends ConsumerWidget {
 
 // ════════════════════════════════════════════════════════════════════════════
 // COPY PLAYLIST SHEET
-// Identical to _CopyPlaylistSheet in playlist_detail_screen.dart.
-// Lives here so PlaylistOptionsSheet can use it without cross-file imports.
 // ════════════════════════════════════════════════════════════════════════════
 
 class _CopyPlaylistSheet extends ConsumerStatefulWidget {
@@ -445,8 +441,7 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2))
                   : const Text('Create playlist',
-                      style:
-                          TextStyle(color: Colors.white, fontSize: 15)),
+                      style: TextStyle(color: Colors.white, fontSize: 15)),
             ),
           ),
           const SizedBox(height: 12),
@@ -599,8 +594,7 @@ class _ShareIcon extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(label,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 11)),
+                style: const TextStyle(color: Colors.white, fontSize: 11)),
           ],
         ),
       ),
@@ -638,8 +632,7 @@ class _QrCodeSheet extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8)),
             child: const Center(
-              child:
-                  Icon(Icons.qr_code_2, size: 160, color: Colors.black),
+              child: Icon(Icons.qr_code_2, size: 160, color: Colors.black),
             ),
           ),
           const SizedBox(height: 16),

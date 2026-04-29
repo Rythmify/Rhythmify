@@ -9,9 +9,7 @@ import '../models/playlist_model.dart';
 import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
 import '../../data/local/local_saved_store.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
+
 
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
@@ -19,6 +17,10 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: My Playlists (owned — filter=created)
+  // KEY FIX: uses fromJsonListOwned so every returned playlist
+  // gets isOwned=true. This is the only reliable way to mark
+  // ownership — comparing ownerId to currentUserId fails because
+  // seed users and real users can share IDs unpredictably.
   // ============================================================
   Future<List<PlaylistEntity>> fetchMyPlaylists({
     String filter = 'created',
@@ -41,6 +43,8 @@ class PlaylistRemoteDatasource {
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} playlists from server');
 
+      // CRITICAL: use fromJsonListOwned for filter=created
+      // so isOwned=true on every item, regardless of ownerId value.
       if (filter == 'created') {
         return PlaylistModel.fromJsonListOwned(items);
       }
@@ -186,10 +190,10 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Single Playlist Detail
-  // FIX: cross-checks LocalSavedStore so track radios that the
-  // backend returns as type:"regular" are still detected correctly.
+  // FIX: /playlists/:id returns type:"regular" even for saved track radios.
+  // Cross-check LocalSavedStore so track radios keep isTrackRadio=true.
+  // PlaylistModel.fromJson returns PlaylistEntity directly — no .toEntity().
   // ============================================================
-
   Future<PlaylistEntity> fetchPlaylistDetail(
     String playlistId, {
     String? currentUserId,
@@ -203,11 +207,11 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
- 
-      // fromJson already returns PlaylistEntity
+
+      // fromJson returns PlaylistEntity directly
       PlaylistEntity playlist = PlaylistModel.fromJson(data);
- 
-      // FIX: /playlists/:id returns type:"regular" even for saved track radios.
+
+      // FIX: backend returns type:"regular" for saved track radios.
       // Cross-check LocalSavedStore using the same API as fetchLikedPlaylists.
       if (!playlist.isTrackRadio) {
         final savedRadios = await LocalSavedStore.instance.getTrackRadios();
@@ -219,18 +223,18 @@ class PlaylistRemoteDatasource {
               '[DETAIL] Enriched isTrackRadio=true from LocalSavedStore for $playlistId');
         }
       }
- 
+
       // Resolve owner display name
       final ownerId = playlist.ownerId;
       String ownerName = '';
- 
+
       if (currentUserId != null && ownerId == currentUserId) {
         ownerName = currentUserName ?? '';
       } else if (ownerId.isNotEmpty && !playlist.isTrackRadio) {
-        // Skip owner fetch for track radios — system-generated, no meaningful owner
+        // Skip owner fetch for track radios — system-generated
         ownerName = await _fetchUserDisplayName(ownerId);
       }
- 
+
       return playlist.copyWith(ownerName: ownerName);
     } on DioException catch (e) {
       _logError('fetchPlaylistDetail($playlistId) failed', e);
@@ -551,6 +555,7 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── ENGAGEMENT: Like / Unlike Track Radio
+  // POST /tracks/:track_id/like-radio → returns playlist_id
   // ============================================================
   Future<String?> likeTrackRadio(String trackId) async {
     _log('→ POST /tracks/$trackId/like-radio');
@@ -909,6 +914,7 @@ class PlaylistRemoteDatasource {
   // ── INTERNAL HELPERS
   // ============================================================
 
+  // No-filter mapper — for mixes/stations/related (display-only)
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracksNoFilter(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -949,6 +955,7 @@ class PlaylistRemoteDatasource {
     return result;
   }
 
+  // Standard mapper — for station/radio/related tracks
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,

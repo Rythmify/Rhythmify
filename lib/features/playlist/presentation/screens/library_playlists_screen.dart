@@ -26,9 +26,8 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
       _LibraryPlaylistsScreenState();
 }
 
-// WidgetsBindingObserver lets us detect when the app comes back to foreground
-// (AppLifecycleState.resumed) — which also fires when returning from another route.
-class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
+class _LibraryPlaylistsScreenState
+    extends ConsumerState<LibraryPlaylistsScreen>
     with WidgetsBindingObserver {
   String _searchQuery = '';
   _SortOption _sort = _SortOption.recentlyAdded;
@@ -55,8 +54,7 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
     super.dispose();
   }
 
-  // Called when the app lifecycle changes — resumed fires when the user
-  // returns to this screen from another route within the same app session.
+  // Fires when the user returns to this screen from another route
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
@@ -141,6 +139,7 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
   }
 
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
+    // Filter out albums — they belong in the albums screen
     var result = input
         .where(
           (p) =>
@@ -184,14 +183,17 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
         '/home/mix/${playlist.id}',
         extra: {
           'title': playlist.name,
-          'ownerName': playlist.ownerName.isNotEmpty
-              ? playlist.ownerName
-              : 'You',
+          'ownerName':
+              playlist.ownerName.isNotEmpty ? playlist.ownerName : 'You',
           'coverUrl': playlist.coverUrl,
           'trackCount': playlist.trackCount,
           'mixType': 'genre',
         },
       );
+      return;
+    }
+    if (playlist.isTrackRadio) {
+      context.push('/home/playlist/${playlist.id}', extra: false);
       return;
     }
     context.push('/home/playlist/${playlist.id}', extra: false);
@@ -441,19 +443,16 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
                   child: _loading
                       ? const Center(
                           child: CircularProgressIndicator(
-                            key:
-                                Key('library_playlists_loading_indicator'),
+                            key: Key('library_playlists_loading_indicator'),
                             color: AppTheme.primaryBrand,
                           ),
                         )
                       : RefreshIndicator(
-                          // Pull-to-refresh as an explicit manual reload
                           onRefresh: _loadAll,
                           color: AppTheme.primaryBrand,
                           child: filtered.isEmpty
                               ? ListView(
-                                  // Wrap in ListView so RefreshIndicator works
-                                  // even when the list is empty
+                                  // ListView so RefreshIndicator works on empty state
                                   children: [
                                     SizedBox(
                                       height:
@@ -523,7 +522,6 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
       builder: (_) => CreatePlaylistSheet(
         onCreated: (id) {
           context.push('/library/playlists/$id', extra: true);
-          // Reload after returning from the new playlist
           _loadAll();
         },
       ),
@@ -556,7 +554,7 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
         onDeleted: _loadAll,
       ),
     ).then((_) {
-      // Reload when the options sheet is dismissed (covers any action taken)
+      // Reload after any action taken in the options sheet
       _loadAll();
     });
   }
@@ -720,10 +718,7 @@ class _PlaylistListTile extends StatelessWidget {
   String get _detailLine {
     final count = playlist.trackCount;
     final tracks = count == 1 ? '1 track' : '$count tracks';
-    // Show lock icon for private playlists the user owns
-    final privacy =
-        isOwner && !playlist.isPublic ? '🔒 ' : '';
-    return '$privacy$_subtitleLabel · $tracks';
+    return '$_subtitleLabel · $tracks';
   }
 
   @override
@@ -754,7 +749,22 @@ class _PlaylistListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  Text(_detailLine, style: AppTheme.labelSmall),
+                  // Detail line with inline privacy lock (owner playlists only)
+                  Row(
+                    children: [
+                      if (isOwner) ...[
+                        Icon(
+                          playlist.isPublic
+                              ? Icons.lock_open_rounded
+                              : Icons.lock_rounded,
+                          size: 11,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(_detailLine, style: AppTheme.labelSmall),
+                    ],
+                  ),
                 ],
               ),
             ),
