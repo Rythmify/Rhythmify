@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/core/domain/entities/track.dart';
 import 'package:rythmify/features/profile/domain/entities/profile_entity.dart';
+import 'package:rythmify/features/profile/domain/entities/follow_status.dart';
 import 'package:rythmify/features/profile/presentation/providers/profile_state.dart';
 
 void main() {
@@ -39,7 +40,7 @@ void main() {
 
   group('ProfileError', () {
     test('should support value equality', () {
-      expect(const ProfileError('err'), const ProfileError('Error'));
+      expect(const ProfileError('err'), const ProfileError('err'));
       expect(const ProfileError('err'), isNot(const ProfileError('other')));
     });
 
@@ -123,6 +124,7 @@ void main() {
 
       expect(state.props, [
         tProfile,
+        FollowStatus.empty,
         const [], // uploadedTracks
         false, // isLoadingUploads
         true, // hasMoreUploads
@@ -132,7 +134,10 @@ void main() {
         const [], // repostedTracks
         false, // isLoadingReposts
         true, // hasMoreReposts
+        const [], // playlists
+        false, // isLoadingPlaylists
         true, // isSaving
+        false, // isBlocked
       ]);
     });
 

@@ -83,9 +83,15 @@ class _ProfileConnectionsPageState
 
     final followState = ref.read(followStateProvider);
     final followStateNotifier = ref.read(followStateProvider.notifier);
-    for (final user in connectionsState.users) {
-      if (followState.containsKey(user.id)) continue;
-      followStateNotifier.setFollowing(user.id, isFollowing: user.isFollowing);
+    if (widget.type == ProfileConnectionsType.following) {
+      for (final user in connectionsState.users) {
+        followStateNotifier.setFollowing(user.id, isFollowing: true);
+      }
+    } else {
+      for (final user in connectionsState.users) {
+        if (followState.containsKey(user.id)) continue;
+        followStateNotifier.setFollowing(user.id, isFollowing: false);
+      }
     }
 
     final authState = ref.read(authProvider);
@@ -97,7 +103,7 @@ class _ProfileConnectionsPageState
 
     profileNotifier.syncConnectionsCount(
       type: widget.type,
-      count: connectionsState.totalCount ?? connectionsState.users.length,
+      count: connectionsState.totalCount,
     );
   }
 
