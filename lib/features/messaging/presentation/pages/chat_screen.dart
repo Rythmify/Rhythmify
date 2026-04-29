@@ -333,6 +333,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     userAvatar: index == group.length - 1
                                         ? widget.conv?.participantAvatar
                                         : null,
+                                    showAvatar: index == group.length - 1,
                                     body: message.body,
                                     embedId: message.embedId,
                                     embedType: message.embedType,
