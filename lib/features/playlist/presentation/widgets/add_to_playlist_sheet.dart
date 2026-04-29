@@ -82,9 +82,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
   List<PlaylistEntity> get _filtered {
     if (_query.isEmpty) return _ownedPlaylists;
     return _ownedPlaylists
-        .where(
-          (p) => p.name.toLowerCase().contains(_query.toLowerCase()),
-        )
+        .where((p) => p.name.toLowerCase().contains(_query.toLowerCase()))
         .toList();
   }
 
@@ -143,8 +141,10 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -153,7 +153,8 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
               if (name.isNotEmpty) _createAndSelect(name);
             },
             style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFF5500)),
+              foregroundColor: const Color(0xFFFF5500),
+            ),
             child: const Text('Create'),
           ),
         ],
@@ -233,21 +234,22 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: (v) => setState(() => _query = v),
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
-                        hintText:
-                            'Search ${_ownedPlaylists.length} playlists',
+                        hintText: 'Search ${_ownedPlaylists.length} playlists',
                         hintStyle: TextStyle(
-                            color: Colors.grey[600], fontSize: 14),
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
                         prefixIcon: const Icon(
                           Icons.search,
                           color: Colors.grey,
                           size: 18,
                         ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
                         isDense: true,
                       ),
                     ),
@@ -263,19 +265,14 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
           InkWell(
             onTap: _showCreateDialog,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
                   Container(
                     width: 52,
                     height: 52,
                     color: const Color(0xFF2A2A2A),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 28),
                   ),
                   const SizedBox(width: 12),
                   const Text(
@@ -308,8 +305,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                       _query.isEmpty
                           ? 'No playlists yet.\nTap "New playlist" to create one.'
                           : 'No playlists match "$_query"',
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: 14),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   )
@@ -318,8 +314,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final playlist = filtered[index];
-                      final isSelected =
-                          _selectedIds.contains(playlist.id);
+                      final isSelected = _selectedIds.contains(playlist.id);
                       return _PlaylistPickerRow(
                         playlist: playlist,
                         isSelected: isSelected,
@@ -336,8 +331,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
           // ── Fixed Done button ─────────────────────────────────
           Container(
             color: const Color(0xFF1C1C1C),
-            padding: EdgeInsets.fromLTRB(
-                24, 12, 24, bottomInset + 20),
+            padding: EdgeInsets.fromLTRB(24, 12, 24, bottomInset + 20),
             child: Center(
               child: SizedBox(
                 width: 160,
@@ -402,11 +396,7 @@ class _PlaylistPickerRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            PlaylistCoverImage(
-              playlist: playlist,
-              size: 52,
-              borderRadius: 0,
-            ),
+            PlaylistCoverImage(playlist: playlist, size: 52, borderRadius: 0),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -425,8 +415,7 @@ class _PlaylistPickerRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                        color: Colors.grey[500], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                 ],
               ),
@@ -441,16 +430,13 @@ class _PlaylistPickerRow extends StatelessWidget {
                     ? const Color(0xFFFF5500)
                     : Colors.transparent,
                 border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFFFF5500)
-                      : Colors.white38,
+                  color: isSelected ? const Color(0xFFFF5500) : Colors.white38,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: isSelected
-                  ? const Icon(Icons.check,
-                      size: 16, color: Colors.white)
+                  ? const Icon(Icons.check, size: 16, color: Colors.white)
                   : null,
             ),
           ],
