@@ -40,139 +40,171 @@ void main() {
 
     final homePage = HomePage(tester);
 
-    // ─── TC-HOME-001 | Home tab is visible ───────────────────────────────
+    // ─── TC-HOME-001 | Home tab is visible ──────────────────────────────
     await tryTest('TC-HOME-001 | Home tab is visible', () async {
       expect(homePage.isHeaderVisible(), true);
     });
 
-    // ─── TC-HOME-002 | Bottom nav bar is visible ──────────────────────────
+    // ─── TC-HOME-002 | Bottom nav bar is visible ─────────────────────────
     await tryTest('TC-HOME-002 | Bottom nav bar is visible', () async {
-        expect(homePage.isAllNavTabsVisible(), true);
+      expect(homePage.isAllNavTabsVisible(), true);
     });
 
-    // ─── TC-HOME-003 | All header elements are visible ────────────────────
+    // ─── TC-HOME-003 | All header elements are visible ───────────────────
     await tryTest('TC-HOME-003 | All header elements are visible', () async {
       expect(homePage.isAllHeaderElementsVisible(), true);
     });
 
-    // ─── TC-HOME-004 | tap message button & notifications button ───────────────
-    await tryTest('TC-HOME-004 | tap message button & notifications button', () async {
+    // ─── TC-HOME-004 | Tap message & notifications buttons ───────────────
+    await tryTest('TC-HOME-004 | Tap message button & notifications button', () async {
       await homePage.tapMessageButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       expect(homePage.isOnInboxPage(), true);
       await tester.pageBack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 2));
+
       await homePage.tapNotificationButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      expect (homePage.isOnNotificationsPage(), true);
+      await tester.pump(const Duration(seconds: 3));
+      expect(homePage.isOnNotificationsPage(), true);
       await tester.pageBack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 2));
     });
 
-  
-    // ─── TC-HOME-004 | Trending by genre visible — tap genres one by one ──
-    await tryTest('TC-HOME-004 | Trending by genre visible — tap genres one by one', () async {
+    // ─── TC-HOME-005 | Trending by genre — tap genres one by one ─────────
+    await tryTest('TC-HOME-005 | Trending by genre visible — tap genres one by one', () async {
       await homePage.scrollDownUntilVisible(trendingByGenreSection);
       expect(homePage.isTrendingByGenreVisible(), true);
-      for (final genre in ['Hip-Hop','Arabic Pop','Arabic Trap','R&B','Arabic Rock','Pop', 'Alternative Rock', 'Indie Rock']) {
+      for (final genre in ['Hip-Hop', 'Arabic Pop', 'Arabic Trap', 'R&B', 'Arabic Rock', 'Pop', 'Alternative Rock', 'Indie Rock']) {
         await homePage.tapGenreTab(genre);
       }
-      expect(homePage.isTrendingByGenreVisible(), true);
-
-      expect(homePage.isTrendingByGenreVisible(), true);
-      for (final genre in ['Alternative Rock','Pop','Arabic Rock','R&B','Arabic Trap','Arabic Pop', 'Hip-Hop', 'Indie Rock']) {
+      for (final genre in ['Alternative Rock', 'Pop', 'Arabic Rock', 'R&B', 'Arabic Trap', 'Arabic Pop', 'Hip-Hop', 'Indie Rock']) {
         await homePage.tapGenreTab(genre);
       }
       expect(homePage.isTrendingByGenreVisible(), true);
     });
 
-    // ─── TC-HOME-005 | User can scroll horizontally in the genre section ──
-    await tryTest('TC-HOME-005 | User can scroll horizontally in the genre section', () async {
+    // ─── TC-HOME-006 | Scroll horizontally in the genre section ──────────
+    await tryTest('TC-HOME-006 | User can scroll horizontally in the genre section', () async {
       await homePage.scrollHorizontallyInSection(genreTabBar);
     });
 
-    // ─── TC-HOME-006 | Hot For You section visible — play and stop track ──
-    await tryTest('TC-HOME-006 | Hot For You section visible — play and stop track', () async {
+    // ─── TC-HOME-007 | Hot For You — play then immediately pause ─────────
+    await tryTest('TC-HOME-007 | Hot For You section visible — play and stop track', () async {
       await homePage.scrollDownUntilVisible(hotForYouSection);
       expect(homePage.isActivityCardVisible(), true);
       await homePage.tapByKeyNow(hotForYouPlayButton);
       await tester.pump(const Duration(seconds: 1));
-      await homePage.tapByKeyNow(hotForYouPlayButton);
+      await homePage.tapByKeyNow(hotForYouPlayButton); // pause immediately
       await tester.pump(const Duration(seconds: 1));
       expect(homePage.isActionButtonVisible(), true);
+      await homePage.pauseIfPlaying();
     });
 
-    // ─── TC-HOME-007 | Mixed For You — scroll, open playlist, like, return ──
-    await tryTest('TC-HOME-007 | Mixed For You — scroll horizontally, open playlist, like, return', () async {
+    // ─── TC-HOME-008 | Mixed For You — scroll, open, like, return ────────
+    await tryTest('TC-HOME-008 | Mixed For You — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(mixedForYouSection);
       expect(homePage.isMixedForYouVisible(), true);
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.scrollHorizontallyInSection(mixedListView);
-      await homePage.tapMixedForYou();
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.tapPlaylistDetailLikeButton();
+      await tester.pump(const Duration(seconds: 1));
+      // Scroll only 100px so items remain at the list-view center for the tap.
+      await homePage.scrollHorizontallyInSection(mixedListView, -100);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byKey(const Key(mixedListView)), findsOneWidget,
+          reason: 'Mixed For You list must be loaded with data');
+      await tester.tap(find.byKey(const Key(mixedListView)), warnIfMissed: false);
+      await homePage.settle();
+
+      await homePage.tapMixDetailLikeButton();
+      await tester.pump(const Duration(milliseconds: 500));
+      await homePage.pauseIfPlaying();
       await homePage.mixedForYouBackButton();
-      await tester.pump(const Duration(seconds: 3));
+      await homePage.settle();
     });
 
-    // ─── TC-HOME-008 | Discover With Stations — scroll, open playlist, like, return
-    await tryTest('TC-HOME-008 | Discover With Stations — scroll horizontally, open playlist, like, return', () async {
+    // ─── TC-HOME-009 | Discover With Stations — scroll, open, like, return
+    await tryTest('TC-HOME-009 | Discover With Stations — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(discoverWithStationsSection);
       expect(homePage.isDiscoverWithStationsVisible(), true);
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.scrollHorizontallyInSection(discoverWithStationsSection);
-      await homePage.tapDiscoverWithStations();
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.tapPlaylistDetailLikeButton();
+      await tester.pump(const Duration(seconds: 1));
+      // Scroll only 100px so the first card stays at center for the tap.
+      await homePage.scrollHorizontallyInSection(discoverListView, -100);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byKey(const Key(discoverListView)), findsOneWidget,
+          reason: 'Discover With Stations list must be loaded with data');
+      await tester.tap(find.byKey(const Key(discoverListView)), warnIfMissed: false);
+      await homePage.settle();
+
+      // Station route opens RelatedTracksScreen — use its like/back keys.
+      await homePage.tapRelatedTracksLikeButton();
+      await tester.pump(const Duration(milliseconds: 500));
+      await homePage.pauseIfPlaying();
       await homePage.relatedTracksBackButton();
-      await tester.pump(const Duration(seconds: 3));
+      await homePage.settle();
     });
 
-    // ─── TC-HOME-009 | More of What You Like — scroll, open playlist, like, return
-    await tryTest('TC-HOME-009 | More of What You Like — scroll horizontally, open playlist, like, return', () async {
+    // ─── TC-HOME-010 | More of What You Like — scroll, open, like, return
+    await tryTest('TC-HOME-010 | More of What You Like — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(moreOfWhatYouLikeSection);
       expect(homePage.isMoreOfWhatYouLikeVisible(), true);
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.scrollHorizontallyInSection(moreListView);
-      await homePage.tapMoreOfWhatYouLike();
-      await tester.pump(const Duration(seconds: 3));
-      await homePage.tapPlaylistDetailLikeButton();
-      await homePage.relatedTracksBackButton();
-      await tester.pump(const Duration(seconds: 3));
-    });
+      await tester.pump(const Duration(seconds: 1));
+      // Scroll only 100px so the first card stays at center for the tap.
+      await homePage.scrollHorizontallyInSection(moreListView, -100);
+      await tester.pump(const Duration(milliseconds: 300));
 
-    // ── Feed Page test Case ──  
-    final feedPage =  FeedPage(tester);
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+      expect(find.byKey(const Key(moreListView)), findsOneWidget,
+          reason: 'More of What You Like list must be loaded with data');
+      await tester.tap(find.byKey(const Key(moreListView)), warnIfMissed: false);
+      await homePage.settle();
+
+      // More of What You Like opens RelatedTracksScreen — use its like/back keys.
+      await homePage.tapRelatedTracksLikeButton();
+      await tester.pump(const Duration(milliseconds: 500));
+      await homePage.pauseIfPlaying();
+      await homePage.relatedTracksBackButton();
+      await homePage.settle();
+    });
+    
+    await homePage.pauseIfPlaying();
+
+    // ══ Feed Page test cases ═════════════════════════════════════════════
+    final feedPage = FeedPage(tester);
+    await tester.pump(const Duration(seconds: 2));
     debugPrint('M7 - Feed Page - all scenarios');
+
     await tryTest('TC-FEED-001 | Navigate to feed page successfully', () async {
       await feedPage.tapFeedButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
     });
 
-    await tryTest('TC-FEED-002 | Tap following, discover buttons', () async {
+    await tryTest('TC-FEED-002 | Tap following & discover buttons', () async {
       await feedPage.tapFollowingButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       await feedPage.tapDiscoverButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       await feedPage.tapFollowingButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
     });
 
     await tryTest('TC-FEED-003 | Tap like button', () async {
       await feedPage.taplikeButton();
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     await tryTest('TC-FEED-004 | Tap comment button and navigate back', () async {
       await feedPage.tapCommentButton();
+      await tester.pump(const Duration(seconds: 2));
       await feedPage.closeComments();
+      await tester.pump(const Duration(seconds: 1));
     });
 
-    await tryTest('TC-FEED-005 | Drag Player page using Track card and navigate back', () async {
+    await tryTest('TC-FEED-005 | Open full player via track card and collapse back', () async {
       await feedPage.dragTrackCard();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       expect(feedPage.playerTrack(), true);
+      await homePage.pauseIfPlaying();
       await feedPage.tapDragtButton();
+      await tester.pump(const Duration(seconds: 2));
     });
 
     FlutterError.onError = originalOnError;

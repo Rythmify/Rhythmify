@@ -84,6 +84,15 @@ Future<void> tapMoreOfWhatYouLike() async {
   Future<void> tapPlaylistDetailLikeButton() async =>
       await tapByKeyNow(playlistDetailLikeButton);
 
+  /// Taps the like button on the Mix Detail page (Key: 'mix_detail_like_button').
+  Future<void> tapMixDetailLikeButton() async =>
+      await tapByKeyNow(mixDetailLikeButton);
+
+  /// Taps the like button on the Related Tracks page
+  /// (used by both /home/station/:id and /home/related-tracks/:id).
+  Future<void> tapRelatedTracksLikeButton() async =>
+      await tapByKeyNow(relatedTracksLikeButton);
+
   /// Tap the inbox button, verify navigation, then return to the home screen.
   Future<void> tapInboxAndReturn() async {
     await tapByKey(homeInboxButton);
@@ -122,9 +131,23 @@ Future<void> tapMoreOfWhatYouLike() async {
   }
   /// Overrides BasePage to use pump instead of pumpAndSettle so horizontal
   /// scrolls do not block when audio is playing in the background.
+  /// [dx] is the horizontal drag distance in logical pixels (negative = scroll left).
   @override
-  Future<void> scrollHorizontallyInSection(String sectionKey) async {
-    await tester.drag(find.byKey(Key(sectionKey)), const Offset(-300, 0));
+  Future<void> scrollHorizontallyInSection(String sectionKey, [double dx = -300]) async {
+    await tester.drag(find.byKey(Key(sectionKey)), Offset(dx, 0));
     await tester.pump(const Duration(milliseconds: 500));
   }
+
+  Future<void> pauseIfPlaying() async {
+  final pauseFinder = find.byKey(const Key(playerMiniPlayerPlayPauseButton ));
+  if (pauseFinder.evaluate().isNotEmpty) {
+    await tester.tap(pauseFinder, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+}
+
+Future<void> settle([Duration d = const Duration(seconds: 3)]) async {
+  await tester.pump(d);
+  await tester.pump(const Duration(milliseconds: 500));
+}
 }

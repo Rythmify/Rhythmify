@@ -134,6 +134,7 @@ const String playerMiniPlayerTitle          = 'player_mini_player_title_text';
 const String playerMiniPlayerArtist         = 'player_mini_player_artist_text';
 const String playerMiniPlayerFollowButton   = 'player_mini_player_follow_icon_button';
 const String playerMiniPlayerLikeButton     = 'player_mini_player_like_icon_button';
+const String playerMiniPlayerPlayPauseButton = 'player_mini_progress_button_toggle_play_pause_gesturedetector';
 const String playerCollapseButton           = 'player_collapse_button';
 const String playerProgressBarDuration      = 'player_progress_bar_duration_text';
 const String playerActionBarFavorite        = 'player_action_bar_favorite_icon';
@@ -435,6 +436,13 @@ const String playlistDetailMoreButton       = 'playlist_detail_more_button';
 const String playlistDetailShuffleButton    = 'playlist_detail_shuffle_button';
 const String playlistDetailPlayButton       = 'playlist_detail_play_button';
 const String refreshSuggestionsButton       = 'refresh_suggestions_button';
+
+// ---- Mix Detail Page (/home/mix/:id → MixDetailScreen) ----
+const String mixDetailBackButton            = 'mix_detail_back_button';
+const String mixDetailLikeButton            = 'mix_detail_like_button';
+
+// ---- Related Tracks Page (/home/station/:id and /home/related-tracks/:id → RelatedTracksScreen) ----
+const String relatedTracksLikeButton        = 'related_tracks_like_button';
 
 // --- Sheets / Dialogs ---
 const String createPlaylistNameField        = 'create_playlist_name_field';
