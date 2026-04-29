@@ -75,7 +75,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     setState(() => _isSaving = true);
 
     try {
-      // 1. Remove tracks deleted in the edit sheet
       final originalTracks = ref.read(playlistDetailProvider).tracks;
       for (final original in originalTracks) {
         if (!_tracks.any((t) => t.id == original.id)) {
@@ -85,7 +84,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
         }
       }
 
-      // 2. Update playlist metadata on backend
       await ref
           .read(playlistListProvider.notifier)
           .updatePlaylist(
@@ -95,7 +93,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
             description: _descController.text.trim(),
           );
 
-      // 3. Upload cover if picked
       if (_pickedCoverFile != null) {
         final ds = ref.read(playlistDatasourceProvider);
         await ds.updatePlaylist(
@@ -110,7 +107,6 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
             );
       }
 
-      // 4. Reload detail
       ref.read(playlistDetailProvider.notifier).reload();
 
       if (mounted) Navigator.of(context).pop();
@@ -128,47 +124,25 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     }
   }
 
-  Future<void> _convert(PlaylistType targetType) async {
-    // Close confirm dialog
-    Navigator.of(context).pop();
+  Future<void> _convert(
+    BuildContext dialogContext,
+    PlaylistType targetType,
+  ) async {
+    // 1. Close the confirm dialog
+    Navigator.of(dialogContext).pop();
+    // 2. Close the edit sheet immediately so it doesn't linger
+    if (mounted) Navigator.of(context).pop();
 
-    // Capture notifier references BEFORE any async gap
+    // Capture refs before any async gap
     final listNotifier = ref.read(playlistListProvider.notifier);
     final detailNotifier = ref.read(playlistDetailProvider.notifier);
     final onConverted = widget.onConverted;
     final playlistId = widget.playlistId;
 
-    if (targetType == PlaylistType.station) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const AlertDialog(
-          backgroundColor: Color(0xFF1E1E1E),
-          content: Row(
-            children: [
-              CircularProgressIndicator(color: Color(0xFFFF5500)),
-              SizedBox(width: 20),
-              Text(
-                'Building your station...',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      await listNotifier.convertToStation(playlistId);
-
-      if (mounted) Navigator.of(context).pop(); // close loading dialog
-      if (mounted) Navigator.of(context).pop(); // close edit sheet
+    if (targetType == PlaylistType.album) {
+      await listNotifier.convertToAlbum(playlistId);
     } else {
-      Navigator.of(context).pop(); // close edit sheet
-
-      if (targetType == PlaylistType.album) {
-        await listNotifier.convertToAlbum(playlistId);
-      } else {
-        await listNotifier.convertToPlaylist(playlistId);
-      }
+      await listNotifier.convertToPlaylist(playlistId);
     }
 
     detailNotifier.reload();
@@ -200,7 +174,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           child: Column(
             children: [
               const BottomSheetHandle(),
-              // ── Top bar ──────────────────────────────────────────────────
+
+              // ── Top bar ─────────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Row(
@@ -250,12 +225,13 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                   ],
                 ),
               ),
-              // ── Body ─────────────────────────────────────────────────────
+
+              // ── Body ────────────────────────────────────────────────────
               Expanded(
                 child: ListView(
                   controller: scrollController,
                   children: [
-                    // ── Cover picker ──────────────────────────────────────
+                    // ── Cover picker ────────────────────────────────────
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -316,7 +292,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                       ),
                     ),
 
-                    // ── Fields ────────────────────────────────────────────
+                    // ── Fields ──────────────────────────────────────────
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -418,7 +394,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── Convert To ────────────────────────────────────────
+                    // ── Convert To ───────────────────────────────────────
+                    // Playlist → Album  |  Album → Playlist
+                    // Station removed — no backend implementation
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: Text(
@@ -439,7 +417,8 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                       ),
                       child: Column(
                         children: [
-                          if (_currentType != PlaylistType.album)
+                          // Playlist → Album
+                          if (_currentType == PlaylistType.playlist)
                             _ConvertTile(
                               key: const Key('edit_convert_to_album'),
                               icon: Icons.album,
@@ -451,31 +430,14 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                                 label: 'album',
                               ),
                             ),
-                          if (_currentType == PlaylistType.playlist)
-                            const Divider(
-                              color: Colors.white10,
-                              height: 1,
-                              indent: 16,
-                            ),
-                          if (_currentType != PlaylistType.station)
-                            _ConvertTile(
-                              key: const Key('edit_convert_to_station'),
-                              icon: Icons.radio,
-                              label: 'Convert to Station',
-                              sublabel:
-                                  'Shows "Based on [artist]" in the header',
-                              onTap: () => _showConvertConfirm(
-                                context,
-                                targetType: PlaylistType.station,
-                                label: 'station',
-                              ),
-                            ),
-                          if (_currentType != PlaylistType.playlist)
+                          // Album → Playlist
+                          if (_currentType == PlaylistType.album)
                             _ConvertTile(
                               key: const Key('edit_convert_to_playlist'),
                               icon: Icons.queue_music,
                               label: 'Convert to Playlist',
-                              sublabel: 'Removes album/station label',
+                              sublabel:
+                                  'Removes album label, moves to Playlists',
                               onTap: () => _showConvertConfirm(
                                 context,
                                 targetType: PlaylistType.playlist,
@@ -487,7 +449,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── Track list ────────────────────────────────────────
+                    // ── Track list ───────────────────────────────────────
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -508,7 +470,9 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                         );
                       },
                     ),
-                    const SizedBox(height: 40),
+
+                    // Bottom padding for player bar
+                    const SizedBox(height: 140),
                   ],
                 ),
               ),
@@ -524,14 +488,14 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
       return Image.file(
         File(url),
         fit: BoxFit.cover,
-        errorBuilder: (e, s, t) =>
+        errorBuilder: (_, __, ___) =>
             const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
       );
     }
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (e, s, t) =>
+      errorBuilder: (_, __, ___) =>
           const Icon(Icons.camera_alt, color: Colors.white54, size: 36),
     );
   }
@@ -543,7 +507,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
   }) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         title: Text(
           'Convert to $label?',
@@ -556,7 +520,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
         actions: [
           TextButton(
             key: Key('convert_cancel_$label'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text(
               'Cancel',
               style: TextStyle(color: Colors.white54),
@@ -564,7 +528,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
           ),
           TextButton(
             key: Key('convert_confirm_$label'),
-            onPressed: () => _convert(targetType),
+            onPressed: () => _convert(dialogContext, targetType),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFFF5500),
             ),
@@ -579,10 +543,10 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
     switch (type) {
       case PlaylistType.album:
         return 'Moves this to your Albums section and shows the release year in the header.';
-      case PlaylistType.station:
-        return 'Moves this to your Stations section and shows "Based on [artist]" in the header.';
       case PlaylistType.playlist:
-        return 'Moves this back to your Playlists section and removes the album/station label.';
+        return 'Moves this back to your Playlists section and removes the album label.';
+      case PlaylistType.station:
+        return '';
     }
   }
 }

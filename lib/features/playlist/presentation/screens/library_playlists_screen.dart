@@ -129,7 +129,16 @@ class _LibraryPlaylistsScreenState
   }
 
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
-    var result = input.toList();
+    // KEY FIX: filter out albums — they belong in the albums screen, not here.
+    // Track radios and mixes are allowed (they show as Radio/Mix label).
+    var result = input
+        .where(
+          (p) =>
+              p.type == PlaylistType.playlist ||
+              p.isGeneratedMix ||
+              p.isTrackRadio,
+        )
+        .toList();
 
     if (_searchQuery.isNotEmpty) {
       result = result
@@ -490,6 +499,8 @@ class _LibraryPlaylistsScreenState
     );
   }
 
+  // REPLACE _showOptions in library_playlists_screen.dart with this:
+
   void _showOptions(
     BuildContext context,
     PlaylistEntity playlist,
@@ -499,12 +510,24 @@ class _LibraryPlaylistsScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // KEY FIX: pass the playlist entity so the sheet loads the correct
-      // playlist — not whatever playlistDetailProvider last held.
       builder: (_) => PlaylistOptionsSheet(
         playlistId: playlist.id,
         playlist: playlist,
         isOwner: isOwner,
+        // When converted to album, navigate to album library
+        onConverted: (newType) {
+          switch (newType) {
+            case PlaylistType.album:
+              context.go('/library/albums');
+            case PlaylistType.station:
+              context.go('/library/stations');
+            case PlaylistType.playlist:
+              // Already on playlist screen, just reload
+              _loadAll();
+          }
+        },
+        // When deleted, just reload the list
+        onDeleted: _loadAll,
       ),
     );
   }

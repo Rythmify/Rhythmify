@@ -141,17 +141,40 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     return '$count';
   }
 
-  /// Shows copy sheet pre-filled with "Copy of <name>".
-  /// On create, opens the new owned playlist with full edit UI.
+  String _formatDuration(Duration d) {
+    if (d.inSeconds == 0) return '';
+    if (d.inHours > 0) {
+      return '${d.inHours}h ${d.inMinutes.remainder(60)}m';
+    }
+    final m = d.inMinutes;
+    final s = d.inSeconds.remainder(60);
+    return m > 0 ? '${m}m ${s}s' : '${s}s';
+  }
+
+  String _buildSubtitle(
+    PlaylistEntity playlist,
+    int trackCount,
+    String duration,
+  ) {
+    final label = playlist.isGeneratedMix
+        ? 'Mix'
+        : playlist.isTrackRadio
+        ? 'Radio'
+        : playlist.typeLabel;
+    final tracks = trackCount == 1 ? '1 track' : '$trackCount tracks';
+    if (duration.isNotEmpty && trackCount > 0) {
+      return '$label · $tracks · $duration';
+    }
+    return '$label · $tracks';
+  }
+
   void _showCopySheet(BuildContext context, PlaylistEntity playlist) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _CopyPlaylistSheet(
-        sourcePlaylistId: playlist.id,
-        defaultName: 'Copy of ${playlist.name}',
-        isPublic: playlist.isPublic,
+        sourceEntity: playlist,
         onCreated: (newId) {
           context.push('/library/playlists/$newId', extra: true);
         },
@@ -164,11 +187,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     final state = ref.watch(playlistDetailProvider);
     final playlist = state.playlist;
 
-    // KEY FIX: suggestions are ONLY shown when ALL of these are true:
-    // 1. widget.isOwner=true (passed from router — true only for owned playlists)
-    // 2. playlist is not a track radio or generated mix (double-safety guard)
-    // 3. playlist type is regular playlist (not album/station)
-    // 4. not already requested this session
+    // Suggestions only for owned regular playlists — never radios or mixes
     final canShowSuggestions =
         widget.isOwner &&
         !state.isLoading &&
@@ -214,218 +233,75 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         playlist.type == PlaylistType.playlist &&
         (state.isSuggestionsLoading || state.suggestions.isNotEmpty);
 
-    // Duration display
-    final totalDuration = state.totalDuration;
-    final durationText = _formatDuration(totalDuration);
+    final durationText = _formatDuration(state.totalDuration);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    key: const Key('playlist_detail_back_button'),
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: AppTheme.textPrimary,
-                      size: 28,
-                    ),
-                    onPressed: () => context.pop(),
-                  ),
-                  _CoverImage(
-                    coverUrl: coverUrl,
-                    name: playlist.name,
-                    size: 56,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          playlist.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTheme.bodyNormal,
-                        ),
-                        const SizedBox(height: 2),
-                        // Track count + duration
-                        Text(
-                          _buildSubtitle(
-                            playlist,
-                            state.tracks.length,
-                            durationText,
-                          ),
-                          style: AppTheme.labelSmall,
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              playlist.type == PlaylistType.station
-                                  ? 'Based on '
-                                  : 'By ',
-                              style: AppTheme.labelSmall,
-                            ),
-                            Flexible(
-                              child: Text(
-                                playlist.type == PlaylistType.station
-                                    ? (playlist.seedArtistName ??
-                                          playlist.ownerName)
-                                    : playlist.ownerName.isNotEmpty
-                                    ? playlist.ownerName
-                                    : 'You',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTheme.labelSmall.copyWith(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            // ── Fixed header (compact) ────────────────────────────────────
+            _PlaylistHeader(
+              playlist: playlist,
+              coverUrl: coverUrl,
+              trackCount: state.tracks.length,
+              subtitle: _buildSubtitle(
+                playlist,
+                state.tracks.length,
+                durationText,
               ),
-            ),
-
-            // ── Action bar ────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    key: const Key('playlist_detail_like_button'),
-                    onTap: () =>
-                        ref.read(playlistDetailProvider.notifier).toggleLike(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          playlist.isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: playlist.isLiked
-                              ? AppTheme.primaryBrand
-                              : AppTheme.textPrimary,
-                          size: 24,
-                        ),
-                        if (playlist.likeCount > 0) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatCount(playlist.likeCount),
-                            style: AppTheme.labelSmall.copyWith(
-                              color: playlist.isLiked
-                                  ? AppTheme.primaryBrand
-                                  : AppTheme.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    key: const Key('playlist_detail_more_button'),
-                    icon: const Icon(
-                      Icons.more_horiz,
-                      color: AppTheme.textPrimary,
-                      size: 24,
-                    ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => PlaylistOptionsSheet(
-                          playlistId: widget.playlistId,
-                          isOwner: widget.isOwner,
-                          onConverted: (newType) {
-                            switch (newType) {
-                              case PlaylistType.album:
-                                context.go('/library/albums');
-                              case PlaylistType.station:
-                                context.go('/library/stations');
-                              case PlaylistType.playlist:
-                                context.go('/library/playlists');
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                  // Copy button — visible for non-owned (mixes, radios, liked)
-                  if (!widget.isOwner)
-                    IconButton(
-                      key: const Key('playlist_detail_copy_button'),
-                      icon: const Icon(
-                        Icons.copy_all,
-                        color: AppTheme.textSecondary,
-                        size: 22,
-                      ),
-                      onPressed: () => _showCopySheet(context, playlist),
-                      tooltip: 'Copy to my playlists',
-                    ),
-                  const Spacer(),
-                  IconButton(
-                    key: const Key('playlist_detail_shuffle_button'),
-                    icon: const Icon(
-                      Icons.shuffle,
-                      color: AppTheme.textSecondary,
-                      size: 24,
-                    ),
-                    onPressed: _shuffle,
-                  ),
-                  GestureDetector(
-                    key: const Key('playlist_detail_play_button'),
-                    onTap: _playAll,
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.lighterSurface,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: AppTheme.textPrimary,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                ],
+              isOwner: widget.isOwner,
+              onBack: () => context.pop(),
+              onLike: () =>
+                  ref.read(playlistDetailProvider.notifier).toggleLike(),
+              onMore: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => PlaylistOptionsSheet(
+                  playlistId: widget.playlistId,
+                  isOwner: widget.isOwner,
+                  onConverted: (newType) {
+                    switch (newType) {
+                      case PlaylistType.album:
+                        context.go('/library/albums');
+                      case PlaylistType.station:
+                        context.go('/library/stations');
+                      case PlaylistType.playlist:
+                        context.go('/library/playlists');
+                    }
+                  },
+                  // Pop detail screen after delete
+                  onDeleted: () => context.pop(),
+                ),
               ),
+              onCopy: !widget.isOwner
+                  ? () => _showCopySheet(context, playlist)
+                  : null,
+              onShuffle: _shuffle,
+              onPlay: _playAll,
+              formatCount: _formatCount,
             ),
 
             const Divider(color: AppTheme.lighterSurface, height: 1),
 
-            // ── Track list + suggestions ───────────────────────────────────
+            // ── Scrollable track list — takes remaining 2/3+ of screen ────
             Expanded(
               child: ListView(
+                padding: EdgeInsets.zero,
                 children: [
                   if (state.tracks.isEmpty && !showSuggestionsSection)
                     _emptyTracksState(playlist)
                   else
                     ...state.tracks.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final track = entry.value;
                       return TrackTileInPlaylist(
-                        key: Key('playlist_track_${track.id}'),
-                        track: track,
-                        onTap: () => _playFrom(index),
+                        key: Key('playlist_track_${entry.value.id}'),
+                        track: entry.value,
+                        onTap: () => _playFrom(entry.key),
                       );
                     }),
 
-                  // Suggestions — ONLY owned regular playlists, never radios/mixes
+                  // Suggestions — ONLY owned regular playlists
                   if (showSuggestionsSection) ...[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
@@ -446,12 +322,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       )
                     else
                       ...state.suggestions.map(
-                        (suggestion) => TrackTileInPlaylist(
-                          key: Key('suggestion_${suggestion.id}'),
-                          track: suggestion,
-                          onTap: () => _fetchAndPlay(suggestion),
+                        (s) => TrackTileInPlaylist(
+                          key: Key('suggestion_${s.id}'),
+                          track: s,
+                          onTap: () => _fetchAndPlay(s),
                           trailingWidget: IconButton(
-                            key: Key('add_suggestion_${suggestion.id}'),
+                            key: Key('add_suggestion_${s.id}'),
                             icon: const Icon(
                               Icons.add_box_outlined,
                               color: AppTheme.textSecondary,
@@ -459,7 +335,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                             ),
                             onPressed: () => ref
                                 .read(playlistDetailProvider.notifier)
-                                .addSuggestion(suggestion),
+                                .addSuggestion(s),
                           ),
                         ),
                       ),
@@ -489,6 +365,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       ),
                   ],
 
+                  // Bottom padding for player bar
                   const SizedBox(height: 140),
                 ],
               ),
@@ -497,35 +374,6 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         ),
       ),
     );
-  }
-
-  String _buildSubtitle(
-    PlaylistEntity playlist,
-    int trackCount,
-    String duration,
-  ) {
-    final label = playlist.isGeneratedMix
-        ? 'Mix'
-        : playlist.isTrackRadio
-        ? 'Radio'
-        : playlist.typeLabel;
-    final tracks = trackCount == 1 ? '1 track' : '$trackCount tracks';
-    if (duration.isNotEmpty && trackCount > 0) {
-      return '$label · $tracks · $duration';
-    }
-    return '$label · $tracks';
-  }
-
-  String _formatDuration(Duration d) {
-    if (d.inSeconds == 0) return '';
-    if (d.inHours > 0) {
-      final h = d.inHours;
-      final m = d.inMinutes.remainder(60);
-      return '${h}h ${m}m';
-    }
-    final m = d.inMinutes;
-    final s = d.inSeconds.remainder(60);
-    return m > 0 ? '${m}m ${s}s' : '${s}s';
   }
 
   Widget _emptyTracksState(PlaylistEntity playlist) {
@@ -553,20 +401,205 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   }
 }
 
+// ── Compact fixed header extracted to its own widget ─────────────────────────
+// Keeps the detail screen's Column clean and prevents overflow.
+class _PlaylistHeader extends StatelessWidget {
+  const _PlaylistHeader({
+    required this.playlist,
+    required this.coverUrl,
+    required this.trackCount,
+    required this.subtitle,
+    required this.isOwner,
+    required this.onBack,
+    required this.onLike,
+    required this.onMore,
+    required this.onShuffle,
+    required this.onPlay,
+    required this.formatCount,
+    this.onCopy,
+  });
+
+  final PlaylistEntity playlist;
+  final String? coverUrl;
+  final int trackCount;
+  final String subtitle;
+  final bool isOwner;
+  final VoidCallback onBack;
+  final VoidCallback onLike;
+  final VoidCallback onMore;
+  final VoidCallback? onCopy;
+  final VoidCallback onShuffle;
+  final VoidCallback onPlay;
+  final String Function(int) formatCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Title row ────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+          child: Row(
+            children: [
+              IconButton(
+                key: const Key('playlist_detail_back_button'),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: AppTheme.textPrimary,
+                  size: 28,
+                ),
+                onPressed: onBack,
+              ),
+              _CoverImage(coverUrl: coverUrl, name: playlist.name, size: 52),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      playlist.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTheme.bodyNormal,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: AppTheme.labelSmall),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          playlist.type == PlaylistType.station
+                              ? 'Based on '
+                              : 'By ',
+                          style: AppTheme.labelSmall,
+                        ),
+                        Flexible(
+                          child: Text(
+                            playlist.type == PlaylistType.station
+                                ? (playlist.seedArtistName ??
+                                      playlist.ownerName)
+                                : playlist.ownerName.isNotEmpty
+                                ? playlist.ownerName
+                                : 'You',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.labelSmall.copyWith(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ── Action bar ───────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          child: Row(
+            children: [
+              // Like button
+              GestureDetector(
+                key: const Key('playlist_detail_like_button'),
+                onTap: onLike,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      playlist.isLiked ? Icons.favorite : Icons.favorite_border,
+                      color: playlist.isLiked
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
+                      size: 24,
+                    ),
+                    if (playlist.likeCount > 0) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        formatCount(playlist.likeCount),
+                        style: AppTheme.labelSmall.copyWith(
+                          color: playlist.isLiked
+                              ? AppTheme.primaryBrand
+                              : AppTheme.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              // More button
+              IconButton(
+                key: const Key('playlist_detail_more_button'),
+                icon: const Icon(
+                  Icons.more_horiz,
+                  color: AppTheme.textPrimary,
+                  size: 24,
+                ),
+                onPressed: onMore,
+              ),
+              // Copy button (non-owned only)
+              if (onCopy != null)
+                IconButton(
+                  key: const Key('playlist_detail_copy_button'),
+                  icon: const Icon(
+                    Icons.copy_all,
+                    color: AppTheme.textSecondary,
+                    size: 22,
+                  ),
+                  onPressed: onCopy,
+                  tooltip: 'Copy to my playlists',
+                ),
+              const Spacer(),
+              // Shuffle
+              IconButton(
+                key: const Key('playlist_detail_shuffle_button'),
+                icon: const Icon(
+                  Icons.shuffle,
+                  color: AppTheme.textSecondary,
+                  size: 24,
+                ),
+                onPressed: onShuffle,
+              ),
+              // Play
+              GestureDetector(
+                key: const Key('playlist_detail_play_button'),
+                onTap: onPlay,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.lighterSurface,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: AppTheme.textPrimary,
+                    size: 26,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ── Copy playlist sheet ───────────────────────────────────────────────────────
-// Shows CreatePlaylistSheet UI pre-filled with "Copy of <name>".
-// On create, copies all tracks from the source into the new playlist.
 class _CopyPlaylistSheet extends ConsumerStatefulWidget {
   const _CopyPlaylistSheet({
-    required this.sourcePlaylistId,
-    required this.defaultName,
-    required this.isPublic,
+    required this.sourceEntity,
     required this.onCreated,
   });
 
-  final String sourcePlaylistId;
-  final String defaultName;
-  final bool isPublic;
+  final PlaylistEntity sourceEntity;
   final void Function(String newPlaylistId) onCreated;
 
   @override
@@ -581,8 +614,10 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
   @override
   void initState() {
     super.initState();
-    _isPublic = widget.isPublic;
-    _nameController = TextEditingController(text: widget.defaultName);
+    _isPublic = widget.sourceEntity.isPublic;
+    _nameController = TextEditingController(
+      text: 'Copy of ${widget.sourceEntity.name}',
+    );
     _nameController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _nameController.text.length,
@@ -600,15 +635,19 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
     if (name.isEmpty || _isCreating) return;
     setState(() => _isCreating = true);
 
-    // Create the new playlist with the given name
-    final created = await ref
+    final newId = await ref
         .read(playlistListProvider.notifier)
-        .createPlaylist(name: name, isPublic: _isPublic);
+        .copyPlaylist(
+          widget.sourceEntity.id,
+          overrideName: name,
+          overridePublic: _isPublic,
+          sourceEntity: widget.sourceEntity,
+        );
 
     if (!mounted) return;
+    setState(() => _isCreating = false);
 
-    if (created == null) {
-      setState(() => _isCreating = false);
+    if (newId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Could not create playlist. Try again.'),
@@ -618,17 +657,8 @@ class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
       return;
     }
 
-    // Copy tracks from source into new playlist
-    final newId = await ref
-        .read(playlistListProvider.notifier)
-        .copyPlaylist(widget.sourcePlaylistId);
-
-    if (!mounted) return;
-    setState(() => _isCreating = false);
     Navigator.of(context).pop();
-
-    // Navigate to the newly created owned playlist
-    widget.onCreated(newId ?? created.id);
+    widget.onCreated(newId);
   }
 
   @override
@@ -759,7 +789,7 @@ class _CoverImage extends StatelessWidget {
             ? Image.network(
                 coverUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _placeholder(),
+                errorBuilder: (_, __, ___) => _placeholder(),
               )
             : _placeholder(),
       ),
@@ -773,7 +803,7 @@ class _CoverImage extends StatelessWidget {
         name.isNotEmpty ? name[0].toUpperCase() : 'P',
         style: const TextStyle(
           color: AppTheme.textSecondary,
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
         ),
       ),

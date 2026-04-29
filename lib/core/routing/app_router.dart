@@ -10,6 +10,8 @@ import 'package:rythmify/features/settings/presentation/pages/app_icon_screen.da
 import 'package:rythmify/features/settings/presentation/pages/imported_music_providers_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/notification_settings_screen.dart';
 import 'package:rythmify/features/settings/presentation/pages/social_settings_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/upgrade_icon_screen.dart';
+import 'package:rythmify/features/settings/presentation/pages/delete_account_screen.dart';
 import '../presentation/scaffold/main_app_scaffold.dart';
 
 //  Auth imports
@@ -96,6 +98,7 @@ import '../../features/notifications/presentation/pages/notifications_screen.dar
 import '../../features/premium/presentation/screens/upgrade_screen.dart';
 import '../../features/premium/presentation/screens/upgrade_landing_screen.dart';
 import '../../features/premium/presentation/screens/checkout_screen.dart';
+import '../../features/premium/presentation/screens/cancellation_screen.dart';
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -464,6 +467,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                       GoRoute(
                         path: 'account',
                         builder: (context, state) => const AccountScreen(),
+                        routes: [
+                          GoRoute(
+                            path: 'delete-account',
+                            builder: (context, state) =>
+                                const DeleteAccountScreen(),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'basic-settings',
@@ -473,6 +483,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                           GoRoute(
                             path: 'app-icons',
                             builder: (context, state) => const AppIconScreen(),
+                            routes: [
+                              GoRoute(
+                                path: 'premium-apps',
+                                builder: (context, state) =>
+                                    const UpgradeIconScreen(),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -620,6 +637,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: '/cancellation',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CancellationScreen(),
       ),
       GoRoute(
         path: '/player',
