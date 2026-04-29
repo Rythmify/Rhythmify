@@ -21,6 +21,8 @@ import '../../../../track_upload/presentation/screens/upload_track_screen.dart';
 import 'bottom_sheet_container.dart';
 import 'track_sheet_header.dart';
 
+//add to playlist HANA (this import +on tap action)
+import '../../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
 // 1. Define the modes
 enum TrackModalMode { share, info }
 
@@ -307,14 +309,18 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Play Last',
                     onTap: () {},
                   ),
-                  _buildActionRow(
-                    key: const Key(
-                      'track_options_action_add_to_playlist_inkwell',
-                    ),
-                    icon: Icons.queue_music,
-                    label: 'Add to Playlist',
-                    onTap: () {},
-                  ),
+  _buildActionRow(
+    key: const Key('track_options_action_add_to_playlist_inkwell'),
+    icon: Icons.queue_music,
+    label: 'Add to Playlist',
+    onTap: () {
+      Navigator.of(context).pop(); // close the track options sheet first
+      showAddToPlaylistSheet(
+        context,
+        trackId: syncedTrack.id,
+      );
+    },
+  ),
                   _buildActionRow(
                     key: const Key(
                       'track_options_action_start_station_inkwell',
