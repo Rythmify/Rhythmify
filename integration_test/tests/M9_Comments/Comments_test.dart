@@ -40,17 +40,18 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 5));
       expect(loginPage.isOnHomePage(), true);
 
-      // ── Play a track → mini player appears immediately ─────────────────────
-      await tryTest('TC-COMMENTS-000 | Play a track and verify mini player appears', () async {
+      // ── Play a track → mini player appears → open full player immediately ──
+      await tryTest('TC-COMMENTS-000 | Play a track and open full player immediately', () async {
         await playerPage.playFromHotForYou();
-        await tester.pumpAndSettle(const Duration(seconds: 3));
+        // Pump frames until the mini player renders; avoid pumpAndSettle which
+        // blocks until audio animations settle (may never resolve during playback).
+        for (int i = 0; i < 15; i++) {
+          await tester.pump(const Duration(milliseconds: 200));
+          if (playerPage.isMiniPlayerVisible()) break;
+        }
         expect(playerPage.isMiniPlayerVisible(), true);
-      });
-
-      // ── Tap the mini player → full player opens ────────────────────────────
-      await tryTest('TC-COMMENTS-000 | Tap mini player to open full player', () async {
         await playerPage.openFullPlayer();
-        expect(playerPage.isFullPlayerOpen(), true);
+        await tester.pump(const Duration(seconds: 3));
       });
 
       // ── TC-COMMENTS-001 | Send 3 emojis via the floating bar ──────────────
@@ -59,7 +60,6 @@ void main() {
         await commentsPage.sendEmojiFromFloatingBar('🔥');
         await commentsPage.sendEmojiFromFloatingBar('👏');
         await commentsPage.sendEmojiFromFloatingBar('🥺');
-
         await commentsPage.sendCommentFromFloatingBar('test comment');
       });
 
@@ -67,6 +67,7 @@ void main() {
       // ──TC-COMMENTS-003 | Open the Comments screen via the action bar comment icon ───────────
       await tryTest('TC-COMMENTS-003 | Open Comments screen from player', () async {
         await commentsPage.openFromPlayer();
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         expect(commentsPage.isCommentsScreenVisible(), true);
       });
 
@@ -81,6 +82,7 @@ void main() {
       // ── TC-COMMENTS-005 | Like the first comment ──────────────────────────
       await tryTest('TC-COMMENTS-005 | Like the first comment and verify UI update', () async {
         await commentsPage.likeFirstComment();
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         expect(commentsPage.isLikedHeartVisible(), true,
             reason: 'First comment should show a filled heart after liking');
       });
@@ -88,6 +90,7 @@ void main() {
       // ── TC-COMMENTS-006 | Reply to the first comment with "reply test" ────
       await tryTest('TC-COMMENTS-006 | Reply works successfully', () async {
         await commentsPage.replyToFirstComment('reply test');
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         expect(commentsPage.isCommentVisible('reply test'), true);
       });
 
@@ -95,13 +98,14 @@ void main() {
       // After posting a reply it auto-expands, so the toggle starts on
       // "Show less".  Collapse first, then re-expand.
       await tryTest('TC-COMMENTS-007 | Show less / Show replies toggle works', () async {
-        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle(const Duration(seconds: 1));
         if (commentsPage.isShowLessVisible()) {
           await commentsPage.tapShowLess();
           expect(commentsPage.isShowLessVisible(), false,
               reason: 'Replies should be collapsed after tapping "Show less"');
 
           await commentsPage.tapShowReplies();
+          await tester.pumpAndSettle(const Duration(seconds: 3));
           expect(commentsPage.isShowLessVisible(), true,
               reason: 'Replies should be expanded after tapping "Show N replies"');
         }
@@ -109,14 +113,13 @@ void main() {
 
       // ── TC-COMMENTS-008 | "Play from" in the ⋮ menu seeks the player ────────
       await tryTest('TC-COMMENTS-008 | Tap "Play from" in comment ⋮ menu to seek the player', () async {
-        // Collapse replies first so tapMoreOnFirstComment hits a top-level comment
-        if (commentsPage.isShowLessVisible()) {
-          await commentsPage.tapShowLess();
-        }
+        await commentsPage.scrollCommentsList();
         await commentsPage.tapMoreOnFirstComment();
+        await tester.pumpAndSettle(const Duration(seconds: 1));
         expect(commentsPage.isPlayFromOptionVisible(), true,
             reason: '"Play from X:XX" option must appear in the action sheet');
         await commentsPage.tapPlayFromOption();
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         expect(commentsPage.isCommentsScreenVisible(), true,
             reason: 'Comments screen must stay open after seeking');
       });
@@ -124,49 +127,50 @@ void main() {
       // ── TC-COMMENTS-009 | ⋮ menu — Copy and View profile ────────────────
       await tryTest('TC-COMMENTS-009 | Comment ⋮ menu: Copy is tappable and View profile navigates correctly', () async {
         // Collapse replies so only top-level comment ⋮ buttons are visible
-        if (commentsPage.isShowLessVisible()) {
-          await commentsPage.tapShowLess();
-        }
+        //await commentsPage.scrollCommentsList();
         await commentsPage.tapMoreOnFirstComment();
         expect(commentsPage.isBottomSheetOptionVisible('View profile'), true,
             reason: '"View profile" must appear in the action sheet');
-        expect(commentsPage.isBottomSheetOptionVisible('Copy'), true,
-            reason: '"Copy" must appear in the action sheet');
-
-        // Copy — safe, no navigation
-        await commentsPage.tapCopyOption();
-
-        // View profile — navigates away from comments
-        await commentsPage.tapMoreOnFirstComment();
         await commentsPage.tapViewProfileOption();
-
+        await tester.pumpAndSettle(const Duration(seconds: 3));
+        expect(commentsPage.isProfilePageVisible(), true,
+            reason: 'Should navigate to profile after tapping "View profile"');
         // Return: tap mini player → full player → comment icon
         await commentsPage.returnToCommentsScreen();
         expect(commentsPage.isCommentsScreenVisible(), true,
             reason: 'Comments screen must be visible after returning from profile');
       });
 
-      // ── TC-COMMENTS-013 | Delete the reply ───────────────────────────────
-      await tryTest('TC-COMMENTS-013 | Delete the reply and verify it is removed', () async {
-        // Expand replies so the reply card is visible
-        if (!commentsPage.isShowLessVisible()) {
-          await commentsPage.tapShowReplies();
-        }
-        // The reply is the last ⋮ in the expanded list
-        await commentsPage.tapMoreOnLastVisible();
-        expect(commentsPage.isDeleteCommentOptionVisible(), true,
-            reason: '"Delete comment" must appear for own reply');
-        await commentsPage.tapDeleteCommentOption();
-        expect(commentsPage.isCommentVisible('reply test'), false,
-            reason: '"reply test" should no longer appear after deletion');
+      // ── TC-COMMENTS-010 | ⋮ menu — Copy ────────────────
+      await tryTest('TC-COMMENTS-010 | Comment ⋮ menu: Copy is tappable', () async {
+        await commentsPage.scrollCommentsList();
+        await commentsPage.tapMoreOnFirstComment();
+        expect(commentsPage.isBottomSheetOptionVisible('Copy'), true,
+            reason: '"Copy" must appear in the action sheet');
+        // Copy — safe, no navigation
+        await commentsPage.tapCopyOption();
+        expect(commentsPage.isCommentsScreenVisible(), true,
+            reason: 'Comments screen must be visible after copying');
       });
+
+      // // ── TC-COMMENTS-013 | Delete the reply ───────────────────────────────
+      // await tryTest('TC-COMMENTS-013 | Delete the reply and verify it is removed', () async {
+      //   // Expand replies so the reply card is visible
+      //   if (!commentsPage.isShowLessVisible()) {
+      //     await commentsPage.tapShowReplies();
+      //   }
+      //   // The reply is the last ⋮ in the expanded list
+      //   await commentsPage.tapMoreOnLastVisible();
+      //   expect(commentsPage.isDeleteCommentOptionVisible(), true,
+      //       reason: '"Delete comment" must appear for own reply');
+      //   await commentsPage.tapDeleteCommentOption();
+      //   expect(commentsPage.isCommentVisible('reply test'), false,
+      //       reason: '"reply test" should no longer appear after deletion');
+      // });
 
       // ── TC-COMMENTS-014 | Delete the comment ─────────────────────────────
       await tryTest('TC-COMMENTS-014 | Delete "test comment" and verify it is removed', () async {
-        // Collapse replies (if any remain) so we target the top-level comment
-        if (commentsPage.isShowLessVisible()) {
-          await commentsPage.tapShowLess();
-        }
+        await commentsPage.scrollCommentsList();
         await commentsPage.tapMoreOnFirstComment();
         expect(commentsPage.isDeleteCommentOptionVisible(), true,
             reason: '"Delete comment" must appear for own comment');

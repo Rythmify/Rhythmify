@@ -74,13 +74,13 @@ void main() {
     await tryTest('TC-HOME-004 | Trending by genre visible — tap genres one by one', () async {
       await homePage.scrollDownUntilVisible(trendingByGenreSection);
       expect(homePage.isTrendingByGenreVisible(), true);
-      for (final genre in ['Electronic', 'Hip-Hop & Rap','Synth-Pop','Indie','Jazz','Lo-Fi','Ambient', 'R&B / Soul']) {
+      for (final genre in ['Hip-Hop','Arabic Pop','Arabic Trap','R&B','Arabic Rock','Pop', 'Alternative Rock', 'Indie Rock']) {
         await homePage.tapGenreTab(genre);
       }
       expect(homePage.isTrendingByGenreVisible(), true);
 
       expect(homePage.isTrendingByGenreVisible(), true);
-      for (final genre in ['R&B / Soul','Ambient','Lo-Fi','Jazz','Indie','Synth-Pop', 'Hip-Hop & Rap', 'Electronic']) {
+      for (final genre in ['Alternative Rock','Pop','Arabic Rock','R&B','Arabic Trap','Arabic Pop', 'Hip-Hop', 'Indrie Pop']) {
         await homePage.tapGenreTab(genre);
       }
       expect(homePage.isTrendingByGenreVisible(), true);
@@ -102,34 +102,37 @@ void main() {
       expect(homePage.isActionButtonVisible(), true);
     });
 
-    // ─── TC-HOME-007 | Mixed For You visible — scroll horizontally ────────
-    await tryTest('TC-HOME-007 | Mixed For You visible — scroll horizontally', () async {
+    // ─── TC-HOME-007 | Mixed For You — scroll, open playlist, like, return ──
+    await tryTest('TC-HOME-007 | Mixed For You — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(mixedForYouSection);
       expect(homePage.isMixedForYouVisible(), true);
+      await homePage.scrollHorizontallyInSection(mixedListView);
       await homePage.tapMixedForYou();
       await tester.pumpAndSettle(const Duration(seconds: 3));
+      await homePage.tapPlaylistDetailLikeButton();
       await homePage.mixedForYouBackButton();
-      await homePage.scrollHorizontallyInSection(mixedListView);
     });
 
-    // ─── TC-HOME-008 | Discover With Stations visible — scroll horizontally
-    await tryTest('TC-HOME-008 | Discover With Stations visible — scroll horizontally', () async {
+    // ─── TC-HOME-008 | Discover With Stations — scroll, open playlist, like, return
+    await tryTest('TC-HOME-008 | Discover With Stations — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(discoverWithStationsSection);
       expect(homePage.isDiscoverWithStationsVisible(), true);
+      await homePage.scrollHorizontallyInSection(discoverWithStationsSection);
       await homePage.tapDiscoverWithStations();
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      await homePage.relatedTracksBackButton(); 
-      await homePage.scrollHorizontallyInSection(discoverWithStationsSection);
+      await homePage.tapPlaylistDetailLikeButton();
+      await homePage.relatedTracksBackButton();
     });
 
-    // ─── TC-HOME-009 | More of What You Like visible — scroll horizontally ─
-    await tryTest('TC-HOME-009 | More of What You Like visible — scroll horizontally', () async {
+    // ─── TC-HOME-009 | More of What You Like — scroll, open playlist, like, return
+    await tryTest('TC-HOME-009 | More of What You Like — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(moreOfWhatYouLikeSection);
       expect(homePage.isMoreOfWhatYouLikeVisible(), true);
+      await homePage.scrollHorizontallyInSection(moreListView);
       await homePage.tapMoreOfWhatYouLike();
       await tester.pumpAndSettle(const Duration(seconds: 3));
+      await homePage.tapPlaylistDetailLikeButton();
       await homePage.relatedTracksBackButton();
-      await homePage.scrollHorizontallyInSection(moreListView);
     });
 
     // ── Feed Page test Case ──  
@@ -141,7 +144,7 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 3));
     });
 
-    await tryTest('TC-FEED-002 | Tap following, discoverbuttons', () async {
+    await tryTest('TC-FEED-002 | Tap following, discover buttons', () async {
       await feedPage.tapFollowingButton();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await feedPage.tapDiscoverButton();

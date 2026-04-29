@@ -66,10 +66,13 @@ class CommentsPage extends BasePage {
     await tester.pump(const Duration(seconds: 1));
   }
 
-  /// Taps the "Reply" label on the first visible comment,
+  /// Taps the "Reply" gesture detector on the first visible comment,
   /// types [replyText], and posts it.
   Future<void> replyToFirstComment(String replyText) async {
-    await tester.tap(find.text('Reply').first);
+    final replyFinder = find.byWidgetPredicate(
+      (w) => w.key?.toString().contains(commentCardReplyGesturePrefix) == true,
+    );
+    await tester.tap(replyFinder.first);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(find.byType(TextField).first, replyText);
     await tester.pump(const Duration(milliseconds: 200));
@@ -118,10 +121,13 @@ class CommentsPage extends BasePage {
   }
 
   /// Taps the ⋮ (more_vert) icon on the first comment in the list.
+  /// Scrolls to the top first so the comment is never off-screen after replies expand.
   Future<void> tapMoreOnFirstComment() async {
     final moreFinder = find.byWidgetPredicate(
       (w) => w.key?.toString().contains(commentCardMoreInkwellPrefix) == true,
     );
+    await tester.ensureVisible(moreFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(moreFinder.first);
     await tester.pump(const Duration(seconds: 3));
   }
@@ -222,4 +228,8 @@ class CommentsPage extends BasePage {
   /// True when the "Delete comment" inkwell is visible in the bottom sheet.
   bool isDeleteCommentOptionVisible() =>
       find.byKey(const Key(commentActionDeleteInkwell)).evaluate().isNotEmpty;
+
+  /// True when the profile screen is visible after tapping "View profile".
+  bool isProfilePageVisible() =>
+      find.byKey(const Key(publicProfileBackButton)).evaluate().isNotEmpty;
 }

@@ -58,6 +58,11 @@ class HomePage extends BasePage {
   Future<void> tapMoreOfWhatYouLike() async => await tapByKey(moreListView);
   Future<void> relatedTracksBackButton() async => await tapByKey(relatedTracksBackbutton);
 
+  /// Taps the like button on a playlist / mix / station detail page.
+  /// Uses [tapByKeyNow] to avoid pumpAndSettle stalling on audio playback.
+  Future<void> tapPlaylistDetailLikeButton() async =>
+      await tapByKeyNow(playlistDetailLikeButton);
+
   /// Tap the inbox button, verify navigation, then return to the home screen.
   Future<void> tapInboxAndReturn() async {
     await tapByKey(homeInboxButton);
