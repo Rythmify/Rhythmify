@@ -9,9 +9,6 @@ import '../models/playlist_model.dart';
 import '../models/playlist_track_model.dart';
 import '../models/station_model.dart';
 import '../../data/local/local_saved_store.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
 
 class PlaylistRemoteDatasource {
   const PlaylistRemoteDatasource(this._dio);
