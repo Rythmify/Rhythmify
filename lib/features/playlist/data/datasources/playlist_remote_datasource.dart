@@ -19,10 +19,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: My Playlists (owned — filter=created)
-  // KEY FIX: uses fromJsonListOwned so every returned playlist
-  // gets isOwned=true. This is the only reliable way to mark
-  // ownership — comparing ownerId to currentUserId fails because
-  // seed users and real users can share IDs unpredictably.
   // ============================================================
   Future<List<PlaylistEntity>> fetchMyPlaylists({
     String filter = 'created',
@@ -45,8 +41,6 @@ class PlaylistRemoteDatasource {
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} playlists from server');
 
-      // CRITICAL: use fromJsonListOwned for filter=created
-      // so isOwned=true on every item, regardless of ownerId value.
       if (filter == 'created') {
         return PlaylistModel.fromJsonListOwned(items);
       }
@@ -59,18 +53,7 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Liked Playlists (GET /me/liked-playlists)
-  // Returns mixes, generated playlists, and regular liked playlists.
-  // All returned with isOwned=false.
-  // Cover and trackCount enriched from LocalSavedStore for generated
-  // playlists where the backend returns null/0.
   // ============================================================
-  // In playlist_remote_datasource.dart:
-  //
-  // 1. Change fetchLikedPlaylists() to also load savedTrackRadios from local store
-  // 2. Update _likedItemFromJson signature to accept both maps
-  //
-  // Replace fetchLikedPlaylists() and _likedItemFromJson with these two methods:
-
   Future<List<PlaylistEntity>> fetchLikedPlaylists({
     int limit = 50,
     int offset = 0,
@@ -86,7 +69,6 @@ class PlaylistRemoteDatasource {
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} liked playlists');
 
-      // Load both local stores for cover/metadata enrichment
       final savedMixes = await LocalSavedStore.instance.getMixes();
       final mixById = {for (final m in savedMixes) m.mixId: m};
 
@@ -116,19 +98,16 @@ class PlaylistRemoteDatasource {
     final localMix = localMixes[id];
     final localRadio = localRadios[id];
 
-    // Cover: backend first, then local mix store, then local radio store
     final backendCover = json['cover_image'] as String?;
     final coverUrl = (backendCover != null && backendCover.isNotEmpty)
         ? backendCover
         : localMix?.coverUrl ?? localRadio?.coverUrl;
 
-    // Track count: backend first, then local stores
     final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
     final trackCount = backendTrackCount > 0
         ? backendTrackCount
         : (localMix?.trackCount ?? localRadio?.trackCount ?? 0);
 
-    // isGeneratedMix: backend subtype OR locally saved as a mix
     final isGeneratedMix =
         subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
@@ -136,10 +115,8 @@ class PlaylistRemoteDatasource {
         subtype == 'genre_trending' ||
         localMix != null;
 
-    // isTrackRadio: backend subtype OR locally saved as a track radio
     final isTrackRadio = subtype == 'track_radio' || localRadio != null;
 
-    // Name: backend name → local mix title → local radio title → 'Untitled'
     final name =
         json['name'] as String? ??
         json['title'] as String? ??
@@ -209,11 +186,14 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Single Playlist Detail
+  // FIX: cross-checks LocalSavedStore so track radios that the
+  // backend returns as type:"regular" are still detected correctly.
   // ============================================================
+
   Future<PlaylistEntity> fetchPlaylistDetail(
     String playlistId, {
-    String? currentUserId, // auth user's id — to detect "is this mine?"
-    String? currentUserName, // auth user's displayName — shown as "You" alt
+    String? currentUserId,
+    String? currentUserName,
   }) async {
     _log('→ GET /playlists/$playlistId');
     try {
@@ -223,32 +203,43 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final playlist = PlaylistModel.fromJson(data);
-
-      // Resolve the owner display name:
-      // - If this playlist belongs to the current user, use their display name.
-      // - Otherwise call GET /users/:id to get the owner's public display name.
-      // - Falls back gracefully if the request fails.
+ 
+      // fromJson already returns PlaylistEntity
+      PlaylistEntity playlist = PlaylistModel.fromJson(data);
+ 
+      // FIX: /playlists/:id returns type:"regular" even for saved track radios.
+      // Cross-check LocalSavedStore using the same API as fetchLikedPlaylists.
+      if (!playlist.isTrackRadio) {
+        final savedRadios = await LocalSavedStore.instance.getTrackRadios();
+        final isLocalRadio =
+            savedRadios.any((r) => r.playlistId == playlistId);
+        if (isLocalRadio) {
+          playlist = playlist.copyWith(isTrackRadio: true);
+          _log(
+              '[DETAIL] Enriched isTrackRadio=true from LocalSavedStore for $playlistId');
+        }
+      }
+ 
+      // Resolve owner display name
       final ownerId = playlist.ownerId;
       String ownerName = '';
-
+ 
       if (currentUserId != null && ownerId == currentUserId) {
-        // It's the current user's playlist
         ownerName = currentUserName ?? '';
-      } else if (ownerId.isNotEmpty) {
-        // It's someone else's playlist — fetch their public profile
+      } else if (ownerId.isNotEmpty && !playlist.isTrackRadio) {
+        // Skip owner fetch for track radios — system-generated, no meaningful owner
         ownerName = await _fetchUserDisplayName(ownerId);
       }
-
+ 
       return playlist.copyWith(ownerName: ownerName);
     } on DioException catch (e) {
       _logError('fetchPlaylistDetail($playlistId) failed', e);
       rethrow;
     }
-  } // ============================================================
+  }
 
+  // ============================================================
   // ── FETCH: Tracks Inside a Playlist
-  // Used for owned playlists (regular subtype).
   // ============================================================
   Future<List<PlaylistTrack>> fetchPlaylistTracks(
     String playlistId, {
@@ -274,9 +265,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Track Radio Tracks
-  // Used for liked track radios (subtype: track_radio).
-  // Endpoint: GET /playlists/:id/radio-tracks
-  // Response: { data: { tracks: [...DiscoveryTrack] } }
   // ============================================================
   Future<List<PlaylistTrack>> fetchRadioTracks(
     String playlistId, {
@@ -308,7 +296,8 @@ class PlaylistRemoteDatasource {
   Future<Map<String, dynamic>> fetchTrackById(String trackId) async {
     _log('→ GET /tracks/$trackId (fetching full track for player)');
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/tracks/$trackId');
+      final response =
+          await _dio.get<Map<String, dynamic>>('/tracks/$trackId');
       _log('← ${response.statusCode}  track ready for player');
       return response.data!['data'] as Map<String, dynamic>;
     } on DioException catch (e) {
@@ -338,7 +327,6 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode} Created');
       final data = response.data!['data'] as Map<String, dynamic>;
-      // Newly created playlist is always owned
       final created = PlaylistModel.fromJson(data, isOwned: true);
       _log('← New playlist ID: ${created.id}  name: "${created.name}"');
       return created;
@@ -377,7 +365,8 @@ class PlaylistRemoteDatasource {
         filename: 'cover.jpg',
       );
     }
-    _log('→ PATCH /playlists/$playlistId  fields: ${fields.keys.toList()}');
+    _log(
+        '→ PATCH /playlists/$playlistId  fields: ${fields.keys.toList()}');
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/playlists/$playlistId',
@@ -385,7 +374,6 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      // Updated playlist is owned by definition
       final updated = PlaylistModel.fromJson(data, isOwned: true);
       _log('✅ Playlist updated. Cover URL: ${updated.coverUrl ?? "none"}');
       return updated;
@@ -430,7 +418,8 @@ class PlaylistRemoteDatasource {
       _log('← ${response.statusCode}  ✅ Track $trackId added');
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {
-        _log('⚠️ Track $trackId already exists in playlist $playlistId (409)');
+        _log(
+            '⚠️ Track $trackId already exists in playlist $playlistId (409)');
         return;
       }
       _logError('addTrackToPlaylist failed', e);
@@ -467,7 +456,8 @@ class PlaylistRemoteDatasource {
     final items = orderedTrackIds
         .asMap()
         .entries
-        .map((entry) => {'track_id': entry.value, 'position': entry.key + 1})
+        .map((entry) =>
+            {'track_id': entry.value, 'position': entry.key + 1})
         .toList();
     _log(
       '→ PATCH /playlists/$playlistId/tracks/reorder  ${items.length} tracks',
@@ -561,7 +551,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── ENGAGEMENT: Like / Unlike Track Radio
-  // POST /tracks/:track_id/like-radio → returns playlist_id
   // ============================================================
   Future<String?> likeTrackRadio(String trackId) async {
     _log('→ POST /tracks/$trackId/like-radio');
@@ -730,8 +719,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── MIX TRACKS: GET /home/mixes/:mixId
-  // Only for persisted mix UUIDs (mixed_for_you, made_for_you).
-  // Does NOT work for liked playlist UUIDs — use fetchPlaylistTracks.
   // ============================================================
   Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
     _log('→ GET /home/mixes/$mixId');
@@ -825,7 +812,11 @@ class PlaylistRemoteDatasource {
           (genreId) => _dio
               .get<Map<String, dynamic>>(
                 '/genres/$genreId/tracks',
-                queryParameters: {'limit': 20, 'offset': 0, 'sort': 'popular'},
+                queryParameters: {
+                  'limit': 20,
+                  'offset': 0,
+                  'sort': 'popular'
+                },
               )
               .catchError((e) {
                 _log('Genre $genreId fetch failed, skipping: $e');
@@ -865,7 +856,8 @@ class PlaylistRemoteDatasource {
         }
       }
 
-      _log('← Got ${allTracks.length} unique real tracks across all genres');
+      _log(
+          '← Got ${allTracks.length} unique real tracks across all genres');
       if (allTracks.isEmpty) return [];
       allTracks.shuffle();
       return _mapDiscoveryTracksToPlaylistTracks(
@@ -885,7 +877,8 @@ class PlaylistRemoteDatasource {
     int limit = 5,
   }) async {
     final all = await fetchRecommendedTracks(limit: 20);
-    final filtered = all.where((t) => !excludeIds.contains(t.id)).toList();
+    final filtered =
+        all.where((t) => !excludeIds.contains(t.id)).toList();
     filtered.shuffle();
     return filtered.take(limit).toList();
   }
@@ -897,10 +890,12 @@ class PlaylistRemoteDatasource {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/home');
       final data = response.data!['data'] as Map<String, dynamic>;
-      final trendingByGenre = data['trending_by_genre'] as Map<String, dynamic>;
+      final trendingByGenre =
+          data['trending_by_genre'] as Map<String, dynamic>;
       final genres = trendingByGenre['genres'] as List<dynamic>;
       return genres
-          .map((g) => (g as Map<String, dynamic>)['genre_id'] as String?)
+          .map((g) =>
+              (g as Map<String, dynamic>)['genre_id'] as String?)
           .where((id) => id != null && id.isNotEmpty)
           .cast<String>()
           .toList();
@@ -914,7 +909,6 @@ class PlaylistRemoteDatasource {
   // ── INTERNAL HELPERS
   // ============================================================
 
-  // No-filter mapper — for mixes/stations/related (display-only)
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracksNoFilter(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -925,14 +919,16 @@ class PlaylistRemoteDatasource {
         final json = rawList[i] as Map<String, dynamic>;
         final id = (json['id'] ?? json['track_id']) as String?;
         if (id == null || id.isEmpty) {
-          _log('  Skipping track at index $i — no id. Keys: ${json.keys}');
+          _log(
+              '  Skipping track at index $i — no id. Keys: ${json.keys}');
           continue;
         }
         result.add(
           PlaylistTrack(
             id: id,
             title: json['title'] as String? ?? 'Unknown Title',
-            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            artistName:
+                json['artist_name'] as String? ?? 'Unknown Artist',
             duration: Duration(
               seconds: (json['duration'] as num?)?.toInt() ?? 0,
             ),
@@ -953,7 +949,6 @@ class PlaylistRemoteDatasource {
     return result;
   }
 
-  // Standard mapper — c0000 tracks pass through (display-only)
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -968,7 +963,8 @@ class PlaylistRemoteDatasource {
           PlaylistTrack(
             id: id,
             title: json['title'] as String? ?? 'Unknown Title',
-            artistName: json['artist_name'] as String? ?? 'Unknown Artist',
+            artistName:
+                json['artist_name'] as String? ?? 'Unknown Artist',
             duration: Duration(
               seconds: (json['duration'] as num?)?.toInt() ?? 0,
             ),
@@ -990,7 +986,8 @@ class PlaylistRemoteDatasource {
 
   Future<String> _fetchUserDisplayName(String userId) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/users/$userId');
+      final response =
+          await _dio.get<Map<String, dynamic>>('/users/$userId');
       final data = response.data!['data'] as Map<String, dynamic>;
       return data['display_name'] as String? ??
           data['username'] as String? ??
@@ -1005,18 +1002,13 @@ class PlaylistRemoteDatasource {
   // ── LOGGING
   // ============================================================
   void _log(String message) {
-    // ignore: avoid_print
     debugPrint('[DATASOURCE] $message');
   }
 
   void _logError(String context, DioException e) {
-    // ignore: avoid_print
     debugPrint('[DATASOURCE] ❌ ERROR in $context');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Status: ${e.response?.statusCode}');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Message: ${e.message}');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Response body: ${e.response?.data}');
   }
 }
