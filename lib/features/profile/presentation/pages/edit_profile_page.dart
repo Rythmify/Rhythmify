@@ -58,6 +58,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _lastNameController = TextEditingController();
   final _cityController = TextEditingController();
   final _bioController = TextEditingController();
+  final _instagramController = TextEditingController();
+  final _facebookController = TextEditingController();
+  final _githubController = TextEditingController();
 
   /// The ISO alpha-2 country code sent to the API (e.g. `'EG'`).
   String _selectedCountry = '';
@@ -114,6 +117,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _lastNameController.addListener(_onChanged);
     _cityController.addListener(_onChanged);
     _bioController.addListener(_onChanged);
+    _instagramController.addListener(_onChanged);
+    _facebookController.addListener(_onChanged);
+    _githubController.addListener(_onChanged);
   }
 
   /// Populates text controllers and country fields from the current [ProfileLoaded] state.
@@ -130,6 +136,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       _lastNameController.text = state.profile.lastName ?? '';
       _cityController.text = state.profile.city ?? '';
       _bioController.text = state.profile.bio ?? '';
+      _instagramController.text = state.profile.instagramUrl ?? '';
+      _facebookController.text = state.profile.facebookUrl ?? '';
+      _githubController.text = state.profile.githubUrl ?? '';
 
       final countryCode = state.profile.country ?? '';
       _selectedCountry = countryCode;
@@ -157,6 +166,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _lastNameController.dispose();
     _cityController.dispose();
     _bioController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    _githubController.dispose();
     super.dispose();
   }
 
@@ -186,7 +198,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref.read(ownProfileProvider.notifier).uploadAvatar(filePath: image.path);
+      await ref
+          .read(ownProfileProvider.notifier)
+          .uploadAvatar(filePath: image.path);
+      if (!mounted) return;
+      await _reloadOwnProfile();
     }
   }
 
@@ -202,9 +218,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       imageQuality: 85,
     );
     if (image != null) {
-      ref
+      await ref
           .read(ownProfileProvider.notifier)
           .uploadCoverPhoto(filePath: image.path);
+      if (!mounted) return;
+      await _reloadOwnProfile();
     }
   }
 
@@ -214,6 +232,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   /// display name. Called by the Save button in the AppBar.
   /// After saving successfully, navigates back to profile page.
   Future<void> _onSave() async {
+    if (!_validateSocialLinks()) return;
+
     await ref
         .read(ownProfileProvider.notifier)
         .updateProfile(
@@ -224,12 +244,54 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           city: _cityController.text.trim(),
           country: _selectedCountry,
           bio: _bioController.text.trim(),
+          instagramUrl: _normalizeOptionalUrl(_instagramController.text),
+          facebookUrl: _normalizeOptionalUrl(_facebookController.text),
+          githubUrl: _normalizeOptionalUrl(_githubController.text),
         );
 
-    // Navigate back after successful save
+    await _reloadOwnProfile();
+
+    // Navigate back after successful save.
     if (mounted) {
       context.pop();
     }
+  }
+
+  Future<void> _reloadOwnProfile() async {
+    await ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
+  }
+
+  bool _validateSocialLinks() {
+    final links = <String, String>{
+      'Instagram': _instagramController.text.trim(),
+      'Facebook': _facebookController.text.trim(),
+      'GitHub': _githubController.text.trim(),
+    };
+    for (final entry in links.entries) {
+      final value = entry.value;
+      if (value.isEmpty) continue;
+      final normalized = _normalizeOptionalUrl(value);
+      final uri = Uri.tryParse(normalized);
+      final isValid =
+          uri != null &&
+          (uri.scheme == 'http' || uri.scheme == 'https') &&
+          uri.host.isNotEmpty;
+      if (!isValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please enter a valid ${entry.key} URL.')),
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
+  String _normalizeOptionalUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return '';
+    final hasScheme =
+        trimmed.startsWith('http://') || trimmed.startsWith('https://');
+    return hasScheme ? trimmed : 'https://$trimmed';
   }
 
   /// Shows a bottom sheet with a scrollable country list.
@@ -402,130 +464,165 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             ),
           ],
         ),
-        body: profileState is! ProfileLoaded
-            ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryBrand),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Cover photo + avatar overlap stack
-                    Stack(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 120,
-                          color: AppTheme.surface,
-                          child: profileState.profile.coverUrl != null
-                              ? Image.network(
-                                  profileState.profile.coverUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (a, b, c) => const SizedBox(),
-                                )
-                              : null,
-                        ),
-                        Positioned(
-                          right: 12,
-                          bottom: 12,
-                          child: GestureDetector(
-                            key: const Key('edit_profile_pick_cover_gesture'),
-                            onTap: _pickCoverPhoto,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.background.withValues(
-                                  alpha: 0.7,
+        body: SafeArea(
+          child: profileState is! ProfileLoaded
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primaryBrand,
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 174),
+                  child: Column(
+                    children: [
+                      // Cover photo + avatar overlap stack
+                      Stack(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 120,
+                            color: AppTheme.surface,
+                            child: profileState.profile.coverUrl != null
+                                ? Image.network(
+                                    profileState.profile.coverUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (a, b, c) => const SizedBox(),
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            right: 12,
+                            bottom: 12,
+                            child: GestureDetector(
+                              key: const Key('edit_profile_pick_cover_gesture'),
+                              onTap: _pickCoverPhoto,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.background.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  shape: BoxShape.circle,
                                 ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: AppTheme.textPrimary,
-                                size: 20,
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: AppTheme.textPrimary,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          left: 16,
-                          bottom: -40,
-                          child: ProfileAvatar(
-                            avatarUrl: profileState.profile.avatarUrl,
-                            radius: 44,
-                            showCameraIcon: true,
-                            onTap: _pickAvatar,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 56),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildField(
-                            key: const Key('edit_profile_name_textfield'),
-                            label: 'Display Name',
-                            controller: _displayNameController,
-                            maxLength: 50,
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildField(
-                            key: const Key('edit_profile_username_textfield'),
-                            label: 'Username',
-                            controller: _usernameController,
-                            maxLength: 30,
-                            hintText: 'soundwave_cairo',
-                            pattern: r'^[a-z0-9_-]+$',
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildField(
-                            key: const Key('edit_profile_city_textfield'),
-                            label: 'City',
-                            controller: _cityController,
-                            maxLength: 35,
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildField(
-                            key: const Key('edit_profile_first_name_textfield'),
-                            label: 'First Name',
-                            controller: _firstNameController,
-                            maxLength: 50,
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildField(
-                            key: const Key('edit_profile_last_name_textfield'),
-                            label: 'Last Name',
-                            controller: _lastNameController,
-                            maxLength: 50,
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildChevronField(
-                            key: const Key('edit_profile_country_gesture'),
-                            label: 'Country',
-                            value: _selectedCountryDisplay.isEmpty
-                                ? 'Select country'
-                                : _selectedCountryDisplay,
-                            onTap: _showCountryPicker,
-                          ),
-                          const Divider(color: AppTheme.surface, height: 1),
-                          _buildChevronField(
-                            key: const Key('edit_profile_bio_gesture'),
-                            label: 'Bio',
-                            value: _bioController.text.isEmpty
-                                ? 'Bio'
-                                : _bioController.text,
-                            onTap: _showBioEditor,
+                          Positioned(
+                            left: 16,
+                            bottom: -40,
+                            child: ProfileAvatar(
+                              avatarUrl: profileState.profile.avatarUrl,
+                              radius: 44,
+                              showCameraIcon: true,
+                              onTap: _pickAvatar,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 56),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildField(
+                              key: const Key('edit_profile_name_textfield'),
+                              label: 'Display Name',
+                              controller: _displayNameController,
+                              maxLength: 50,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key('edit_profile_username_textfield'),
+                              label: 'Username',
+                              controller: _usernameController,
+                              maxLength: 30,
+                              hintText: 'soundwave_cairo',
+                              pattern: r'^[a-z0-9_-]+$',
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key('edit_profile_city_textfield'),
+                              label: 'City',
+                              controller: _cityController,
+                              maxLength: 35,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key(
+                                'edit_profile_first_name_textfield',
+                              ),
+                              label: 'First Name',
+                              controller: _firstNameController,
+                              maxLength: 50,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key(
+                                'edit_profile_last_name_textfield',
+                              ),
+                              label: 'Last Name',
+                              controller: _lastNameController,
+                              maxLength: 50,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildChevronField(
+                              key: const Key('edit_profile_country_gesture'),
+                              label: 'Country',
+                              value: _selectedCountryDisplay.isEmpty
+                                  ? 'Select country'
+                                  : _selectedCountryDisplay,
+                              onTap: _showCountryPicker,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildChevronField(
+                              key: const Key('edit_profile_bio_gesture'),
+                              label: 'Bio',
+                              value: _bioController.text.isEmpty
+                                  ? 'Bio'
+                                  : _bioController.text,
+                              onTap: _showBioEditor,
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key(
+                                'edit_profile_instagram_textfield',
+                              ),
+                              label: 'Instagram',
+                              controller: _instagramController,
+                              maxLength: 200,
+                              hintText: 'https://instagram.com/username',
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key('edit_profile_facebook_textfield'),
+                              label: 'Facebook',
+                              controller: _facebookController,
+                              maxLength: 200,
+                              hintText: 'https://facebook.com/username',
+                            ),
+                            const Divider(color: AppTheme.surface, height: 1),
+                            _buildField(
+                              key: const Key('edit_profile_github_textfield'),
+                              label: 'GitHub',
+                              controller: _githubController,
+                              maxLength: 200,
+                              hintText: 'https://github.com/username',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
