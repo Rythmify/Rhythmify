@@ -38,8 +38,8 @@ class MessageBubble extends ConsumerWidget {
     this.embedType,
     required this.senderId,
     this.userAvatar,
-    this.showAvatar=true,
-    required this.borderRadius
+    this.showAvatar = true,
+    required this.borderRadius,
   });
 
   bool get isMe => (senderId == myId);
@@ -67,8 +67,8 @@ class MessageBubble extends ConsumerWidget {
         children: [
           if (!isMe) ...[
             showAvatar
-              ? Avatar(img: userAvatar, radius: 18)
-              : const SizedBox(width: 36),
+                ? Avatar(img: userAvatar, radius: 18)
+                : const SizedBox(width: 36),
             const SizedBox(width: 10),
           ],
           Flexible(

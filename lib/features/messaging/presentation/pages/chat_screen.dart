@@ -182,11 +182,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
         title: GestureDetector(
-          onTap: (){
-            final id=widget.conv?.participantId ?? widget.newParticipantId;
-            if(id!=null) context.push('/home/profile/$id');
+          onTap: () {
+            final id = widget.conv?.participantId ?? widget.newParticipantId;
+            if (id != null) context.push('/home/profile/$id');
           },
-          child:Text(
+          child: Text(
             widget.conv?.participantName ?? widget.newParticipantName ?? 'Chat',
             key: const Key('chat_participant_name_text'),
           ),
@@ -205,8 +205,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     parentContext: context,
                     onBlocked: widget.conv != null
                         ? () => _socket.leaveConversation(
-                              widget.conv!.conversationId,
-                            )
+                            widget.conv!.conversationId,
+                          )
                         : null,
                   ),
                   backgroundColor: const Color(0xFF121212),
@@ -577,9 +577,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final sameSender = curr.senderId == prev.senderId;
       // final closeInTime =
       //     curr.createdAt.difference(prev.createdAt).inMilliseconds.abs() <= 100;
-      final hasEmbed=curr.embedId != null || prev.embedId != null;
-      final timeDiff= curr.createdAt.difference(prev.createdAt).inMilliseconds.abs();
-      final closeInTime=hasEmbed&&timeDiff<=1000;
+      final hasEmbed = curr.embedId != null || prev.embedId != null;
+      final timeDiff = curr.createdAt
+          .difference(prev.createdAt)
+          .inMilliseconds
+          .abs();
+      final closeInTime = hasEmbed && timeDiff <= 1000;
 
       if (sameSender && closeInTime) {
         currentGroup.add(curr);
@@ -678,7 +681,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String _fixTime(DateTime date) {
     final duration = DateTime.now().difference(date);
 
-    if(duration.isNegative || duration.inSeconds<1) return '0 seconds ago';
+    if (duration.isNegative || duration.inSeconds < 1) return '0 seconds ago';
 
     if (duration.inDays >= 365) {
       return '${duration.inDays ~/ 365} years ago';
