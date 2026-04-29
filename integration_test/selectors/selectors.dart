@@ -302,8 +302,8 @@ const String behindTheTrackShowMore         = 'behind_the_track_show_more_descri
 const String behindTheTrackTagsListView     = 'behind_the_track_tags_list_view';
 const String behindTheTrackScrollView       = 'behind_the_track_scroll_view';
 const String behindTheTrackFollowButton     = 'behind_the_track_follow_outlined_button';
-const String fansLeaderboardTopButton       = 'fans_leaderboard_top_segment_gesture_detector';
-const String fansLeaderboardFirstButton     = 'fans_leaderboard_first_segment_gesture_detector';
+const String fansLeaderboardOverallButton   = 'fans_leaderboard_overall_segment_gesture_detector';
+const String fansLeaderboardSevenDaysButton = 'fans_leaderboard_first_7_days_segment_gesture_detector';
 const String fansLeaderboardInfoIcon        = 'fans_leaderboard_info_icon';
 
 // --- Comments ---

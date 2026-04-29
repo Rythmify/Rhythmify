@@ -58,7 +58,7 @@ class BasePage {
   }
 
   Future<void> pullToRefresh(String pageKey) async {
-  await tester.drag(find.byKey(Key(pageKey)), const Offset(0, 300));
-  await tester.pumpAndSettle(const Duration(seconds: 3));
-}
+    await tester.drag(find.byKey(Key(pageKey)), const Offset(0, 300));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  }
 }

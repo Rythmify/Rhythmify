@@ -23,9 +23,9 @@ class TrackPage extends BasePage {
   /// Taps the "Behind this track" button in the full player to open the
   /// Behind the Track page.
   Future<void> tapBehindThisTrack() async {
-    await tapByKeyNow(behindTheTrackBehindTrackButton);
-    await tester.pump(const Duration(seconds: 3));
-  }
+  await tester.tap(find.byKey(const Key(behindTheTrackBehindTrackButton)).last);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
 
   /// Taps the AppBar back button to leave the Behind the Track page.
   Future<void> tapBack() async {
@@ -42,16 +42,6 @@ class TrackPage extends BasePage {
         find.byType(Image).evaluate().isNotEmpty;
   }
 
-  /// True when all action-bar elements are visible:
-  /// like, repost, comment icons + the 3-dot more icon + play/pause button.
-  bool isActionBarVisible() {
-    return isVisible(behindTheTrackPlayPause) &&
-        find.byIcon(Icons.favorite_border).evaluate().isNotEmpty &&
-        find.byIcon(Icons.repeat).evaluate().isNotEmpty &&
-        find.byIcon(Icons.chat_outlined).evaluate().isNotEmpty &&
-        find.byIcon(Icons.more_vert).evaluate().isNotEmpty;
-  }
-
   /// True when the "Show more" description link is rendered
   /// (only present when the track has a non-empty description).
   bool isShowMoreVisible() => isVisible(behindTheTrackShowMore);
@@ -65,11 +55,13 @@ class TrackPage extends BasePage {
   bool isTagsVisible() => isVisible(behindTheTrackTagsListView);
 
   /// True when the follow/following button is rendered.
-  bool isFollowButtonVisible() => isVisible(behindTheTrackFollowButton);
+  bool isFollowButtonVisible() =>
+      find.text('Follow').evaluate().isNotEmpty ||
+      find.text('Following').evaluate().isNotEmpty;
 
-  /// True when "Fans Leaderboard" heading is in the widget tree.
-  bool isFansLeaderboardVisible() =>
-      find.text('Fans Leaderboard').evaluate().isNotEmpty;
+  /// True when the artist public-profile page is showing.
+  bool isOnArtistPage() => isVisible(publicProfileBackButton);
+
 
   // ── Behind the Track — Actions ─────────────────────────────────────────────
 
@@ -96,30 +88,111 @@ class TrackPage extends BasePage {
     await scrollHorizontallyInSection(behindTheTrackTagsListView);
   }
 
-  /// Taps the Follow / Following button.
+  /// Taps the Follow / Following button (found by text; key is user-id-scoped in source).
   Future<void> tapFollowButton() async {
-    await tapByKeyNow(behindTheTrackFollowButton);
+    final finder = find.text('Follow').evaluate().isNotEmpty
+        ? find.text('Follow')
+        : find.text('Following');
+    await tester.ensureVisible(finder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(finder.first);
     await tester.pump(const Duration(seconds: 2));
   }
 
-  /// Scrolls the page down until the Fans Leaderboard section is visible,
-  /// using the same scrollUntilVisible pattern as the registration dropdowns.
-  Future<void> scrollToFansLeaderboard() async {
-    await scrollUntilVisible(
-      itemText: 'Fans Leaderboard',
-      scrollableKey: behindTheTrackScrollView,
-    );
-  }
-
-  /// Taps the "Top" segment button in the Fans Leaderboard.
-  Future<void> tapTopSegment() async {
-    await tapByKeyNow(fansLeaderboardTopButton);
+  /// Taps the like button in the action bar.
+  Future<void> tapLike() async {
+    final finder = find.byIcon(Icons.favorite_border).evaluate().isNotEmpty
+        ? find.byIcon(Icons.favorite_border)
+        : find.byIcon(Icons.favorite);
+    await tester.tap(finder.first);
     await tester.pump(const Duration(seconds: 1));
   }
 
-  /// Taps the "First" segment button in the Fans Leaderboard.
+  /// Taps the repost button in the action bar.
+  Future<void> tapRepost() async {
+    await tester.tap(find.byIcon(Icons.repeat).first);
+    await tester.pump(const Duration(seconds: 1));
+  }
+
+  /// Taps the comment button in the action bar and waits for the comments page.
+  Future<void> tapComment() async {
+    await tester.tap(find.byIcon(Icons.chat_outlined).first);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  }
+
+  /// Closes the comments page and returns to Behind the Track.
+  Future<void> returnToBehindTheTrack() async {
+    await tapByKeyNow(commentsBackButton);
+    await tester.pump(const Duration(seconds: 2));
+  }
+
+  /// Taps the 3-dot more-options button in the action bar.
+  Future<void> tapMore() async {
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  /// Drags the more-options bottom sheet downward to dismiss it.
+  Future<void> dragToCloseMoreOptions() async {
+    await tester.drag(
+      find.byType(DraggableScrollableSheet).first,
+      const Offset(0, 500),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  /// Scrolls the Behind the Track page back to the top.
+  Future<void> scrollUp() async {
+    await tester.drag(
+      find.byType(SingleChildScrollView).first,
+      const Offset(0, 1000),
+    );
+    await tester.pump(const Duration(seconds: 1));
+  }
+
+  /// Taps the artist row to navigate to the artist's public profile.
+  Future<void> tapArtist() async {
+    final artistFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget.key?.toString().contains('track_details_section_artist_inkwell_') == true,
+    );
+    await tester.ensureVisible(artistFinder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(artistFinder.first);
+    await tester.pump(const Duration(seconds: 2));
+  }
+
+  bool isFansLeaderboardVisible() =>
+      find.byWidgetPredicate(
+        (widget) => widget.key?.toString().contains('behind_the_track_fans_leaderboard_') == true,
+      ).evaluate().isNotEmpty;
+
+  Future<void> scrollToFansLeaderboard() async {
+    final finder = find.byWidgetPredicate(
+      (widget) => widget.key?.toString().contains('behind_the_track_fans_leaderboard_') == true,
+    );
+    for (int i = 0; i < 10; i++) {
+      if (finder.evaluate().isNotEmpty) break;
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -300),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+  }
+
+  Future<void>backToHome() async {
+    await tapByKeyNow(behindTheTrackBackButton);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  }
+
+  Future<void> tapTopSegment() async {
+    await tapByKey(fansLeaderboardOverallButton);
+    await tester.pump(const Duration(seconds: 1));
+  }
+
   Future<void> tapFirstSegment() async {
-    await tapByKeyNow(fansLeaderboardFirstButton);
+    await tapByKey(fansLeaderboardSevenDaysButton);
     await tester.pump(const Duration(seconds: 1));
   }
 }

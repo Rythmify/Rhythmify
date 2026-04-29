@@ -80,7 +80,7 @@ void main() {
       expect(homePage.isTrendingByGenreVisible(), true);
 
       expect(homePage.isTrendingByGenreVisible(), true);
-      for (final genre in ['Alternative Rock','Pop','Arabic Rock','R&B','Arabic Trap','Arabic Pop', 'Hip-Hop', 'Indrie Pop']) {
+      for (final genre in ['Alternative Rock','Pop','Arabic Rock','R&B','Arabic Trap','Arabic Pop', 'Hip-Hop', 'Indie Rock']) {
         await homePage.tapGenreTab(genre);
       }
       expect(homePage.isTrendingByGenreVisible(), true);
@@ -106,33 +106,39 @@ void main() {
     await tryTest('TC-HOME-007 | Mixed For You — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(mixedForYouSection);
       expect(homePage.isMixedForYouVisible(), true);
+      await tester.pump(const Duration(seconds: 3));
       await homePage.scrollHorizontallyInSection(mixedListView);
       await homePage.tapMixedForYou();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       await homePage.tapPlaylistDetailLikeButton();
       await homePage.mixedForYouBackButton();
+      await tester.pump(const Duration(seconds: 3));
     });
 
     // ─── TC-HOME-008 | Discover With Stations — scroll, open playlist, like, return
     await tryTest('TC-HOME-008 | Discover With Stations — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(discoverWithStationsSection);
       expect(homePage.isDiscoverWithStationsVisible(), true);
+      await tester.pump(const Duration(seconds: 3));
       await homePage.scrollHorizontallyInSection(discoverWithStationsSection);
       await homePage.tapDiscoverWithStations();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       await homePage.tapPlaylistDetailLikeButton();
       await homePage.relatedTracksBackButton();
+      await tester.pump(const Duration(seconds: 3));
     });
 
     // ─── TC-HOME-009 | More of What You Like — scroll, open playlist, like, return
     await tryTest('TC-HOME-009 | More of What You Like — scroll horizontally, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(moreOfWhatYouLikeSection);
       expect(homePage.isMoreOfWhatYouLikeVisible(), true);
+      await tester.pump(const Duration(seconds: 3));
       await homePage.scrollHorizontallyInSection(moreListView);
       await homePage.tapMoreOfWhatYouLike();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
       await homePage.tapPlaylistDetailLikeButton();
       await homePage.relatedTracksBackButton();
+      await tester.pump(const Duration(seconds: 3));
     });
 
     // ── Feed Page test Case ──  

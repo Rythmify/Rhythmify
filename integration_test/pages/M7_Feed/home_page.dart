@@ -52,11 +52,32 @@ class HomePage extends BasePage {
   Future<void> tapUploadButton() async => await tapByKey(homeUploadTrackButton);
   Future<void> tapMessageButton() async => await tapByKey(homeInboxButton);
   Future<void> tapNotificationButton() async => await tapByKey(homeNotificationsButton);
-  Future<void> tapMixedForYou() async => await tapByKey(mixedListView);
-  Future<void> mixedForYouBackButton() async => await tapByKey(mixedForYouBackbutton);
-  Future<void> tapDiscoverWithStations() async => await tapByKey(discoverListView);
-  Future<void> tapMoreOfWhatYouLike() async => await tapByKey(moreListView);
-  Future<void> relatedTracksBackButton() async => await tapByKey(relatedTracksBackbutton);
+  // Audio may be playing after TC-HOME-006 — use tapByKeyNow to avoid pumpAndSettle blocking.
+  Future<void> mixedForYouBackButton() async => await tapByKeyNow(mixedForYouBackbutton);
+  Future<void> relatedTracksBackButton() async => await tapByKeyNow(relatedTracksBackbutton);
+  Future<void> tapMixedForYou() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(mixedListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
+
+Future<void> tapDiscoverWithStations() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(discoverListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
+
+Future<void> tapMoreOfWhatYouLike() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(moreListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
 
   /// Taps the like button on a playlist / mix / station detail page.
   /// Uses [tapByKeyNow] to avoid pumpAndSettle stalling on audio playback.
@@ -99,5 +120,11 @@ class HomePage extends BasePage {
     );
     await tester.pump(const Duration(milliseconds: 500));
   }
-  // scrollHorizontallyInSection is inherited from BasePage
+  /// Overrides BasePage to use pump instead of pumpAndSettle so horizontal
+  /// scrolls do not block when audio is playing in the background.
+  @override
+  Future<void> scrollHorizontallyInSection(String sectionKey) async {
+    await tester.drag(find.byKey(Key(sectionKey)), const Offset(-300, 0));
+    await tester.pump(const Duration(milliseconds: 500));
+  }
 }
