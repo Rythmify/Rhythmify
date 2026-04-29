@@ -68,6 +68,9 @@ class ProfileLoaded extends ProfileState {
   final List<PlaylistEntity> playlists;
   final bool isLoadingPlaylists;
 
+  /// Albums created by the user.
+  final List<PlaylistEntity> albums;
+
   /// Whether a save operation (update, upload, delete) is in progress.
   final bool isSaving;
 
@@ -90,6 +93,7 @@ class ProfileLoaded extends ProfileState {
     this.hasMoreReposts = true,
     this.playlists = const [],
     this.isLoadingPlaylists = false,
+    this.albums = const [],
     this.isSaving = false,
     this.isBlocked = false,
   });
@@ -108,6 +112,7 @@ class ProfileLoaded extends ProfileState {
     bool? hasMoreReposts,
     List<PlaylistEntity>? playlists,
     bool? isLoadingPlaylists,
+    List<PlaylistEntity>? albums,
     bool? isSaving,
     bool? isBlocked,
   }) {
@@ -125,6 +130,7 @@ class ProfileLoaded extends ProfileState {
       hasMoreReposts: hasMoreReposts ?? this.hasMoreReposts,
       playlists: playlists ?? this.playlists,
       isLoadingPlaylists: isLoadingPlaylists ?? this.isLoadingPlaylists,
+      albums: albums ?? this.albums,
       isSaving: isSaving ?? this.isSaving,
       isBlocked: isBlocked ?? this.isBlocked,
     );
@@ -145,6 +151,7 @@ class ProfileLoaded extends ProfileState {
     hasMoreReposts,
     playlists,
     isLoadingPlaylists,
+    albums,
     isSaving,
     isBlocked,
   ];

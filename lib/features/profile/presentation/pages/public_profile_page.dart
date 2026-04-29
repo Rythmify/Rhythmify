@@ -10,6 +10,7 @@ import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../widgets/blocked_user_screen.dart';
+import '../widgets/info_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -60,13 +61,12 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : widget.userId;
 
     Future.microtask(() async {
-      // ── Guard: skip reload if this profile is already loaded ────────────
-      final currentState = _resolvedUserId == 'me'
-          ? ref.read(ownProfileProvider)
-          : ref.read(publicProfileProvider(_resolvedUserId));
-
-      if (currentState is ProfileLoaded) return;
-      // ────────────────────────────────────────────────────────────────────
+      // ── Guard: skip reload only for own profile if already loaded ───────
+      // For other users, always load fresh to avoid stale data.
+      if (_resolvedUserId == 'me') {
+        final currentState = ref.read(ownProfileProvider);
+        if (currentState is ProfileLoaded) return;
+      }
 
       if (_resolvedUserId == 'me') {
         await ref
@@ -144,16 +144,30 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(_resolvedUserId));
 
+    ref.listen(
+      _resolvedUserId == 'me'
+          ? ownProfileProvider
+          : publicProfileProvider(_resolvedUserId),
+      (previous, next) {
+        if (previous is ProfileLoaded && next is ProfileLoaded) {
+          if (previous.followStatus != next.followStatus ||
+              previous.isBlocked != next.isBlocked) {
+            Future.microtask(() {
+              if (mounted) {
+                _profileNotifier.loadProfile(userId: _resolvedUserId);
+              }
+            });
+          }
+        }
+      },
+    );
+
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
         : null;
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
-
-    // ── Block guard ────────────────────────────────────────────────────────
-    // If the authenticated user has blocked this account, show the blocked
-    // screen immediately with no profile data exposed.
     if (profileState is ProfileLoaded &&
         (profileState.isBlocked || profileState.followStatus.isBlocking)) {
       return BlockedUserScreen(userId: _resolvedUserId);
@@ -231,7 +245,8 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         state.uploadedTracks.isNotEmpty ||
         state.likedTracks.isNotEmpty ||
         state.repostedTracks.isNotEmpty ||
-        state.playlists.isNotEmpty;
+        state.playlists.isNotEmpty ||
+        state.albums.isNotEmpty;
 
     // Extra bottom padding so last item clears the mini player
     final bottomPadding = hasTrack ? 80.0 : 0.0;
@@ -287,10 +302,19 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   if (state.profile.bio != null &&
                       state.profile.bio!.trim().isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(
-                      state.profile.bio!,
-                      key: const Key('public_profile_bio_text'),
-                      style: AppTheme.bodyMedium,
+                    _BioTruncated(
+                      bio: state.profile.bio!,
+                      profile: state.profile,
+                      onSeeMore: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          useRootNavigator: true,
+                          builder: (_) =>
+                              InfoBottomSheet(profile: state.profile),
+                        );
+                      },
                     ),
                   ],
                   if (isOwnProfile &&
@@ -401,7 +425,19 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       const Spacer(),
                       GestureDetector(
                         key: const Key('public_profile_shuffle_gesture'),
-                        onTap: () {},
+                        onTap: () {
+                          final allTracks = [
+                            ...state.uploadedTracks,
+                            ...state.likedTracks,
+                            ...state.repostedTracks,
+                          ];
+                          if (allTracks.isEmpty) return;
+                          final shuffled = List<Track>.from(allTracks)
+                            ..shuffle();
+                          ref
+                              .read(playerStateProvider.notifier)
+                              .loadAndPlayQueue(shuffled, initialIndex: 0);
+                        },
                         child: const Icon(
                           Icons.shuffle,
                           color: AppTheme.textSecondary,
@@ -409,18 +445,32 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Container(
-                        key: const Key('public_profile_play_button'),
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppTheme.textPrimary,
-                          size: 28,
+                      GestureDetector(
+                        key: const Key('public_profile_play_button_gesture'),
+                        onTap: () {
+                          final allTracks = [
+                            ...state.uploadedTracks,
+                            ...state.likedTracks,
+                            ...state.repostedTracks,
+                          ];
+                          if (allTracks.isEmpty) return;
+                          ref
+                              .read(playerStateProvider.notifier)
+                              .loadAndPlayQueue(allTracks, initialIndex: 0);
+                        },
+                        child: Container(
+                          key: const Key('public_profile_play_button'),
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow,
+                            color: AppTheme.textPrimary,
+                            size: 28,
+                          ),
                         ),
                       ),
                     ],
@@ -479,12 +529,22 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       context.push('/home/profile/$_resolvedUserId/reposts'),
                 ),
               ),
+            if (state.albums.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _PlaylistsSection(
+                  title: 'Albums',
+                  playlists: state.albums.take(4).toList(),
+                  userId: _resolvedUserId,
+                  seeAllRoute: '/home/profile/$_resolvedUserId/albums',
+                ),
+              ),
             if (state.playlists.isNotEmpty)
               SliverToBoxAdapter(
                 child: _PlaylistsSection(
                   title: 'Playlists',
                   playlists: state.playlists.take(4).toList(),
                   userId: _resolvedUserId,
+                  seeAllRoute: '/home/profile/$_resolvedUserId/playlists',
                 ),
               ),
             SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
@@ -540,9 +600,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         isBlank(profile.bio);
   }
 }
-
-// ── Profile section (tracks) ─────────────────────────────────────────────────
-
 /// Displays a titled section of up to 3 tracks with a "See All" button.
 ///
 /// Tapping a track starts playback from that index via [playerStateProvider].
@@ -604,9 +661,6 @@ class _ProfileSection extends ConsumerWidget {
     );
   }
 }
-
-// ── Playlists section ─────────────────────────────────────────────────────────
-
 /// Displays a titled section of playlists as a 2-column grid with a
 /// "See All" button — matching the screenshot layout with large square
 /// cover images, playlist name and owner name below each card.
@@ -620,10 +674,14 @@ class _PlaylistsSection extends ConsumerWidget {
   /// Resolved user ID used for the "See All" navigation target.
   final String userId;
 
+  /// The route to navigate to when "See All" is tapped.
+  final String seeAllRoute;
+
   const _PlaylistsSection({
     required this.title,
     required this.playlists,
     required this.userId,
+    required this.seeAllRoute,
   });
 
   @override
@@ -639,8 +697,7 @@ class _PlaylistsSection extends ConsumerWidget {
             children: [
               Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
-                onPressed: () =>
-                    context.push('/home/profile/$userId/playlists'),
+                onPressed: () => context.push(seeAllRoute),
                 child: Text(
                   'See All',
                   style: AppTheme.labelLarge.copyWith(
@@ -804,6 +861,57 @@ class _IncompleteProfileBanner extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Bio truncated with see more ──────────────────────────────────────────
+
+/// Displays bio text truncated to a maximum of 2 lines with a "See more" link
+/// that opens the info bottom sheet. When tapped, opens the full bio and social links
+/// in the InfoBottomSheet.
+class _BioTruncated extends StatefulWidget {
+  final String bio;
+  final ProfileEntity profile;
+  final VoidCallback onSeeMore;
+
+  const _BioTruncated({
+    required this.bio,
+    required this.profile,
+    required this.onSeeMore,
+  });
+
+  @override
+  State<_BioTruncated> createState() => _BioTruncatedState();
+}
+
+class _BioTruncatedState extends State<_BioTruncated> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.bio,
+          key: const Key('public_profile_bio_text'),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTheme.bodyMedium,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: GestureDetector(
+            onTap: widget.onSeeMore,
+            child: Text(
+              'See more',
+              key: const Key('public_profile_bio_see_more'),
+              style: AppTheme.labelLarge.copyWith(
+                color: AppTheme.primaryBrand,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

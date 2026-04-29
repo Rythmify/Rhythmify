@@ -37,10 +37,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
           'followingCount=${data['followingCount']}',
         );
       }
-
-      // GET /users/{id} does not include is_following — only GET /users/me does.
-      // For public profiles, call the dedicated follow-status endpoint and merge
-      // the result so the Follow button and follower counts are always accurate.
       if (userId != 'me') {
         try {
           final statusResp = await client.dio.get(
@@ -50,7 +46,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
               statusResp.data['data']?['is_following'] as bool? ?? false;
           data['is_following'] = isFollowing;
         } catch (_) {
-          // Unauthenticated or network error — default to false.
           data['is_following'] = data['is_following'] ?? false;
         }
       }
@@ -171,8 +166,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       });
 
       await client.dio.post('/users/me/cover', data: formData);
-
-      // Reload full profile to get updated cover URL
       final profile = await getProfile(userId: 'me');
 
       return profile;

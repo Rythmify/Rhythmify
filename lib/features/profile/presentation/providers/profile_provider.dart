@@ -22,8 +22,7 @@ import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 import '../../.././playlist/data/datasources/playlist_remote_datasource.dart';
-
-// coverage:ignore-file
+import '../../.././playlist/domain/entities/playlist_entity.dart';
 /// Riverpod providers and notifier orchestration for profile state management.
 ///
 /// Uses separate providers to prevent state flicker:
@@ -178,7 +177,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
     // Per-section loading guard
     if (current.isLoadingLikes && !refresh) return;
 
-    // Guard: Increment version for this section
     final requestVersion = ++_likesRequestVersion;
 
     if (refresh) {
@@ -295,8 +293,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
       page: _repostsPage,
       limit: limit,
     );
-
-    // Guard check
     if (requestVersion != _repostsRequestVersion) return;
 
     result.fold(
@@ -331,19 +327,33 @@ class ProfileNotifier extends Notifier<ProfileState> {
     if (current.isLoadingPlaylists && !refresh) return;
 
     if (refresh) {
-      state = current.copyWith(isLoadingPlaylists: true, playlists: const []);
+      state = current.copyWith(
+        isLoadingPlaylists: true,
+        playlists: const [],
+        albums: const [],
+      );
     } else {
       state = current.copyWith(isLoadingPlaylists: true);
     }
 
     try {
-      final playlists = await _playlistDs.fetchUserPlaylists(
+      final allItems = await _playlistDs.fetchUserPlaylists(
         userId: userId,
         limit: limit,
       );
+
+      // Split by type: albums (album, ep, single, compilation) vs playlists
+      final playlists = allItems
+          .where((p) => p.type != PlaylistType.album)
+          .toList();
+      final albums = allItems
+          .where((p) => p.type == PlaylistType.album)
+          .toList();
+
       if (state is ProfileLoaded) {
         state = (state as ProfileLoaded).copyWith(
           playlists: playlists,
+          albums: albums,
           isLoadingPlaylists: false,
         );
       }
@@ -553,7 +563,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> unblockUser(String userId) async {
-    // ── Optimistic Update ──────────────────────────────────────────────────
     // Immediately hide the blocked screen.
     final previous = state;
     if (state is ProfileLoaded) {

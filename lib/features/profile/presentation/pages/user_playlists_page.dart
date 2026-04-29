@@ -7,10 +7,17 @@ import '../providers/profile_provider.dart';
 import '../providers/profile_state.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
+enum PlaylistPageType { playlists, albums }
+
 class UserPlaylistsPage extends ConsumerStatefulWidget {
   final String userId;
+  final PlaylistPageType type;
 
-  const UserPlaylistsPage({super.key, required this.userId});
+  const UserPlaylistsPage({
+    super.key,
+    required this.userId,
+    this.type = PlaylistPageType.playlists,
+  });
 
   @override
   ConsumerState<UserPlaylistsPage> createState() => _UserPlaylistsPageState();
@@ -35,18 +42,24 @@ class _UserPlaylistsPageState extends ConsumerState<UserPlaylistsPage> {
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(widget.userId));
 
+    final title = widget.type == PlaylistPageType.albums ? 'Albums' : 'Playlists';
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Playlists'),
+        title: Text(title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
       body: switch (profileState) {
-        ProfileLoaded(:final playlists, :final isLoadingPlaylists) =>
-          _buildGrid(context, playlists, isLoadingPlaylists),
+        ProfileLoaded(:final playlists, :final albums, :final isLoadingPlaylists) =>
+          _buildGrid(
+            context,
+            widget.type == PlaylistPageType.albums ? albums : playlists,
+            isLoadingPlaylists,
+          ),
         ProfileLoading() => const Center(
           child: CircularProgressIndicator(color: AppTheme.primaryBrand),
         ),

@@ -46,15 +46,16 @@ Future<void> _initFirebaseIfSupported() async {
   }
 }
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // ── Initialize Local Storage ──────────────────────────
-  await Hive.initFlutter();
-
-  // ── Initialize Firebase ───────────────────────────────
-  await _initFirebaseIfSupported();
-  await _initGoogleCast();
+Future<void> _initAudioServiceIfSupported() async {
+  // audio_service does NOT support Windows or web.
+  // Only initialize it on Android and iOS where it's properly supported.
+  if (kIsWeb ||
+      (defaultTargetPlatform != TargetPlatform.android &&
+          defaultTargetPlatform != TargetPlatform.iOS)) {
+    // Use direct handler instance on unsupported platforms
+    globalAudioHandler = RythmifyAudioHandler();
+    return;
+  }
 
   globalAudioHandler = await AudioService.init(
     builder: () => RythmifyAudioHandler(),
@@ -65,6 +66,21 @@ void main() async {
       androidStopForegroundOnPause: true,
     ),
   );
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Initialize Local Storage ──────────────────────────
+  await Hive.initFlutter();
+
+  // ── Initialize Firebase ───────────────────────────────
+  await _initFirebaseIfSupported();
+  await _initGoogleCast();
+
+  // ── Initialize Audio Service (Android/iOS only) ───────
+  await _initAudioServiceIfSupported();
+
   runApp(
     ProviderScope(
       overrides: [
