@@ -31,53 +31,79 @@ class _Sheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.fromLTRB(
-          24, 16, 24, 32 + MediaQuery.of(context).padding.bottom),
+        24,
+        16,
+        24,
+        32 + MediaQuery.of(context).padding.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40, height: 4,
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
-                color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 24),
 
           // Icon
           Container(
-            width: 56, height: 56,
+            width: 56,
+            height: 56,
             decoration: const BoxDecoration(
-                color: Color(0xFF2A1A3E), shape: BoxShape.circle),
-            child: const Icon(Icons.workspace_premium_rounded,
-                color: Color(0xFF7B2FBE), size: 28),
+              color: Color(0xFF2A1A3E),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: Color(0xFF7B2FBE),
+              size: 28,
+            ),
           ),
           const SizedBox(height: 16),
 
-          Text('Upgrade to Premium',
-              style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+          Text(
+            'Upgrade to Premium',
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             'Upgrade to Premium to $reason\nand unlock unlimited access.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-                fontSize: 14, color: Colors.white60, height: 1.5),
+              fontSize: 14,
+              color: Colors.white60,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 20),
 
           // Benefits
-          ...[
-            'Unlimited track uploads',
-            'Unlimited playlist creation',
-          ].map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(children: [
+          ...['Unlimited track uploads', 'Unlimited playlist creation'].map(
+            (f) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
                   const Icon(Icons.check, color: Color(0xFF7B2FBE), size: 15),
                   const SizedBox(width: 10),
-                  Text(f,
-                      style: GoogleFonts.inter(
-                          fontSize: 13, color: Colors.white70)),
-                ]),
-              )),
+                  Text(
+                    f,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
 
           SizedBox(
@@ -94,16 +120,22 @@ class _Sheet extends StatelessWidget {
                 Navigator.pop(context);
                 context.go('/upgrade');
               },
-              child: Text('See Premium plans',
-                  style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700, fontSize: 15)),
+              child: Text(
+                'See Premium plans',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Not now',
-                style: GoogleFonts.inter(fontSize: 14, color: Colors.white38)),
+            child: Text(
+              'Not now',
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.white38),
+            ),
           ),
         ],
       ),

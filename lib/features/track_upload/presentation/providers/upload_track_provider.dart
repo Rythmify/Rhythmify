@@ -247,15 +247,15 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   }
 
   Future<void> fetchTags(WidgetRef ref) async {
-  try {
-    final dataSource = ref.read(_uploadDataSourceProvider);
-    final tags = await dataSource.fetchTags();
-    state = state.copyWith(availableTags: tags);
-    debugPrint('Tags loaded: $tags');
-  } catch (e) {
-    debugPrint('Failed to load tags: $e');
+    try {
+      final dataSource = ref.read(_uploadDataSourceProvider);
+      final tags = await dataSource.fetchTags();
+      state = state.copyWith(availableTags: tags);
+      debugPrint('Tags loaded: $tags');
+    } catch (e) {
+      debugPrint('Failed to load tags: $e');
+    }
   }
-}
 
   void addTag(String tag) {
     if (state.draft == null) return;

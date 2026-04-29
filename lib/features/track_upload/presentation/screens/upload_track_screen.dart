@@ -638,7 +638,10 @@ class _AdvancedTab extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
           SizedBox(height: 8),
-          Text('Coming soon', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            'Coming soon',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -664,7 +667,10 @@ class _PermissionsTab extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
           SizedBox(height: 8),
-          Text('Coming soon', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            'Coming soon',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -958,8 +964,7 @@ class _TagsPickerField extends StatelessWidget {
                 tag,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
               trailing: isSelected
@@ -999,8 +1004,8 @@ class _TagsPickerField extends StatelessWidget {
                     availableTags.isEmpty
                         ? 'Loading tags...'
                         : selectedTags.isEmpty
-                            ? 'Add tags to describe your track'
-                            : '${selectedTags.length} tag(s) selected',
+                        ? 'Add tags to describe your track'
+                        : '${selectedTags.length} tag(s) selected',
                     style: TextStyle(
                       color: selectedTags.isNotEmpty
                           ? Colors.white
