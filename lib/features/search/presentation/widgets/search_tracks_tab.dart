@@ -13,7 +13,7 @@ class TracksTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final results = ref.watch(searchResultsProvider);
+    final results = ref.watch(searchTracksProvider);
 
     return results.when(
       loading: () => const Center(
@@ -34,7 +34,7 @@ class TracksTab extends ConsumerWidget {
         }
         return ListView.separated(
           key: const Key('tracks_list'),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
           itemCount: data.tracks.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, i) => TrackCard(

@@ -56,18 +56,7 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Liked Playlists (GET /me/liked-playlists)
-  // Returns mixes, generated playlists, and regular liked playlists.
-  // All returned with isOwned=false.
-  // Cover and trackCount enriched from LocalSavedStore for generated
-  // playlists where the backend returns null/0.
   // ============================================================
-  // In playlist_remote_datasource.dart:
-  //
-  // 1. Change fetchLikedPlaylists() to also load savedTrackRadios from local store
-  // 2. Update _likedItemFromJson signature to accept both maps
-  //
-  // Replace fetchLikedPlaylists() and _likedItemFromJson with these two methods:
-
   Future<List<PlaylistEntity>> fetchLikedPlaylists({
     int limit = 50,
     int offset = 0,
@@ -83,7 +72,6 @@ class PlaylistRemoteDatasource {
       final items = outerData['items'] as List<dynamic>;
       _log('← Got ${items.length} liked playlists');
 
-      // Load both local stores for cover/metadata enrichment
       final savedMixes = await LocalSavedStore.instance.getMixes();
       final mixById = {for (final m in savedMixes) m.mixId: m};
 
@@ -113,19 +101,16 @@ class PlaylistRemoteDatasource {
     final localMix = localMixes[id];
     final localRadio = localRadios[id];
 
-    // Cover: backend first, then local mix store, then local radio store
     final backendCover = json['cover_image'] as String?;
     final coverUrl = (backendCover != null && backendCover.isNotEmpty)
         ? backendCover
         : localMix?.coverUrl ?? localRadio?.coverUrl;
 
-    // Track count: backend first, then local stores
     final backendTrackCount = (json['track_count'] as num?)?.toInt() ?? 0;
     final trackCount = backendTrackCount > 0
         ? backendTrackCount
         : (localMix?.trackCount ?? localRadio?.trackCount ?? 0);
 
-    // isGeneratedMix: backend subtype OR locally saved as a mix
     final isGeneratedMix =
         subtype == 'auto_generated' ||
         subtype == 'curated_daily' ||
@@ -133,10 +118,8 @@ class PlaylistRemoteDatasource {
         subtype == 'genre_trending' ||
         localMix != null;
 
-    // isTrackRadio: backend subtype OR locally saved as a track radio
     final isTrackRadio = subtype == 'track_radio' || localRadio != null;
 
-    // Name: backend name → local mix title → local radio title → 'Untitled'
     final name =
         json['name'] as String? ??
         json['title'] as String? ??
@@ -206,8 +189,15 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Single Playlist Detail
+  // FIX: /playlists/:id returns type:"regular" even for saved track radios.
+  // Cross-check LocalSavedStore so track radios keep isTrackRadio=true.
+  // PlaylistModel.fromJson returns PlaylistEntity directly — no .toEntity().
   // ============================================================
-  Future<PlaylistEntity> fetchPlaylistDetail(String playlistId) async {
+  Future<PlaylistEntity> fetchPlaylistDetail(
+    String playlistId, {
+    String? currentUserId,
+    String? currentUserName,
+  }) async {
     _log('→ GET /playlists/$playlistId');
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -216,7 +206,35 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      return PlaylistModel.fromJson(data);
+
+      // fromJson returns PlaylistEntity directly
+      PlaylistEntity playlist = PlaylistModel.fromJson(data);
+
+      // FIX: backend returns type:"regular" for saved track radios.
+      // Cross-check LocalSavedStore using the same API as fetchLikedPlaylists.
+      if (!playlist.isTrackRadio) {
+        final savedRadios = await LocalSavedStore.instance.getTrackRadios();
+        final isLocalRadio = savedRadios.any((r) => r.playlistId == playlistId);
+        if (isLocalRadio) {
+          playlist = playlist.copyWith(isTrackRadio: true);
+          _log(
+            '[DETAIL] Enriched isTrackRadio=true from LocalSavedStore for $playlistId',
+          );
+        }
+      }
+
+      // Resolve owner display name
+      final ownerId = playlist.ownerId;
+      String ownerName = '';
+
+      if (currentUserId != null && ownerId == currentUserId) {
+        ownerName = currentUserName ?? '';
+      } else if (ownerId.isNotEmpty && !playlist.isTrackRadio) {
+        // Skip owner fetch for track radios — system-generated
+        ownerName = await _fetchUserDisplayName(ownerId);
+      }
+
+      return playlist.copyWith(ownerName: ownerName);
     } on DioException catch (e) {
       _logError('fetchPlaylistDetail($playlistId) failed', e);
       rethrow;
@@ -225,7 +243,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Tracks Inside a Playlist
-  // Used for owned playlists (regular subtype).
   // ============================================================
   Future<List<PlaylistTrack>> fetchPlaylistTracks(
     String playlistId, {
@@ -251,9 +268,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── FETCH: Track Radio Tracks
-  // Used for liked track radios (subtype: track_radio).
-  // Endpoint: GET /playlists/:id/radio-tracks
-  // Response: { data: { tracks: [...DiscoveryTrack] } }
   // ============================================================
   Future<List<PlaylistTrack>> fetchRadioTracks(
     String playlistId, {
@@ -315,7 +329,6 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode} Created');
       final data = response.data!['data'] as Map<String, dynamic>;
-      // Newly created playlist is always owned
       final created = PlaylistModel.fromJson(data, isOwned: true);
       _log('← New playlist ID: ${created.id}  name: "${created.name}"');
       return created;
@@ -362,7 +375,6 @@ class PlaylistRemoteDatasource {
       );
       _log('← ${response.statusCode}');
       final data = response.data!['data'] as Map<String, dynamic>;
-      // Updated playlist is owned by definition
       final updated = PlaylistModel.fromJson(data, isOwned: true);
       _log('✅ Playlist updated. Cover URL: ${updated.coverUrl ?? "none"}');
       return updated;
@@ -707,8 +719,6 @@ class PlaylistRemoteDatasource {
 
   // ============================================================
   // ── MIX TRACKS: GET /home/mixes/:mixId
-  // Only for persisted mix UUIDs (mixed_for_you, made_for_you).
-  // Does NOT work for liked playlist UUIDs — use fetchPlaylistTracks.
   // ============================================================
   Future<List<PlaylistTrack>> fetchMixTracks(String mixId) async {
     _log('→ GET /home/mixes/$mixId');
@@ -930,7 +940,7 @@ class PlaylistRemoteDatasource {
     return result;
   }
 
-  // Standard mapper — c0000 tracks pass through (display-only)
+  // Standard mapper — for station/radio/related tracks
   List<PlaylistTrack> _mapDiscoveryTracksToPlaylistTracks(
     List<dynamic> rawList, {
     int startPosition = 1,
@@ -965,22 +975,30 @@ class PlaylistRemoteDatasource {
     return result;
   }
 
+  Future<String> _fetchUserDisplayName(String userId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/users/$userId');
+      final data = response.data!['data'] as Map<String, dynamic>;
+      return data['display_name'] as String? ??
+          data['username'] as String? ??
+          '';
+    } catch (e) {
+      _log('_fetchUserDisplayName($userId) failed: $e');
+      return '';
+    }
+  }
+
   // ============================================================
   // ── LOGGING
   // ============================================================
   void _log(String message) {
-    // ignore: avoid_print
     debugPrint('[DATASOURCE] $message');
   }
 
   void _logError(String context, DioException e) {
-    // ignore: avoid_print
     debugPrint('[DATASOURCE] ❌ ERROR in $context');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Status: ${e.response?.statusCode}');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Message: ${e.message}');
-    // ignore: avoid_print
     debugPrint('[DATASOURCE]    Response body: ${e.response?.data}');
   }
 }

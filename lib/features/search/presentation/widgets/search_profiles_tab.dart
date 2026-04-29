@@ -57,7 +57,7 @@ class ProfilesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final results = ref.watch(searchResultsProvider);
+    final results = ref.watch(searchProfilesProvider);
 
     return results.when(
       loading: () => const Center(
@@ -78,7 +78,7 @@ class ProfilesTab extends ConsumerWidget {
         }
         return ListView.separated(
           key: const Key('profiles_list'),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 200),
           itemCount: data.profiles.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (_, i) => SearchProfileCard(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../../core/theme/app_theme.dart';
 
@@ -77,6 +79,26 @@ class InfoBottomSheet extends StatelessWidget {
             const SizedBox(height: 16),
           ],
 
+          if (_socialItems.isNotEmpty) ...[
+            Text('Social links', style: AppTheme.titleMedium),
+            const SizedBox(height: 8),
+            ..._socialItems.map(
+              (item) => ListTile(
+                key: Key('profile_info_social_${item.name.toLowerCase()}'),
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                leading: FaIcon(
+                  item.icon,
+                  size: 16,
+                  color: AppTheme.textSecondary,
+                ),
+                title: Text(item.name, style: AppTheme.bodyMedium),
+                onTap: () => _openExternalUrl(item.url),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+
           // ── Stats ─────────────────────────────────────────────────
           Row(
             children: [
@@ -116,4 +138,44 @@ class InfoBottomSheet extends StatelessWidget {
       ],
     );
   }
+
+  List<_SocialItem> get _socialItems => [
+    if (profile.instagramUrl != null && profile.instagramUrl!.trim().isNotEmpty)
+      _SocialItem(
+        name: 'Instagram',
+        url: profile.instagramUrl!,
+        icon: FontAwesomeIcons.instagram,
+      ),
+    if (profile.facebookUrl != null && profile.facebookUrl!.trim().isNotEmpty)
+      _SocialItem(
+        name: 'Facebook',
+        url: profile.facebookUrl!,
+        icon: FontAwesomeIcons.facebook,
+      ),
+    if (profile.githubUrl != null && profile.githubUrl!.trim().isNotEmpty)
+      _SocialItem(
+        name: 'GitHub',
+        url: profile.githubUrl!,
+        icon: FontAwesomeIcons.github,
+      ),
+  ];
+
+  Future<void> _openExternalUrl(String rawUrl) async {
+    final url = Uri.parse(rawUrl);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+}
+
+class _SocialItem {
+  final String name;
+  final String url;
+  final IconData icon;
+
+  const _SocialItem({
+    required this.name,
+    required this.url,
+    required this.icon,
+  });
 }

@@ -14,6 +14,9 @@ class ProfileModel extends ProfileEntity {
     super.city,
     super.country,
     super.bio,
+    super.instagramUrl,
+    super.facebookUrl,
+    super.githubUrl,
     required super.followersCount,
     required super.followingCount,
     required super.tracksCount,
@@ -34,6 +37,12 @@ class ProfileModel extends ProfileEntity {
     final city = json['city'] as String?;
     final country = json['country'] as String?;
     final bio = json['bio'] as String?;
+    final instagramUrl =
+        json['instagram_url'] as String? ?? json['instagramUrl'] as String?;
+    final facebookUrl =
+        json['facebook_url'] as String? ?? json['facebookUrl'] as String?;
+    final githubUrl =
+        json['github_url'] as String? ?? json['githubUrl'] as String?;
 
     final followersCount = _readCount(
       json,
@@ -62,6 +71,9 @@ class ProfileModel extends ProfileEntity {
       city: city,
       country: country,
       bio: bio,
+      instagramUrl: instagramUrl,
+      facebookUrl: facebookUrl,
+      githubUrl: githubUrl,
       followersCount: followersCount,
       followingCount: followingCount,
       tracksCount: tracksCount,
@@ -82,6 +94,9 @@ class ProfileModel extends ProfileEntity {
       'city': city,
       'country': country,
       'bio': bio,
+      'instagram_url': instagramUrl,
+      'facebook_url': facebookUrl,
+      'github_url': githubUrl,
       'followers_count': followersCount,
       'following_count': followingCount,
       'tracks_count': tracksCount,

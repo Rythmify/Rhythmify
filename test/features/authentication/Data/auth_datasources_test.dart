@@ -273,7 +273,8 @@ void main() {
                 ).captured.first
                 as Map<String, dynamic>;
 
-        expect(captured.containsKey('captcha_token'), false);
+        expect(captured['captcha_token'], isNull);
+        expect(captured['platform'], 'mobile');
       },
     );
 
@@ -309,7 +310,7 @@ void main() {
         ),
         throwsA(
           predicate<Exception>(
-            (e) => e.toString().contains('AUTH_EMAIL_ALREADY_EXISTS'),
+            (e) => e.toString().contains('EMAIL_ALREADY_EXISTS'),
           ),
         ),
       );
@@ -345,12 +346,12 @@ void main() {
           statusCode: 200,
         ),
       );
-      when(() => mockApiClient.clearToken()).thenAnswer((_) async {});
+      when(() => mockApiClient.clearTokens()).thenAnswer((_) async {});
 
       await datasource.signOut();
 
       verify(() => mockDio.post('/auth/logout')).called(1);
-      verify(() => mockApiClient.clearToken()).called(1);
+      verify(() => mockApiClient.clearTokens()).called(1);
     });
 
     test('should throw on DioException', () async {
@@ -436,7 +437,14 @@ void main() {
             email: 'test@test.com',
             password: 'pass',
           ),
-          throwsA(predicate<Exception>((e) => e.toString().contains(code))),
+          throwsA(
+            predicate<Exception>((e) {
+              if (code == 'AUTH_EMAIL_ALREADY_EXISTS') {
+                return e.toString().contains('EMAIL_ALREADY_EXISTS');
+              }
+              return e.toString().contains(code);
+            }),
+          ),
         );
       });
     }
@@ -610,11 +618,19 @@ void main() {
     });
 
     group('signInWithGoogle', () {
-      test('should return hardcoded user-001 UserModel', () async {
-        final result = await mockDs.signInWithGoogle();
-        expect(result.id, 'user-001');
-        expect(result.token, 'mock-google-token-xyz');
-      });
+      test(
+        'should throw EMAIL_ALREADY_EXISTS for seeded google email',
+        () async {
+          expect(
+            () => mockDs.signInWithGoogle(),
+            throwsA(
+              predicate<Exception>(
+                (e) => e.toString().contains('EMAIL_ALREADY_EXISTS'),
+              ),
+            ),
+          );
+        },
+      );
     });
 
     group('signInWithApple', () {

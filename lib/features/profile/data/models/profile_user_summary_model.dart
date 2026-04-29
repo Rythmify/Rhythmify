@@ -12,20 +12,16 @@ class ProfileUserSummaryModel extends ProfileUserSummary {
   });
 
   /// Builds a model from backend JSON payload.
-  factory ProfileUserSummaryModel.fromJson(Map<String, dynamic> json) {
+  factory ProfileUserSummaryModel.fromJson(
+    Map<String, dynamic> json, {
+    bool isFollowing = false,
+  }) {
     return ProfileUserSummaryModel(
-      id: json['id']?.toString() ?? json['user_id']?.toString() ?? '',
-      displayName:
-          json['display_name'] as String? ??
-          json['name'] as String? ??
-          json['username'] as String? ??
-          '',
+      id: json['id']?.toString() ?? '',
+      displayName: json['display_name'] as String? ?? '',
       username: json['username'] as String? ?? '',
-      avatarUrl:
-          json['profile_picture'] as String? ??
-          json['avatar_url'] as String? ??
-          json['avatar'] as String?,
-      isFollowing: json['is_following'] as bool? ?? false,
+      avatarUrl: json['profile_picture'] as String?,
+      isFollowing: isFollowing,
     );
   }
 }
