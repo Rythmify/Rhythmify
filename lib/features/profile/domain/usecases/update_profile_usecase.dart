@@ -26,6 +26,9 @@ class UpdateProfileUseCase {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   }) {
     return repository.updateProfile(
       displayName: displayName,
@@ -35,6 +38,9 @@ class UpdateProfileUseCase {
       city: city,
       country: country,
       bio: bio,
+      instagramUrl: instagramUrl,
+      facebookUrl: facebookUrl,
+      githubUrl: githubUrl,
     );
   }
 }

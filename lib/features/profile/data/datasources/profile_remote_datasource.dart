@@ -17,6 +17,9 @@ abstract class ProfileRemoteDatasource {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   });
 
   Future<ProfileModel> uploadAvatar({required String filePath});
