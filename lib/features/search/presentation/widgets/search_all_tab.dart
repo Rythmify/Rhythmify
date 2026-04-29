@@ -76,7 +76,7 @@ class AllTab extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const SearchSeeAllPage(
-                    title: 'Albums',
+                    title: 'Profiles',
                     child: ProfilesTab(),
                   ),
                 ),
@@ -169,7 +169,7 @@ class AllTab extends ConsumerWidget {
                 .map(
                   (e) => Padding(
                     key: Key('all_tab_more_track_${e.key}'),
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 50),
                     child: TrackTile(track: e.value),
                   ),
                 ),
@@ -284,29 +284,27 @@ class _AlbumRow extends StatelessWidget {
 
 /// Displays the top search result as a prominent track card with artwork,
 /// title, artist, and formatted duration.
-class _TopResultCard extends StatelessWidget {
+class _TopResultCard extends ConsumerWidget {
   const _TopResultCard({required this.topResult});
   final TopResult topResult;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return switch (topResult) {
-      TopResultTrack(:final track) => ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            track.artworkUrl.isNotEmpty ? track.artworkUrl : '',
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(width: 50, height: 50, color: Colors.grey[800]),
-          ),
-        ),
-        title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(track.artist, style: TextStyle(color: Colors.grey[400])),
-        trailing: const Icon(Icons.more_vert),
+      TopResultTrack(:final track) => TrackCard(
+        track: track,
+        onTap: () {
+          ref
+              .read(queueStateProvider.notifier)
+              .playQueue(
+                tracks: [track],
+                initialIndex: 0,
+                context: QueueContext(
+                  type: QueueSource.search,
+                  sourceId: track.id,
+                ),
+              );
+        },
       ),
 
       TopResultUser(:final profile) => ListTile(

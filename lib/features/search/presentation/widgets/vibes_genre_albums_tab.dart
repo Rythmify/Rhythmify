@@ -47,7 +47,7 @@ class GenreAlbumsTab extends ConsumerWidget {
             Expanded(
               child: GridView.builder(
                 key: const Key('genre_albums_grid'),
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 200),
                 itemCount: albums.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
