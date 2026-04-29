@@ -253,9 +253,9 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                   height: 48,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFFF5500)),
+                      side: const BorderSide(color:  Colors.white),
                       shape: const RoundedRectangleBorder(),
-                      foregroundColor: const Color(0xFFFF5500),
+                      foregroundColor:  Colors.white,
                     ),
                     onPressed: () => context.push('/cancellation'),
                     child: Text(
@@ -263,7 +263,7 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFFF5500),
+                        color:  Colors.white,
                       ),
                     ),
                   ),
