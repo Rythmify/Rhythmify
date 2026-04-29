@@ -16,6 +16,7 @@ import '../../domain/usecases/get_liked_tracks_usecase.dart';
 import '../../domain/usecases/get_uploaded_tracks_usecase.dart';
 import '../../domain/usecases/get_reposted_tracks_usecase.dart';
 import '../../domain/usecases/get_user_connections_usecase.dart';
+import '../../domain/entities/follow_status.dart';
 import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
@@ -144,6 +145,14 @@ class ProfileNotifier extends Notifier<ProfileState> {
   /// This must be called before rendering the profile page so the UI
   /// knows whether to show the blocked screen or the real profile.
   Future<void> _loadFollowStatus(String userId) async {
+    if (userId == 'me') {
+      if (state is ProfileLoaded) {
+        state = (state as ProfileLoaded).copyWith(
+          followStatus: FollowStatus.empty,
+        );
+      }
+      return;
+    }
     final status = await _getFollowStatus(userId);
     if (state is ProfileLoaded) {
       state = (state as ProfileLoaded).copyWith(followStatus: status);
@@ -353,6 +362,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   }) async {
     final current = state;
     if (current is! ProfileLoaded) return;
@@ -367,6 +379,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       city: city,
       country: country,
       bio: bio,
+      instagramUrl: instagramUrl,
+      facebookUrl: facebookUrl,
+      githubUrl: githubUrl,
     );
 
     result.fold(
@@ -480,13 +495,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
     final result = await _unfollowUser(userId: userId);
     if (result.isRight()) {
-      final nextFollowers = current.profile.followersCount > 0
-          ? current.profile.followersCount - 1
-          : 0;
       state = current.copyWith(
         profile: current.profile.copyWith(
           isFollowing: false,
-          followersCount: nextFollowers,
+          followersCount: (current.profile.followersCount - 1).clamp(0, 999999),
         ),
       );
       _updateOwnFollowingCount(-1);

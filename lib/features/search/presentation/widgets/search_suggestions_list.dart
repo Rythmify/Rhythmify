@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
+import 'package:go_router/go_router.dart';
 
 /// Displays debounced autocomplete suggestions while the user is typing.
 /// Shown between the search bar and the vibes grid, before the query is submitted.
@@ -53,8 +54,14 @@ class SearchSuggestionsList extends ConsumerWidget {
               title: Text(suggestion.text),
               trailing: const Icon(Icons.north_west, size: 16),
               onTap: () {
-                ref.read(searchQueryProvider.notifier).update(suggestion.text);
-                ref.read(searchSubmittedProvider.notifier).submit();
+                if (suggestion.type == 'user') {
+                  context.push('/home/profile/${suggestion.id}');
+                } else {
+                  ref
+                      .read(searchQueryProvider.notifier)
+                      .update(suggestion.text);
+                  ref.read(searchSubmittedProvider.notifier).submit();
+                }
               },
             );
           },

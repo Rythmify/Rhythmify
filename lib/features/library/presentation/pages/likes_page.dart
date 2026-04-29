@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/library_providers.dart';
+import '../../domain/entities/library_entities.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../player/presentation/providers/queue_provider.dart';
-import '../../../player/domain/entities/queue_state.dart';
+import '../../../player/presentation/providers/player_provider.dart';
 
 /// Your Likes page matching SoundCloud's layout.
 ///
@@ -25,6 +25,7 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   String _query = '';
+  _LikesSort _sort = _LikesSort.recent;
 
   @override
   void initState() {
@@ -72,7 +73,7 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
           IconButton(
             key: const Key('library_likes_filter_button'),
             icon: const Icon(Icons.tune, color: AppTheme.appBarItems),
-            onPressed: () {},
+            onPressed: _showSortSheet,
           ),
           IconButton(
             key: const Key('library_likes_cast_button'),
@@ -94,25 +95,22 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
   }
 
   Widget _buildScrollView(BuildContext context, LikesState state) {
-    final filtered = _query.isEmpty
+    var filtered = _query.isEmpty
         ? state.tracks
         : state.tracks
               .where(
                 (t) => t.title.toLowerCase().contains(_query.toLowerCase()),
               )
               .toList();
+    filtered = _applySort(filtered);
 
     final filteredTracks = filtered.map((e) => e.track).toList();
 
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
       ref
-          .read(queueStateProvider.notifier)
-          .playQueue(
-            tracks: filteredTracks,
-            initialIndex: index,
-            context: const QueueContext(type: QueueSource.userLikes),
-          );
+          .read(playerStateProvider.notifier)
+          .loadAndPlayQueue(filteredTracks, initialIndex: index);
     }
 
     return CustomScrollView(
@@ -126,12 +124,8 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
               if (filteredTracks.isNotEmpty) {
                 final shuffled = List<Track>.from(filteredTracks)..shuffle();
                 ref
-                    .read(queueStateProvider.notifier)
-                    .playQueue(
-                      tracks: shuffled,
-                      initialIndex: 0,
-                      context: const QueueContext(type: QueueSource.userLikes),
-                    );
+                    .read(playerStateProvider.notifier)
+                    .loadAndPlayQueue(shuffled);
               }
             },
             onPlay: () => playAt(0),
@@ -171,6 +165,71 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
         const SliverToBoxAdapter(child: SizedBox(height: 30)),
       ],
     );
+  }
+
+  List<LikedTrack> _applySort(List<LikedTrack> input) {
+    final sorted = List<LikedTrack>.from(input);
+    switch (_sort) {
+      case _LikesSort.recent:
+        break;
+      case _LikesSort.titleAsc:
+        sorted.sort(
+          (a, b) => a.track.title.toLowerCase().compareTo(
+            b.track.title.toLowerCase(),
+          ),
+        );
+      case _LikesSort.artistAsc:
+        sorted.sort(
+          (a, b) => a.track.artist.toLowerCase().compareTo(
+            b.track.artist.toLowerCase(),
+          ),
+        );
+    }
+    return sorted;
+  }
+
+  Future<void> _showSortSheet() async {
+    final next = await showModalBottomSheet<_LikesSort>(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('library_likes_sort_recent'),
+              title: const Text('Most recent'),
+              trailing: _sort == _LikesSort.recent
+                  ? const Icon(Icons.check, color: AppTheme.primaryBrand)
+                  : null,
+              onTap: () => Navigator.of(context).pop(_LikesSort.recent),
+            ),
+            ListTile(
+              key: const Key('library_likes_sort_title'),
+              title: const Text('Title (A-Z)'),
+              trailing: _sort == _LikesSort.titleAsc
+                  ? const Icon(Icons.check, color: AppTheme.primaryBrand)
+                  : null,
+              onTap: () => Navigator.of(context).pop(_LikesSort.titleAsc),
+            ),
+            ListTile(
+              key: const Key('library_likes_sort_artist'),
+              title: const Text('Artist (A-Z)'),
+              trailing: _sort == _LikesSort.artistAsc
+                  ? const Icon(Icons.check, color: AppTheme.primaryBrand)
+                  : null,
+              onTap: () => Navigator.of(context).pop(_LikesSort.artistAsc),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (next != null && mounted) {
+      setState(() => _sort = next);
+    }
   }
 }
 
@@ -233,10 +292,11 @@ class _LikesHeader extends StatelessWidget {
             onTap: onShuffle,
           ),
           const SizedBox(width: 12),
-          GestureDetector(
+          InkResponse(
             key: const Key('library_likes_play_button'),
             onTap: onPlay,
-            child: Container(
+            radius: 28,
+            child: Ink(
               width: 48,
               height: 48,
               decoration: const BoxDecoration(
@@ -264,8 +324,9 @@ class _CircleIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkResponse(
       onTap: onTap,
+      radius: 24,
       child: Container(
         width: 40,
         height: 40,
@@ -280,6 +341,8 @@ class _CircleIconButton extends StatelessWidget {
     );
   }
 }
+
+enum _LikesSort { recent, titleAsc, artistAsc }
 
 class _EmptyLikes extends StatelessWidget {
   const _EmptyLikes();

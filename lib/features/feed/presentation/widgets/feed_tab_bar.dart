@@ -9,7 +9,7 @@ class FeedTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       key: const Key('feed_tab_bar_sizedbox'),
-      width: 200,
+      width: 250,
       height: 45,
       child: TabBar(
         key: const Key('feed_tab_bar'),

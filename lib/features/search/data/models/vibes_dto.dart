@@ -5,12 +5,13 @@ class VibesDto {
   // Fixed height and color pools — cycled by index since /genres returns no visuals.
   static const List<double> _heights = [150, 230, 250, 100, 160, 75, 250, 170];
   static const List<Color> _colors = [
-    Color.fromARGB(255, 233, 245, 10),
     Color(0xFF9C27B0),
+    Color.fromARGB(255, 233, 245, 10),
+
     Color(0xFF3F51B5),
     Color.fromARGB(255, 15, 255, 231),
-    Color(0xFFFF5722),
-    Color(0xFF607D8B),
+    Color.fromARGB(255, 255, 191, 0),
+    Color.fromARGB(255, 13, 196, 49),
     Color(0xFFFF9800),
     Color.fromARGB(255, 255, 15, 167),
   ];

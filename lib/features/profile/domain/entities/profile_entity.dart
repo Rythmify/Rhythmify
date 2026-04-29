@@ -12,6 +12,9 @@ class ProfileEntity extends Equatable {
   final String? city;
   final String? country;
   final String? bio;
+  final String? instagramUrl;
+  final String? facebookUrl;
+  final String? githubUrl;
   final int followersCount;
   final int followingCount;
   final int tracksCount;
@@ -29,6 +32,9 @@ class ProfileEntity extends Equatable {
     this.city,
     this.country,
     this.bio,
+    this.instagramUrl,
+    this.facebookUrl,
+    this.githubUrl,
     this.followersCount = 0,
     this.followingCount = 0,
     this.tracksCount = 0,
@@ -47,6 +53,9 @@ class ProfileEntity extends Equatable {
     String? city,
     String? country,
     String? bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
     int? followersCount,
     int? followingCount,
     int? tracksCount,
@@ -64,6 +73,9 @@ class ProfileEntity extends Equatable {
       city: city ?? this.city,
       country: country ?? this.country,
       bio: bio ?? this.bio,
+      instagramUrl: instagramUrl ?? this.instagramUrl,
+      facebookUrl: facebookUrl ?? this.facebookUrl,
+      githubUrl: githubUrl ?? this.githubUrl,
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       tracksCount: tracksCount ?? this.tracksCount,
@@ -91,6 +103,9 @@ class ProfileEntity extends Equatable {
     city,
     country,
     bio,
+    instagramUrl,
+    facebookUrl,
+    githubUrl,
     followersCount,
     followingCount,
     tracksCount,

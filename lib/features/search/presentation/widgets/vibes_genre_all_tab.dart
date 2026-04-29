@@ -229,6 +229,7 @@ class GenreAllTab extends ConsumerWidget {
                 child: TrackCard(track: e.value),
               ),
             ),
+            const SizedBox(height: 100),
           ],
         ],
       ),
