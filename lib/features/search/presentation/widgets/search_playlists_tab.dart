@@ -11,7 +11,7 @@ class PlaylistsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resultsAsync = ref.watch(searchResultsProvider);
+    final resultsAsync = ref.watch(searchPlaylistsProvider);
 
     return resultsAsync.when(
       loading: () => const Center(
@@ -33,7 +33,7 @@ class PlaylistsTab extends ConsumerWidget {
         }
         return ListView.builder(
           key: const Key('playlists_list'),
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 200),
           itemCount: playlists.length,
           itemBuilder: (context, index) => _PlaylistTile(
             key: Key('playlist_tile_$index'),

@@ -9,4 +9,6 @@ abstract class SearchRepository {
 
   /// Returns full search results across all content types for [query].
   Future<SearchResults> getSearchResults(String query);
+
+  Future<SearchResults> getSearchResultsTyped(String query, String type);
 }

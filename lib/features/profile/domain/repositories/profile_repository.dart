@@ -43,6 +43,9 @@ abstract class ProfileRepository {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   });
 
   /// Uploads a new avatar image for the authenticated user.

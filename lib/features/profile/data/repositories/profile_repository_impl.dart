@@ -35,6 +35,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String city,
     required String country,
     required String bio,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? githubUrl,
   }) async {
     try {
       final profile = await remoteDatasource.updateProfile(
@@ -45,6 +48,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         city: city,
         country: country,
         bio: bio,
+        instagramUrl: instagramUrl,
+        facebookUrl: facebookUrl,
+        githubUrl: githubUrl,
       );
       return Right(profile);
     } catch (e) {

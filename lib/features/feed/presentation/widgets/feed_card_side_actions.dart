@@ -63,10 +63,7 @@ class FeedCardSideActions extends ConsumerWidget {
           icon: Icons.chat_outlined,
           label: Formatters.formatCount(syncedTrack.commentCount),
           onTap: () {
-            context.push(
-              '/home/comments/${syncedTrack.id}',
-              extra: syncedTrack,
-            );
+            context.push('/comments/${syncedTrack.id}', extra: syncedTrack);
           },
         ),
       ],

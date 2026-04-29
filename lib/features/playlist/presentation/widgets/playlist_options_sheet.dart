@@ -18,277 +18,453 @@ class PlaylistOptionsSheet extends ConsumerWidget {
   const PlaylistOptionsSheet({
     super.key,
     required this.playlistId,
-    this.playlist, // FIX: optional pre-loaded entity from library screen
+    this.playlist,
     this.isOwner = false,
     this.onConverted,
+    this.onDeleted,
   });
 
   final String playlistId;
-  final PlaylistEntity?
-  playlist; // passed from library to avoid wrong playlist bug
+  final PlaylistEntity? playlist;
   final bool isOwner;
   final void Function(PlaylistType newType)? onConverted;
+  final VoidCallback? onDeleted;
 
   String _buildShareUrl(PlaylistEntity p) =>
       'https://rythmify.com/playlists/${p.id}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // FIX: use the passed playlist entity if available (from library),
-    // otherwise fall back to playlistDetailProvider (from detail screen).
     final detailState = ref.watch(playlistDetailProvider);
     final resolvedPlaylist = playlist ?? detailState.playlist;
 
     if (resolvedPlaylist == null) return const SizedBox.shrink();
 
-    // For like state: use detailState if we opened from detail screen,
-    // otherwise use the entity's own isLiked field.
     final isLiked = playlist != null
         ? resolvedPlaylist.isLiked
         : detailState.isLiked;
 
-    final sheetContext = context;
     final shareUrl = _buildShareUrl(resolvedPlaylist);
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1C1C1C),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom + 90,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const BottomSheetHandle(),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.72,
+      minChildSize: 0.40,
+      maxChildSize: 0.85,
+      expand: false,
+      builder: (_, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1C1C1C),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+        ),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const BottomSheetHandle(),
 
-            // ── Preview row ──────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: Row(
-                children: [
-                  PlaylistCoverImage(
-                    playlist: resolvedPlaylist,
-                    size: 56,
-                    borderRadius: 4,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resolvedPlaylist.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          resolvedPlaylist.ownerName.isNotEmpty
-                              ? resolvedPlaylist.ownerName
-                              : 'You',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+              // ── Preview row ────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                child: Row(
+                  children: [
+                    PlaylistCoverImage(
+                      playlist: resolvedPlaylist,
+                      size: 56,
+                      borderRadius: 4,
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(color: Colors.white12, height: 1),
-
-            // ── Share row ──────────────────────────────────────────────
-            _ShareRow(shareUrl: shareUrl, playlist: resolvedPlaylist),
-
-            const Divider(color: Colors.white12, height: 1),
-
-            // ── Like ──────────────────────────────────────────────────────
-            OptionSheetTile(
-              key: const Key('options_like'),
-              icon: isLiked ? Icons.favorite : Icons.favorite_border,
-              label: isLiked ? 'Liked' : 'Like',
-              color: isLiked ? const Color(0xFFFF5500) : Colors.white,
-              onTap: () async {
-                Navigator.of(context).pop();
-                // If opened from detail screen, use the notifier
-                if (playlist == null) {
-                  await ref.read(playlistDetailProvider.notifier).toggleLike();
-                }
-                // If opened from library, the like state is read-only here.
-                // User should open the playlist detail to like/unlike.
-              },
-            ),
-
-            // ── Play next ─────────────────────────────────────────────────
-            OptionSheetTile(
-              key: const Key('options_play_next'),
-              icon: Icons.queue_play_next,
-              label: 'Play next',
-              onTap: () async {
-                Navigator.of(context).pop();
-                final tracks = detailState.tracks;
-                if (tracks.isEmpty) return;
-                try {
-                  final t = await ref
-                      .read(getTrackDetailsUseCaseProvider)
-                      .call(tracks.first.id);
-                  await ref
-                      .read(playerStateProvider.notifier)
-                      .addToQueueNext(t);
-                } catch (_) {}
-              },
-            ),
-
-            // ── Play last ─────────────────────────────────────────────────
-            OptionSheetTile(
-              key: const Key('options_play_last'),
-              icon: Icons.add_to_queue,
-              label: 'Play last',
-              onTap: () async {
-                Navigator.of(context).pop();
-                final tracks = detailState.tracks;
-                if (tracks.isEmpty) return;
-                try {
-                  final t = await ref
-                      .read(getTrackDetailsUseCaseProvider)
-                      .call(tracks.first.id);
-                  await ref
-                      .read(playerStateProvider.notifier)
-                      .addToQueueLast(t);
-                } catch (_) {}
-              },
-            ),
-
-            // ── Copy ─────────────────────────────────────────────────────
-            // Works for owned playlists, mixes, and track radios.
-            // Creates a new owned playlist with the same tracks.
-            OptionSheetTile(
-              key: const Key('options_copy'),
-              icon: Icons.copy_all,
-              label: 'Copy ${resolvedPlaylist.typeLabel.toLowerCase()}',
-              onTap: () async {
-                Navigator.of(context).pop();
-                _showCopyingSnackbar(sheetContext);
-                final newId = await ref
-                    .read(playlistListProvider.notifier)
-                    .copyPlaylist(playlistId);
-                if (newId != null && sheetContext.mounted) {
-                  ScaffoldMessenger.of(sheetContext).hideCurrentSnackBar();
-                  // Navigate to the new owned playlist with full edit UI
-                  sheetContext.push('/library/playlists/$newId', extra: true);
-                }
-              },
-            ),
-
-            if (isOwner) ...[
-              // ── Edit ───────────────────────────────────────────────────
-              OptionSheetTile(
-                key: const Key('options_edit'),
-                icon: Icons.edit_outlined,
-                label: 'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
-                onTap: () {
-                  Navigator.of(context).pop();
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => EditPlaylistSheet(
-                      playlistId: playlistId,
-                      onConverted: onConverted,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            resolvedPlaylist.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            resolvedPlaylist.ownerName.isNotEmpty
+                                ? resolvedPlaylist.ownerName
+                                : 'You',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
 
-              // ── Toggle privacy ─────────────────────────────────────────
+              const Divider(color: Colors.white12, height: 1),
+
+              _ShareRow(shareUrl: shareUrl, playlist: resolvedPlaylist),
+
+              const Divider(color: Colors.white12, height: 1),
+
+              // ── Like ────────────────────────────────────────────────────
               OptionSheetTile(
-                key: const Key('options_toggle_privacy'),
-                icon: resolvedPlaylist.isPublic
-                    ? Icons.lock_outline
-                    : Icons.lock_open_outlined,
-                label: resolvedPlaylist.isPublic
-                    ? 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} private'
-                    : 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} public',
+                key: const Key('options_like'),
+                icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                label: isLiked ? 'Liked' : 'Like',
+                color: isLiked ? const Color(0xFFFF5500) : Colors.white,
                 onTap: () async {
                   Navigator.of(context).pop();
-                  await ref
-                      .read(playlistListProvider.notifier)
-                      .updatePlaylist(
-                        playlistId: playlistId,
-                        name: resolvedPlaylist.name,
-                        isPublic: !resolvedPlaylist.isPublic,
-                      );
-                  ref.read(playlistDetailProvider.notifier).reload();
+                  if (playlist == null) {
+                    await ref
+                        .read(playlistDetailProvider.notifier)
+                        .toggleLike();
+                  }
                 },
               ),
 
-              // ── Delete ─────────────────────────────────────────────────
+              // ── Play next ──────────────────────────────────────────────
               OptionSheetTile(
-                key: const Key('options_delete'),
-                icon: Icons.delete_outline,
-                label: 'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
-                color: Colors.redAccent,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      backgroundColor: const Color(0xFF1E1E1E),
-                      title: Text(
-                        'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}?',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      content: Text(
-                        'This cannot be undone.',
-                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(sheetContext).pop();
-                            ref
-                                .read(playlistListProvider.notifier)
-                                .deletePlaylist(playlistId);
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.redAccent,
-                          ),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
-                  );
+                key: const Key('options_play_next'),
+                icon: Icons.queue_play_next,
+                label: 'Play next',
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final tracks = detailState.tracks;
+                  if (tracks.isEmpty) return;
+                  try {
+                    final t = await ref
+                        .read(getTrackDetailsUseCaseProvider)
+                        .call(tracks.first.id);
+                    await ref
+                        .read(playerStateProvider.notifier)
+                        .addToQueueNext(t);
+                  } catch (_) {}
                 },
               ),
-            ],
 
-            const SizedBox(height: 40),
-          ],
+              // ── Play last ──────────────────────────────────────────────
+              OptionSheetTile(
+                key: const Key('options_play_last'),
+                icon: Icons.add_to_queue,
+                label: 'Play last',
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final tracks = detailState.tracks;
+                  if (tracks.isEmpty) return;
+                  try {
+                    final t = await ref
+                        .read(getTrackDetailsUseCaseProvider)
+                        .call(tracks.first.id);
+                    await ref
+                        .read(playerStateProvider.notifier)
+                        .addToQueueLast(t);
+                  } catch (_) {}
+                },
+              ),
+
+              // ── Copy ────────────────────────────────────────────────────
+              OptionSheetTile(
+                key: const Key('options_copy'),
+                icon: Icons.copy_all,
+                label: 'Copy ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                onTap: () {
+                  Navigator.of(context).pop();
+                  // Small delay so sheet fully dismisses before next one opens
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (!context.mounted) return;
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => _CopyPlaylistSheet(
+                        sourceEntity: resolvedPlaylist,
+                        onCreated: (newId) {
+                          context.push(
+                            '/library/playlists/$newId',
+                            extra: true,
+                          );
+                        },
+                      ),
+                    );
+                  });
+                },
+              ),
+
+              if (isOwner) ...[
+                // ── Edit ──────────────────────────────────────────────────
+                OptionSheetTile(
+                  key: const Key('options_edit'),
+                  icon: Icons.edit_outlined,
+                  label: 'Edit ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => EditPlaylistSheet(
+                        playlistId: playlistId,
+                        onConverted: onConverted,
+                      ),
+                    );
+                  },
+                ),
+
+                // ── Toggle privacy ─────────────────────────────────────────
+                OptionSheetTile(
+                  key: const Key('options_toggle_privacy'),
+                  icon: resolvedPlaylist.isPublic
+                      ? Icons.lock_outline
+                      : Icons.lock_open_outlined,
+                  label: resolvedPlaylist.isPublic
+                      ? 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} private'
+                      : 'Make ${resolvedPlaylist.typeLabel.toLowerCase()} public',
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    await ref
+                        .read(playlistListProvider.notifier)
+                        .updatePlaylist(
+                          playlistId: playlistId,
+                          name: resolvedPlaylist.name,
+                          isPublic: !resolvedPlaylist.isPublic,
+                        );
+                    ref.read(playlistDetailProvider.notifier).reload();
+                  },
+                ),
+
+                // ── Delete ─────────────────────────────────────────────────
+                OptionSheetTile(
+                  key: const Key('options_delete'),
+                  icon: Icons.delete_outline,
+                  label: 'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}',
+                  color: Colors.redAccent,
+                  onTap: () =>
+                      _showDeleteConfirm(context, ref, resolvedPlaylist),
+                ),
+              ],
+
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showCopyingSnackbar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Creating copy...'),
-        duration: Duration(seconds: 10),
+  void _showDeleteConfirm(
+    BuildContext sheetContext,
+    WidgetRef ref,
+    PlaylistEntity resolvedPlaylist,
+  ) {
+    showDialog<void>(
+      context: sheetContext,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: Text(
+          'Delete ${resolvedPlaylist.typeLabel.toLowerCase()}?',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          'This cannot be undone.',
+          style: TextStyle(color: Colors.grey[400], fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(sheetContext).pop();
+              ref
+                  .read(playlistListProvider.notifier)
+                  .deletePlaylist(playlistId);
+              onDeleted?.call();
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COPY PLAYLIST SHEET
+// ════════════════════════════════════════════════════════════════════════════
+
+class _CopyPlaylistSheet extends ConsumerStatefulWidget {
+  const _CopyPlaylistSheet({
+    required this.sourceEntity,
+    required this.onCreated,
+  });
+
+  final PlaylistEntity sourceEntity;
+  final void Function(String newPlaylistId) onCreated;
+
+  @override
+  ConsumerState<_CopyPlaylistSheet> createState() => _CopyPlaylistSheetState();
+}
+
+class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
+  late final TextEditingController _nameController;
+  late bool _isPublic;
+  bool _isCreating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPublic = widget.sourceEntity.isPublic;
+    _nameController = TextEditingController(
+      text: 'Copy of ${widget.sourceEntity.name}',
+    );
+    _nameController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _nameController.text.length,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onCreate() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _isCreating) return;
+    setState(() => _isCreating = true);
+
+    final newId = await ref
+        .read(playlistListProvider.notifier)
+        .copyPlaylist(
+          widget.sourceEntity.id,
+          overrideName: name,
+          overridePublic: _isPublic,
+          sourceEntity: widget.sourceEntity,
+        );
+
+    if (!mounted) return;
+    setState(() => _isCreating = false);
+
+    if (newId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not create playlist. Try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.of(context).pop();
+    widget.onCreated(newId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1C1C1C),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, keyboardHeight + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            maxLength: 100,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              border: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              counterStyle: TextStyle(color: Colors.grey[600]),
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Make this playlist public',
+                style: TextStyle(color: Colors.grey[400], fontSize: 15),
+              ),
+              Switch(
+                value: _isPublic,
+                onChanged: _isCreating
+                    ? null
+                    : (v) => setState(() => _isPublic = v),
+                activeThumbColor: const Color(0xFFFF5500),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton(
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: _isCreating
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _isCreating ? null : () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
+          ),
+        ],
       ),
     );
   }

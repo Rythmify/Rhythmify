@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
+import 'info_bottom_sheet.dart';
 import 'profile_avatar.dart';
 
 class ShareBottomSheet extends ConsumerWidget {
@@ -189,7 +190,15 @@ class ShareBottomSheet extends ConsumerWidget {
           /// ── View info ──────────────────────────────────────────
           GestureDetector(
             key: const Key('profile_share_view_info_gesture'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => InfoBottomSheet(profile: profile),
+              );
+            },
             child: Row(
               children: [
                 const Icon(
