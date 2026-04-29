@@ -8,7 +8,7 @@ class SearchMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       key: const Key('messaging_search_message_elevated_button'),
-      onPressed: () {},
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
         backgroundColor: Colors.white,
