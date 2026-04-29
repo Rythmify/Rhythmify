@@ -39,6 +39,11 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
+  Future<void> tapLikesFilterButton() async => await tapByKey(libraryLikesFilterButton);
+  Future<void> tapLikeFilterOptionTitleAZ() async => await tapByKey(libraryLikesFilterTitleAZ);
+  Future<void> tapLikeFilterOptionMoreRecent() async => await tapByKey(libraryLikesFilterMoreRecent);
+  Future<void> tapLikeFilterOptionArtistAZ() async => await tapByKey(libraryLikesFilterArtistAZ);
+
   // Finds the first "more" inkwell in the likes list and taps it
   Future<void> tapFirstTrackThreeDots() async {
     final moreFinder = find.byWidgetPredicate(
@@ -64,6 +69,13 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
+  Future<void> tapAlbumShuffle() async => await tapByKey(libraryAlbumsShuffleButton);
+  Future<void> tapAlbumPlay()    async => await tapByKey(libraryAlbumsPlayButton);
+  Future<void> tapAlbumFilterButton() async => await tapByKey(libraryAlbumsFilterButton);
+  Future<void> tapAlbumFilterOptionRecentlyAdded() async => await tapByKey(libraryAlbumsFilterRecentlyAdded);
+  Future<void> tapAlbumFilterOptionFirstAdded() async => await tapByKey(libraryAlbumsFilterFirstAdded);
+  Future<void> tapAlbumFilterOptionAlbumName() async => await tapByKey(libraryAlbumsFilterAlbumName);
+
   Future<void> tapFirstAlbum() async {
     final finder = find.byWidgetPredicate(
       (widget) =>
@@ -75,7 +87,7 @@ class LibraryPage extends BasePage {
     await tester.tap(finder.first);
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
-  Future<void> tapAlbumPlay()    async => await tapByKey(libraryAlbumsPlayButton);
+
 
   bool isAlbumsScreenVisible()      => isVisible(libraryAlbumsBackButton);
   bool isAlbumDetailVisible()       => isVisible(libraryAlbumDetailScreen);

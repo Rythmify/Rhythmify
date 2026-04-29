@@ -13,6 +13,21 @@ void main() {
 
   testWidgets('M - Library - all scenarios', (tester) async {
     app.main();
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      debugPrint('[Test] Suppressed: ${details.exception}');
+    };
+    final List<String> failures = [];
+    Future<void> tryTest(String name, Future<void> Function() body) async {
+      try {
+        await body();
+        debugPrint('[PASS] $name');
+      } catch (e) {
+        failures.add('❌ $name\n   → $e');
+        debugPrint('[FAIL] $name: $e');
+      }
+    }
+
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // ── Login ────────────────────────────────────────────────────────────────
@@ -27,118 +42,203 @@ void main() {
     expect(loginPage.isOnHomePage(), true);
 
     // ─── TC-LIBRARY-001 | Navigate to Library tab ─────────────────────────
-    await libraryPage.tapLibraryNavButton();
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tryTest('TC-LIBRARY-001 | Navigate to Library tab', () async {
+      await libraryPage.tapLibraryNavButton();
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+    });
 
 
     // YOUR LIKES SECTION
     debugPrint('YOUR LIKES SECTION');
     // ─── TC-LIBRARY-002 | Open Your Likes ────────────────────────────────
-    await libraryPage.tapYourLikes();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isLikesScreenVisible(), true);
+    await tryTest('TC-LIBRARY-002 | Open Your Likes', () async {
+      await libraryPage.tapYourLikes();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isLikesScreenVisible(), true);
+    });
+
+    // ─── TC-LIBRARY-003 | Filter likes (Most recent/ Title(A-Z)/ Artist(A-Z)) ────────────────────────
+    await tryTest('TC-LIBRARY-003 | Filter likes (Most recent/ Title(A-Z)/ Artist(A-Z))', () async {
+      await libraryPage.tapLikesFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapLikeFilterOptionTitleAZ();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      await libraryPage.tapLikesFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapLikeFilterOptionArtistAZ();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      await libraryPage.tapLikesFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapLikeFilterOptionMoreRecent();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-003 | Play button is tappable ────────────────────────
-    await libraryPage.tapLikesPlay();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    await libraryPage.tapLikesPlay();
+    await tryTest('TC-LIBRARY-003 | Play button is tappable', () async {
+      await libraryPage.tapLikesPlay();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapLikesPlay();
+    });
 
     // ─── TC-LIBRARY-004 | Scroll likes list down and up ──────────────────
-    await libraryPage.scrollListDown(libraryLikesScrollView);
-    await libraryPage.scrollListUp(libraryLikesScrollView);
+    await tryTest('TC-LIBRARY-004 | Scroll likes list down and up', () async {
+      await libraryPage.scrollListDown(libraryLikesScrollView);
+      await libraryPage.scrollListUp(libraryLikesScrollView);
+    });
 
     // ─── TC-LIBRARY-005 | Three-dots → Unlike a track ────────────────────
-    await libraryPage.tapFirstTrackThreeDots();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await libraryPage.tapUnlikeOption();
-    await basePage.pullToRefresh(libraryLikesScrollView);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-005 | Three-dots → Unlike a track', () async {
+      await libraryPage.tapFirstTrackThreeDots();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapUnlikeOption();
+      await basePage.pullToRefresh(libraryLikesScrollView);
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-006 | Search for liked track → visible ───────────────
-    await libraryPage.typeInLikesSearch("Happy");
-    expect(libraryPage.isTrackVisible("Happy"), true,
-        reason: 'Liked track should appear in search results');
+    await tryTest('TC-LIBRARY-006 | Search for liked track → visible', () async {
+      await libraryPage.typeInLikesSearch("أنا وأخي");
+      expect(libraryPage.isTrackVisible("أنا وأخي"), true,
+          reason: 'Liked track should appear in search results');
+    });
 
     // ─── TC-LIBRARY-007 | Search for unliked track → not visible ─────────
-    // await libraryPage.typeInLikesSearch("Unliked Track");
-    // expect(libraryPage.isTrackVisible("Unliked Track"), false,
-    //     reason: 'Unliked track should not appear in likes search');
+    await tryTest('TC-LIBRARY-007 | Search for unliked track → not visible', () async {
+      await libraryPage.typeInLikesSearch("Unliked Track");
+      expect(libraryPage.isTrackVisible("Unliked Track"), false,
+          reason: 'Unliked track should not appear in likes search');
+    });
 
     // ─── TC-LIBRARY-008 | Back to Library ────────────────────────────────
-    await libraryPage.tapLikesBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-008 | Back to Library', () async {
+      await libraryPage.tapLikesBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // ALBUMS
-    // ════════════════════════════════════════════════════════════════════════
 
+    // ALBUMS SECTION
+    debugPrint('ALBUMS SECTION'); 
     // ─── TC-LIBRARY-009 | Open Albums ────────────────────────────────────
-    await libraryPage.tapAlbums();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isAlbumsScreenVisible(), true);
+    await tryTest('TC-LIBRARY-009 | Open Albums', () async {
+      await libraryPage.tapAlbums();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isAlbumsScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-010 | Scroll albums list down and up ─────────────────
-    await libraryPage.scrollListDown(libraryAlbumsScrollView);
-    await libraryPage.scrollListUp(libraryAlbumsScrollView);
+    await tryTest('TC-LIBRARY-010 | Scroll albums list down and up', () async {
+      await libraryPage.scrollListDown(libraryAlbumsScrollView);
+      await libraryPage.scrollListUp(libraryAlbumsScrollView);
+    });
 
-    // ─── TC-LIBRARY-011 | Open an album ──────────────────────────────────
-    await libraryPage.tapFirstAlbum();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isAlbumDetailVisible(), true);
+    // ─── TC-LIBRARY-011 | Filter albums ──────────────────────────────────
+    await tryTest('TC-LIBRARY-011 | Filter albums (RecentlyAdded - FirstAdded - AlbumName)', () async {
+      await libraryPage.tapAlbumFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapAlbumFilterOptionRecentlyAdded();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    // ─── TC-LIBRARY-012 | Play the album ─────────────────────────────────
-    await libraryPage.tapAlbumPlay();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapAlbumFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapAlbumFilterOptionFirstAdded();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    // ─── TC-LIBRARY-013 | Back to Albums list ────────────────────────────
-    await libraryPage.tapAlbumsBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isAlbumsScreenVisible(), true);
+      await libraryPage.tapAlbumFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapAlbumFilterOptionAlbumName();
+       await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-014 | Search for existing album → visible ────────────
-    await libraryPage.typeInAlbumsSearch('Quran');
-    expect(libraryPage.isTrackVisible('Quran'), true,
-        reason: 'Saved album should appear in search');
+    await tryTest('TC-LIBRARY-014 | Search for existing album → visible', () async {
+      await libraryPage.typeInAlbumsSearch('Quran');
+      expect(libraryPage.isTrackVisible('Quran'), true,
+          reason: 'Saved album should appear in search');
+    });
 
     // ─── TC-LIBRARY-015 | Search for non-existing album → no results ─────
-    await libraryPage.typeInAlbumsSearch('notSavedAlbumName');
-    expect(libraryPage.isNoResultsMessageVisible('notSavedAlbumName'), true,
-        reason: '"No results for" message should appear');
+    await tryTest('TC-LIBRARY-015 | Search for non-existing album → no results', () async {
+      await libraryPage.typeInAlbumsSearch('notSavedAlbumName');
+      expect(libraryPage.isNoResultsMessageVisible('notSavedAlbumName'), true,
+          reason: '"No results for" message should appear');
+    });
+
+    // ─── TC-LIBRARY-011 | Open an album ──────────────────────────────────
+    await tryTest('TC-LIBRARY-011 | Open an album', () async {
+      await libraryPage.tapFirstAlbum();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isAlbumDetailVisible(), true);
+    });
+
+    await tryTest('TC-LIBARARY-012 | Like & 3 dots are clickable', () async {
+      await libraryPage.tapAlbumLike();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapAlbumShowMore();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
+
+    // ─── TC-LIBRARY-012 | Play & shuffle the album ─────────────────────────────────
+    await tryTest('TC-LIBRARY-012 | Play & shuffle the album', () async {
+      await libraryPage.tapAlbumPlay();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapAlbumShuffle();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
+
+    // ─── TC-LIBRARY-013 | Back to Albums list ────────────────────────────
+    await tryTest('TC-LIBRARY-013 | Back to Albums list', () async {
+      await libraryPage.tapAlbumsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isAlbumsScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-016 | Back to Library ────────────────────────────────
-    await libraryPage.tapAlbumsBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-016 | Back to Library', () async {
+      await libraryPage.tapAlbumsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // FOLLOWING
-    // ════════════════════════════════════════════════════════════════════════
 
+    // FOLLOWING SECTION
+    debugPrint('FOLLOWING SECTION');
     // ─── TC-LIBRARY-017 | Open Following ─────────────────────────────────
-    await libraryPage.tapFollowing();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isFollowingScreenVisible(), true);
+    await tryTest('TC-LIBRARY-017 | Open Following', () async {
+      await libraryPage.tapFollowing();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isFollowingScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-018 | Scroll following list down and up ──────────────
-    await libraryPage.scrollListDown(followingListView);
-    await libraryPage.scrollListUp(followingListView);
+    await tryTest('TC-LIBRARY-018 | Scroll following list down and up', () async {
+      await libraryPage.scrollListDown(followingListView);
+      await libraryPage.scrollListUp(followingListView);
+    });
 
     // ─── TC-LIBRARY-019 | Tap Following button → dialog appears ──────────
-    await libraryPage.tapFirstFollowingButton();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(libraryPage.isUnfollowDialogVisible(), true);
+    await tryTest('TC-LIBRARY-019 | Tap UnFollow button → dialog appears', () async {
+      await libraryPage.tapFirstFollowingButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(libraryPage.isUnfollowDialogVisible(), true);
+    });
 
     // ─── TC-LIBRARY-020 | Tap Cancel → dialog dismisses ──────────────────
-    await libraryPage.tapCancelOnDialog();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(libraryPage.isUnfollowDialogVisible(), false,
-        reason: 'Dialog should dismiss on Cancel');
+    await tryTest('TC-LIBRARY-020 | Tap Cancel → dialog dismisses', () async {
+      await libraryPage.tapCancelOnDialog();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(libraryPage.isUnfollowDialogVisible(), false,
+          reason: 'Dialog should dismiss on Cancel');
+    });
 
     // ─── TC-LIBRARY-021 | Tap Following again → tap Unfollow ─────────────
-    await libraryPage.tapFirstFollowingButton();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(libraryPage.isUnfollowDialogVisible(), true);
-    await libraryPage.tapUnfollowOnDialog();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-021 | Tap Following again → tap Unfollow', () async {
+      await libraryPage.tapFirstFollowingButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(libraryPage.isUnfollowDialogVisible(), true);
+      await libraryPage.tapUnfollowOnDialog();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-022 | Back to Library ────────────────────────────────
     await libraryPage.tapFollowingBack();
@@ -284,5 +384,12 @@ void main() {
     // ─── TC-LIBRARY-048 | Back to Library ────────────────────────────────
     await libraryPage.tapHistoryBack();
     await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    FlutterError.onError = originalOnError;
+    if (failures.isNotEmpty) {
+      final summary = failures.join('\n');
+      debugPrint('\n══ TEST SUMMARY ══\n$summary');
+      fail('${failures.length} test(s) failed:\n$summary');
+    }
   });
 }

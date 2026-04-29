@@ -236,6 +236,81 @@ const String libraryStationsItem            = 'library_stations_item';
 const String libraryInsightsItem            = 'library_insights_item';
 const String libraryUploadsItem             = 'library_uploads_item';
 
+// ── Library — Likes ───────────────────────────────────────────────────────────
+const String libraryLikesBackButton         = 'library_likes_back_button';
+const String libraryLikesSearchBar          = 'library_likes_search_bar';
+const String libraryLikesFilterButton       = 'library_likes_filter_button';
+const String libraryLikesFilterTitleAZ      = 'library_likes_sort_title';
+const String libraryLikesFilterMoreRecent   = 'library_likes_sort_recent';
+const String libraryLikesFilterArtistAZ     = 'library_likes_sort_artist';
+const String libraryLikesCastButton         = 'library_likes_cast_button';
+const String libraryLikesScrollView         = 'library_likes_scroll_view';
+const String libraryLikesShuffleButton      = 'library_likes_shuffle_button';
+const String libraryLikesPlayButton         = 'library_likes_play_button';
+
+// ── Library — Following ───────────────────────────────────────────────────────
+const String followingListView              = 'following_list_view';
+const String followingRetryButton           = 'following_retry_button';
+
+// ── Library — Albums ──────────────────────────────────────────────────────────
+const String libraryAlbumsBackButton        = 'library_albums_back_button';
+const String libraryAlbumsSearchField       = 'library_albums_search_field';
+const String libraryAlbumsScrollView        = 'library_albums_scroll_view';
+// Not yet implemented by cross team
+const String libraryAlbumsPlayButton           = 'library_albums_play_button';
+const String libraryAlbumsShuffleButton        = 'library_albums_shuffle_button';
+const String libraryAlbumsFilterButton         = 'library_albums_filter_button';
+const String libraryAlbumsFilterRecentlyAdded = 'library_albums_filter_recently_added';
+const String libraryAlbumsFilterFirstAdded      = 'library_albums_filter_first_added';
+const String libraryAlbumsFilterAlbumName       = 'library_albums_filter_album_name';
+
+// ── Library — Stations ────────────────────────────────────────────────────────
+const String libraryStationsBackButton      = 'library_stations_back_button';
+const String libraryStationsSearchField     = 'library_stations_search_field';
+const String libraryStationsScrollView      = 'library_stations_scroll_view';
+
+// ── Library — History ─────────────────────────────────────────────────────────
+const String historyBackButton              = 'history_back_button';
+const String historySearchBar               = 'history_search_bar';
+const String historyFilterButton            = 'history_filter_button';
+const String historyCastButton              = 'history_cast_button';
+const String historyScrollView              = 'history_scroll_view';
+const String historyClearIconButton         = 'history_clear_icon_button';
+const String historyShuffleIconButton       = 'history_shuffle_icon_button';
+const String historyPlayButton              = 'history_play_button';
+const String historyPlayAllFab              = 'history_play_all_fab';
+const String historyListView                = 'history_list_view';
+
+// ── Library — Insights ────────────────────────────────────────────────────────
+const String insightsSummaryCard            = 'insights_summary_card';
+const String insightsTotalPlaysStat         = 'insights_total_plays_stat';
+const String insightsTotalListenersStat     = 'insights_total_listeners_stat';
+const String insightsTotalLikesStat         = 'insights_total_likes_stat';
+const String insightsAllPlatformsTab        = 'insights_all_platforms_tab';
+const String insightsAllPlatformsTabScroll  = 'insights_all_platforms_tab_scroll';
+const String insightsScDataListView         = 'insights_sc_data_list_view';
+const String insightsShareIconButton        = 'insights_share_icon_button';
+const String insightsCastIconButton         = 'insights_cast_icon_button';
+const String insightsScRetryButton          = 'insights_sc_retry_button';
+const String insightsScEmptyState           = 'insights_sc_empty_state';
+const String insightsScHeadlineText         = 'insights_sc_headline_text';
+const String insightsScBodyText             = 'insights_sc_body_text';
+const String insightsScUploadButton         = 'insights_sc_upload_button';
+const String insightsApHeadlineText         = 'insights_ap_headline_text';
+const String insightsApBodyText             = 'insights_ap_body_text';
+const String insightsApUpgradeButton        = 'insights_ap_upgrade_button';
+const String insightsUpgradeProButton       = 'insights_upgrade_pro_button';
+
+// ── Library — Playlists ───────────────────────────────────────────────────────
+const String libraryPlaylistsBackButton     = 'library_playlists_back_button';
+const String libraryPlaylistsSearchField    = 'library_playlists_search_field';
+const String libraryPlaylistsImportButton   = 'library_playlists_import_button';
+const String libraryPlaylistsCreateButton   = 'library_playlists_create_button';
+
+// ── Library — Misc ────────────────────────────────────────────────────────────
+const String libraryUpgradeProButton        = 'library_upgrade_pro_button';
+const String libraryImportBannerDismissible = 'library_import_banner_dismissible';
+
 // --- Messaging ---
 const String inboxErrorText                 = 'inbox_error_text';
 const String inboxComposeButton             = 'inbox_compose_button';
@@ -329,15 +404,6 @@ const String commentActionDeleteInkwell        = 'comment_action_delete_inkwell'
 const String commentActionReportInkwell        = 'comment_action_report_inkwell';
 const String commentActionToggleBlockInkwell   = 'comment_action_toggle_block_inkwell';
 
-// ── Library — Likes ───────────────────────────────────────────────────────────
-const String libraryLikesBackButton         = 'library_likes_back_button';
-const String libraryLikesSearchBar          = 'library_likes_search_bar';
-const String libraryLikesFilterButton       = 'library_likes_filter_button';
-const String libraryLikesCastButton         = 'library_likes_cast_button';
-const String libraryLikesScrollView         = 'library_likes_scroll_view';
-const String libraryLikesShuffleButton      = 'library_likes_shuffle_button';
-const String libraryLikesPlayButton         = 'library_likes_play_button';
-
 // ── Profile — Likes ───────────────────────────────────────────────────────────
 const String profileLikesBackButton         = 'likes_back_button';
 const String profileLikesCastButton         = 'likes_cast_button';
@@ -346,87 +412,6 @@ const String profileLikesAddIconButton      = 'likes_add_icon_button';
 const String profileLikesShuffleIconButton  = 'likes_shuffle_icon_button';
 const String profileLikesPlayAllFab         = 'likes_play_all_fab';
 const String profileLikesListView           = 'likes_list_view';
-
-// ── Library — Following ───────────────────────────────────────────────────────
-const String followingListView              = 'following_list_view';
-const String followingRetryButton           = 'following_retry_button';
-
-// ── Library — Albums ──────────────────────────────────────────────────────────
-const String libraryAlbumsBackButton        = 'library_albums_back_button';
-const String libraryAlbumsSearchField       = 'library_albums_search_field';
-const String libraryAlbumsScrollView        = 'library_albums_scroll_view';
-
-// ── Library — Stations ────────────────────────────────────────────────────────
-const String libraryStationsBackButton      = 'library_stations_back_button';
-const String libraryStationsSearchField     = 'library_stations_search_field';
-const String libraryStationsScrollView      = 'library_stations_scroll_view';
-
-// ── Library — History ─────────────────────────────────────────────────────────
-const String historyBackButton              = 'history_back_button';
-const String historySearchBar               = 'history_search_bar';
-const String historyFilterButton            = 'history_filter_button';
-const String historyCastButton              = 'history_cast_button';
-const String historyScrollView              = 'history_scroll_view';
-const String historyClearIconButton         = 'history_clear_icon_button';
-const String historyShuffleIconButton       = 'history_shuffle_icon_button';
-const String historyPlayButton              = 'history_play_button';
-const String historyPlayAllFab              = 'history_play_all_fab';
-const String historyListView                = 'history_list_view';
-
-// ── Library — Insights ────────────────────────────────────────────────────────
-const String insightsSummaryCard            = 'insights_summary_card';
-const String insightsTotalPlaysStat         = 'insights_total_plays_stat';
-const String insightsTotalListenersStat     = 'insights_total_listeners_stat';
-const String insightsTotalLikesStat         = 'insights_total_likes_stat';
-const String insightsAllPlatformsTab        = 'insights_all_platforms_tab';
-const String insightsAllPlatformsTabScroll  = 'insights_all_platforms_tab_scroll';
-const String insightsScDataListView         = 'insights_sc_data_list_view';
-const String insightsShareIconButton        = 'insights_share_icon_button';
-const String insightsCastIconButton         = 'insights_cast_icon_button';
-const String insightsScRetryButton          = 'insights_sc_retry_button';
-const String insightsScEmptyState           = 'insights_sc_empty_state';
-const String insightsScHeadlineText         = 'insights_sc_headline_text';
-const String insightsScBodyText             = 'insights_sc_body_text';
-const String insightsScUploadButton         = 'insights_sc_upload_button';
-const String insightsApHeadlineText         = 'insights_ap_headline_text';
-const String insightsApBodyText             = 'insights_ap_body_text';
-const String insightsApUpgradeButton        = 'insights_ap_upgrade_button';
-const String insightsUpgradeProButton       = 'insights_upgrade_pro_button';
-
-// ── Library — Playlists ───────────────────────────────────────────────────────
-const String libraryPlaylistsBackButton     = 'library_playlists_back_button';
-const String libraryPlaylistsSearchField    = 'library_playlists_search_field';
-const String libraryPlaylistsImportButton   = 'library_playlists_import_button';
-const String libraryPlaylistsCreateButton   = 'library_playlists_create_button';
-
-// ── Library — Misc ────────────────────────────────────────────────────────────
-const String libraryUpgradeProButton        = 'library_upgrade_pro_button';
-const String libraryImportBannerDismissible = 'library_import_banner_dismissible';
-
-// ── Library — TODO: pending cross-team Key() implementation ──────────────────
-const String libraryAlbumsFirstItem            = 'library_albums_first_item';
-const String libraryAlbumsPlayButton           = 'library_albums_play_button';
-const String libraryAlbumDetailScreen          = 'library_album_detail_screen';
-
-const String libraryFollowingBackButton        = 'library_following_back_button';
-const String libraryFollowingFirstButton       = 'library_following_first_button';
-const String libraryFollowingUnfollowDialog    = 'library_following_unfollow_dialog';
-const String libraryFollowingDialogCancel      = 'library_following_dialog_cancel';
-const String libraryFollowingDialogUnfollow    = 'library_following_dialog_unfollow';
-
-const String libraryStationsFirstItem          = 'library_stations_first_item';
-const String libraryStationsPlayButton         = 'library_stations_play_button';
-const String libraryStationDetailScreen        = 'library_station_detail_screen';
-
-const String libraryInsightsBackButton         = 'library_insights_back_button';
-const String libraryRecentlyPlayedDialogCancel = 'library_recently_played_dialog_cancel';
-const String libraryRecentlyPlayedDialogClear  = 'library_recently_played_dialog_clear';
-const String libraryHistoryBackButton          = 'library_history_back_button';
-
-const String uploadsFirstTrackThreeDots        = 'uploads_first_track_three_dots';
-const String uploadsDeleteOption               = 'uploads_delete_option';
-
-
 
 // ---- Playlist Detail Page ----
 const String playlistDetailBackButton       = 'playlist_detail_back_button';
@@ -530,18 +515,6 @@ const String genreAllError                  = 'genre_all_error';
 const String genreAllTracksList             = 'genre_all_tracks_list';
 const String genreAllTracksError            = 'genre_all_tracks_error';
 const String genreAllTracksEmpty            = 'genre_all_tracks_empty';
-
-// --- Search (TODO: pending cross-team Key() implementation) ------------------
-const String searchBackButton            = 'search_back_button';
-const String searchVibeDetailScreenKey   = 'search_vibe_detail_screen';
-const String searchVibeDetailScrollView  = 'search_vibe_detail_scroll_view';
-const String searchVibeDetailPageView    = 'search_vibe_detail_page_view';
-const String searchFirstTrackPlayButton  = 'search_first_track_play_button';
-const String searchMiniPlayerBar         = 'search_mini_player_bar';
-const String searchVibeTabAll            = 'search_vibe_tab_all';
-const String searchVibeTabTrending       = 'search_vibe_tab_trending';
-const String searchVibeTabPlaylists      = 'search_vibe_tab_playlists';
-const String searchVibeTabAlbums         = 'search_vibe_tab_albums';
 
 // --- Settings ---
 const String deleteAccountButton            = 'delete_account_button';
