@@ -89,7 +89,8 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
       builder: (_) => _ConfirmDialog(),
     );
     if (confirm != true || !mounted) return;
-    _timer?.cancel();
+    // Don't cancel the timer — let it count down to 0:00 naturally
+    // The existing timer's onTick already handles expiry correctly for _isCanceled=true
     setState(() => _isCanceled = true);
     await ref.read(premiumProvider.notifier).cancel();
   }
