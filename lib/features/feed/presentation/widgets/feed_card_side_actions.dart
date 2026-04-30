@@ -26,9 +26,8 @@ class FeedCardSideActions extends ConsumerWidget {
       createdAt: item.createdAt,
       playCount: item.track.playCount,
       likeCount: item.track.likeCount,
-      // Note: FeedTrackEntity doesn't have commentCount or repostCount,
-      // they will be 0 until synced or fetched.
-      commentCount: 0,
+
+      commentCount: item.track.commentCount,
       repostCount: 0,
     );
   }
@@ -64,6 +63,15 @@ class FeedCardSideActions extends ConsumerWidget {
           label: Formatters.formatCount(syncedTrack.commentCount),
           onTap: () {
             context.push('/comments/${syncedTrack.id}', extra: syncedTrack);
+          },
+        ),
+        const SizedBox(height: 20),
+        _ActionButton(
+          key: const Key('feed_card_side_actions_addtoplaylist'),
+          icon: Icons.library_add,
+          label: '',
+          onTap: () {
+            context.push('');
           },
         ),
       ],
