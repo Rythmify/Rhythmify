@@ -29,6 +29,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
   );
 
+  // ignore: deprecated_member_use
   final _playlist = ConcatenatingAudioSource(children: []);
 
   /// The current list of tracks in the playback queue.
