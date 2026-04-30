@@ -8,20 +8,21 @@ import 'player_dependency_providers.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
 
 /// Provides the current [AppPlayerState] and exposes methods to control playback.
-final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
-  () {
+final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(()
+  {
     return PlayerNotifier();
   },
 );
 
-/// A temporary state strictly for the UI to track the seek bar while dragging.
-final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(
-  () {
+///  state strictly for the UI to track the seek bar while dragging
+final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(()
+  {
     return SeekDragNotifier();
   },
 );
 
-class SeekDragNotifier extends Notifier<Duration?> {
+class SeekDragNotifier extends Notifier<Duration?>
+{
   @override
   Duration? build() => null;
 
@@ -34,9 +35,6 @@ class SeekDragNotifier extends Notifier<Duration?> {
 class PlayerNotifier extends Notifier<AppPlayerState> {
   bool _isDragging = false;
 
-  // When a local (optimistic) seek is applied we set this timestamp. For a
-  // short grace window we suppress stream updates that would otherwise
-  // overwrite our optimistic position and cause a visual snap-back.
   DateTime? _recentLocalSeek;
 
   // Tracking for listening history
@@ -44,11 +42,10 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   String? _sessionTrackId;
   DateTime? _sessionStartTime;
 
-  // ── [Playlist Module] Internal queue mirror for addToQueueNext/Last ────────
   // These track the queue locally since AppPlayerState has no queue field.
   final List<Track> _queue = [];
   int _currentIndex = 0;
-  // ── [Playlist Module] end ──────────────────────────────────────────────────
+
 
   @override
   AppPlayerState build() {
@@ -58,28 +55,26 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     ref.read(syncHistoryUseCaseProvider).call();
 
     // Listen to the domain stream and update the presentation state.
-    getStreamUseCase.call().listen((newState) {
+    final subscription = getStreamUseCase.call().listen((newState) {
+
+      if (!ref.mounted) return;
+
       final oldTrackId = state.currentTrack?.id;
       final newTrackId = newState.currentTrack?.id;
 
       // If the UI is actively dragging, preserve the frozen position in state.
-      if (_isDragging) {
+      if (_isDragging){
         state = newState.copyWith(position: state.position);
-      } else {
-        // If we recently applied an optimistic local position update (a seek
-        // initiated from the UI), the audio backend may still be reporting the
-        // previous position for a short time. In that window avoid clobbering
-        // our optimistic position with the stale stream value to prevent the
-        // visual "snap back" effect. After the grace period the stream will
-        // be accepted as authoritative.
-        final bool suppressRecentLocalSeek =
-            _recentLocalSeek != null &&
-            DateTime.now().difference(_recentLocalSeek!) <
-                const Duration(milliseconds: 600);
+      }
+      else {
+
+        final bool suppressRecentLocalSeek =_recentLocalSeek != null &&
+            DateTime.now().difference(_recentLocalSeek!) < const Duration(milliseconds: 600);
 
         if (suppressRecentLocalSeek) {
           state = newState.copyWith(position: state.position);
-        } else {
+        }
+        else {
           state = newState;
         }
       }
@@ -95,7 +90,8 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Sync stopwatch with playing status
       if (newState.status == PlayerStatus.playing) {
         if (!_sessionStopwatch.isRunning) _sessionStopwatch.start();
-      } else {
+      }
+      else {
         if (_sessionStopwatch.isRunning) _sessionStopwatch.stop();
       }
 
@@ -114,6 +110,8 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
         }
       }
     });
+
+    ref.onDispose(subscription.cancel);
 
     return const AppPlayerState();
   }
@@ -147,7 +145,8 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   Future<void> loadAndPlayQueue(
     List<Track> tracks, {
     int initialIndex = 0,
-  }) async {
+  }) async
+  {
     // 1. Initiate playback for the first track to get the URL and increment count
     final targetTrack = tracks[initialIndex];
     final updatedTracks = List<Track>.from(tracks);
@@ -161,20 +160,16 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Fallback to existing URL if API fails, or let it throw if critical
     }
 
-    // ── [Playlist Module] Mirror queue for addToQueueNext/Last ────────────
     _queue
       ..clear()
       ..addAll(updatedTracks);
     _currentIndex = initialIndex;
-    // ── [Playlist Module] end ─────────────────────────────────────────────
 
     await ref
         .read(loadQueueUseCaseProvider)
         .call(updatedTracks, initialIndex: initialIndex);
     await ref.read(playTrackUseCaseProvider).call();
   }
-
-  // ── [Playlist Module] Queue insertion methods ──────────────────────────────
 
   /// Inserts [track] immediately after the currently playing track.
   /// If nothing is playing, starts a new queue with this track.
@@ -199,24 +194,26 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// Appends [track] to the end of the current queue.
   /// If nothing is playing, starts a new queue with this track.
   Future<void> addToQueueLast(Track track) async {
-    if (state.currentTrack == null) {
+    if (state.currentTrack == null)
+    {
       await loadAndPlayQueue([track]);
       return;
     }
     Track resolved = track;
+
     try {
       final url = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(track.id);
       resolved = track.copyWith(streamUrl: url);
-    } catch (_) {}
+    }
+    catch (_) {}
     _queue.add(resolved);
     await ref
         .read(loadQueueUseCaseProvider)
         .call(List<Track>.from(_queue), initialIndex: _currentIndex);
   }
 
-  // ── [Playlist Module] end ──────────────────────────────────────────────────
 
   /// Starts playback immediately with partial info and fetches full details in the background.
   Future<void> playOptimistic(Track initialTrack) async {
@@ -226,11 +223,10 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       streamUrl = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(initialTrack.id);
-    } catch (_) {}
+    }
+    catch (_) {}
 
-    final trackToPlay = streamUrl != null
-        ? initialTrack.copyWith(streamUrl: streamUrl)
-        : initialTrack;
+    final trackToPlay = streamUrl != null ? initialTrack.copyWith(streamUrl: streamUrl) : initialTrack;
 
     await loadAndPlayQueue([trackToPlay]);
     _updateTrackInBackground(initialTrack.id);
@@ -355,24 +351,10 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// This updates the Riverpod state so the artwork moves instantly.
   void updatePosition(Duration position) {
     state = state.copyWith(position: position);
-    // Record the time of optimistic local seek so the stream listener can
-    // avoid immediately overriding this value with stale stream data.
-    // This timestamp is used as a short grace period after which stream
-    // updates are accepted normally.
-    // Note: The listener defines the suppression duration.
-    // Accessing a top-level variable declared in build via assignment; using
-    // a simple workaround by setting a private field via method call below.
     _markLocalSeekTime();
   }
 
   void _markLocalSeekTime() {
-    // This method exists to mutate the _lastLocalSeekTime declared inside
-    // the build() listener scope. We store the time on the instance instead.
-    // If multiple seeks happen, this simply updates the timestamp.
-    // Using 600ms similar to the suppression window in the listener.
-    // (Accessible to the listener via closure is not available here, so we
-    // mirror the logic by using an instance field.)
-    // Declare field if absent.
     _recentLocalSeek = DateTime.now();
   }
 
@@ -399,7 +381,6 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     await ref.read(loadQueueUseCaseProvider).call([track], initialIndex: 0);
     await ref.read(playTrackUseCaseProvider).call();
 
-    // Fetch waveform in background so it's ready if user taps bottom info
     _updateTrackInBackground(track.id);
   }
 }
