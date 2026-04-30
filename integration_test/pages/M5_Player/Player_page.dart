@@ -23,7 +23,7 @@ class PlayerPage extends BasePage {
   }
 
   /// Taps the collapse (arrow-down) button to close the full player.
-  Future<void> collapsePlayer() async {
+  Future<void> tapCollapseButton() async {
     await tapByKeyNow(playerFullPageCollapse);
     await tester.pump(const Duration(seconds: 2));
   }
@@ -41,8 +41,8 @@ class PlayerPage extends BasePage {
   }
 
   /// Taps the comment icon in the action bar.
-  Future<void> tapCommentIcon() async {
-    await tapByKeyNow(playerActionBarCommentIcon);
+  Future<void> tapLikeButton() async {
+    await tapByKeyNow(playerActionBarFavorite);
     await tester.pump(const Duration(seconds: 2));
   }
 
