@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Cancellation flow - Manage subscription button exists',
-      (tester) async {
+  testWidgets('Cancellation flow - Manage subscription button exists', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -18,15 +19,13 @@ void main() {
     expect(find.text('Manage subscription'), findsOneWidget);
   });
 
-  testWidgets('Cancellation flow - Not now option exists in modal',
-      (tester) async {
+  testWidgets('Cancellation flow - Not now option exists in modal', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: TextButton(
-            onPressed: () {},
-            child: const Text('Not now'),
-          ),
+          body: TextButton(onPressed: () {}, child: const Text('Not now')),
         ),
       ),
     );

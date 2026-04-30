@@ -19,7 +19,7 @@
 ///
 /// Notes:
 /// - This model is immutable.
-/// - JSON parsing assumes backend returns nested "plan" object. 
+/// - JSON parsing assumes backend returns nested "plan" object.
 
 import 'subscription_plan.dart';
 

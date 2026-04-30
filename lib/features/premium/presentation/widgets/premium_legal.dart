@@ -1,8 +1,8 @@
 /// Static legal content for Premium subscription.
-/// 
+///
 /// Contains Terms of Use and Privacy Policy text displayed in
 /// bottom sheets inside the Premium flow.
-/// 
+///
 /// Used by:
 /// - Terms of Use sheet
 /// - Privacy Policy sheet
