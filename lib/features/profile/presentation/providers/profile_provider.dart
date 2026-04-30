@@ -20,6 +20,7 @@ import '../../domain/entities/follow_status.dart';
 import 'profile_state.dart';
 import '../../data/datasources/profile_mock_datasource.dart';
 import '../../../../core/network/api_client.dart';
+import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 import '../../.././playlist/data/datasources/playlist_remote_datasource.dart';
 import '../../.././playlist/domain/entities/playlist_entity.dart';
@@ -75,6 +76,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
   late final GetFollowStatusUseCase _getFollowStatus;
   late final GetBlockUserUseCase _blockUser;
   late final GetUnblockUserUseCase _unblockUser;
+  late final ProfileRemoteDatasource _profileDatasource;
 
   int _likesPage = 1;
   int _uploadsPage = 1;
@@ -85,16 +87,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
   int _uploadsRequestVersion = 0;
   int _repostsRequestVersion = 0;
 
-  PlaylistRemoteDatasource get _playlistDs =>
-      ref.read(playlistDatasourceProvider);
-
   @override
   ProfileState build() {
-    final datasource = useProfileMockData
+    _profileDatasource = useProfileMockData
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);
 
-    final repository = ProfileRepositoryImpl(remoteDatasource: datasource);
+    final repository = ProfileRepositoryImpl(remoteDatasource: _profileDatasource);
 
     _getProfile = GetProfileUseCase(repository);
     _updateProfile = UpdateProfileUseCase(repository);
@@ -337,7 +336,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
 
     try {
-      final allItems = await _playlistDs.fetchUserPlaylists(
+      final allItems = await _profileDatasource.getAlbums(
         userId: userId,
         limit: limit,
       );
