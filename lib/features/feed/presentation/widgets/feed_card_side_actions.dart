@@ -7,6 +7,7 @@ import '../../../track/presentation/providers/track_sync_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
 
 class FeedCardSideActions extends ConsumerWidget {
   final FeedItemEntity item;
@@ -71,7 +72,7 @@ class FeedCardSideActions extends ConsumerWidget {
           icon: Icons.library_add,
           label: '',
           onTap: () {
-            context.push('');
+            showAddToPlaylistSheet(context, trackId: syncedTrack.id);
           },
         ),
       ],
