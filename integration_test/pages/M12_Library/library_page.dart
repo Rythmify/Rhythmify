@@ -6,6 +6,11 @@ import '../../selectors/selectors.dart';
 class LibraryPage extends BasePage {
   LibraryPage(WidgetTester tester) : super(tester);
 
+  Future<void> _tapByText(String text) async {
+    await tester.tap(find.text(text));
+    await tester.pumpAndSettle();
+  }
+
   // ── Navigation ─────────────────────────────────────────────────────────────
   Future<void> tapLibraryNavButton() async => await tapByKey(libraryNavButton);
 
@@ -160,7 +165,7 @@ class LibraryPage extends BasePage {
   bool isStationDetailVisible()       => isVisible(libraryStationDetailScreen);
 
   // ── Your Insights ──────────────────────────────────────────────────────────
-  Future<void> tapAllPlatformsTab() async => await tapByKey(insightsAllPlatformsTab);
+  Future<void> tapAllPlatformsTab() async => await _tapByText('All Platforms');
 
   Future<void> scrollInsightsDown() async {
     await tester.drag(find.byKey(const Key(insightsScDataListView)), const Offset(0, -400));
@@ -209,7 +214,11 @@ class LibraryPage extends BasePage {
     await tester.tap(finder.first);
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
-  Future<void> tapDeleteUploadOption()   async => await tapByKey(uploadsDeleteOption);
+  Future<void> tapDeleteUploadOption()   async {
+    await tapByKey(uploadsDeleteOption);
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await _tapByText('Delete');
+  }
 
   bool isUploadsScreenVisible() => isVisible(uploadsScrollView);
 

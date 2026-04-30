@@ -38,7 +38,7 @@ const String validPassword = 'Yomna1234';
 
 // New user for registration
 final TestUser newUser = TestUser(
-  email: 'testingNewUser@gmail.com',
+  email: 'testingNewUser1@gmail.com',
   password: 'NewUser1234',
   username: 'testing_user',
   month: 'June',
@@ -100,7 +100,7 @@ const String profileEditFirstName      = 'YOMNA';
 const String profileEditLastName       = 'Mahmoud';
 const String profileEditNewCity        = 'Giza';
 const String profileEditNewCountry     = 'EG';      
-const String profileEditNewCountryName = 'Egypt';   
+const String profileEditNewCountryName = 'Palestine';   
 const String profileEditNewBio         = 'Integration test bio';
 
 // Scroll test values
