@@ -238,6 +238,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<FollowStatus> getFollowStatus(String userId) async {
     return await remoteDatasource.getFollowStatus(userId);
   }
+
   Failure _mapError(String error) {
     if (error.contains('PROFILE_NOT_FOUND')) {
       return const ServerFailure('User profile not found.');

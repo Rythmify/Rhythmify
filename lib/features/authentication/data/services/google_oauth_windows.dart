@@ -67,8 +67,7 @@ class GoogleOAuthWindows {
     // Wait for the callback with a timeout
     String? authCode;
     try {
-      authCode = await _waitForCallback(server, port)
-          .timeout(_timeoutDuration);
+      authCode = await _waitForCallback(server, port).timeout(_timeoutDuration);
     } on TimeoutException {
       await server.close(force: true);
       return null;

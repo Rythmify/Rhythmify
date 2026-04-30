@@ -24,6 +24,7 @@ import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/datasources/profile_remote_datasource_impl.dart';
 import '../../.././playlist/data/datasources/playlist_remote_datasource.dart';
 import '../../.././playlist/domain/entities/playlist_entity.dart';
+
 /// Riverpod providers and notifier orchestration for profile state management.
 ///
 /// Uses separate providers to prevent state flicker:
@@ -93,7 +94,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
         ? ProfileMockDatasource()
         : ProfileRemoteDatasourceImpl(client: apiClient);
 
-    final repository = ProfileRepositoryImpl(remoteDatasource: _profileDatasource);
+    final repository = ProfileRepositoryImpl(
+      remoteDatasource: _profileDatasource,
+    );
 
     _getProfile = GetProfileUseCase(repository);
     _updateProfile = UpdateProfileUseCase(repository);

@@ -34,8 +34,7 @@ class ShareBottomSheet extends ConsumerWidget {
         16,
         12,
         16,
-        MediaQuery.of(context).padding.bottom +
-            64, 
+        MediaQuery.of(context).padding.bottom + 64,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -54,7 +53,7 @@ class ShareBottomSheet extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          /// Profile preview 
+          /// Profile preview
           Row(
             children: [
               ProfileAvatar(avatarUrl: profile.avatarUrl, radius: 24),

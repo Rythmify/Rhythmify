@@ -42,7 +42,9 @@ class _UserPlaylistsPageState extends ConsumerState<UserPlaylistsPage> {
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(widget.userId));
 
-    final title = widget.type == PlaylistPageType.albums ? 'Albums' : 'Playlists';
+    final title = widget.type == PlaylistPageType.albums
+        ? 'Albums'
+        : 'Playlists';
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -54,7 +56,11 @@ class _UserPlaylistsPageState extends ConsumerState<UserPlaylistsPage> {
         ),
       ),
       body: switch (profileState) {
-        ProfileLoaded(:final playlists, :final albums, :final isLoadingPlaylists) =>
+        ProfileLoaded(
+          :final playlists,
+          :final albums,
+          :final isLoadingPlaylists,
+        ) =>
           _buildGrid(
             context,
             widget.type == PlaylistPageType.albums ? albums : playlists,

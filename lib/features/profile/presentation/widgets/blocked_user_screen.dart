@@ -54,7 +54,7 @@ class BlockedUserScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // Headline 
+              // Headline
               Text(
                 'You blocked this account',
                 style: AppTheme.titleMedium,
@@ -63,7 +63,7 @@ class BlockedUserScreen extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // Sub-message 
+              // Sub-message
               Text(
                 'You won\'t see their content and they can\'t see yours.',
                 style: AppTheme.bodyMedium,

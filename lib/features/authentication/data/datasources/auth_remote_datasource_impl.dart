@@ -173,7 +173,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     }
 
     try {
-     
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
         serverClientId:

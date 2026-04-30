@@ -464,7 +464,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.3,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -897,9 +899,7 @@ class _BioTruncatedState extends State<_BioTruncated> {
             child: Text(
               'See more',
               key: const Key('public_profile_bio_see_more'),
-              style: AppTheme.labelLarge.copyWith(
-                color: AppTheme.primaryBrand,
-              ),
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
             ),
           ),
         ),
