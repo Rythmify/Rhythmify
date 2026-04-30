@@ -21,6 +21,14 @@ import '../../../../track_upload/presentation/screens/upload_track_screen.dart';
 import 'bottom_sheet_container.dart';
 import 'track_sheet_header.dart';
 
+//add to playlist HANA (this import +on tap action)
+import '../../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
+//stations HANA
+import '../../../../playlist/data/datasources/playlist_remote_datasource.dart';
+import '../../../../playlist/presentation/providers/saved_content_provider.dart';
+import '../../../../playlist/presentation/providers/playlist_provider.dart';
+import '../../../../../core/network/api_client.dart';
+
 // 1. Define the modes
 enum TrackModalMode { share, info }
 
@@ -313,15 +321,59 @@ class TrackOptionsModal extends ConsumerWidget {
                     ),
                     icon: Icons.queue_music,
                     label: 'Add to Playlist',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(
+                        context,
+                      ).pop(); // close the track options sheet first
+                      showAddToPlaylistSheet(context, trackId: syncedTrack.id);
+                    },
                   ),
+
                   _buildActionRow(
                     key: const Key(
                       'track_options_action_start_station_inkwell',
                     ),
                     icon: Icons.radio,
                     label: 'Start Station',
-                    onTap: () {},
+                    onTap: () async {
+                      Navigator.of(context).pop();
+
+                      final artistId = syncedTrack.userId;
+                      final artistName =
+                          syncedTrack.artist; // ← adjust if needed
+
+                      // Save station to backend
+                      try {
+                        final ds = PlaylistRemoteDatasource(apiClient.dio);
+                        await ds.likeStation(artistId);
+                      } catch (e) {
+                        debugPrint('[StartStation] likeStation failed: $e');
+                      }
+
+                      // Refresh library stations so it appears immediately
+                      try {
+                        await ref
+                            .read(savedStationsProvider.notifier)
+                            .refresh();
+                      } catch (e) {
+                        debugPrint(
+                          '[StartStation] refresh stations failed: $e',
+                        );
+                      }
+
+                      // Navigate to station screen
+                      if (context.mounted) {
+                        context.push(
+                          '/home/station/$artistId',
+                          extra: {
+                            'artistName': artistName,
+                            'stationName': '$artistName Radio',
+                            'coverUrl': syncedTrack
+                                .coverImage, // ← adjust field name if needed
+                          },
+                        );
+                      }
+                    },
                   ),
                   const Divider(color: Colors.white24, height: 1),
                   _buildActionRow(
