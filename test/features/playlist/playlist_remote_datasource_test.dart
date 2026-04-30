@@ -12,7 +12,7 @@ void main() {
           "artist_name": "Artist A",
           "duration": 120,
           "play_count": 10,
-        }
+        },
       ];
 
       final result = PlaylistRemoteDatasourceTestHelper.map(raw);
@@ -24,10 +24,7 @@ void main() {
 
     test('ignores invalid track without id', () {
       final raw = [
-        {
-          "title": "Bad Track",
-          "artist_name": "Artist",
-        }
+        {"title": "Bad Track", "artist_name": "Artist"},
       ];
 
       final result = PlaylistRemoteDatasourceTestHelper.map(raw);
@@ -37,18 +34,8 @@ void main() {
 
     test('filters multiple tracks correctly', () {
       final raw = [
-        {
-          "id": "t1",
-          "title": "A",
-          "artist_name": "X",
-          "duration": 100,
-        },
-        {
-          "id": "t2",
-          "title": "B",
-          "artist_name": "Y",
-          "duration": 200,
-        },
+        {"id": "t1", "title": "A", "artist_name": "X", "duration": 100},
+        {"id": "t2", "title": "B", "artist_name": "Y", "duration": 200},
       ];
 
       final result = PlaylistRemoteDatasourceTestHelper.map(raw);

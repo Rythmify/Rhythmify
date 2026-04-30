@@ -7,10 +7,7 @@ void main() {
     test('copyWith updates playlists correctly', () {
       final state = PlaylistListState(playlists: [], isLoading: false);
 
-      final updated = state.copyWith(
-        playlists: [],
-        isLoading: true,
-      );
+      final updated = state.copyWith(playlists: [], isLoading: true);
 
       expect(updated.isLoading, true);
       expect(updated.playlists.length, 0);
@@ -27,7 +24,7 @@ void main() {
             artistName: 'a',
             duration: const Duration(seconds: 30),
             position: 1,
-            playCount :100,
+            playCount: 100,
           ),
           PlaylistTrack(
             id: '2',
@@ -35,7 +32,7 @@ void main() {
             artistName: 'a',
             duration: const Duration(seconds: 90),
             position: 2,
-            playCount :40,
+            playCount: 40,
           ),
         ],
       );

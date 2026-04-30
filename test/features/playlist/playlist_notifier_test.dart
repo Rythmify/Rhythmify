@@ -32,7 +32,9 @@ class FakePlaylistDatasource {
     playlists.removeWhere((p) => p.id == id);
   }
 
-  Future<List<PlaylistEntity>> fetchMyPlaylists({String filter = 'created'}) async {
+  Future<List<PlaylistEntity>> fetchMyPlaylists({
+    String filter = 'created',
+  }) async {
     return playlists;
   }
 }
@@ -58,10 +60,7 @@ void main() {
     test('deletePlaylist removes playlist', () async {
       final fake = FakePlaylistDatasource();
 
-      final p = await fake.createPlaylist(
-        name: 'To Delete',
-        isPublic: true,
-      );
+      final p = await fake.createPlaylist(name: 'To Delete', isPublic: true);
 
       expect(fake.playlists.length, 1);
 
@@ -73,15 +72,9 @@ void main() {
     test('playlist list reflects added items', () async {
       final fake = FakePlaylistDatasource();
 
-      await fake.createPlaylist(
-        name: 'A',
-        isPublic: true,
-      );
+      await fake.createPlaylist(name: 'A', isPublic: true);
 
-      await fake.createPlaylist(
-        name: 'B',
-        isPublic: true,
-      );
+      await fake.createPlaylist(name: 'B', isPublic: true);
 
       final list = await fake.fetchMyPlaylists();
 
