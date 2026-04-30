@@ -16,6 +16,8 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
@@ -401,7 +403,19 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       const Spacer(),
                       GestureDetector(
                         key: const Key('public_profile_shuffle_gesture'),
-                        onTap: () {},
+                        onTap: () {
+                          if (state.uploadedTracks.isNotEmpty) {
+                            final shuffled = List<Track>.from(state.uploadedTracks)..shuffle();
+                            ref.read(queueStateProvider.notifier).playQueue(
+                                  tracks: shuffled,
+                                  initialIndex: 0,
+                                  context: QueueContext(
+                                    type: QueueSource.userTracks,
+                                    targetUserId: state.profile.id,
+                                  ),
+                                );
+                          }
+                        },
                         child: const Icon(
                           Icons.shuffle,
                           color: AppTheme.textSecondary,
@@ -409,18 +423,32 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Container(
+                      GestureDetector(
                         key: const Key('public_profile_play_button'),
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppTheme.textPrimary,
-                          size: 28,
+                        onTap: () {
+                          if (state.uploadedTracks.isNotEmpty) {
+                            ref.read(queueStateProvider.notifier).playQueue(
+                                  tracks: state.uploadedTracks,
+                                  initialIndex: 0,
+                                  context: QueueContext(
+                                    type: QueueSource.userTracks,
+                                    targetUserId: state.profile.id,
+                                  ),
+                                );
+                          }
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow,
+                            color: AppTheme.textPrimary,
+                            size: 28,
+                          ),
                         ),
                       ),
                     ],
@@ -457,6 +485,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 child: _ProfileSection(
                   title: 'Uploads',
                   tracks: state.uploadedTracks.take(3).toList(),
+                  userId: state.profile.id,
                   onSeeAll: () =>
                       context.push('/home/profile/$_resolvedUserId/uploads'),
                 ),
@@ -466,6 +495,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 child: _ProfileSection(
                   title: 'Likes',
                   tracks: state.likedTracks.take(3).toList(),
+                  userId: state.profile.id,
                   onSeeAll: () =>
                       context.push('/home/profile/$_resolvedUserId/likes'),
                 ),
@@ -475,6 +505,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                 child: _ProfileSection(
                   title: 'Reposts',
                   tracks: state.repostedTracks.take(3).toList(),
+                  userId: state.profile.id,
                   onSeeAll: () =>
                       context.push('/home/profile/$_resolvedUserId/reposts'),
                 ),
@@ -556,10 +587,14 @@ class _ProfileSection extends ConsumerWidget {
   /// Called when the user taps "See All".
   final VoidCallback onSeeAll;
 
+  /// The ID of the user whose tracks are being displayed.
+  final String userId;
+
   const _ProfileSection({
     required this.title,
     required this.tracks,
     required this.onSeeAll,
+    required this.userId,
   });
 
   @override
@@ -592,9 +627,21 @@ class _ProfileSection extends ConsumerWidget {
             key: Key('profile_${title}_${track.id}'),
             track: track,
             onTap: () {
-              ref
-                  .read(playerStateProvider.notifier)
-                  .loadAndPlayQueue(tracks, initialIndex: index);
+              final type = switch (title) {
+                'Uploads' => QueueSource.userTracks,
+                'Likes' => QueueSource.userLikes,
+                'Reposts' => QueueSource.reposts,
+                _ => QueueSource.unknown,
+              };
+
+              ref.read(queueStateProvider.notifier).playQueue(
+                    tracks: tracks,
+                    initialIndex: index,
+                    context: QueueContext(
+                      type: type,
+                      targetUserId: userId,
+                    ),
+                  );
             },
           );
         }),
