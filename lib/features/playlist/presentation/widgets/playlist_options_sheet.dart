@@ -281,7 +281,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 ),
               ],
 
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 200),
             ],
           ),
         ),

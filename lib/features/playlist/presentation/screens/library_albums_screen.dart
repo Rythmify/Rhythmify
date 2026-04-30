@@ -299,6 +299,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => PlaylistOptionsSheet(
         playlistId: album.id,
+         playlist: album,
         isOwner: isOwner,
         onConverted: (t) {
           switch (t) {
