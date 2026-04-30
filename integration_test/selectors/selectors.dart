@@ -593,6 +593,6 @@ const String notificationsListKey         = 'notifications_list';
 // PascalCase names match usage in premium_test.dart
 // The scroll helpers in PremiumPage use find.byType, so the string values
 // are placeholders — they are not used as widget keys.
-const String PremiumPlansSection             = 'premium_plans_section';
-const String PremiumManageSubscribtionButton = 'premium_manage_subscribtion_button';
-const String PremiumCancelsubscribtionButton = 'premium_cancel_subscribtion_button';
+const String premiumPlansSection             = 'premium_plans_section';
+const String premiumManageSubscriptionButton = 'premium_manage_subscribtion_button';
+const String premiumCancelsubscriptionButton = 'premium_cancel_subscribtion_button';

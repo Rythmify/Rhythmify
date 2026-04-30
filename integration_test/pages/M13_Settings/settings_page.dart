@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../base_page.dart';
 import '../../selectors/selectors.dart';
@@ -99,7 +98,7 @@ class SettingsPage extends BasePage {
   // no dedicated keys exist in the codebase.
 
   Future<void> tapYes() async {
-    await tester.tap(find.text('Yes'));
+    await tester.tap(find.text('YES'));
     await tester.pump(const Duration(milliseconds: 500));
   }
 

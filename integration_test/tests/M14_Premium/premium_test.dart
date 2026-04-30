@@ -10,7 +10,7 @@ import '../../selectors/selectors.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('TC-PLAYER-001 | Full player — all checks', (tester) async {
+  testWidgets('M14 - Premium - all scenarios', (tester) async {
     app.main();
     final originalOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
@@ -61,12 +61,12 @@ void main() {
     await tryTest('TC-PREMIUM-004 | See All Plans button', () async {
       await premiumPage.tapSeeAllPlansButton();
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      await premiumPage.scrollHorizontallyInSection(PremiumPlansSection);
+      await premiumPage.scrollHorizontallyInSection(premiumPlansSection);
       await tester.pumpAndSettle(const Duration(seconds: 3));    
-      await premiumPage.scrollUntilVisible(itemText: 'Manage subscribtion', scrollableKey: PremiumManageSubscribtionButton);
+      await premiumPage.scrollUntilVisible(itemText: 'Manage subscription', scrollableKey: premiumManageSubscriptionButton);
       await premiumPage.tapMangeSubscribtionButton();
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      await premiumPage.scrollUntilVisible(itemText: 'cancel subscribtion', scrollableKey: PremiumCancelsubscribtionButton);
+      await premiumPage.scrollUntilVisible(itemText: 'Cancel subscription', scrollableKey: premiumCancelsubscriptionButton);
       await premiumPage.tapKeepsubscribtionButton();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await premiumPage.tapCancelSubscribtionButton();

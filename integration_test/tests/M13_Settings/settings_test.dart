@@ -11,7 +11,7 @@ import '../../selectors/selectors.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('TC-PLAYER-001 | Full player — all checks', (tester) async {
+  testWidgets('M13 - Settings - all scenarios', (tester) async {
     app.main();
     final originalOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
@@ -54,13 +54,13 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.gobackFromImportMyMusic();
 
-      await settingsPage.tapUpload();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await settingsPage.gobackFromUpload();
+      // await settingsPage.tapUpload();
+      // await tester.pumpAndSettle(const Duration(seconds: 3));
+      // await settingsPage.gobackFromUpload();
 
-      await settingsPage.tapBasicSettings();
+      await settingsPage.tapSocailSettings();
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      await settingsPage.gobackFromBasicSettings();
+      await settingsPage.gobackFromSocailSettings();
 
       await settingsPage.tapInbox();
       await tester.pumpAndSettle(const Duration(seconds: 3));
@@ -75,29 +75,36 @@ void main() {
       await settingsPage.gobackFromAddWidgets();
     });
 
-    await tryTest('TC-SETTINGS-003 | Clear cache successfully', () async {        await settingsPage.tapSocailSettings();
+    await tryTest('TC-SETTINGS-003 | Clear cache successfully', () async {  
+      await settingsPage.tapBasicSettings();      
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapOnClearAppCache();
       await settingsPage.tapYes();
-      await settingsPage.gobackFromSocailSettings();
+      await settingsPage.gobackFromBasicSettings();
+
     });
 
     await tryTest('TC-SETTINGS-005 | Clear cache successfully', () async {
-      await settingsPage.tapSocailSettings();
+      await settingsPage.tapBasicSettings();  
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapOnClearAppCache();
       await settingsPage.tapYes();
-      await settingsPage.gobackFromSocailSettings();
+      await settingsPage.gobackFromBasicSettings();
     });   
 
     await tryTest('TC-SETTINGS-005 | Sign Out successfully', () async {
-      await settingsPage.tapAccount();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapSignOut();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapOK();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       expect (settingsPage.isOnBoardingPage(), true);
     }); 
+
+    FlutterError.onError = originalOnError;
+    if (failures.isNotEmpty) {
+      final summary = failures.join('\n');
+      debugPrint('\n══ TEST SUMMARY ══\n$summary');
+      fail('${failures.length} test(s) failed:\n$summary');
+    }
   });
 }

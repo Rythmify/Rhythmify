@@ -44,8 +44,7 @@ class PremiumPage extends BasePage {
     await tester.dragUntilVisible(
       find.text(itemText),
       find.byType(SingleChildScrollView).first,
-      const Offset(0, -100),
-      maxIteration: 50,
+      const Offset(0, -50),
     );
     await tester.pumpAndSettle();
   }
