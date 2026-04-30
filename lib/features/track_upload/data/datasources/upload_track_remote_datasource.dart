@@ -33,24 +33,31 @@ class UploadTrackRemoteDataSource {
       final response = await _dio.get('/tags');
       final data = response.data;
 
-      // Handle both possible response shapes from server:
-      // Shape A: { "tags": ["chill", "electronic"] }
-      // Shape B: { "data": { "tags": [...] } }
-      final rawList = data['tags'] ?? data['data']?['tags'] ?? [];
+      debugPrint('=== TAGS RAW: $data ===');
 
-      return (rawList as List<dynamic>)
+      List<dynamic> rawList = [];
+      if (data['data'] is List) {
+        rawList = data['data'] as List<dynamic>; // deployed shape
+      } else if (data['data'] is Map) {
+        rawList = data['data']?['items'] ?? []; // old local shape
+      }
+
+      final tags = rawList
           .map((tag) {
             if (tag is String) return tag;
             if (tag is Map) return tag['name'] as String? ?? '';
             return '';
           })
-          .where((tag) => tag.isNotEmpty)
+          .where((t) => t.isNotEmpty)
           .toList();
+
+      debugPrint('=== TAGS PARSED: $tags ===');
+      return tags;
     } on DioException catch (e) {
+      debugPrint('=== TAGS FETCH FAILED: ${e.response?.data} ===');
       throw _handleError(e);
     }
   }
-
   // ── Upload Track ───────────────────────────────────────────────────────────
 
   Future<UploadResponseModel> uploadTrack({
