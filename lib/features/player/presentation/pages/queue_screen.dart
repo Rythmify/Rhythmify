@@ -252,10 +252,22 @@ class _QueueTile extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child:
-                    track.coverImage != null &&
-                        track.coverImage!.startsWith('http')
-                    ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                child: track.coverImage != null
+                    ? (track.coverImage!.startsWith('http')
+                        ? Image.network(
+                            track.coverImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.music_note,
+                                    color: Colors.grey, size: 20),
+                          )
+                        : Image.asset(
+                            track.coverImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.music_note,
+                                    color: Colors.grey, size: 20),
+                          ))
                     : const Icon(
                         Icons.music_note,
                         color: Colors.grey,
