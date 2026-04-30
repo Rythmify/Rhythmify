@@ -26,7 +26,6 @@ import '../../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
 //stations HANA
 import '../../../../playlist/data/datasources/playlist_remote_datasource.dart';
 import '../../../../playlist/presentation/providers/saved_content_provider.dart';
-import '../../../../playlist/presentation/providers/playlist_provider.dart';
 import '../../../../../core/network/api_client.dart';
 
 // 1. Define the modes
