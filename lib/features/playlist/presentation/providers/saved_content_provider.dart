@@ -9,6 +9,38 @@
 // tab, the state is stale. By awaiting the reload inside toggle(), the state
 // updates immediately without user needing to switch tabs.
 
+/// PURPOSE:
+/// Manages user "saved" interactions including mixes, track radios, and stations.
+/// This layer ensures UI stays synced with backend-like side effects such as
+/// playlist creation triggered by likes.
+///
+/// RESPONSIBILITIES:
+/// - Toggle saved state for mixes, stations, and track radios
+/// - Maintain optimistic UI updates with rollback on failure
+/// - Persist local saved state via LocalSavedStore
+/// - Trigger playlist refresh when backend creates new liked entities
+/// - Sync library "Liked" playlists after mutations
+///
+/// KEY BEHAVIOR:
+/// - Liking a mix → creates backend playlist → triggers reloadLikedPlaylists()
+/// - Liking a track radio → creates playlist row → triggers reload
+/// - Stations are synced via /users/me/stations endpoint
+///
+/// IMPORTANT DESIGN DECISIONS:
+/// - Uses optimistic state updates for instant UI feedback
+/// - Always re-syncs playlist library after successful like actions
+/// - Separates mix / radio / station logic for clarity
+///
+/// DATA SOURCES:
+/// - PlaylistRemoteDatasource (API calls)
+/// - LocalSavedStore (local persistence cache)
+/// - playlistListProvider (library refresh coordination)
+///
+/// FAILURE HANDLING:
+/// - Any API failure triggers rollback to previous state
+/// - UI never blocks; operations are async-safe
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';

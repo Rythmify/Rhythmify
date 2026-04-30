@@ -1,5 +1,35 @@
 // lib/features/playlist/presentation/widgets/playlist_shared_widgets.dart
-
+/// This file contains reusable shared UI widgets used across playlist screens.
+///
+/// Features:
+/// - Playlist cover image rendering
+/// - Playlist track row widgets
+/// - Generic track row widgets
+/// - Shared bottom sheet handle
+/// - Shared option sheet tile widget
+/// - Placeholder image handling
+///
+/// Main Components:
+/// - PlaylistCoverImage:
+///     Displays playlist cover art or fallback placeholder.
+///
+/// - TrackTileInPlaylist:
+///     Displays playlist track information.
+///
+/// - TrackTileFromTrack:
+///     Displays a generic track row from a Track entity.
+///
+/// - BottomSheetHandle:
+///     Reusable drag handle for modal sheets.
+///
+/// - OptionSheetTile:
+///     Reusable option/action tile widget.
+///
+/// Dependencies:
+/// - Cached network image package
+/// - Playlist entities/models
+/// - Track entity
+/// - Shared app theme/utilities
 library;
 
 import 'package:flutter/material.dart';
