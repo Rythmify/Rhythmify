@@ -69,8 +69,10 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
-  Future<void> tapAlbumShuffle() async => await tapByKey(libraryAlbumsShuffleButton);
-  Future<void> tapAlbumPlay()    async => await tapByKey(libraryAlbumsPlayButton);
+  Future<void> tapAlbumLike()    async => await tapByKey(playlistDetailLikeButton);
+  Future<void> tapAlbumShowMore() async => await tapByKey(playlistDetailMoreButton);
+  Future<void> tapAlbumShuffle() async => await tapByKey(playlistDetailShuffleButton);
+  Future<void> tapAlbumPlay()    async => await tapByKey(playlistDetailPlayButton);
   Future<void> tapAlbumFilterButton() async => await tapByKey(libraryAlbumsFilterButton);
   Future<void> tapAlbumFilterOptionRecentlyAdded() async => await tapByKey(libraryAlbumsFilterRecentlyAdded);
   Future<void> tapAlbumFilterOptionFirstAdded() async => await tapByKey(libraryAlbumsFilterFirstAdded);
@@ -97,6 +99,21 @@ class LibraryPage extends BasePage {
   // ── Following ──────────────────────────────────────────────────────────────
   Future<void> tapFollowingBack()        async => await tapByKey(libraryFollowingBackButton);
 
+  Future<void> tapFirstFollower() async {
+    final finder = find.byWidgetPredicate(
+      (widget) =>
+          widget is ListTile &&
+          widget.key != null &&
+          widget.key.toString().contains('following_item_') &&
+          widget.key.toString().contains('_list_tile'),
+    );
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  bool isProfileScreenVisible() => isVisible(publicProfileBackButton);
+  Future<void> tapProfileBack() async => await tapByKey(publicProfileBackButton);
+
   Future<void> tapFirstFollowingButton() async {
     final finder = find.byWidgetPredicate(
       (widget) =>
@@ -116,6 +133,10 @@ class LibraryPage extends BasePage {
 
   // ── Stations ───────────────────────────────────────────────────────────────
   Future<void> tapStationsBack() async => await tapByKey(libraryStationsBackButton);
+  Future<void> tapStationFilterButton()          async => await tapByKey(libraryStationsFilterButton);
+  Future<void> tapStationFilterOptionFirstAdded() async => await tapByKey(libraryStationsFilterFirstAdded);
+  Future<void> tapStationFilterOptionStationName() async => await tapByKey(libraryStationsFilterStationName);
+  Future<void> tapStationFilterOptionRecentlyAdded() async => await tapByKey(libraryStationsFilterRecentlyAdded);
 
   Future<void> typeInStationsSearch(String query) async {
     await enterTextByKey(libraryStationsSearchField, query);
@@ -151,8 +172,13 @@ class LibraryPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
-  // TODO: pending cross-team — insights back button & insights screen key
-  Future<void> tapInsightsBack() async => await tapByKey(libraryInsightsBackButton);
+  Future<void> tapInsightsBack() async {
+    if (isVisible(libraryInsightsBackButton)) {
+      await tapByKey(libraryInsightsBackButton);
+    } else {
+      await tapByKey(libraryHistoryBackButton);
+    }
+  }
 
   bool isInsightsScreenVisible() => isVisible(insightsSummaryCard);
   bool isInsightsStatsVisible()  =>
@@ -161,8 +187,11 @@ class LibraryPage extends BasePage {
       isVisible(insightsTotalLikesStat);
 
   // ── Your Uploads ───────────────────────────────────────────────────────────
-  Future<void> tapUploadsBack()    async => await tapByKey(uploadsBackButton);
-  Future<void> tapFirstUploadPlay() async => await tapByKey(uploadsPlayButton);
+  Future<void> tapUploadsBack()       async => await tapByKey(uploadsBackButton);
+  Future<void> tapFirstUploadPlay()   async => await tapByKey(uploadsPlayButton);
+  Future<void> tapYourUploadsPlay()   async => await tapByKey(uploadsPlayButton);
+  Future<void> tapYourUploadsShuffle() async => await tapByKey(uploadsShuffleButton);
+  Future<void> tapUpdatedTrack()      async => await tapByKey(trackUpdateTrackInkwell);
 
   Future<void> typeInUploadsSearch(String query) async {
     await enterTextByKey(uploadsSearchBar, query);
@@ -186,11 +215,11 @@ class LibraryPage extends BasePage {
 
   // ── Recently Played ────────────────────────────────────────────────────────
   Future<void> tapHistoryPlay()         async => await tapByKey(historyPlayAllFab);
+  Future<void> tapHistoryShuffle()      async => tapByKey(historyShuffleIconButton);
   Future<void> tapDeleteHistoryIcon()   async => await tapByKey(historyClearIconButton);
   Future<void> tapCancelClearDialog()   async => await tapByKey(libraryRecentlyPlayedDialogCancel);
   Future<void> tapClearOnDialog()       async => await tapByKey(libraryRecentlyPlayedDialogClear);
 
-  // TODO: pending cross-team — history back button & history screen key
   Future<void> tapHistoryBack()         async => await tapByKey(libraryHistoryBackButton);
 
   bool isRecentlyPlayedScreenVisible()  => isVisible(historyListView);

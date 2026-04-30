@@ -45,6 +45,11 @@ class _InsightsPageState extends ConsumerState<InsightsPage>
       appBar: AppBar(
         title: const Text('Your insights'),
         centerTitle: false,
+        leading: IconButton(
+          key: const Key('insights_back_button'),
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           TextButton(
             key: const Key('insights_upgrade_pro_button'),

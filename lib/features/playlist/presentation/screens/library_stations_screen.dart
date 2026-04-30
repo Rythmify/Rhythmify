@@ -191,15 +191,18 @@ class _LibraryStationsScreenState extends ConsumerState<LibraryStationsScreen> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        key: _filterIconKey,
-                        icon: Icon(
-                          Icons.tune,
-                          color: _isFiltered
-                              ? AppTheme.primaryBrand
-                              : AppTheme.textSecondary,
+                      KeyedSubtree(
+                        key: const Key('library_stations_filter_button'),
+                        child: IconButton(
+                          key: _filterIconKey,
+                          icon: Icon(
+                            Icons.tune,
+                            color: _isFiltered
+                                ? AppTheme.primaryBrand
+                                : AppTheme.textSecondary,
+                          ),
+                          onPressed: _toggleOverlay,
                         ),
-                        onPressed: _toggleOverlay,
                       ),
                     ],
                   ),
@@ -311,16 +314,19 @@ class _StationFilterDropdown extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _DropdownItem(
+              key: const Key('library_stations_filter_recently_added'),
               label: 'Recently added',
               checked: sort == _StationSort.recentlyAdded,
               onTap: () => onSortChanged(_StationSort.recentlyAdded),
             ),
             _DropdownItem(
+              key: const Key('library_stations_filter_first_added'),
               label: 'First added',
               checked: sort == _StationSort.firstAdded,
               onTap: () => onSortChanged(_StationSort.firstAdded),
             ),
             _DropdownItem(
+              key: const Key('library_stations_filter_station_name'),
               label: 'Station name',
               checked: sort == _StationSort.stationName,
               onTap: () => onSortChanged(_StationSort.stationName),
@@ -335,6 +341,7 @@ class _StationFilterDropdown extends StatelessWidget {
 // ── Shared dropdown item ──────────────────────────────────────────────────────
 class _DropdownItem extends StatelessWidget {
   const _DropdownItem({
+    super.key,
     required this.label,
     required this.checked,
     required this.onTap,

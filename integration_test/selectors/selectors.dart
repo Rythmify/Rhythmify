@@ -68,6 +68,7 @@ const String homeScaffold                   = 'home_scaffold';
 const String feedNavButton                  = 'feed_nav_button';
 const String searchNavButton                = 'search_nav_button';
 const String libraryNavButton               = 'library_nav_button';
+const String upgradeNavButton               = 'upgrade_nav_button';
 const String homeAppBar                     = 'home_app_bar';
 const String homeUploadTrackButton          = 'home_upload_track_icon_button';
 const String homeInboxButton                = 'home_inbox_icon_button';
@@ -251,26 +252,40 @@ const String libraryLikesPlayButton         = 'library_likes_play_button';
 // ── Library — Following ───────────────────────────────────────────────────────
 const String followingListView              = 'following_list_view';
 const String followingRetryButton           = 'following_retry_button';
+const String libraryFollowingBackButton     = 'following_back_button';
+const String libraryFollowingUnfollowDialog = 'unfollow_dialog';
+const String libraryFollowingDialogCancel   = 'unfollow_dialog_cancel_button';
+const String libraryFollowingDialogUnfollow = 'unfollow_dialog_unfollow_button';
 
 // ── Library — Albums ──────────────────────────────────────────────────────────
-const String libraryAlbumsBackButton        = 'library_albums_back_button';
-const String libraryAlbumsSearchField       = 'library_albums_search_field';
-const String libraryAlbumsScrollView        = 'library_albums_scroll_view';
-// Not yet implemented by cross team
-const String libraryAlbumsPlayButton           = 'library_albums_play_button';
-const String libraryAlbumsShuffleButton        = 'library_albums_shuffle_button';
-const String libraryAlbumsFilterButton         = 'library_albums_filter_button';
+const String libraryAlbumsBackButton          = 'library_albums_back_button';
+const String libraryAlbumsSearchField         = 'library_albums_search_field';
+const String libraryAlbumsScrollView          = 'library_albums_scroll_view';
+const String libraryAlbumDetailScreen         = 'playlist_detail_back_button';
+const String libraryAlbumsFilterButton        = 'library_albums_filter_button';
 const String libraryAlbumsFilterRecentlyAdded = 'library_albums_filter_recently_added';
-const String libraryAlbumsFilterFirstAdded      = 'library_albums_filter_first_added';
-const String libraryAlbumsFilterAlbumName       = 'library_albums_filter_album_name';
+const String libraryAlbumsFilterFirstAdded    = 'library_albums_filter_first_added';
+const String libraryAlbumsFilterAlbumName     = 'library_albums_filter_album_name';
+// Album detail uses playlist_detail_screen — reuse those keys
+const String libraryAlbumsPlayButton          = playlistDetailPlayButton;
+const String libraryAlbumsShuffleButton       = playlistDetailShuffleButton;
 
 // ── Library — Stations ────────────────────────────────────────────────────────
-const String libraryStationsBackButton      = 'library_stations_back_button';
-const String libraryStationsSearchField     = 'library_stations_search_field';
-const String libraryStationsScrollView      = 'library_stations_scroll_view';
+const String libraryStationsBackButton        = 'library_stations_back_button';
+const String libraryStationsSearchField       = 'library_stations_search_field';
+const String libraryStationsScrollView        = 'library_stations_scroll_view';
+const String libraryStationDetailScreen       = 'related_tracks_back_button';
+const String libraryStationsFilterButton      = 'library_stations_filter_button';
+const String libraryStationsFilterRecentlyAdded = 'library_stations_filter_recently_added';
+const String libraryStationsFilterFirstAdded  = 'library_stations_filter_first_added';
+const String libraryStationsFilterStationName = 'library_stations_filter_station_name';
+const String libraryStationsPlayButton        = 'related_tracks_play_button';
 
 // ── Library — History ─────────────────────────────────────────────────────────
-const String historyBackButton              = 'history_back_button';
+const String historyBackButton                  = 'history_back_button';
+const String libraryHistoryBackButton           = historyBackButton;
+const String libraryRecentlyPlayedDialogCancel  = 'clear_history_dialog_cancel_button';
+const String libraryRecentlyPlayedDialogClear   = 'clear_history_dialog_clear_button';
 const String historySearchBar               = 'history_search_bar';
 const String historyFilterButton            = 'history_filter_button';
 const String historyCastButton              = 'history_cast_button';
@@ -278,10 +293,11 @@ const String historyScrollView              = 'history_scroll_view';
 const String historyClearIconButton         = 'history_clear_icon_button';
 const String historyShuffleIconButton       = 'history_shuffle_icon_button';
 const String historyPlayButton              = 'history_play_button';
-const String historyPlayAllFab              = 'history_play_all_fab';
-const String historyListView                = 'history_list_view';
+const String historyPlayAllFab              = historyPlayButton;
+const String historyListView                = historyScrollView;
 
 // ── Library — Insights ────────────────────────────────────────────────────────
+const String libraryInsightsBackButton      = 'insights_back_button';
 const String insightsSummaryCard            = 'insights_summary_card';
 const String insightsTotalPlaysStat         = 'insights_total_plays_stat';
 const String insightsTotalListenersStat     = 'insights_total_listeners_stat';
@@ -371,6 +387,7 @@ const String uploadsScrollView              = 'uploads_scroll_view';
 const String uploadsUploadCircleButton      = 'uploads_upload_circle_button';
 const String uploadsShuffleButton           = 'uploads_shuffle_button';
 const String uploadsPlayButton              = 'uploads_play_button';
+const String uploadsDeleteOption            = 'uploads_delete_option';
 const String uploadsAmplifyChip             = 'uploads_amplify_chip';
 const String uploadsMinutesChip             = 'uploads_minutes_chip';
 const String uploadsEmptyHeadlineText       = 'uploads_empty_headline_text';
@@ -529,86 +546,22 @@ const String genreAllTracksList             = 'genre_all_tracks_list';
 const String genreAllTracksError            = 'genre_all_tracks_error';
 const String genreAllTracksEmpty            = 'genre_all_tracks_empty';
 
-// --- Settings ---
-const String deleteAccountButton            = 'delete_account_button';
-const String settingsSignOutButton          = 'settings_sign_out_button';
-const String pushEnableAll                  = 'push_enable_all';
-const String pushNewFollower                = 'push_new_follower';
-const String pushRepostOfYourPost           = 'push_repost_of_your_post';
-const String pushNewPostByFollowedUser      = 'push_new_post_by_followed_user';
-const String pushLikeOnYourPost             = 'push_like_on_your_post';
-const String pushCommentOnYourPost          = 'push_comment_on_your_post';
-const String pushRythmifyFeatureUpdates     = 'push_rythmify_feature_updates';
-const String pushSurveys                    = 'push_surveys';
-const String pushPromotional                = 'push_promotional';
-const String pushRecommended                = 'push_recommended';
-const String pushNewMessage                 = 'new_message';
-const String emailEnableAll                 = 'email_enable_all';
-const String emailNewFollower               = 'email_new_follower';
-const String emailRepostOfYourPost          = 'email_repost_of_your_post';
-const String emailNewPostByFollowedUser     = 'email_new_post_by_followed_user';
-const String emailLikeOnYourPost            = 'email_like_on_your_post';
-const String emailNewMessage                = 'email_new_message';
-const String emailCommentOnYourPost         = 'email_comment_on_your_post';
-const String emailNewGroupPost              = 'email_new_group_post';
-const String emailRythmifyFeatureUpdates    = 'email_rythmify_feature_updates';
-const String emailSurveys                   = 'email_surveys';
-const String emailPromotional               = 'email_promotional';
-const String emailRecommended               = 'email_recommended';
-const String emailRythmifyNewsletter        = 'email_rythmify_newsletter';
+// ── Settings selectors ───────────────────────────────────────────────────
+// Settings screen — main options
+const String settingsOptionImportMyMusic  = 'option_Import_my_music';
+const String settingsOptionAccount        = 'option_Account';
+const String settingsOptionUpload         = 'option_Upload';
+const String settingsOptionBasicSettings  = 'option_Basic_settings';
+const String settingsOptionSocialSettings = 'option_Social_settings';
+const String settingsOptionInbox          = 'option_Inbox';
+const String settingsOptionNotifications  = 'option_Notifications';
+const String settingsOptionAddWidgets     = 'option_Add_widgets';
 
-// --- Settings — Social ---
-const String showCommentsTile               = 'show_comments_tile';
-const String showActivitiesTile             = 'show_activities_tile';
-const String showTopFanTile                 = 'show_top_fan_tile';
+// Basic settings screen
+const String settingsClearCacheTile       = 'Clear_application_cache_tile';
 
-// --- Settings — Main Options ---
-const String settingsOptionImportMyMusic    = 'option_Import_my_music';
-const String settingsOptionAccount          = 'option_Account';
-const String settingsOptionUpload           = 'option_Upload';
-const String settingsOptionBasicSettings    = 'option_Basic_settings';
-const String settingsOptionSocialSettings   = 'option_Social_settings';
-const String settingsOptionInbox            = 'option_Inbox';
-const String settingsOptionNotifications    = 'option_Notifications';
-const String settingsOptionAddWidgets       = 'option_Add_widgets';
-const String settingsOptionAnalytics        = 'option_Analytics';
-const String settingsOptionCommunications   = 'option_Communications';
-const String settingsOptionAdvertising      = 'option_Advertising';
-const String settingsOptionSupport          = 'option_Support';
-const String settingsOptionLegal            = 'option_Legal';
-
-// --- Settings — Legal ---
-const String legalCopyrightTile             = 'legal-copyright-settings-tile';
-const String legalTermsOfUseTile            = 'legal-terms-of-use-settings-tile';
-const String legalPrivacyPolicyTile         = 'legal-privacy-policy-settings-tile';
-const String legalImprintTile               = 'legal-imprint-settings-tile';
-
-// --- Settings — Inbox ---
-const String inboxSettingsTile              = 'inbox_tile';
-const String inboxNotificationSettingsTile  = 'inbox_notification_settings_tile';
-
-// --- Settings — Import My Music ---
-const String importFromAnotherAppTile       = 'Import_From_Another_App_tile';
-const String manageImportedLikesTile        = 'Manage_imported_likes_tile';
-const String importProviderSpotify          = 'spotify';
-const String importProviderAppleMusic       = 'apple_music';
-const String importProviderDeezer           = 'deezer';
-const String importProviderTidal            = 'tidal';
-const String importProviderAmazonMusic      = 'amazon_music';
-const String importProviderResso            = 'resso';
-
-// --- Settings — Communications / Analytics / Advertising ---
-const String communicationsTile             = 'Communications_tile';
-const String analyticsTile                  = 'Analytics_tile';
-const String advertisingTile                = 'Advesrtising_tile';
-
-// --- Settings — Add Widgets ---
-const String addYouLikesWidget              = 'add_you_likes_widget';
-const String addPlayerWidget                = 'add_player_widget';
-
-// --- Settings — Basic ---
-const String clearApplicationCacheTile      = 'Clear_application_cache_tile';
-const String changeAppIconTile              = 'change_app_icon_tile';
+// Sign out (appears in both account_screen and sign_out_button_widget)
+const String settingsSignOutButton        = 'settings_sign_out_button';
 
 // --- Track Card Options ---
 const String trackShareMessageGestureDetector   = 'track_options_share_message_gesture_detector';
@@ -635,3 +588,11 @@ const String notificationsLoadingIndicator = 'notifications_loading_indicator';
 const String notificationsErrorText       = 'notifications_error_text';
 const String notificationsEmptyAll        = 'notifications_empty_all';
 const String notificationsListKey         = 'notifications_list';
+
+// ── M14 — Premium / Upgrade ──────────────────────────────────────────────────
+// PascalCase names match usage in premium_test.dart
+// The scroll helpers in PremiumPage use find.byType, so the string values
+// are placeholders — they are not used as widget keys.
+const String PremiumPlansSection             = 'premium_plans_section';
+const String PremiumManageSubscribtionButton = 'premium_manage_subscribtion_button';
+const String PremiumCancelsubscribtionButton = 'premium_cancel_subscribtion_button';

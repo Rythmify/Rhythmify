@@ -76,6 +76,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ),
         actions: [
           TextButton(
+            key: const Key('clear_history_dialog_cancel_button'),
             onPressed: () {
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop(false);
@@ -84,6 +85,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             child: Text('Cancel', style: AppTheme.labelLarge),
           ),
           TextButton(
+            key: const Key('clear_history_dialog_clear_button'),
             onPressed: () {
               if (dialogContext.mounted) {
                 Navigator.of(dialogContext).pop(true);

@@ -383,7 +383,7 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 1));
       await libraryPage.tapUpdatedTrack();
       await tester.pumpAndSettle(const Duration(seconds: 2));
-      await libraryPage.scrollUntilVisible(); //Delete button
+      await libraryPage.scrollUntilVisible(itemText: 'Delete Track', scrollableKey: uploadsScrollView); //Delete button
       await libraryPage.tapDeleteUploadOption();
       await tester.pumpAndSettle(const Duration(seconds: 2));
     });

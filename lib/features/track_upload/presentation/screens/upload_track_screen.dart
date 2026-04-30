@@ -491,6 +491,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                     width: double.infinity,
                     height: 52,
                     child: OutlinedButton(
+                      key: const Key('uploads_delete_option'),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.redAccent),
                         shape: RoundedRectangleBorder(
