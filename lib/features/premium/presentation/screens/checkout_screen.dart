@@ -1,3 +1,24 @@
+/// Handles subscription payment confirmation flow.
+///
+/// Responsibilities:
+/// - Shows selected plan summary (price + features)
+/// - Simulates payment UI (mock Stripe)
+/// - Triggers checkout via PremiumNotifier
+/// - Displays success sheet on completion
+///
+/// Flow:
+/// Confirm → checkout API → mock confirm → refresh subscription → success UI
+///
+/// UI states:
+/// - Loading: disables button + shows spinner
+/// - Error: shows payment error message
+/// - Success: triggers success bottom sheet
+///
+/// Notes:
+/// - Uses mock payment flow (no real gateway)
+/// - Plan data is passed from previous screen
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
