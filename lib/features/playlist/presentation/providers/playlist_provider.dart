@@ -1,4 +1,35 @@
 // lib/features/playlist/presentation/providers/playlist_provider.dart
+/// PURPOSE:
+/// This file contains all Riverpod Notifiers responsible for managing playlist
+/// state across the app, including playlist lists, playlist details, and
+/// playlist-related actions (create, update, delete, copy, and conversions).
+///
+/// RESPONSIBILITIES:
+/// - Manage playlist list state (owned, liked, albums)
+/// - Manage playlist detail state (tracks, suggestions, likes)
+/// - Handle playlist lifecycle actions (create, update, delete, copy)
+/// - Convert playlists between types (playlist / album / station)
+/// - Coordinate with remote datasource + local cache layer
+/// - Maintain optimistic UI updates where needed
+///
+/// KEY COMPONENTS:
+/// - PlaylistListNotifier → handles library playlists (owned/liked/albums)
+/// - PlaylistDetailNotifier → handles single playlist screen state
+/// - PlaylistMockData → local cache for offline/instant updates
+/// - PlaylistRemoteDatasource → API layer (via Dio)
+///
+/// IMPORTANT BEHAVIOR:
+/// - "suggestions" are ONLY loaded manually via owner-triggered flow
+/// - Station / Mix / TrackRadio types have special fetching logic
+/// - Copy playlist adapts behavior based on source type
+/// - Cache is always synced after backend mutations
+///
+/// DESIGN NOTES:
+/// - Uses optimistic updates for better UX
+/// - Separates list vs detail state for performance
+/// - Avoids unnecessary network calls unless explicitly triggered
+library;
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

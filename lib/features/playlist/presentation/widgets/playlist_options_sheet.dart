@@ -1,4 +1,40 @@
 // lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
+/// This file contains the playlist options bottom sheet shown for playlists,
+/// albums, and mixes.
+///
+/// Features:
+/// - Like/unlike playlists
+/// - Share playlist links
+/// - Copy playlist link
+/// - Show QR code sharing sheet
+/// - Queue playlist tracks (play next/play last)
+/// - Copy playlists
+/// - Edit playlists
+/// - Change playlist privacy
+/// - Delete playlists
+///
+/// Main Components:
+/// - PlaylistOptionsSheet:
+///     Main options bottom sheet widget.
+///
+/// - _CopyPlaylistSheet:
+///     Bottom sheet used to duplicate/copy playlists.
+///
+/// - _ShareRow:
+///     Displays sharing options.
+///
+/// - _QrCodeSheet:
+///     Displays a simple QR-style share sheet.
+///
+/// - _ShareIcon:
+///     Reusable share action button widget.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - GoRouter navigation
+/// - Share Plus package
+/// - Playlist entities/providers
+/// - Player providers
 library;
 
 import 'package:flutter/material.dart';
@@ -245,7 +281,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 ),
               ],
 
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 200),
             ],
           ),
         ),
