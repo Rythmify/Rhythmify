@@ -1,3 +1,26 @@
+/// Represents a subscription checkout session created when a user initiates
+/// a purchase flow for a premium plan.
+///
+/// This model is returned from:
+/// POST /subscriptions/checkout
+///
+/// Responsibilities:
+/// - Holds transaction identifiers required for payment tracking
+/// - Contains checkout status and payment metadata
+/// - Provides access to the selected subscription plan
+///
+/// Key Fields:
+/// - transactionId: Unique identifier for payment transaction (UUID)
+/// - subscriptionId: The created or pending user subscription ID
+/// - checkoutStatus: Current status of checkout (e.g., pending, completed)
+/// - paymentMethod: Payment provider/method used
+/// - paymentUrl: URL for completing payment (if required)
+/// - plan: The selected SubscriptionPlan object
+///
+/// Notes:
+/// - This model is immutable.
+/// - JSON parsing assumes backend returns nested "plan" object. 
+
 import 'subscription_plan.dart';
 
 class CheckoutSession {
