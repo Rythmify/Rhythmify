@@ -189,7 +189,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "${formatCount(widget.track.likeCount)} people liked your track",
+                          "${formatCount(widget.track.likeCount)} people liked this track",
                           key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.bodyNormal.copyWith(
                             fontSize: 12,
@@ -225,7 +225,10 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                 height: 70,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cd.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: Center(
                   child: Container(

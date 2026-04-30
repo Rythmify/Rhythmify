@@ -99,16 +99,20 @@ class TrackChecklistBadge extends ConsumerWidget {
               children: [
                 // Big circle
                 SizedBox(
-                  width: 150,
-                  height: 150,
+                  width: 180,
+                  height: 180,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        value: (draft?.checklistCount ?? 0) / 4,
-                        strokeWidth: 5,
-                        backgroundColor: Colors.white12,
-                        color: Colors.white,
+                      SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: CircularProgressIndicator(
+                          value: (draft?.checklistCount ?? 0) / 4,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.white12,
+                          color: Colors.white,
+                        ),
                       ),
                       RichText(
                         text: TextSpan(
@@ -117,7 +121,7 @@ class TrackChecklistBadge extends ConsumerWidget {
                               text: '${draft?.checklistCount ?? 0}',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 28,
+                                fontSize: 30,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -125,7 +129,7 @@ class TrackChecklistBadge extends ConsumerWidget {
                               text: '/4',
                               style: TextStyle(
                                 color: Colors.grey,
-                                fontSize: 28,
+                                fontSize: 30,
                               ),
                             ),
                           ],
