@@ -11,9 +11,17 @@ import '../../../player/domain/entities/queue_state.dart';
 /// It features a grey background, track artwork, title, and artist name.
 class HomeTopTrackCard extends ConsumerWidget {
   final Track track;
+  final List<Track>? allTracks;
+  final int? index;
   final VoidCallback? onTap;
 
-  const HomeTopTrackCard({super.key, required this.track, this.onTap});
+  const HomeTopTrackCard({
+    super.key,
+    required this.track,
+    this.allTracks,
+    this.index,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,11 +38,12 @@ class HomeTopTrackCard extends ConsumerWidget {
         if (isThisTrackLoaded) {
           ref.read(playerStateProvider.notifier).togglePlayPause();
         } else {
-          ref
-              .read(queueStateProvider.notifier)
-              .playQueue(
-                tracks: [track],
-                initialIndex: 0,
+          final tracksToPlay = allTracks ?? [track];
+          final initialIndex = index ?? 0;
+
+          ref.read(queueStateProvider.notifier).playQueue(
+                tracks: tracksToPlay,
+                initialIndex: initialIndex,
                 context: const QueueContext(type: QueueSource.listeningHistory),
               );
         }

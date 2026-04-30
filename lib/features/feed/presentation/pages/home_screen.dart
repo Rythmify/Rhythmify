@@ -240,8 +240,11 @@ class HomeScreen extends ConsumerWidget {
                           childAspectRatio: dynamicAspectRatio,
                         ),
                         itemCount: latestTracks.length,
-                        itemBuilder: (context, index) =>
-                            HomeTopTrackCard(track: latestTracks[index]),
+                        itemBuilder: (context, index) => HomeTopTrackCard(
+                          track: latestTracks[index],
+                          allTracks: latestTracks,
+                          index: index,
+                        ),
                       ),
                     ),
 

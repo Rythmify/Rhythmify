@@ -24,7 +24,6 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   Widget build(BuildContext context) {
     // 1. SELECT only the parts of the queue state we need for structural changes.
     // This prevents position ticks from triggering a full rebuild of the screen.
-    final hasHistory = ref.watch(queueStateProvider.select((s) => s.history.isNotEmpty));
     final hasCurrent = ref.watch(queueStateProvider.select((s) => s.currentTrack != null));
     final isShuffled = ref.watch(queueStateProvider.select((s) => s.isShuffled));
     final isLoadingRecs = ref.watch(queueStateProvider.select((s) => s.isLoadingRecommendations));
