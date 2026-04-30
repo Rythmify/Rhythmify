@@ -52,6 +52,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final Map<String, SharedEmbed> _embedCache = {};
   late DataSourcesSockets _socket;
   Timer? _urlDetectionTimer;
+  Timer? _blockPollTimer;
 
   @override
   void initState() {
@@ -75,6 +76,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _socket.setOnReconnectedToRoom(() {
           if (mounted) _setupSocketListeners(widget.conv!.conversationId);
         });
+        _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+          if (mounted && widget.conv?.participantId != null) {
+            ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+          }
+        });
       });
     }
   }
@@ -91,6 +97,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _setupSocketListeners(String conversationId) {
+    _socket.onUserBlocked((_) {
+      if (mounted && widget.conv?.participantId != null) {
+        ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+      }
+    });
     _socket.onMessageReceived((data) {
       debugPrint('🔥 onMessageReceived fired: $data');
 
@@ -134,6 +145,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.clearConversationListeners();
     _scrollController.dispose();
     controller.dispose();
+    _blockPollTimer?.cancel();
     super.dispose();
   }
 
@@ -169,9 +181,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         key: const Key('chat_screen_app_bar'),
-        title: Text(
-          widget.conv?.participantName ?? widget.newParticipantName ?? 'Chat',
-          key: const Key('chat_participant_name_text'),
+        title: GestureDetector(
+          onTap: () {
+            final id = widget.conv?.participantId ?? widget.newParticipantId;
+            if (id != null) context.push('/home/profile/$id');
+          },
+          child: Text(
+            widget.conv?.participantName ?? widget.newParticipantName ?? 'Chat',
+            key: const Key('chat_participant_name_text'),
+          ),
         ),
         backgroundColor: Colors.black,
         actions: [
@@ -185,6 +203,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   builder: (_) => PopUpMenuWidget(
                     participantId: participantId,
                     parentContext: context,
+                    onBlocked: widget.conv != null
+                        ? () => _socket.leaveConversation(
+                            widget.conv!.conversationId,
+                          )
+                        : null,
                   ),
                   backgroundColor: const Color(0xFF121212),
                 );
@@ -310,6 +333,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     userAvatar: index == group.length - 1
                                         ? widget.conv?.participantAvatar
                                         : null,
+                                    showAvatar: index == group.length - 1,
                                     body: message.body,
                                     embedId: message.embedId,
                                     embedType: message.embedType,
@@ -551,8 +575,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final curr = messages[i];
 
       final sameSender = curr.senderId == prev.senderId;
-      final closeInTime =
-          curr.createdAt.difference(prev.createdAt).inSeconds.abs() <= 5;
+      // final closeInTime =
+      //     curr.createdAt.difference(prev.createdAt).inMilliseconds.abs() <= 100;
+      final hasEmbed = curr.embedId != null || prev.embedId != null;
+      final timeDiff = curr.createdAt
+          .difference(prev.createdAt)
+          .inMilliseconds
+          .abs();
+      final closeInTime = hasEmbed && timeDiff <= 1000;
 
       if (sameSender && closeInTime) {
         currentGroup.add(curr);
@@ -650,6 +680,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   String _fixTime(DateTime date) {
     final duration = DateTime.now().difference(date);
+
+    if (duration.isNegative || duration.inSeconds < 1) return '0 seconds ago';
 
     if (duration.inDays >= 365) {
       return '${duration.inDays ~/ 365} years ago';

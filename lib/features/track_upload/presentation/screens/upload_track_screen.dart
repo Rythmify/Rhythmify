@@ -12,6 +12,7 @@ import 'package:rythmify/features/track_upload/data/mock/upload_mock_store.dart'
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
 import 'package:rythmify/core/domain/entities/track.dart' as track_entity;
 import 'package:rythmify/features/premium/domain/premium_gate.dart';
+import 'package:rythmify/features/premium/presentation/widgets/premium_upgrade_prompt.dart';
 
 /// Screen: UploadTrackScreen
 class UploadTrackScreen extends ConsumerStatefulWidget {
@@ -53,12 +54,12 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       }
     });
 
-    // If a track is provided, initialize the form with its data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.track != null) {
         ref.read(uploadFormProvider.notifier).initFromTrack(widget.track!);
       }
       ref.read(uploadFormProvider.notifier).fetchGenres(ref);
+      ref.read(uploadFormProvider.notifier).fetchTags(ref); // ← fetch real tags
     });
   }
 
@@ -174,6 +175,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
     final draft = state.draft;
     if (draft == null) return;
 
+    // ── Update track flow (partner's code — untouched) ──────────────────
     if (draft.trackId != null) {
       ref
           .read(uploadFormProvider.notifier)
@@ -198,6 +200,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
       return;
     }
 
+    // ── New upload flow ──────────────────────────────────────────────────
     try {
       UploadMockStore.add(
         MockTrackSubmission(
@@ -232,6 +235,14 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
           },
           onError: (error) {
             if (context.mounted) {
+              // 403 upload limit → show premium upgrade prompt
+              if (error.contains('UPLOAD_LIMIT_403')) {
+                PremiumUpgradePrompt.show(
+                  context,
+                  reason: 'upload more tracks',
+                );
+                return;
+              }
               if (PremiumGate.handleError(context, error)) {
                 return;
               }
@@ -247,6 +258,10 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TRACK INFO TAB
+// ══════════════════════════════════════════════════════════════════════════════
+
 class _TrackInfoTab extends ConsumerStatefulWidget {
   final List<String> genres;
   const _TrackInfoTab({required this.genres});
@@ -257,7 +272,6 @@ class _TrackInfoTab extends ConsumerStatefulWidget {
 
 class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   late TextEditingController _titleController;
-  late TextEditingController _tagController;
   late TextEditingController _collaboratorController;
   late TextEditingController _descriptionController;
   final ImagePicker _picker = ImagePicker();
@@ -267,7 +281,6 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
     super.initState();
     final draft = ref.read(uploadFormProvider).draft;
     _titleController = TextEditingController(text: draft?.title ?? '');
-    _tagController = TextEditingController();
     _collaboratorController = TextEditingController();
     _descriptionController = TextEditingController(
       text: draft?.description ?? '',
@@ -277,7 +290,6 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   @override
   void dispose() {
     _titleController.dispose();
-    _tagController.dispose();
     _collaboratorController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -370,6 +382,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Artwork + Audio ───────────────────────────────────
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -399,6 +412,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                 ),
                 const SizedBox(height: 24),
 
+                // ── Title ─────────────────────────────────────────────
                 const _FieldLabel(label: 'Title', required: true),
                 const SizedBox(height: 8),
                 _InputField(
@@ -407,6 +421,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                   onChanged: notifier.setTitle,
                 ),
                 const SizedBox(height: 24),
+
+                // ── Artists ───────────────────────────────────────────
                 const _FieldLabel(label: 'Artists', required: true),
                 const SizedBox(height: 8),
                 _ArtistField(
@@ -415,6 +431,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                   onArtistChanged: notifier.setArtist,
                 ),
                 const SizedBox(height: 24),
+
+                // ── Genre ─────────────────────────────────────────────
                 const _FieldLabel(label: 'Genre'),
                 const SizedBox(height: 8),
                 _GenrePicker(
@@ -425,15 +443,19 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                   onChanged: notifier.setGenre,
                 ),
                 const SizedBox(height: 24),
+
+                // ── Tags — picker from backend list ───────────────────
                 const _FieldLabel(label: 'Tags'),
                 const SizedBox(height: 8),
-                _TagsInput(
-                  controller: _tagController,
+                _TagsPickerField(
+                  availableTags: state.availableTags,
                   selectedTags: draft?.tags ?? [],
                   onAdd: notifier.addTag,
                   onRemove: notifier.removeTag,
                 ),
                 const SizedBox(height: 24),
+
+                // ── Description ───────────────────────────────────────
                 const _FieldLabel(label: 'Description'),
                 const SizedBox(height: 8),
                 _InputField(
@@ -445,6 +467,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                   maxLength: 4000,
                 ),
                 const SizedBox(height: 24),
+
+                // ── Privacy ───────────────────────────────────────────
                 const _FieldLabel(label: 'Privacy'),
                 const SizedBox(height: 16),
                 _PrivacySelector(
@@ -452,12 +476,15 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                   onChanged: notifier.setIsPublic,
                 ),
                 const SizedBox(height: 24),
+
                 const Text(
                   'By uploading, you confirm that your sounds comply with our Terms of Use and you don\'t infringe anyone\'s rights.',
                   style: TextStyle(color: Colors.grey, fontSize: 11),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
+
+                // ── Delete button (update mode only — partner's code) ──
                 if (isUpdate) ...[
                   const Divider(color: Colors.white12, height: 40),
                   SizedBox(
@@ -487,6 +514,8 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
             ),
           ),
         ),
+
+        // ── Save / Update button ───────────────────────────────────────
         Container(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           decoration: const BoxDecoration(color: AppTheme.background),
@@ -534,6 +563,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
     );
   }
 
+  // ── Delete dialog (partner's code — untouched) ────────────────────────
   void _handleDelete(BuildContext context) {
     showDialog(
       context: context,
@@ -589,6 +619,10 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ADVANCED TAB
+// ══════════════════════════════════════════════════════════════════════════════
+
 class _AdvancedTab extends StatelessWidget {
   const _AdvancedTab();
   @override
@@ -614,6 +648,10 @@ class _AdvancedTab extends StatelessWidget {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// PERMISSIONS TAB
+// ══════════════════════════════════════════════════════════════════════════════
+
 class _PermissionsTab extends StatelessWidget {
   const _PermissionsTab();
   @override
@@ -638,6 +676,10 @@ class _PermissionsTab extends StatelessWidget {
     );
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REUSABLE WIDGETS
+// ══════════════════════════════════════════════════════════════════════════════
 
 class _FieldLabel extends StatelessWidget {
   final String label;
@@ -708,6 +750,8 @@ class _InputField extends StatelessWidget {
     );
   }
 }
+
+// ── Artist field ──────────────────────────────────────────────────────────────
 
 class _ArtistField extends StatefulWidget {
   final String primaryArtist;
@@ -815,6 +859,8 @@ class _ArtistFieldState extends State<_ArtistField> {
   }
 }
 
+// ── Genre picker ──────────────────────────────────────────────────────────────
+
 class _GenrePicker extends StatelessWidget {
   final List<String> genres;
   final String? selectedGenre;
@@ -887,56 +933,97 @@ class _GenrePicker extends StatelessWidget {
   }
 }
 
-class _TagsInput extends StatelessWidget {
-  final TextEditingController controller;
+// ── Tags picker (from backend list — replaces free-text input) ────────────────
+
+class _TagsPickerField extends StatelessWidget {
+  final List<String> availableTags;
   final List<String> selectedTags;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
-  const _TagsInput({
-    required this.controller,
+
+  const _TagsPickerField({
+    required this.availableTags,
     required this.selectedTags,
     required this.onAdd,
     required this.onRemove,
   });
+
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setModalState) => ListView.builder(
+          itemCount: availableTags.length,
+          itemBuilder: (_, i) {
+            final tag = availableTags[i];
+            final isSelected = selectedTags.contains(tag);
+            return ListTile(
+              title: Text(
+                tag,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+              trailing: isSelected
+                  ? const Icon(Icons.check_rounded, color: Colors.white)
+                  : null,
+              onTap: () {
+                if (isSelected) {
+                  onRemove(tag);
+                } else if (selectedTags.length < 10) {
+                  onAdd(tag);
+                }
+                setModalState(() {}); // refresh checkmarks inside modal
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final atLimit = selectedTags.length >= 10;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: controller,
-          enabled: !atLimit,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-          cursorColor: Colors.white,
-          decoration: InputDecoration(
-            hintText: atLimit
-                ? 'Maximum 10 tags reached'
-                : 'Add tags to describe track for reachability',
-            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-            filled: true,
-            fillColor: AppTheme.background,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 0,
-              vertical: 10,
+        GestureDetector(
+          onTap: availableTags.isEmpty ? null : () => _showPicker(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.white24)),
             ),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white24),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white, width: 1.5),
-            ),
-            suffixIcon: const Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.grey,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    availableTags.isEmpty
+                        ? 'Loading tags...'
+                        : selectedTags.isEmpty
+                        ? 'Add tags to describe your track'
+                        : '${selectedTags.length} tag(s) selected',
+                    style: TextStyle(
+                      color: selectedTags.isNotEmpty
+                          ? Colors.white
+                          : Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.unfold_more_rounded,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ],
             ),
           ),
-          onSubmitted: (value) {
-            final tag = value.trim().toLowerCase();
-            if (tag.isEmpty || atLimit) return;
-            onAdd(tag);
-            controller.clear();
-          },
         ),
         const SizedBox(height: 10),
         if (selectedTags.isNotEmpty)
@@ -982,6 +1069,8 @@ class _TagsInput extends StatelessWidget {
     );
   }
 }
+
+// ── Privacy selector ──────────────────────────────────────────────────────────
 
 class _PrivacySelector extends StatelessWidget {
   final bool isPublic;

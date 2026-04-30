@@ -61,7 +61,9 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
     if (resolvedTrack == null) return null;
 
     final trackOwnerJson =
-        resolvedTrack['user'] as Map<String, dynamic>? ?? userJson;
+        resolvedTrack['user'] as Map<String, dynamic>? ??
+        resolvedTrack['artist'] as Map<String, dynamic>? ??
+        userJson;
 
     return FeedItemModel(
       id: json['id'] as String,
@@ -92,6 +94,7 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
       avatar: artistJson['profile_picture'] as String?,
       followers: 0,
       isVerified: false,
+      isFollowing: artistJson['is_following'] as bool? ?? false,
     );
 
     return FeedItemModel(

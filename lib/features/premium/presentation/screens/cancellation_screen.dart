@@ -5,33 +5,28 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/premium_provider.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ASSET — paste your background photo filename here
-// Same background color as your photo for a seamless blended effect
-// ─────────────────────────────────────────────────────────────────────────────
-const _kBgAsset = 'assets/images/premium_bg.jpg'; // ← change to your filename
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CANCELLATION SCREEN
-// Shown on the Upgrade tab when the user IS premium.
-// ─────────────────────────────────────────────────────────────────────────────
+const _kBgAsset = 'assets/images/premium_bg.jpg';
+const _kSessionDuration = Duration(minutes: 5);
+const _kPurple = Color(0xFF7B2FBE);
+const _kPurpleLight = Color(0xFFB57BEE);
+const _kDark = Color(0xFF0D0D0D);
+const _kCard = Color(0xFF1A1A1A);
 
 class CancellationScreen extends ConsumerStatefulWidget {
   const CancellationScreen({super.key});
-
   @override
   ConsumerState<CancellationScreen> createState() => _CancellationScreenState();
 }
 
 class _CancellationScreenState extends ConsumerState<CancellationScreen> {
   Timer? _timer;
-  Duration _remaining = Duration.zero;
+  Duration _remaining = _kSessionDuration;
   bool _isCanceled = false;
 
   @override
   void initState() {
     super.initState();
-    _startCountdown();
+    _startSession();
   }
 
   @override
@@ -40,20 +35,22 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
     super.dispose();
   }
 
-  void _startCountdown() {
+  // Always show a fresh 5-min countdown — increments auto-renew every session
+  void _startSession() {
     final state = ref.read(premiumProvider);
-    final endDateStr = state.subscription?.endDate;
     _isCanceled = state.isCanceled;
 
+    // If subscription has an end_date, count down to it (capped at 5 min display)
+    final endDateStr = state.subscription?.endDate;
     if (endDateStr != null) {
       final endDate = DateTime.tryParse(endDateStr);
       if (endDate != null) {
-        _remaining = endDate.difference(DateTime.now());
-        if (_remaining.isNegative) _remaining = Duration.zero;
+        final diff = endDate.difference(DateTime.now());
+        // Show real time remaining but cap display at 5 min max for UX
+        _remaining = diff.isNegative
+            ? Duration.zero
+            : (diff > _kSessionDuration ? _kSessionDuration : diff);
       }
-    } else {
-      // Backend simulates 30 days premium — show 30 day countdown
-      _remaining = const Duration(days: 30);
     }
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -63,57 +60,38 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
           _remaining -= const Duration(seconds: 1);
         } else {
           _timer?.cancel();
+          if (!_isCanceled) {
+            // Auto-renew: reset to new 5-min session
+            _remaining = _kSessionDuration;
+            _startSession();
+          } else {
+            ref.read(premiumProvider.notifier).loadMySubscription();
+          }
         }
       });
     });
   }
 
   String _pad(int n) => n.toString().padLeft(2, '0');
-
-  String get _countdownDisplay {
-    final d = _remaining.inDays;
-    final h = _remaining.inHours % 24;
+  String get _display {
     final m = _remaining.inMinutes % 60;
     final s = _remaining.inSeconds % 60;
-    if (d > 0) return '${d}d ${_pad(h)}h ${_pad(m)}m ${_pad(s)}s';
-    return '${_pad(h)}:${_pad(m)}:${_pad(s)}';
+    return '${_pad(m)}:${_pad(s)}';
   }
 
-  // Progress 0.0 → 1.0 (how much of 30 days has elapsed)
-  double get _progress {
-    const total = Duration(days: 30);
-    final elapsed = total - _remaining;
-    if (elapsed.isNegative) return 0.0;
-    return (elapsed.inSeconds / total.inSeconds).clamp(0.0, 1.0);
-  }
+  double get _progress =>
+      1.0 -
+      (_remaining.inSeconds / _kSessionDuration.inSeconds).clamp(0.0, 1.0);
 
   Future<void> _cancel() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => _ConfirmCancelDialog(),
+      builder: (_) => _ConfirmDialog(),
     );
     if (confirm != true || !mounted) return;
-
-    await ref.read(premiumProvider.notifier).cancel();
-
-    if (!mounted) return;
-    setState(() => _isCanceled = true);
-
-    // Backend gives 5 min after cancel — restart countdown to 5 min
     _timer?.cancel();
-    _remaining = const Duration(minutes: 5);
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() {
-        if (_remaining.inSeconds > 0) {
-          _remaining -= const Duration(seconds: 1);
-        } else {
-          _timer?.cancel();
-          // Subscription ended — refresh and stay on this tab
-          ref.read(premiumProvider.notifier).loadMySubscription();
-        }
-      });
-    });
+    setState(() => _isCanceled = true);
+    await ref.read(premiumProvider.notifier).cancel();
   }
 
   @override
@@ -123,15 +101,15 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
     final botPad = mq.padding.bottom;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: _kDark,
       body: Stack(
         children: [
-          // ── Background photo — top portion ─────────────────────────
+          // Background photo top half
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: mq.size.height * 0.45,
+            height: mq.size.height * 0.42,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -143,23 +121,18 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0xFF1A0A2E), Color(0xFF0D0D0D)],
+                        colors: [Color(0xFF2A0A5E), _kDark],
                       ),
                     ),
                   ),
                 ),
-                // Fade photo into dark background
                 Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       stops: [0.0, 0.5, 1.0],
-                      colors: [
-                        Colors.transparent,
-                        Color(0x66000000),
-                        Color(0xFF0D0D0D),
-                      ],
+                      colors: [Colors.transparent, Color(0x88000000), _kDark],
                     ),
                   ),
                 ),
@@ -167,19 +140,38 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
             ),
           ),
 
-          // ── Scrollable content ──────────────────────────────────────
+          // Content
           SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(20, topPad + 16, 20, 80 + botPad),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Premium badge
+                // Back button
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: const BoxDecoration(
+                      color: Colors.black38,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 120),
+
+                // Badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 5,
                   ),
-                  color: const Color(0xFFFF5500),
+                  color: _kPurple,
                   child: Text(
                     '★ PREMIUM ACTIVE',
                     style: GoogleFonts.inter(
@@ -190,12 +182,12 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 Text(
                   "You're Premium.",
                   style: GoogleFonts.inter(
-                    fontSize: 32,
+                    fontSize: 30,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     height: 1.1,
@@ -204,69 +196,91 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 const SizedBox(height: 6),
                 Text(
                   _isCanceled
-                      ? 'Your subscription was cancelled. Access ends in:'
-                      : 'Your premium access expires in:',
-                  style: GoogleFonts.inter(fontSize: 14, color: Colors.white60),
+                      ? 'Access ends when this session expires.'
+                      : 'Auto-renews every 5 minutes. Cancel anytime.',
+                  style: GoogleFonts.inter(fontSize: 13, color: _kPurpleLight),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
-                // ── Countdown card ──────────────────────────────────
+                // ── 5-min countdown card ─────────────────────────────
                 Container(
                   width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: _kPurple, width: 1.5),
+                    color: _kCard,
+                  ),
                   padding: const EdgeInsets.all(20),
-                  color: const Color(0xFF1A1A1A),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _isCanceled ? 'Access ends in' : 'Time remaining',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.white38,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _isCanceled ? 'Session ends in' : 'Current session',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: _kPurpleLight,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            color: _kPurple.withValues(alpha: 0.2),
+                            child: Text(
+                              '5 MIN',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: _kPurpleLight,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _countdownDisplay,
-                        style: GoogleFonts.inter(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFFFF5500),
-                          letterSpacing: -1,
+                      const SizedBox(height: 12),
+
+                      // Big timer display
+                      Center(
+                        child: Text(
+                          _display,
+                          style: GoogleFonts.inter(
+                            fontSize: 52,
+                            fontWeight: FontWeight.w900,
+                            color: _kPurpleLight,
+                            letterSpacing: -2,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
 
                       // Progress bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.zero,
-                        child: LinearProgressIndicator(
-                          value: _progress,
-                          backgroundColor: Colors.white12,
-                          valueColor: const AlwaysStoppedAnimation(
-                            Color(0xFFFF5500),
-                          ),
-                          minHeight: 6,
-                        ),
+                      LinearProgressIndicator(
+                        value: _progress,
+                        backgroundColor: _kPurple.withValues(alpha: 0.2),
+                        valueColor: const AlwaysStoppedAnimation(_kPurple),
+                        minHeight: 4,
                       ),
                       const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Start',
+                            'Session start',
                             style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: Colors.white30,
+                              fontSize: 10,
+                              color: Colors.white24,
                             ),
                           ),
                           Text(
-                            _isCanceled ? '5 min window' : '30 days',
+                            _isCanceled ? 'Final session' : 'Auto-renews',
                             style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: Colors.white30,
+                              fontSize: 10,
+                              color: Colors.white24,
                             ),
                           ),
                         ],
@@ -276,23 +290,26 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // ── What you have ───────────────────────────────────
+                // ── Benefits ─────────────────────────────────────────
                 Container(
                   width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: _kPurple.withValues(alpha: 0.3)),
+                    color: _kCard,
+                  ),
                   padding: const EdgeInsets.all(18),
-                  color: const Color(0xFF1A1A1A),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Your Premium benefits',
                         style: GoogleFonts.inter(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: _kPurpleLight,
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
                       ...[
                         'Unlimited track uploads',
                         'Unlimited playlists',
@@ -301,13 +318,13 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                         'Priority support',
                       ].map(
                         (f) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
                               const Icon(
                                 Icons.check,
-                                color: Color(0xFFFF5500),
-                                size: 15,
+                                color: _kPurple,
+                                size: 14,
                               ),
                               const SizedBox(width: 10),
                               Text(
@@ -326,61 +343,48 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Cancel button (only if not already cancelled) ────
+                // Cancel / Resubscribe
                 if (!_isCanceled) ...[
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 48,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white24),
                         shape: const RoundedRectangleBorder(),
-                        foregroundColor: Colors.white54,
                       ),
                       onPressed: ref.watch(premiumProvider).isLoading
                           ? null
                           : _cancel,
-                      child: ref.watch(premiumProvider).isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                color: Colors.white38,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Cancel subscription',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white38,
-                              ),
-                            ),
+                      child: Text(
+                        'Cancel subscription',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.white38,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      'You keep Premium access until your period ends.',
-                      textAlign: TextAlign.center,
+                      'Premium stays active until session ends.',
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: Colors.white24,
                       ),
                     ),
                   ),
                 ] else ...[
-                  // Resubscribe option after cancellation
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF5500),
+                        backgroundColor: _kPurple,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: const StadiumBorder(),
+                        shape: const RoundedRectangleBorder(),
                       ),
                       onPressed: () => context.push('/upgrade/plans'),
                       child: Text(
@@ -402,29 +406,24 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIRM CANCEL DIALOG
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ConfirmCancelDialog extends StatelessWidget {
+class _ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: _kCard,
       shape: const RoundedRectangleBorder(),
       title: Text(
         'Cancel subscription?',
         style: GoogleFonts.inter(
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: FontWeight.w800,
           color: Colors.white,
         ),
       ),
       content: Text(
-        'You will keep Premium access until your current period ends. '
-        'After that your account returns to the free plan.',
+        'You keep Premium until this session ends. After that, your account returns to free.',
         style: GoogleFonts.inter(
-          fontSize: 14,
+          fontSize: 13,
           color: Colors.white60,
           height: 1.5,
         ),
@@ -436,7 +435,7 @@ class _ConfirmCancelDialog extends StatelessWidget {
             'Keep Premium',
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: const Color(0xFFFF5500),
+              color: _kPurpleLight,
               fontWeight: FontWeight.w700,
             ),
           ),

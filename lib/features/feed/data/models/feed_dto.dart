@@ -26,9 +26,10 @@ class FeedItemModel extends FeedItemEntity {
 
     if (resolvedTrack == null) return null;
 
-    // Track owner is nested inside the track object
     final trackOwnerJson =
-        resolvedTrack['user'] as Map<String, dynamic>? ?? userJson;
+        resolvedTrack['user'] as Map<String, dynamic>? ??
+        resolvedTrack['artist'] as Map<String, dynamic>? ??
+        userJson;
 
     return FeedItemModel(
       id: json['id'] as String,
@@ -53,6 +54,7 @@ class FeedUserModel extends FeedUserEntity {
     super.avatar,
     required super.followers,
     required super.isVerified,
+    super.isFollowing,
   });
 
   factory FeedUserModel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class FeedUserModel extends FeedUserEntity {
       avatar: json['profile_picture'] as String? ?? json['avatar'] as String?,
       followers: json['followers'] as int? ?? 0,
       isVerified: json['isVerified'] as bool? ?? false,
+      isFollowing: json['is_following'] as bool? ?? false,
     );
   }
 }
@@ -74,6 +77,7 @@ class FeedTrackModel extends FeedTrackEntity {
     required super.duration,
     required super.playCount,
     required super.likeCount,
+    super.commentCount,
     super.coverUrl,
     required super.audioUrl,
     super.streamUrl,
@@ -90,6 +94,7 @@ class FeedTrackModel extends FeedTrackEntity {
       duration: json['duration'] as int? ?? 0,
       playCount: json['play_count'] as int? ?? 0,
       likeCount: json['like_count'] as int? ?? 0,
+      commentCount: json['comment_count'] as int? ?? 0,
       coverUrl: json['cover_image'] as String? ?? json['coverUrl'] as String?,
       audioUrl:
           json['audio_url'] as String? ?? json['audioUrl'] as String? ?? '',
