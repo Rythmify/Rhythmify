@@ -1,4 +1,25 @@
 // lib/features/playlist/presentation/widgets/create_playlist_sheet.dart
+/// This file contains the bottom sheet used for creating a new playlist.
+///
+/// Features:
+/// - Enter playlist name
+/// - Toggle playlist privacy (public/private)
+/// - Create playlist using provider logic
+/// - Display loading and error states
+/// - Return the created playlist ID through a callback
+///
+/// Main Components:
+/// - CreatePlaylistSheet:
+///     Main bottom sheet widget for playlist creation.
+///
+/// - _onCreate():
+///     Validates input and creates the playlist asynchronously.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - Playlist provider/notifier
+/// - Shared playlist UI widgets
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

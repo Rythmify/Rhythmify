@@ -17,4 +17,8 @@ class SearchRepositoryImpl implements SearchRepository {
   @override
   Future<SearchResults> getSearchResults(String query) =>
       remoteSource.getSearchResults(query);
+
+  @override
+  Future<SearchResults> getSearchResultsTyped(String query, String type) =>
+      remoteSource.getSearchResultsTyped(query, type);
 }

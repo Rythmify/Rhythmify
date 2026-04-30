@@ -7,6 +7,7 @@ import '../../../track/presentation/providers/track_sync_provider.dart';
 import '../../../track/presentation/providers/track_interaction_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
 
 class FeedCardSideActions extends ConsumerWidget {
   final FeedItemEntity item;
@@ -26,9 +27,8 @@ class FeedCardSideActions extends ConsumerWidget {
       createdAt: item.createdAt,
       playCount: item.track.playCount,
       likeCount: item.track.likeCount,
-      // Note: FeedTrackEntity doesn't have commentCount or repostCount,
-      // they will be 0 until synced or fetched.
-      commentCount: 0,
+
+      commentCount: item.track.commentCount,
       repostCount: 0,
     );
   }
@@ -63,10 +63,16 @@ class FeedCardSideActions extends ConsumerWidget {
           icon: Icons.chat_outlined,
           label: Formatters.formatCount(syncedTrack.commentCount),
           onTap: () {
-            context.push(
-              '/home/comments/${syncedTrack.id}',
-              extra: syncedTrack,
-            );
+            context.push('/comments/${syncedTrack.id}', extra: syncedTrack);
+          },
+        ),
+        const SizedBox(height: 20),
+        _ActionButton(
+          key: const Key('feed_card_side_actions_addtoplaylist'),
+          icon: Icons.library_add,
+          label: '',
+          onTap: () {
+            showAddToPlaylistSheet(context, trackId: syncedTrack.id);
           },
         ),
       ],

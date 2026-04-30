@@ -10,7 +10,7 @@ class AlbumsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resultsAsync = ref.watch(searchResultsProvider);
+    final resultsAsync = ref.watch(searchAlbumsProvider);
 
     return resultsAsync.when(
       loading: () => const Center(
@@ -32,7 +32,7 @@ class AlbumsTab extends ConsumerWidget {
         }
         return ListView.builder(
           key: const Key('albums_list'),
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 200),
           itemCount: albums.length,
           itemBuilder: (context, index) =>
               _AlbumTile(key: Key('album_tile_$index'), album: albums[index]),

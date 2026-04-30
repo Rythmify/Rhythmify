@@ -1,4 +1,40 @@
 // lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
+/// This file contains the playlist options bottom sheet shown for playlists,
+/// albums, and mixes.
+///
+/// Features:
+/// - Like/unlike playlists
+/// - Share playlist links
+/// - Copy playlist link
+/// - Show QR code sharing sheet
+/// - Queue playlist tracks (play next/play last)
+/// - Copy playlists
+/// - Edit playlists
+/// - Change playlist privacy
+/// - Delete playlists
+///
+/// Main Components:
+/// - PlaylistOptionsSheet:
+///     Main options bottom sheet widget.
+///
+/// - _CopyPlaylistSheet:
+///     Bottom sheet used to duplicate/copy playlists.
+///
+/// - _ShareRow:
+///     Displays sharing options.
+///
+/// - _QrCodeSheet:
+///     Displays a simple QR-style share sheet.
+///
+/// - _ShareIcon:
+///     Reusable share action button widget.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - GoRouter navigation
+/// - Share Plus package
+/// - Playlist entities/providers
+/// - Player providers
 library;
 
 import 'package:flutter/material.dart';
@@ -47,9 +83,9 @@ class PlaylistOptionsSheet extends ConsumerWidget {
     final shareUrl = _buildShareUrl(resolvedPlaylist);
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.72, // taller default — shows all options comfortably
+      initialChildSize: 0.72,
       minChildSize: 0.40,
-      maxChildSize: 0.85, // can stretch but won't cover full screen
+      maxChildSize: 0.85,
       expand: false,
       builder: (_, scrollController) => Container(
         decoration: const BoxDecoration(
@@ -169,16 +205,26 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 key: const Key('options_copy'),
                 icon: Icons.copy_all,
                 label: 'Copy ${resolvedPlaylist.typeLabel.toLowerCase()}',
-                onTap: () async {
+                onTap: () {
                   Navigator.of(context).pop();
-                  _showCopyingSnackbar(context);
-                  final newId = await ref
-                      .read(playlistListProvider.notifier)
-                      .copyPlaylist(playlistId, sourceEntity: resolvedPlaylist);
-                  if (newId != null && context.mounted) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    context.push('/library/playlists/$newId', extra: true);
-                  }
+                  // Small delay so sheet fully dismisses before next one opens
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (!context.mounted) return;
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => _CopyPlaylistSheet(
+                        sourceEntity: resolvedPlaylist,
+                        onCreated: (newId) {
+                          context.push(
+                            '/library/playlists/$newId',
+                            extra: true,
+                          );
+                        },
+                      ),
+                    );
+                  });
                 },
               ),
 
@@ -235,8 +281,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 ),
               ],
 
-              // Enough space so delete clears the player bar + navbar
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 200),
             ],
           ),
         ),
@@ -285,12 +330,177 @@ class PlaylistOptionsSheet extends ConsumerWidget {
       ),
     );
   }
+}
 
-  void _showCopyingSnackbar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Creating copy...'),
-        duration: Duration(seconds: 10),
+// ════════════════════════════════════════════════════════════════════════════
+// COPY PLAYLIST SHEET
+// ════════════════════════════════════════════════════════════════════════════
+
+class _CopyPlaylistSheet extends ConsumerStatefulWidget {
+  const _CopyPlaylistSheet({
+    required this.sourceEntity,
+    required this.onCreated,
+  });
+
+  final PlaylistEntity sourceEntity;
+  final void Function(String newPlaylistId) onCreated;
+
+  @override
+  ConsumerState<_CopyPlaylistSheet> createState() => _CopyPlaylistSheetState();
+}
+
+class _CopyPlaylistSheetState extends ConsumerState<_CopyPlaylistSheet> {
+  late final TextEditingController _nameController;
+  late bool _isPublic;
+  bool _isCreating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPublic = widget.sourceEntity.isPublic;
+    _nameController = TextEditingController(
+      text: 'Copy of ${widget.sourceEntity.name}',
+    );
+    _nameController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _nameController.text.length,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onCreate() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _isCreating) return;
+    setState(() => _isCreating = true);
+
+    final newId = await ref
+        .read(playlistListProvider.notifier)
+        .copyPlaylist(
+          widget.sourceEntity.id,
+          overrideName: name,
+          overridePublic: _isPublic,
+          sourceEntity: widget.sourceEntity,
+        );
+
+    if (!mounted) return;
+    setState(() => _isCreating = false);
+
+    if (newId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not create playlist. Try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.of(context).pop();
+    widget.onCreated(newId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1C1C1C),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, keyboardHeight + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            maxLength: 100,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              border: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              counterStyle: TextStyle(color: Colors.grey[600]),
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Make this playlist public',
+                style: TextStyle(color: Colors.grey[400], fontSize: 15),
+              ),
+              Switch(
+                value: _isPublic,
+                onChanged: _isCreating
+                    ? null
+                    : (v) => setState(() => _isPublic = v),
+                activeThumbColor: const Color(0xFFFF5500),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton(
+              onPressed: _nameController.text.trim().isEmpty || _isCreating
+                  ? null
+                  : _onCreate,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+              ),
+              child: _isCreating
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Create playlist',
+                      style: TextStyle(color: Colors.white, fontSize: 15),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _isCreating ? null : () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[500], fontSize: 15),
+            ),
+          ),
+        ],
       ),
     );
   }

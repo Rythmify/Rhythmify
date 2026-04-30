@@ -30,6 +30,7 @@ class FeedUserEntity {
   final String? avatar;
   final int followers;
   final bool isVerified;
+  final bool isFollowing;
 
   const FeedUserEntity({
     required this.id,
@@ -38,6 +39,7 @@ class FeedUserEntity {
     this.avatar,
     required this.followers,
     required this.isVerified,
+    this.isFollowing = false,
   });
 }
 
@@ -47,6 +49,7 @@ class FeedTrackEntity {
   final int duration;
   final int playCount;
   final int likeCount;
+  final int commentCount;
   final String? coverUrl;
   final String audioUrl;
   final String? streamUrl;
@@ -59,6 +62,7 @@ class FeedTrackEntity {
     required this.duration,
     required this.playCount,
     required this.likeCount,
+    this.commentCount = 0,
     this.coverUrl,
     required this.audioUrl,
     this.streamUrl,

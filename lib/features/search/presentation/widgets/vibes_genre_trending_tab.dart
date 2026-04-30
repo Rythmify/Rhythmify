@@ -44,7 +44,7 @@ class GenreTrendingTab extends ConsumerWidget {
             Expanded(
               child: ListView.builder(
                 key: const Key('genre_trending_list'),
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 100),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 200),
                 itemCount: tracks.length,
                 itemBuilder: (_, i) => TrackCard(
                   key: Key('genre_trending_track_$i'),
