@@ -39,17 +39,17 @@ class _TrackWaveformVisualizerState
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.watch(playerStateProvider);
-    final dragPosition = ref.watch(seekDragPositionProvider);
-
-    // Fallback dummy data if no wave data exists yet
-    final List<double> waveData =
-        playerState.currentTrack?.waveformData ??
+    // Watch status and metadata, but NOT position for the widget build itself.
+    final status = ref.watch(playerStateProvider.select((s) => s.status));
+    final duration = ref.watch(playerStateProvider.select((s) => s.duration));
+    final waveData = ref.watch(playerStateProvider.select((s) => s.currentTrack?.waveformData)) ??
         List.generate(200, (index) => 0.1);
 
+    final dragPosition = ref.watch(seekDragPositionProvider);
+
     final bool isPaused =
-        playerState.status == PlayerStatus.paused ||
-        playerState.status == PlayerStatus.initial;
+        status == PlayerStatus.paused ||
+        status == PlayerStatus.initial;
 
     if (isPaused) {
       _animationController.reverse();
@@ -64,16 +64,24 @@ class _TrackWaveformVisualizerState
         child: AnimatedBuilder(
           animation: _animationController,
           builder: (context, child) {
-            return CustomPaint(
-              size: const Size(double.infinity, 100),
-              painter: WaveformPainter(
-                amplitudes: waveData,
-                duration: playerState.duration,
-                activePosition: dragPosition ?? playerState.position,
-                actualPosition: playerState.position,
-                heightMultiplier: _heightAnimation.value,
-                showTimeBox: !isPaused,
-              ),
+            // Inner watch for position inside AnimatedBuilder or use playerStateProvider.position 
+            // BUT we want position updates to only repaint, not rebuild the whole subtree.
+            // Using a Consumer here to isolate position-driven repaints.
+            return Consumer(
+              builder: (context, ref, _) {
+                final position = ref.watch(playerStateProvider.select((s) => s.position));
+                return CustomPaint(
+                  size: const Size(double.infinity, 100),
+                  painter: WaveformPainter(
+                    amplitudes: waveData,
+                    duration: duration,
+                    activePosition: dragPosition ?? position,
+                    actualPosition: position,
+                    heightMultiplier: _heightAnimation.value,
+                    showTimeBox: !isPaused,
+                  ),
+                );
+              },
             );
           },
         ),

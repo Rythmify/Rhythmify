@@ -27,6 +27,7 @@
 </activity>
         <activity
             android:name=".MainActivity"
+            android:enabled="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
@@ -93,7 +94,7 @@
         <!-- Default alias so launcher picks up icon reset correctly -->
         <activity-alias
             android:name=".MainActivity.default"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:targetActivity=".MainActivity">

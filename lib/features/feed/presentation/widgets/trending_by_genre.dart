@@ -394,15 +394,15 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                       ref.read(playerStateProvider.notifier).togglePlayPause();
                     } else {
                       ref
-                          .read(queueStateProvider.notifier)
-                          .playQueue(
-                            tracks: tracks,
-                            initialIndex: tracks.indexOf(track),
-                            context: QueueContext(
-                              type: QueueSource.trending,
-                              sourceId: genreId,
-                            ),
-                          );
+                        .read(queueStateProvider.notifier)
+                        .playQueue(
+                          tracks: tracks,
+                          initialIndex: tracks.indexOf(track),
+                          context: QueueContext(
+                            type: QueueSource.trending,
+                            sourceId: genreId,
+                          ),
+                        );
                     }
                   },
                 ),

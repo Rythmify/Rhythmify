@@ -50,7 +50,10 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ONLY rebuild when the underlying lists change, NOT on every position tick.
     final queue = ref.watch(queueStateProvider);
+    final currentTrackId = ref.watch(playerStateProvider.select((s) => s.currentTrack?.id));
+    
     // Continuous list: History + Current + Upcoming (which now includes Recommendations)
     final allItems = [
       ...queue.history,
@@ -58,7 +61,7 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
       ...queue.upcomingTracks,
     ];
 
-    if (queue.currentTrack == null || allItems.isEmpty) {
+    if (currentTrackId == null || allItems.isEmpty) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
