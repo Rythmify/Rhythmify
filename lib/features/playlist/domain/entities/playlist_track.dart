@@ -1,11 +1,44 @@
 // lib/features/playlist/domain/entities/playlist_track.dart
-//
+
 // Lightweight track model used inside playlist UI.
 // Carries only what the playlist screens need to render a row.
 // [fromTrack] converts a full [Track] entity into this model.
 // [trackId] holds a reference back to the original [Track] so the
 // player can receive full entities when the user taps a row.
 
+/// This file defines the lightweight PlaylistTrack model used inside playlist
+/// screens and playlist UI.
+///
+/// Purpose:
+/// - Stores only the track information needed for playlist rendering
+/// - Provides helper formatting methods
+/// - Supports converting full Track entities into PlaylistTrack objects
+///
+/// Main Components:
+/// - PlaylistTrack:
+///     Lightweight playlist track model.
+///
+/// Features:
+/// - Formatted duration helper
+/// - Formatted play count helper
+/// - Immutable updates using copyWith()
+/// - Factory constructor for Track conversion
+///
+/// Methods:
+/// - formattedDuration:
+///     Returns track duration as mm:ss.
+///
+/// - formattedPlayCount:
+///     Returns formatted play count string.
+///
+/// - copyWith():
+///     Creates a modified copy of the track.
+///
+/// - PlaylistTrack.fromTrack():
+///     Converts a Track entity into a PlaylistTrack.
+///
+/// Dependencies:
+/// - Track entity
 library;
 
 import '../../../../core/domain/entities/track.dart';

@@ -1,5 +1,29 @@
 // lib/features/playlist/presentation/screens/mix_detail_screen.dart
-// ignore_for_file: avoid_print
+
+/// Displays the full details of a generated music mix including:
+/// - Mix metadata and cover image
+/// - Track list with playback support
+/// - Save/unsave functionality
+/// - Shuffle and play controls
+/// - Bottom sheet actions
+///
+/// This screen listens reactively to saved mix providers so the UI updates
+/// instantly when the mix is liked or unliked from anywhere in the app.
+///
+/// Main responsibilities:
+/// - Load mix tracks using mixTracksProvider
+/// - Build playback queue using queueStateProvider
+/// - Toggle saved state using savedMixesProvider
+/// - Display responsive track list and mix information
+///
+/// Widgets included:
+/// - MixDetailScreen          → Async data loader wrapper
+/// - _MixDetailBody           → Main screen UI and interactions
+/// - _Cover                   → Reusable mix artwork widget
+///
+/// Queue context:
+/// Playback is started using QueueSource.mix to preserve
+/// player navigation and playback history behavior.
 library;
 
 import 'package:flutter/material.dart';

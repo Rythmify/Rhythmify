@@ -1,4 +1,40 @@
 // lib/features/playlist/presentation/widgets/edit_playlist_sheet.dart
+/// This file contains the bottom sheet used for editing an existing playlist.
+///
+/// Features:
+/// - Edit playlist name and description
+/// - Change playlist visibility (public/private)
+/// - Change playlist cover image
+/// - Remove tracks from playlist
+/// - Reorder playlist tracks
+/// - Convert playlist between Playlist and Album
+/// - Save playlist updates
+///
+/// Main Components:
+/// - EditPlaylistSheet:
+///     Main widget responsible for playlist editing.
+///
+/// - _onSave():
+///     Saves playlist changes and updates playlist data.
+///
+/// - _openImagePicker():
+///     Opens gallery picker for selecting a new cover image.
+///
+/// - _convert():
+///     Converts playlist type between playlist and album.
+///
+/// - _EditTrackRow:
+///     Displays editable playlist track rows.
+///
+/// - _ConvertTile:
+///     Reusable conversion option tile.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - Image picker package
+/// - Playlist entities/models
+/// - Shared playlist UI widgets
+library;
 
 import 'dart:io';
 
