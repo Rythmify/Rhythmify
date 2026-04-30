@@ -304,6 +304,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   // Suggestions — ONLY owned regular playlists
                   if (showSuggestionsSection) ...[
                     Padding(
+                      key: const Key('playlist_detail_add_track_button'),
                       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
                       child: Text(
                         'Suggestions for your new playlist',

@@ -210,6 +210,14 @@ void main() {
       expect(libraryPage.isFollowingScreenVisible(), true);
     });
 
+    await tryTest('TC-LIBRARY- 018 | Tap follower --> profile opens', () async {
+      await libraryPage.tapFirstFollower();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isProfileScreenVisible(), true);
+      await libraryPage.tapProfileBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
+
     // ─── TC-LIBRARY-018 | Scroll following list down and up ──────────────
     await tryTest('TC-LIBRARY-018 | Scroll following list down and up', () async {
       await libraryPage.scrollListDown(followingListView);
@@ -241,149 +249,217 @@ void main() {
     });
 
     // ─── TC-LIBRARY-022 | Back to Library ────────────────────────────────
-    await libraryPage.tapFollowingBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-022 | Back to Library', () async {
+      await libraryPage.tapFollowingBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // STATIONS
-    // ════════════════════════════════════════════════════════════════════════
 
+    // STATIONS SECTION
+    debugPrint('STATIONS SECTION');
     // ─── TC-LIBRARY-023 | Open Stations ──────────────────────────────────
-    await libraryPage.tapStations();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isStationsScreenVisible(), true);
+    await tryTest('TC-LIBRARY-023 | Open Stations', () async {
+      await libraryPage.tapStations();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isStationsScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-024 | Scroll stations list down and up ────────────────
-    await libraryPage.scrollListDown(libraryStationsScrollView);
-    await libraryPage.scrollListUp(libraryStationsScrollView);
+    await tryTest('TC-LIBRARY-024 | Scroll stations list down and up', () async {
+      await libraryPage.scrollListDown(libraryStationsScrollView);
+      await libraryPage.scrollListUp(libraryStationsScrollView);
+    });
 
+    //─── TC-LIBRARY-025 | Filter Stations ────────────────
+    await tryTest('TC-LIBRARY-025 | Filter Stations', () async {
+      await libraryPage.tapStationFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapStationFilterOptionFirstAdded();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      await libraryPage.tapStationFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapStationFilterOptionStationName();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      
+      await libraryPage.tapStationFilterButton();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapStationFilterOptionRecentlyAdded();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
+
+    //─── TC-LIBRARY-026 | Search Stations ────────────────
+    await tryTest('TC-LIBRARY-026 | Search Stations', () async {
+      await libraryPage.typeInStationsSearch("Cairokee Radio");   
+      expect(libraryPage.isTrackVisible("Cairokee Radio"), true,
+          reason: 'Saved station should appear in search');
+
+      await libraryPage.typeInStationsSearch("notSavedStationName");
+      expect(libraryPage.isNoResultsMessageVisible("notSavedStationName"), true,
+          reason: '"No results for" message should appear');
+    });
+
+
+
+    await tryTest('TC-LIBRARY-025 | Station Card', () async {
     // ─── TC-LIBRARY-025 | Open a station ─────────────────────────────────
-    await libraryPage.tapFirstStation();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isStationDetailVisible(), true);
+      await libraryPage.tapFirstStation();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isStationDetailVisible(), true);
 
-    // ─── TC-LIBRARY-026 | Play the station ───────────────────────────────
-    await libraryPage.tapStationPlay();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+      // ─── TC-LIBRARY-026 | Play the station ───────────────────────────────
+      await libraryPage.tapStationPlay();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    // ─── TC-LIBRARY-027 | Back to Stations list ──────────────────────────
-    await libraryPage.tapStationsBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isStationsScreenVisible(), true);
+      // ─── TC-LIBRARY-027 | Back to Stations list ──────────────────────────
+      await libraryPage.tapStationsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isStationsScreenVisible(), true);
+    });
 
-    // ─── TC-LIBRARY-028 | Search for existing station → visible ──────────
-    await libraryPage.typeInStationsSearch("savedStationName");   //to be replaced
-    expect(libraryPage.isTrackVisible("savedStationName"), true,
-        reason: 'Saved station should appear in search');
-
-    // ─── TC-LIBRARY-029 | Search for non-existing station → no results ────
-    await libraryPage.typeInStationsSearch("notSavedStationName");
-    expect(libraryPage.isNoResultsMessageVisible("notSavedStationName"), true,
-        reason: '"No results for" message should appear');
 
     // ─── TC-LIBRARY-030 | Back to Library ────────────────────────────────
+    await tryTest('TC-LIBRARY-030 | Back to Library', () async {
     await libraryPage.tapStationsBack();
     await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // YOUR INSIGHTS
-    // ════════════════════════════════════════════════════════════════════════
 
+    // YOUR INSIGHTS SECTION
+    debugPrint('YOUR INSIGHTS SECTION');
     // ─── TC-LIBRARY-031 | Open Your Insights ─────────────────────────────
-    await libraryPage.tapYourInsights();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isInsightsScreenVisible(), true);
+    await tryTest('TC-LIBRARY-031 | Open Your Insights', () async {
+      await libraryPage.tapYourInsights();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isInsightsScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-032 | Plays / Listeners / Likes stats are visible ─────
-    expect(libraryPage.isInsightsStatsVisible(), true,
-        reason: 'All 3 stat counters should be visible');
+    await tryTest('TC-LIBRARY-032 | Plays / Listeners / Likes stats are visible', () async {
+      expect(libraryPage.isInsightsStatsVisible(), true,
+          reason: 'All 3 stat counters should be visible');
+    });
 
     // ─── TC-LIBRARY-033 | Scroll insights down and up ────────────────────
-    await libraryPage.scrollInsightsDown();
-    await libraryPage.scrollInsightsUp();
+    await tryTest('TC-LIBRARY-033 | Scroll insights down and up', () async {
+      await libraryPage.scrollInsightsDown();
+      await libraryPage.scrollInsightsUp();
+    });
 
     // ─── TC-LIBRARY-034 | All Platforms tab is tappable ──────────────────
-    await libraryPage.tapAllPlatformsTab();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(libraryPage.isInsightsScreenVisible(), true);
+    await tryTest('TC-LIBRARY-034 | All Platforms tab is tappable', () async {
+      await libraryPage.tapAllPlatformsTab();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(libraryPage.isInsightsScreenVisible(), true);
+    });
 
     // ─── TC-LIBRARY-035 | Back to Library ────────────────────────────────
-    await libraryPage.tapInsightsBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-035 | Back to Library', () async {
+      await libraryPage.tapInsightsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // YOUR UPLOADS
-    // ════════════════════════════════════════════════════════════════════════
 
+    // YOUR UPLOADS SECTION
+    debugPrint('YOUR UPLOADS SECTION');
     // ─── TC-LIBRARY-036 | Open Your Uploads ──────────────────────────────
-    await libraryPage.tapYourUploads();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isUploadsScreenVisible(), true);
+    await tryTest('TC-LIBRARY-036 | Open Your Uploads', () async {
+      await libraryPage.tapYourUploads();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isUploadsScreenVisible(), true);
+    });
 
-    // ─── TC-LIBRARY-037 | Play a track ───────────────────────────────────
-    await libraryPage.tapFirstUploadPlay();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    // ─── TC-LIBRARY-037 | Play & shuffle buttons ───────────────────────────────────
+    await tryTest('TC-LIBRARY-037 | Play & shuffle buttons', () async {
+      await libraryPage.tapYourUploadsPlay();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapYourUploadsShuffle();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-038 | Three-dots → Delete uploaded track ─────────────
-    await libraryPage.tapFirstUploadThreeDots();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await libraryPage.tapDeleteUploadOption();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-038 | Three-dots → Delete uploaded track', () async {
+      await libraryPage.tapFirstUploadThreeDots();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapUpdatedTrack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.scrollUntilVisible(); //Delete button
+      await libraryPage.tapDeleteUploadOption();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     // ─── TC-LIBRARY-039 | Scroll uploads list down and up ────────────────
-    await libraryPage.scrollListDown(uploadsScrollView);
-    await libraryPage.scrollListUp(uploadsScrollView);
+    await tryTest('TC-LIBRARY-039 | Scroll Your Uploads', () async {
+      await libraryPage.scrollListDown(uploadsScrollView);
+      await libraryPage.scrollListUp(uploadsScrollView);
+    });
 
     // ─── TC-LIBRARY-040 | Search for uploaded track → visible ────────────
-    await libraryPage.typeInUploadsSearch("أنا وأخي");
-    expect(libraryPage.isTrackVisible("أنا وأخي"), true,
-        reason: 'Uploaded track should appear in search');
+    await tryTest('TC-LIBRARY-040 | Search in Your Uploads', () async {
+      await libraryPage.typeInUploadsSearch("أنا وأخي");
+      expect(libraryPage.isTrackVisible("أنا وأخي"), true,
+          reason: 'Uploaded track should appear in search');
 
-    // ─── TC-LIBRARY-041 | Search for non-uploaded track → not visible ─────
-    await libraryPage.typeInUploadsSearch("notUploadedTrackName");
-    expect(libraryPage.isTrackVisible("notUploadedTrackName"), false,
-        reason: 'Non-uploaded track should not appear');
+      // ─── TC-LIBRARY-041 | Search for non-uploaded track → not visible ─────
+      await libraryPage.typeInUploadsSearch("notUploadedTrackName");
+      expect(libraryPage.isTrackVisible("notUploadedTrackName"), false,
+          reason: 'Non-uploaded track should not appear');
+    });
 
     // ─── TC-LIBRARY-042 | Back to Library ────────────────────────────────
-    await libraryPage.tapUploadsBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-042 | Back to Library', () async {
+      await libraryPage.tapUploadsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // RECENTLY PLAYED
-    // ════════════════════════════════════════════════════════════════════════
 
+    // RECENTLY PLAYED SECTION
+    debugPrint('RECENTLY PLAYED SECTION');
     // ─── TC-LIBRARY-043 | Tap See All → Recently Played screen ───────────
-    await libraryPage.tapRecentlyPlayedSeeAll();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isRecentlyPlayedScreenVisible(), true);
+    await tryTest('TC-LIBRARY-043 | Tap See All → Recently Played screen', () async{
+      await libraryPage.tapRecentlyPlayedSeeAll();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isRecentlyPlayedScreenVisible(), true);
+    });
 
-    // ─── TC-LIBRARY-044 | Play a track from history ───────────────────────
-    await libraryPage.tapHistoryPlay();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    // ─── TC-LIBRARY-044 | Play & shuffle buttons ───────────────────────
+    await tryTest('TC-LIBRARY-044 | Play & shuffle buttons', () async{
+      await libraryPage.tapHistoryPlay();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await libraryPage.tapHistoryShuffle();
+    });
 
     // ─── TC-LIBRARY-045 | Scroll history list down and up ─────────────────
-    await libraryPage.scrollListDown(historyListView);
-    await libraryPage.scrollListUp(historyListView);
+    await tryTest('TC-LIBRARY-045 | Scroll history list down and up', () async{
+      await libraryPage.scrollListDown(historyListView);
+      await libraryPage.scrollListUp(historyListView);
+    });
 
-    // ─── TC-LIBRARY-046 | Delete icon → dialog → tap Cancel → list intact ─
-    await libraryPage.tapDeleteHistoryIcon();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await libraryPage.tapCancelClearDialog();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    expect(libraryPage.isRecentlyPlayedScreenVisible(), true,
-        reason: 'History list should remain after Cancel');
 
-    // ─── TC-LIBRARY-047 | Delete icon → dialog → tap Clear → history gone ─
-    await libraryPage.tapDeleteHistoryIcon();
-    await tester.pumpAndSettle(const Duration(seconds: 1));
-    await libraryPage.tapClearOnDialog();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    expect(libraryPage.isNoListeningHistoryVisible(), true,
-        reason: '"No listening history" should appear after clearing');
+    await tryTest('TC-LIBRARY-046 | Delete History', () async {
+      // ─── TC-LIBRARY-046 | Delete icon → dialog → tap Cancel → list intact ─
+      await libraryPage.tapDeleteHistoryIcon();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapCancelClearDialog();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      expect(libraryPage.isRecentlyPlayedScreenVisible(), true,
+          reason: 'History list should remain after Cancel');
+
+      // ─── TC-LIBRARY-047 | Delete icon → dialog → tap Clear → history gone ─
+      await libraryPage.tapDeleteHistoryIcon();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await libraryPage.tapClearOnDialog();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(libraryPage.isNoListeningHistoryVisible(), true,
+          reason: '"No listening history" should appear after clearing');
+    });
+
 
     // ─── TC-LIBRARY-048 | Back to Library ────────────────────────────────
-    await libraryPage.tapHistoryBack();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tryTest('TC-LIBRARY-048 | Back to Library', () async {
+      await libraryPage.tapInsightsBack();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
 
     FlutterError.onError = originalOnError;
     if (failures.isNotEmpty) {

@@ -356,17 +356,20 @@ class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
                           ),
                         ),
                       ),
-                      IconButton(
-                        key: _filterIconKey,
-                        icon: Icon(
-                          Icons.tune,
-                          color:
-                              (_sort != _SortOption.recentlyAdded ||
-                                  _filter != _FilterOption.all)
-                              ? AppTheme.primaryBrand
-                              : AppTheme.textSecondary,
+                      KeyedSubtree(
+                        key: const Key('library_playlists_filter_button'),
+                        child: IconButton(
+                          key: _filterIconKey,
+                          icon: Icon(
+                            Icons.tune,
+                            color:
+                                (_sort != _SortOption.recentlyAdded ||
+                                    _filter != _FilterOption.all)
+                                ? AppTheme.primaryBrand
+                                : AppTheme.textSecondary,
+                          ),
+                          onPressed: _toggleOverlay,
                         ),
-                        onPressed: _toggleOverlay,
                       ),
                     ],
                   ),
@@ -590,37 +593,44 @@ class _FilterDropdown extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _DropdownItem(
+              key: const Key('library_playlists_filter_recently_added'),
               label: 'Recently added',
               checked: sort == _SortOption.recentlyAdded,
               onTap: () => onSortChanged(_SortOption.recentlyAdded),
             ),
             _DropdownItem(
+              key: const Key('library_playlists_filter_first_added'),
               label: 'First added',
               checked: sort == _SortOption.firstAdded,
               onTap: () => onSortChanged(_SortOption.firstAdded),
             ),
             _DropdownItem(
+              key: const Key('library_playlists_filter_recently_updated'),
               label: 'Recently updated',
               checked: sort == _SortOption.recentlyUpdated,
               onTap: () => onSortChanged(_SortOption.recentlyUpdated),
             ),
             _DropdownItem(
+              key: const Key('library_playlists_filter_playlist_name'),
               label: 'Playlist name',
               checked: sort == _SortOption.playlistName,
               onTap: () => onSortChanged(_SortOption.playlistName),
             ),
             const Divider(height: 1, thickness: 1, color: Color(0xFF3A3A3A)),
             _DropdownItem(
+              key: const Key('library_playlists_filter_all_playlists'),
               label: 'All playlists',
               checked: filter == _FilterOption.all,
               onTap: () => onFilterChanged(_FilterOption.all),
             ),
             _DropdownItem(
+              key: const Key('library_playlists_filter_liked_playlists'),
               label: 'Liked playlists',
               checked: filter == _FilterOption.liked,
               onTap: () => onFilterChanged(_FilterOption.liked),
             ),
             _DropdownItem(
+              key: const Key('library_playlists_filter_owned_playlists'),
               label: 'Owned playlists',
               checked: filter == _FilterOption.owned,
               onTap: () => onFilterChanged(_FilterOption.owned),
@@ -634,6 +644,7 @@ class _FilterDropdown extends StatelessWidget {
 
 class _DropdownItem extends StatelessWidget {
   const _DropdownItem({
+    super.key,
     required this.label,
     required this.checked,
     required this.onTap,

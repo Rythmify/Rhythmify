@@ -272,6 +272,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
         ),
         actions: [
           TextButton(
+            key: const Key('delete_playlist_cancel_button'),
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text(
               'Cancel',
@@ -279,6 +280,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
             ),
           ),
           TextButton(
+            key: const Key('delete_playlist_confirm_button'),
             onPressed: () {
               Navigator.of(dialogContext).pop();
               Navigator.of(sheetContext).pop();

@@ -302,10 +302,18 @@ const String insightsApUpgradeButton        = 'insights_ap_upgrade_button';
 const String insightsUpgradeProButton       = 'insights_upgrade_pro_button';
 
 // ── Library — Playlists ───────────────────────────────────────────────────────
-const String libraryPlaylistsBackButton     = 'library_playlists_back_button';
-const String libraryPlaylistsSearchField    = 'library_playlists_search_field';
-const String libraryPlaylistsImportButton   = 'library_playlists_import_button';
-const String libraryPlaylistsCreateButton   = 'library_playlists_create_button';
+const String libraryPlaylistsBackButton              = 'library_playlists_back_button';
+const String libraryPlaylistsSearchField             = 'library_playlists_search_field';
+const String libraryPlaylistsImportButton            = 'library_playlists_import_button';
+const String libraryPlaylistsCreateButton            = 'library_playlists_create_button';
+const String libraryPlaylistsFilterButton            = 'library_playlists_filter_button';
+const String libraryPlaylistsFilterRecentlyAdded     = 'library_playlists_filter_recently_added';
+const String libraryPlaylistsFilterFirstAdded        = 'library_playlists_filter_first_added';
+const String libraryPlaylistsFilterRecentlyUpdated   = 'library_playlists_filter_recently_updated';
+const String libraryPlaylistsFilterPlaylistName      = 'library_playlists_filter_playlist_name';
+const String libraryPlaylistsFilterAllPlaylists      = 'library_playlists_filter_all_playlists';
+const String libraryPlaylistsFilterLikedPlaylists    = 'library_playlists_filter_liked_playlists';
+const String libraryPlaylistsFilterOwnedPlaylists    = 'library_playlists_filter_owned_playlists';
 
 // ── Library — Misc ────────────────────────────────────────────────────────────
 const String libraryUpgradeProButton        = 'library_upgrade_pro_button';
@@ -420,6 +428,7 @@ const String playlistDetailLikeButton       = 'playlist_detail_like_button';
 const String playlistDetailMoreButton       = 'playlist_detail_more_button';
 const String playlistDetailShuffleButton    = 'playlist_detail_shuffle_button';
 const String playlistDetailPlayButton       = 'playlist_detail_play_button';
+const String playlistDetailAddTrackButton   = 'playlist_detail_add_track_button';
 const String refreshSuggestionsButton       = 'refresh_suggestions_button';
 
 // ---- Mix Detail Page (/home/mix/:id → MixDetailScreen) ----
@@ -443,6 +452,10 @@ const String editPlaylistPublicSwitch       = 'edit_playlist_public_switch';
 const String editConvertToAlbum             = 'edit_convert_to_album';
 const String editConvertToStation           = 'edit_convert_to_station';
 const String editConvertToPlaylist          = 'edit_convert_to_playlist';
+const String convertToAlbumCancelButton     = 'convert_cancel_album';
+const String convertToAlbumConfirmButton    = 'convert_confirm_album';
+const String deletePlaylistCancelButton     = 'delete_playlist_cancel_button';
+const String deletePlaylistConfirmButton    = 'delete_playlist_confirm_button';
 const String optionsShareSms                = 'options_share_sms';
 const String optionsShareQr                 = 'options_share_qr';
 const String optionsShareCopy               = 'options_share_copy';

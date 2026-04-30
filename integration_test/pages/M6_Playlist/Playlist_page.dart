@@ -14,9 +14,20 @@ class PlaylistPage extends BasePage {
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
 
+  /// Taps the Library tab to return to the main Library screen.
+  Future<void> goBackToLibrary() async {
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
   /// Taps the Playlists menu item in the Library screen.
   Future<void> goToPlaylistsSection() async {
     await tapByKey(libraryPlaylistsItem);
+  }
+
+  /// Taps the Albums menu item in the Library screen.
+  Future<void> goToAlbumsSection() async {
+    await tapByKey(libraryAlbumsItem);
   }
 
   /// Taps the back button on the Playlists list screen.
@@ -45,6 +56,37 @@ class PlaylistPage extends BasePage {
       find.descendant(of: tileRow, matching: find.byIcon(Icons.more_vert)),
     );
     await tester.pumpAndSettle(const Duration(seconds: 1));
+  }
+
+  // ── Playlist Filter ────────────────────────────────────────────────────────
+
+  /// Taps the filter button on the Playlists list screen.
+  Future<void> tapPlaylistFilterButton() async {
+    await tapByKey(libraryPlaylistsFilterButton);
+  }
+
+  Future<void> tapPlaylistFilterOptionFirstAdded() async {
+    await tapByKey(libraryPlaylistsFilterFirstAdded);
+  }
+
+  Future<void> tapPlaylistFilterOptionRecentlyUpdated() async {
+    await tapByKey(libraryPlaylistsFilterRecentlyUpdated);
+  }
+
+  Future<void> tapPlaylistFilterOptionPlaylistName() async {
+    await tapByKey(libraryPlaylistsFilterPlaylistName);
+  }
+
+  Future<void> tapPlaylistFilterOptionLikedPlayists() async {
+    await tapByKey(libraryPlaylistsFilterLikedPlaylists);
+  }
+
+  Future<void> tapPlaylistFilterOptionOwnedPlayists() async {
+    await tapByKey(libraryPlaylistsFilterOwnedPlaylists);
+  }
+
+  Future<void> tapPlaylistFilterOptionAllPlayists() async {
+    await tapByKey(libraryPlaylistsFilterAllPlaylists);
   }
 
   // ── Create Playlist ─────────────────────────────────────────────────────────
@@ -100,6 +142,16 @@ class PlaylistPage extends BasePage {
     await tester.pumpAndSettle();
   }
 
+  /// Taps Cancel in the delete confirmation dialog.
+  Future<void> cancelDelete() async {
+    await tapByKey(deletePlaylistCancelButton);
+  }
+
+  /// Taps Confirm/Delete in the delete confirmation dialog.
+  Future<void> confirmDelete() async {
+    await tapByKey(deletePlaylistConfirmButton);
+  }
+
   // ── Edit Playlist Sheet ─────────────────────────────────────────────────────
 
   /// Replaces the playlist name field content with [name] in the Edit sheet.
@@ -128,11 +180,27 @@ class PlaylistPage extends BasePage {
   }
 
   /// Taps the remove (red minus) button for [trackId] in the Edit sheet.
-  Future<void> removeTrack(String trackId) async {
-    await tapByKey('edit_track_remove_$trackId');
+  Future<void> removeTrack(int index) async {
+    await tapByKey('edit_track_remove_$index');
+     await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   // ── Suggestions (Playlist Detail) ──────────────────────────────────────────
+
+  /// Taps the "Add track" button on the Playlist detail screen to open suggestions.
+  Future<void> tapAddTrackButton() async {
+    await tapByKey(playlistDetailAddTrackButton);
+  }
+
+  /// Taps the add button for the suggestion at [index] in the suggestions list.
+  /// Uses icon-based lookup because suggestion keys include the track ID, not the index.
+  Future<void> tapSuggestionAddButtonByIndex(int index) async {
+    final buttons = find.byIcon(Icons.add_box_outlined);
+    await tester.ensureVisible(buttons.at(index));
+    await tester.pumpAndSettle();
+    await tester.tap(buttons.at(index));
+    await tester.pumpAndSettle();
+  }
 
   /// Scrolls to and taps the add button for the suggestion with [suggestionId].
   Future<void> addSuggestion(String suggestionId) async {
@@ -155,6 +223,29 @@ class PlaylistPage extends BasePage {
     await tapByKey(playlistDetailLikeButton);
   }
 
+  // ── Convert to Album ───────────────────────────────────────────────────────
+
+  /// Taps the "Convert to Album" option in the Edit sheet.
+  Future<void> tapConvertToAlbum() async {
+    await tapByKey(editConvertToAlbum);
+  }
+
+  /// Taps Cancel in the convert-to-album confirmation dialog.
+  Future<void> cancelConvertToAlbum() async {
+    await tapByKey(convertToAlbumCancelButton);
+  }
+
+  /// Taps Confirm in the convert-to-album confirmation dialog.
+  Future<void> confirmConvertToAlbum() async {
+    await tapByKey(convertToAlbumConfirmButton);
+  }
+
+  /// Pulls down to trigger a refresh on the current screen.
+  Future<void> refreshPage() async {
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 300));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  }
+
   // ── State Checks ───────────────────────────────────────────────────────────
 
   /// True when the Playlists list screen is active (back button present).
@@ -173,4 +264,14 @@ class PlaylistPage extends BasePage {
 
   /// True when the Edit playlist sheet is open (Save button present).
   bool isEditSheetOpen() => isVisible(editPlaylistSaveButton);
+
+  /// True when a widget with exactly [name] exists — used for album name checks.
+  bool isAlbumNameVisible(String name) =>
+      find.text(name).evaluate().isNotEmpty;
+
+  /// Search for playlists with [query] and returns true if the "No results for [query]" message is shown.
+    Future<void> typeInPlaylistSearch(String query) async {
+    await enterTextByKey(libraryPlaylistsSearchField, query);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
 }
