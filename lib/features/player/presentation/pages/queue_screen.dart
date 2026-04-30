@@ -189,6 +189,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                 final item = recommended[index];
                 return _QueueTile(
                   item: item,
+                  showDragHandle: false,
                   onTap: () {
                     ref
                         .read(queueStateProvider.notifier)
@@ -223,12 +224,14 @@ class _QueueTile extends StatelessWidget {
   final QueueItem item;
   final bool isActive;
   final bool isHistory;
+  final bool showDragHandle;
   final VoidCallback onTap;
 
   const _QueueTile({
     required this.item,
     this.isActive = false,
     this.isHistory = false,
+    this.showDragHandle = true,
     required this.onTap,
   });
 
@@ -315,7 +318,7 @@ class _QueueTile extends StatelessWidget {
               ),
 
             // --- Drag Handle on the Right ---
-            if (!isHistory && !isActive)
+            if (!isHistory && !isActive && showDragHandle)
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),

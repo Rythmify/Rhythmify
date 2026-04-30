@@ -145,7 +145,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final response = await apiClient.dio.get('/users/me');
       // Re-read in case Dio interceptor silently refreshed the token above.
-      //final freshToken = await apiClient.getToken() ?? token;
+      final freshToken = await apiClient.getToken() ?? token;
       final data = response.data['data'];
 
       final user = UserModel.fromJson({
@@ -154,7 +154,7 @@ class AuthNotifier extends Notifier<AuthState> {
         'is_email_verified':
             data['is_verified'] ?? data['is_email_verified'] ?? true,
         'avatar_url': data['profile_picture'] ?? data['avatar_url'],
-        'token': token,
+        'token': freshToken,
       });
 
       state = AuthAuthenticated(user);

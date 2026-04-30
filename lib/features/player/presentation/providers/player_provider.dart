@@ -109,6 +109,11 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
           _recentLocalSeek = null;
         }
       }
+
+      // Update local index to match hardware truth
+      if (newState.queueIndex != null) {
+        _currentIndex = newState.queueIndex!;
+      }
     });
 
     ref.onDispose(subscription.cancel);
@@ -314,6 +319,11 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
   /// Replaces the native player's queue metadata silently.
   Future<void> updateNativeQueue(List<Track> tracks, {int? newIndex}) async {
+    // Synchronize local mirror to prevent RangeError desync
+    _queue.clear();
+    _queue.addAll(tracks);
+    if (newIndex != null) _currentIndex = newIndex;
+
     // If a new index is provided, we use loadQueue to sync both list and position
     if (newIndex != null) {
       await ref
@@ -322,6 +332,18 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
     } else {
       await ref.read(audioRepositoryProvider).updateQueue(tracks);
     }
+  }
+
+  /// Seamlessly moves a track in the native queue.
+  Future<void> moveTrack(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+
+    // Update local mirror
+    final track = _queue.removeAt(oldIndex);
+    _queue.insert(newIndex, track);
+
+    // Command hardware
+    await ref.read(audioRepositoryProvider).moveTrack(oldIndex, newIndex);
   }
 
   /// Toggles between playing and paused states.

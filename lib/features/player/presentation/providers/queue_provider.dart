@@ -253,6 +253,14 @@ class QueueNotifier extends Notifier<AppQueueState> {
         upcomingTracks: shuffled,
       );
     }
+
+    // Hardware sync for shuffle
+    final allTracks = [
+      ...state.history.map((e) => e.track),
+      state.currentTrack!.track,
+      ...state.upcomingTracks.map((e) => e.track),
+    ];
+    ref.read(playerStateProvider.notifier).updateNativeQueue(allTracks);
   }
 
   void reorder(int oldIndex, int newIndex) {
@@ -271,13 +279,12 @@ class QueueNotifier extends Notifier<AppQueueState> {
       unShuffledUpcomingTracks: list,
     );
 
-    // Hardware sync for reorder
-    final allTracks = [
-      ...state.history.map((e) => e.track),
-      state.currentTrack!.track,
-      ...state.upcomingTracks.map((e) => e.track),
-    ];
-    ref.read(playerStateProvider.notifier).updateNativeQueue(allTracks);
+    // Calculate absolute indices for the hardware (History + Current + index)
+    final int hardwareOldIndex = state.history.length + 1 + oldIndex;
+    final int hardwareNewIndex = state.history.length + 1 + newIndex;
+
+    // Seamless hardware sync using moveTrack (prevents playback restart)
+    ref.read(playerStateProvider.notifier).moveTrack(hardwareOldIndex, hardwareNewIndex);
   }
 
   Future<void> addToNextUp({

@@ -22,7 +22,14 @@ abstract class AudioRepository {
   Future<void> init();
 
   /// Loads a list of [Track]s into the playback queue and starts playback from [initialIndex].
-  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0});
+  Future<void> loadQueue(
+    List<Track> tracks, {
+    int initialIndex = 0,
+    Duration initialPosition = Duration.zero,
+  });
+
+  /// Seamlessly moves a track within the native queue.
+  Future<void> moveTrack(int oldIndex, int newIndex);
 
   /// Starts or resumes audio playback.
   Future<void> play();
