@@ -1,4 +1,42 @@
 // lib/features/playlist/data/datasources/playlist_remote_datasource.dart
+/// PURPOSE:
+/// Centralized API service responsible for all playlist-related backend
+/// communication using Dio. This includes fetching playlists, tracks,
+/// stations, mixes, recommendations, and handling engagement actions.
+///
+/// RESPONSIBILITIES:
+/// - CRUD operations for playlists (create, read, update, delete)
+/// - Fetch playlist details and tracks
+/// - Handle likes/unlikes for playlists, mixes, stations, radios
+/// - Fetch discovery content (mixes, stations, recommendations)
+/// - Map raw API responses into domain entities
+/// - Normalize inconsistent backend responses
+///
+/// KEY ENDPOINT GROUPS:
+/// - /playlists → core playlist operations
+/// - /playlists/:id/tracks → playlist tracks
+/// - /home/* → mixes, stations, discovery feeds
+/// - /tracks/* → radio, related, and single track data
+/// - /users/me/* → saved stations and user-specific data
+///
+/// IMPORTANT BEHAVIOR:
+/// - Uses defensive parsing due to inconsistent backend shapes
+/// - Cross-checks LocalSavedStore for missing backend flags
+/// - Handles multiple content types (playlist, mix, station, radio)
+/// - Mix/station mapping uses relaxed validation (no filtering)
+/// - Playlist mapping enforces strict domain consistency
+///
+/// DESIGN NOTES:
+/// - Pure data layer (no UI logic)
+/// - Strong separation between mapping and networking
+/// - Extensive logging for debugging backend inconsistencies
+/// - Fail-safe parsing for partial or malformed responses
+///
+/// ERROR HANDLING:
+/// - DioException is caught per endpoint
+/// - Fallback empty lists returned for non-critical feeds
+/// - Critical operations rethrow for higher-level handling
+library;
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
