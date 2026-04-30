@@ -19,6 +19,7 @@ dependencies:
   socket_io_client: ^2.0.3
   dynamic_app_icon_flutter_plus: ^0.0.1
   flutter_web_auth_2: ^4.0.0   # handles the browser + deep link callback
+  crypto: ^3.0.3                # for PKCE code challenge generation
 
   
 

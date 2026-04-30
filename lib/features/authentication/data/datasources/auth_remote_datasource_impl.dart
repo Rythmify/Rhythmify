@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import 'dart:io' show Platform;
 import 'package:dio/dio.dart';
 import '../models/user_model.dart';
 import 'auth_remote_datasource.dart';
@@ -165,9 +166,13 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   /// Throws an [Exception] with descriptive error messages on any failure.
   @override
   Future<UserModel> signInWithGoogle() async {
+    if (Platform.isWindows) {
+      throw Exception(
+        'Google Sign-In not supported on Windows. Use the browser OAuth flow from the sign-in page.',
+      );
+    }
+
     try {
-      // IMPORTANT: This MUST match the backend's GOOGLE_CLIENT_ID
-      // Backend expects: 456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
         serverClientId:

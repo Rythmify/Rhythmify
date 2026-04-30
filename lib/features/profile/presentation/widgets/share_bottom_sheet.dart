@@ -34,13 +34,12 @@ class ShareBottomSheet extends ConsumerWidget {
         16,
         12,
         16,
-        MediaQuery.of(context).padding.bottom +
-            64, // Extra padding for miniplayer
+        MediaQuery.of(context).padding.bottom + 64,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          /// ── Handle ─────────────────────────────────────────────
+          ///  Handle
           Center(
             child: Container(
               width: 40,
@@ -54,7 +53,7 @@ class ShareBottomSheet extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          /// ── Profile preview ────────────────────────────────────
+          /// Profile preview
           Row(
             children: [
               ProfileAvatar(avatarUrl: profile.avatarUrl, radius: 24),
@@ -78,7 +77,7 @@ class ShareBottomSheet extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          /// ── Share options (SCROLLABLE) ─────────────────────────
+          /// Share options
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -187,7 +186,7 @@ class ShareBottomSheet extends ConsumerWidget {
             height: 32,
           ),
 
-          /// ── View info ──────────────────────────────────────────
+          /// View info
           GestureDetector(
             key: const Key('profile_share_view_info_gesture'),
             onTap: () {
@@ -196,6 +195,7 @@ class ShareBottomSheet extends ConsumerWidget {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
+                useRootNavigator: true,
                 builder: (_) => InfoBottomSheet(profile: profile),
               );
             },
