@@ -13,8 +13,8 @@ class MessageInputBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF2F2F2F),
         borderRadius: BorderRadius.circular(26),
@@ -23,7 +23,7 @@ class MessageInputBubble extends StatelessWidget {
       child: TextFormField(
         key: const Key('messaging_message_input_text_field'),
         controller: controller,
-        maxLines: null,
+        maxLines: 3,
         minLines: 1,
         keyboardType: TextInputType.multiline,
         textInputAction: TextInputAction.newline,

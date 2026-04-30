@@ -26,8 +26,8 @@ class LibraryPlaylistsScreen extends ConsumerStatefulWidget {
       _LibraryPlaylistsScreenState();
 }
 
-class _LibraryPlaylistsScreenState
-    extends ConsumerState<LibraryPlaylistsScreen> {
+class _LibraryPlaylistsScreenState extends ConsumerState<LibraryPlaylistsScreen>
+    with WidgetsBindingObserver {
   String _searchQuery = '';
   _SortOption _sort = _SortOption.recentlyAdded;
   _FilterOption _filter = _FilterOption.all;
@@ -42,13 +42,23 @@ class _LibraryPlaylistsScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadAll());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _removeOverlay();
     super.dispose();
+  }
+
+  // Fires when the user returns to this screen from another route
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _loadAll();
+    }
   }
 
   String _currentUserId() {
@@ -57,17 +67,15 @@ class _LibraryPlaylistsScreenState
   }
 
   bool _isPlaylistOwned(PlaylistEntity playlist) {
-    // Track radios and generated mixes are NEVER owned even if ownerId matches.
     if (playlist.isTrackRadio) return false;
     if (playlist.isGeneratedMix) return false;
-    // isOwned flag set by fromJsonListOwned (filter=created endpoint)
     if (playlist.isOwned) return true;
-    // Fallback: ownerId comparison for edge cases
     final uid = _currentUserId();
     return uid.isNotEmpty && playlist.ownerId == uid;
   }
 
   Future<void> _loadAll() async {
+    if (!mounted) return;
     setState(() => _loading = true);
     final notifier = ref.read(playlistListProvider.notifier);
 
@@ -95,10 +103,12 @@ class _LibraryPlaylistsScreenState
       });
     }
 
+    // Second pass to ensure owned list is fresh
     await notifier.loadPlaylists();
   }
 
   Future<void> _loadForFilter() async {
+    if (!mounted) return;
     setState(() => _loading = true);
     if (_filter == _FilterOption.liked) {
       await ref.read(playlistListProvider.notifier).loadLikedPlaylists();
@@ -121,7 +131,6 @@ class _LibraryPlaylistsScreenState
       case _FilterOption.all:
         return _allPlaylists;
       case _FilterOption.liked:
-        // Liked = everything that is NOT owned (mixes, track radios, liked playlists)
         return _allPlaylists.where((p) => !_isPlaylistOwned(p)).toList();
       case _FilterOption.owned:
         return _allPlaylists.where(_isPlaylistOwned).toList();
@@ -129,8 +138,7 @@ class _LibraryPlaylistsScreenState
   }
 
   List<PlaylistEntity> _applySortAndSearch(List<PlaylistEntity> input) {
-    // KEY FIX: filter out albums — they belong in the albums screen, not here.
-    // Track radios and mixes are allowed (they show as Radio/Mix label).
+    // Filter out albums — they belong in the albums screen
     var result = input
         .where(
           (p) =>
@@ -429,7 +437,7 @@ class _LibraryPlaylistsScreenState
                   ),
                 ),
 
-                // ── List ─────────────────────────────────────────
+                // ── List with pull-to-refresh ─────────────────────
                 Expanded(
                   child: _loading
                       ? const Center(
@@ -438,27 +446,42 @@ class _LibraryPlaylistsScreenState
                             color: AppTheme.primaryBrand,
                           ),
                         )
-                      : filtered.isEmpty
-                      ? _emptyState()
-                      : ListView.builder(
-                          key: const Key('library_playlists_list'),
-                          padding: const EdgeInsets.only(bottom: 140),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final playlist = filtered[index];
-                            final isOwner = _isPlaylistOwned(playlist);
-                            return _PlaylistListTile(
-                              key: Key('playlist_tile_${playlist.id}'),
-                              playlist: playlist,
-                              isOwner: isOwner,
-                              onTap: () => _onPlaylistTap(context, playlist),
-                              // FIX: pass the playlist entity directly so
-                              // the options sheet always gets the right one,
-                              // not whatever was last opened in detail screen.
-                              onMoreTap: () =>
-                                  _showOptions(context, playlist, isOwner),
-                            );
-                          },
+                      : RefreshIndicator(
+                          onRefresh: _loadAll,
+                          color: AppTheme.primaryBrand,
+                          child: filtered.isEmpty
+                              ? ListView(
+                                  // ListView so RefreshIndicator works on empty state
+                                  children: [
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                          0.4,
+                                      child: Center(child: _emptyState()),
+                                    ),
+                                  ],
+                                )
+                              : ListView.builder(
+                                  key: const Key('library_playlists_list'),
+                                  padding: const EdgeInsets.only(bottom: 140),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final playlist = filtered[index];
+                                    final isOwner = _isPlaylistOwned(playlist);
+                                    return _PlaylistListTile(
+                                      key: Key('playlist_tile_${playlist.id}'),
+                                      playlist: playlist,
+                                      isOwner: isOwner,
+                                      onTap: () =>
+                                          _onPlaylistTap(context, playlist),
+                                      onMoreTap: () => _showOptions(
+                                        context,
+                                        playlist,
+                                        isOwner,
+                                      ),
+                                    );
+                                  },
+                                ),
                         ),
                 ),
               ],
@@ -476,14 +499,12 @@ class _LibraryPlaylistsScreenState
       _FilterOption.owned => 'No playlists created yet',
       _FilterOption.all => 'No playlists yet',
     };
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          message,
-          style: AppTheme.bodyMedium,
-          textAlign: TextAlign.center,
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Text(
+        message,
+        style: AppTheme.bodyMedium,
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -494,12 +515,13 @@ class _LibraryPlaylistsScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => CreatePlaylistSheet(
-        onCreated: (id) => context.push('/library/playlists/$id', extra: true),
+        onCreated: (id) {
+          context.push('/library/playlists/$id', extra: true);
+          _loadAll();
+        },
       ),
     );
   }
-
-  // REPLACE _showOptions in library_playlists_screen.dart with this:
 
   void _showOptions(
     BuildContext context,
@@ -514,7 +536,6 @@ class _LibraryPlaylistsScreenState
         playlistId: playlist.id,
         playlist: playlist,
         isOwner: isOwner,
-        // When converted to album, navigate to album library
         onConverted: (newType) {
           switch (newType) {
             case PlaylistType.album:
@@ -522,14 +543,15 @@ class _LibraryPlaylistsScreenState
             case PlaylistType.station:
               context.go('/library/stations');
             case PlaylistType.playlist:
-              // Already on playlist screen, just reload
               _loadAll();
           }
         },
-        // When deleted, just reload the list
         onDeleted: _loadAll,
       ),
-    );
+    ).then((_) {
+      // Reload after any action taken in the options sheet
+      _loadAll();
+    });
   }
 }
 
@@ -677,8 +699,7 @@ class _PlaylistListTile extends StatelessWidget {
   String get _subtitleLabel {
     if (playlist.isGeneratedMix) return 'Mix';
     if (playlist.isTrackRadio) return 'Radio';
-    if (isOwner) return 'Playlist';
-    return 'Playlist'; // liked from another user
+    return 'Playlist';
   }
 
   String get _ownerLabel {
@@ -720,7 +741,22 @@ class _PlaylistListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  Text(_detailLine, style: AppTheme.labelSmall),
+                  // Detail line with inline privacy lock (owner playlists only)
+                  Row(
+                    children: [
+                      if (isOwner) ...[
+                        Icon(
+                          playlist.isPublic
+                              ? Icons.lock_open_rounded
+                              : Icons.lock_rounded,
+                          size: 11,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(_detailLine, style: AppTheme.labelSmall),
+                    ],
+                  ),
                 ],
               ),
             ),

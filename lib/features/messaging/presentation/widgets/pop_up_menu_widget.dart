@@ -16,11 +16,13 @@ import 'package:rythmify/features/messaging/presentation/widgets/confirm_block_w
 class PopUpMenuWidget extends ConsumerWidget {
   final String participantId;
   final BuildContext parentContext;
+  final VoidCallback? onBlocked;
 
   const PopUpMenuWidget({
     super.key,
     required this.participantId,
     required this.parentContext,
+    this.onBlocked,
   });
 
   @override
@@ -51,6 +53,7 @@ class PopUpMenuWidget extends ConsumerWidget {
                         .blockUser(participantId: participantId);
 
                     ref.invalidate(isBlockedProvider(participantId));
+                    onBlocked?.call();
 
                     if (context.mounted) Navigator.pop(context);
 

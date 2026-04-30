@@ -144,6 +144,8 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       final response = await apiClient.dio.get('/users/me');
+      // Re-read in case Dio interceptor silently refreshed the token above.
+      //final freshToken = await apiClient.getToken() ?? token;
       final data = response.data['data'];
 
       final user = UserModel.fromJson({
