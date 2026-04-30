@@ -1,13 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/bottom_navigation.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../../../features/authentication/presentation/providers/auth_state.dart';
+import '../../../../features/notifications/data/datasources/push_notification_service.dart';
 import '../../../../features/notifications/presentation/providers/notifications_provider.dart';
 import '../../../../features/player/presentation/widgets/mini_player.dart';
 import '../../../../features/player/presentation/pages/full_player_page.dart';
 import '../../../../features/player/presentation/providers/player_provider.dart';
 import '../../../features/feed/presentation/providers/feed_providers.dart';
+import '../../routing/app_router.dart';
 
 class MainAppScaffold extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -21,6 +26,7 @@ class MainAppScaffold extends ConsumerStatefulWidget {
 class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   final DraggableScrollableController _draggableController =
       DraggableScrollableController();
+  //PushNotificationService? _notificationService;
 
   // Heights in logical pixels
   static const double _navBarHeight = 70.0;
@@ -60,10 +66,27 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     }
   }
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   if(Platform.isAndroid){
+  //     Future.microtask(()async{
+  //       _notificationService= PushNotificationService(ref.read(routerProvider));
+  //       await _notificationService!.Initialize();
+  //     });
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
+
+    // ref.listen<AuthState>(authProvider, (previous, next) {
+    //   if (previous is AuthAuthenticated && next is! AuthAuthenticated) {
+    //     _notificationService?.unregisterToken();
+    //   }
+    // });
 
     // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -6,6 +6,7 @@ import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/get_track_details_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/track_by_comment_provider.dart';
 import 'package:rythmify/features/notifications/presentation/widgets/notification_tile.dart';
 
@@ -373,6 +374,12 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                     .watch(trackByCommentProvider(notification.resourceId!))
                     .value
               : null;
+          final likeRepostEmbed= (notification.type==NotificationType.like ||
+                                    notification.type==NotificationType.repost)&&
+                                  notification.resourceType==ResourceType.track&&
+                                  notification.resourceId!=null
+                                  ? ref.watch(getTrackDetailsProvider(notification.resourceId!)).value
+                                  : null;
           final serverIsLiked = commentData?.isLikedByMe ?? false;
           final isCommentLiked =
               state.likedCommentIds.contains(notification.resourceId)
@@ -382,7 +389,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             key: ValueKey(notification.id),
             notification: notification,
             onTap: () => _onTap(notification, commentData?.embed?.embedId),
-            trackEmbed: commentData?.embed,
+            trackEmbed: commentData?.embed??likeRepostEmbed,
             isFollowing: followState[notification.actorId] ?? false,
             onFollowTap: () {
               ref

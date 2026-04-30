@@ -53,6 +53,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   late DataSourcesSockets _socket;
   Timer? _urlDetectionTimer;
   Timer? _blockPollTimer;
+  Conversation? _resolveConv;
+  bool _isResolvingConv=false;
+  Conversation? get _realConv=>_resolveConv??widget.conv;
 
   @override
   void initState() {
@@ -66,40 +69,74 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       Future.microtask(() {
         if (!mounted) return;
         ref.invalidate(conversationProvider);
-        ref.invalidate(messagesNotifierProvider(widget.conv!.conversationId));
-        if (widget.conv!.participantId.isNotEmpty) {
-          ref.invalidate(isBlockedProvider(widget.conv!.participantId));
-          ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+        ref.invalidate(messagesNotifierProvider(_realConv!.conversationId));
+        if (_realConv!.participantId.isNotEmpty) {
+          ref.invalidate(isBlockedProvider(_realConv!.participantId));
+          ref.invalidate(isBlockedByProvider(_realConv!.participantId));
         }
-        _socket.joinConversation(widget.conv!.conversationId);
-        _setupSocketListeners(widget.conv!.conversationId);
+        _socket.joinConversation(_realConv!.conversationId);
+        _setupSocketListeners(_realConv!.conversationId);
         _socket.setOnReconnectedToRoom(() {
-          if (mounted) _setupSocketListeners(widget.conv!.conversationId);
+          if (mounted) _setupSocketListeners(_realConv!.conversationId);
         });
         _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-          if (mounted && widget.conv?.participantId != null) {
-            ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+          if (mounted && _realConv?.participantId != null) {
+            ref.invalidate(isBlockedByProvider(_realConv!.participantId));
           }
         });
+      });
+    } else if (widget.newParticipantId != null) {
+      setState(() => _isResolvingConv = true);
+      Future.microtask(() async {
+        if (!mounted) return;
+        try {
+          final conv = await ref
+              .read(sendMessageProvider.notifier)
+              .ensureConversation(widget.newParticipantId!);
+          if (!mounted) return;
+          setState(() {
+            _resolveConv = conv;
+            _isResolvingConv = false;
+          });
+          ref.invalidate(conversationProvider);
+          ref.invalidate(messagesNotifierProvider(conv.conversationId));
+          if (conv.participantId.isNotEmpty) {
+            ref.invalidate(isBlockedProvider(conv.participantId));
+            ref.invalidate(isBlockedByProvider(conv.participantId));
+          }
+          _scrollController.addListener(_onScroll);
+          _socket.joinConversation(conv.conversationId);
+          _setupSocketListeners(conv.conversationId);
+          _socket.setOnReconnectedToRoom(() {
+            if (mounted) _setupSocketListeners(conv.conversationId);
+          });
+          _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+            if (mounted) {
+              ref.invalidate(isBlockedByProvider(conv.participantId));
+            }
+          });
+        } catch (_) {
+          if (mounted) setState(() => _isResolvingConv = false);
+        }
       });
     }
   }
 
   void _onScroll() {
-    if (widget.conv == null) return;
+    if (_realConv == null) return;
     final pos = _scrollController.position;
     // reversed list: maxScrollExtent = visual top (oldest messages)
     if (pos.pixels >= pos.maxScrollExtent - 200) {
       ref
-          .read(messagesNotifierProvider(widget.conv!.conversationId).notifier)
+          .read(messagesNotifierProvider(_realConv!.conversationId).notifier)
           .loadMore();
     }
   }
 
   void _setupSocketListeners(String conversationId) {
     _socket.onUserBlocked((_) {
-      if (mounted && widget.conv?.participantId != null) {
-        ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+      if (mounted && _realConv?.participantId != null) {
+        ref.invalidate(isBlockedByProvider(_realConv!.participantId));
       }
     });
     _socket.onMessageReceived((data) {
@@ -139,8 +176,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     _urlDetectionTimer?.cancel();
-    if (widget.conv != null) {
-      _socket.leaveConversation(widget.conv!.conversationId);
+    if (_realConv != null) {
+      _socket.leaveConversation(_realConv!.conversationId);
     }
     _socket.clearConversationListeners();
     _scrollController.dispose();
@@ -153,17 +190,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final myId = ref.watch(currentUserIdProvider);
 
-    final msgState = widget.conv != null
-        ? ref.watch(messagesNotifierProvider(widget.conv!.conversationId))
+    final msgState = _realConv != null
+        ? ref.watch(messagesNotifierProvider(_realConv!.conversationId))
         : null;
 
-    final unreadMsgProvider = widget.conv != null
-        ? ref.watch(unreadProvider(widget.conv!.conversationId))
+    final unreadMsgProvider = _realConv != null
+        ? ref.watch(unreadProvider(_realConv!.conversationId))
         : null;
 
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    final participantId = widget.conv?.participantId ?? widget.newParticipantId;
+    final participantId = _realConv?.participantId ?? widget.newParticipantId;
 
     final isBlockedAsync = participantId != null
         ? ref.watch(isBlockedProvider(participantId))
@@ -183,11 +220,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         key: const Key('chat_screen_app_bar'),
         title: GestureDetector(
           onTap: () {
-            final id = widget.conv?.participantId ?? widget.newParticipantId;
+            final id = _realConv?.participantId ?? widget.newParticipantId;
             if (id != null) context.push('/home/profile/$id');
           },
           child: Text(
-            widget.conv?.participantName ?? widget.newParticipantName ?? 'Chat',
+            _realConv?.participantName ?? widget.newParticipantName ?? 'Chat',
             key: const Key('chat_participant_name_text'),
           ),
         ),
@@ -203,9 +240,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   builder: (_) => PopUpMenuWidget(
                     participantId: participantId,
                     parentContext: context,
-                    onBlocked: widget.conv != null
+                    onBlocked: _realConv != null
                         ? () => _socket.leaveConversation(
-                            widget.conv!.conversationId,
+                            _realConv!.conversationId,
                           )
                         : null,
                   ),
@@ -216,7 +253,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
         ],
       ),
-      body: widget.conv == null
+      body: _isResolvingConv
+          ? const Center(child: CircularProgressIndicator())
+          : _realConv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
           : msgState == null
           ? const Center(child: CircularProgressIndicator())
@@ -239,11 +278,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      if (mounted && widget.conv != null) {
+                      if (mounted && _realConv != null) {
                         ref
                             .read(
                               messagesNotifierProvider(
-                                widget.conv!.conversationId,
+                                _realConv!.conversationId,
                               ).notifier,
                             )
                             .refresh();
@@ -264,7 +303,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     Future.microtask(() async {
                       if (!mounted) return;
                       final latestUnreads = await ref.read(
-                        unreadProvider(widget.conv!.conversationId).future,
+                        unreadProvider(_realConv!.conversationId).future,
                       );
                       for (final unread in latestUnreads) {
                         if (!mounted) return;
@@ -331,7 +370,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     myId: myId,
                                     senderId: message.senderId,
                                     userAvatar: index == group.length - 1
-                                        ? widget.conv?.participantAvatar
+                                        ? _realConv?.participantAvatar
                                         : null,
                                     showAvatar: index == group.length - 1,
                                     body: message.body,
@@ -365,13 +404,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ? BlockedUserWidget(
                             key: const Key('chat_screen_blocked_user_widget'),
                             participantId: participantId,
-                            onUnblocked: widget.conv != null
+                            onUnblocked: _realConv != null
                                 ? () {
                                     _socket.joinConversation(
-                                      widget.conv!.conversationId,
+                                      _realConv!.conversationId,
                                     );
                                     _setupSocketListeners(
-                                      widget.conv!.conversationId,
+                                      _realConv!.conversationId,
                                     );
                                   }
                                 : null,
@@ -415,10 +454,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         'chat_screen_add_embed_button',
                                       ),
                                       onPressed: () async {
-                                        if (widget.conv == null) return;
+                                        if (_realConv == null) return;
                                         final embeds = await context
                                             .push<List<SharedEmbed>>(
-                                              '/home/inbox/chat/${widget.conv!.conversationId}/likes-playlists',
+                                              '/home/inbox/chat/${_realConv!.conversationId}/likes-playlists',
                                               extra: List<SharedEmbed>.from(
                                                 _selectedEmbeds,
                                               ),
@@ -920,7 +959,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
       await _processAndSendMessages(
-        widget.conv!.conversationId,
+        _realConv!.conversationId,
         controller.text,
       );
       if (mounted) {
