@@ -21,11 +21,9 @@ import 'package:rythmify/features/profile/domain/usecases/get_unblock_user_useca
 import 'package:rythmify/features/profile/domain/usecases/get_liked_tracks_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/get_uploaded_tracks_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/get_reposted_tracks_usecase.dart';
-import 'package:rythmify/features/profile/presentation/providers/profile_provider.dart';
 import 'package:rythmify/features/profile/presentation/providers/profile_state.dart';
 import 'package:rythmify/features/playlist/domain/entities/playlist_entity.dart';
 import 'package:rythmify/features/profile/data/datasources/profile_remote_datasource.dart';
-import 'package:rythmify/features/profile/domain/usecases/get_user_connections_usecase.dart';
 
 // ---------------------------------------------------------------------------
 // Mock Classes
