@@ -150,20 +150,6 @@ void main() {
        await tester.pumpAndSettle(const Duration(seconds: 2));
     });
 
-    // ─── TC-LIBRARY-014 | Search for existing album → visible ────────────
-    await tryTest('TC-LIBRARY-013 | Search for existing album → visible', () async {
-      await libraryPage.typeInAlbumsSearch('Quran');
-      expect(libraryPage.isTrackVisible('Quran'), true,
-          reason: 'Saved album should appear in search');
-    });
-
-    // ─── TC-LIBRARY-015 | Search for non-existing album → no results ─────
-    await tryTest('TC-LIBRARY-014 | Search for non-existing album → no results', () async {
-      await libraryPage.typeInAlbumsSearch('notSavedAlbumName');
-      expect(libraryPage.isNoResultsMessageVisible('notSavedAlbumName'), true,
-          reason: '"No results for" message should appear');
-    });
-
     // ─── TC-LIBRARY-011 | Open an album ──────────────────────────────────
     await tryTest('TC-LIBRARY-015 | Open an album', () async {
       await libraryPage.typeInAlbumsSearch(''); // clear filter left by previous search test
@@ -188,6 +174,20 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 2));
     });
 
+    // ─── TC-LIBRARY-014 | Search for existing album → visible ────────────
+    await tryTest('TC-LIBRARY-013 | Search for existing album → visible', () async {
+      await libraryPage.typeInAlbumsSearch('Quran');
+      expect(libraryPage.isTrackVisible('Quran'), true,
+          reason: 'Saved album should appear in search');
+    });
+
+    // ─── TC-LIBRARY-015 | Search for non-existing album → no results ─────
+    await tryTest('TC-LIBRARY-014 | Search for non-existing album → no results', () async {
+      await libraryPage.typeInAlbumsSearch('notSavedAlbumName');
+      expect(libraryPage.isNoResultsMessageVisible('notSavedAlbumName'), true,
+          reason: '"No results for" message should appear');
+    });
+
     // ─── TC-LIBRARY-013 | Back to Albums list ────────────────────────────
     await tryTest('TC-LIBRARY-018 | Back to Albums list', () async {
       await libraryPage.tapAlbumsBack();
@@ -195,6 +195,7 @@ void main() {
       expect(libraryPage.isAlbumsScreenVisible(), true);
     });
 
+  
     // ─── TC-LIBRARY-016 | Back to Library ────────────────────────────────
     await tryTest('TC-LIBRARY-019 | Back to Library', () async {
       await libraryPage.tapAlbumsBack();

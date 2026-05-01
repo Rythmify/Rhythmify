@@ -67,7 +67,13 @@ class LibraryPage extends BasePage {
   bool isTrackVisible(String trackName)  => find.text(trackName).evaluate().isNotEmpty;
 
   // ── Albums ─────────────────────────────────────────────────────────────────
-  Future<void> tapAlbumsBack()   async => await tapByKey(libraryAlbumsBackButton);
+  Future<void> tapAlbumsBack() async {
+    if (isVisible(playlistDetailBackButton)) {
+      await tapByKey(playlistDetailBackButton);
+    } else {
+      await tapByKey(libraryAlbumsBackButton);
+    }
+  }
 
   Future<void> typeInAlbumsSearch(String query) async {
     await enterTextByKey(libraryAlbumsSearchField, query);
