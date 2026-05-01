@@ -46,7 +46,7 @@ class InfoBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // ── Location ──────────────────────────────────────────────
+          //  Location
           if (profile.city != null || profile.country != null) ...[
             Row(
               children: [
@@ -69,7 +69,7 @@ class InfoBottomSheet extends StatelessWidget {
             const SizedBox(height: 12),
           ],
 
-          // ── Bio ───────────────────────────────────────────────────
+          //  Bio
           if (profile.bio != null && profile.bio!.isNotEmpty) ...[
             Text(
               profile.bio!,
@@ -99,7 +99,7 @@ class InfoBottomSheet extends StatelessWidget {
             const SizedBox(height: 8),
           ],
 
-          // ── Stats ─────────────────────────────────────────────────
+          //  Stats
           Row(
             children: [
               _statItem(

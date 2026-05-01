@@ -2,6 +2,7 @@ import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 import '../models/follow_status_model.dart';
+import '../../../playlist/domain/entities/playlist_entity.dart';
 
 /// Contract for profile-related remote data operations.
 abstract class ProfileRemoteDatasource {
@@ -67,6 +68,13 @@ abstract class ProfileRemoteDatasource {
   Future<List<ProfileUserSummaryModel>> getFollowing({
     required String userId,
     required int page,
+    required int limit,
+  });
+
+  /// Fetches albums (playlists) for a user.
+  /// Uses `mine=true` for 'me', otherwise `owner_user_id={userId}`.
+  Future<List<PlaylistEntity>> getAlbums({
+    required String userId,
     required int limit,
   });
 }

@@ -1,3 +1,35 @@
+/// This class is responsible for handling all remote API calls related to
+/// the premium subscription system in the app.
+///
+/// It acts as the data layer between the domain layer and the backend
+/// subscription service, using Dio for HTTP communication.
+///
+/// Responsibilities:
+/// - Fetch available subscription plans
+/// - Retrieve the current user's subscription
+/// - Start a checkout session for a selected plan
+/// - Confirm mock payments (used for testing or sandbox flows)
+/// - Cancel an active subscription
+/// - Retrieve pending transactions for checkout flow recovery
+///
+/// API Endpoints Used:
+/// - GET    /subscriptions/plans
+/// - GET    /subscriptions/me
+/// - POST   /subscriptions/checkout
+/// - POST   /subscriptions/mock-confirm/{transaction_id}
+/// - POST   /subscriptions/cancel
+/// - GET    /subscriptions/transactions
+///
+/// Authentication:
+/// Most endpoints require a Bearer token, which is handled automatically
+/// by the shared ApiClient (via Dio interceptors).
+///
+/// Notes:
+/// - All JSON parsing is delegated to domain entities.
+/// - This class does not contain business logic.
+/// - It assumes backend response structure consistency.
+library;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/core/network/api_client.dart';

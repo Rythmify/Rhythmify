@@ -32,7 +32,7 @@ class ProfileUserListTile extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              // ── Avatar ────────────────────────────────────────────────
+              // Avatar
               ClipOval(
                 child:
                     (user.avatarUrl != null &&
@@ -49,7 +49,7 @@ class ProfileUserListTile extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
 
-              // ── Name + username ───────────────────────────────────────
+              // Name AND username
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +72,7 @@ class ProfileUserListTile extends ConsumerWidget {
                 ),
               ),
 
-              // ── Universal Follow button ───────────────────────────────
+              // Universal Follow button
               FollowButton(
                 key: Key('follow_button_tile_${user.id}'),
                 targetUserId: user.id,

@@ -383,6 +383,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                     },
                   ),
                   GoRoute(
+                    path: 'profile/:userId/albums',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UserPlaylistsPage(
+                        userId: userId,
+                        type: PlaylistPageType.albums,
+                      );
+                    },
+                  ),
+                  GoRoute(
                     path: 'profile/:userId/followers',
                     builder: (context, state) {
                       final userId = state.pathParameters['userId']!;

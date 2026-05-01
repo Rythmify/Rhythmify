@@ -1,3 +1,32 @@
+/// Represents a subscription plan offered by the platform (e.g., free or
+/// premium tiers).
+///
+/// This model is used across:
+/// - Subscription listing screens
+/// - Checkout flow
+/// - Subscription validation logic
+///
+/// Responsibilities:
+/// - Define pricing and limits of a plan
+/// - Provide helper methods to determine plan type and restrictions
+///
+/// Key Fields:
+/// - planId: Unique identifier (UUID) used for checkout requests
+/// - name: Plan type ("free", "premium", etc.)
+/// - price: Plan price as string (backend formatted)
+/// - durationDays: Duration of subscription in days
+/// - trackLimit: Max number of tracks allowed (null = unlimited)
+/// - playlistLimit: Max number of playlists allowed (null = unlimited)
+///
+/// Helper Methods:
+/// - isFree: checks if plan is free tier
+/// - isPremium: checks if plan is premium tier
+/// - hasUnlimitedTracks: true if no track limit exists
+/// - hasUnlimitedPlaylists: true if no playlist limit exists
+///
+/// Notes:
+/// - Null limits are interpreted as "unlimited access"
+/// - Backend provides raw values directly mapped here
 class SubscriptionPlan {
   final String
   planId; // UUID — e.g. "a1b2c3d4-..."  sent to /subscriptions/checkout

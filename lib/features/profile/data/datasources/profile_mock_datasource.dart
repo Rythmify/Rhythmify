@@ -3,6 +3,7 @@ import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 import '../models/follow_status_model.dart';
+import '../../../playlist/domain/entities/playlist_entity.dart';
 import 'profile_remote_datasource.dart';
 
 /// In-memory profile datasource for local development and repeatable tests.
@@ -536,5 +537,14 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
           (user) => ProfileUserSummaryModel.fromJson(user, isFollowing: true),
         )
         .toList();
+  }
+
+  @override
+  Future<List<PlaylistEntity>> getAlbums({
+    required String userId,
+    required int limit,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return [];
   }
 }

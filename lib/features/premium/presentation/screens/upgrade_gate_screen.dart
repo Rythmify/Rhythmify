@@ -1,3 +1,18 @@
+/// Entry gate for Upgrade tab that decides which screen to show.
+///
+/// Behavior:
+/// - Waits for subscription + plans to finish loading
+/// - Prevents UI flicker during initialization
+///
+/// Routing:
+/// - Premium user → CancellationScreen
+/// - Free user → UpgradeLandingScreen
+/// - Loading → spinner
+///
+/// Purpose:
+/// Centralized decision point for upgrade flow UI.
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/premium_provider.dart';
