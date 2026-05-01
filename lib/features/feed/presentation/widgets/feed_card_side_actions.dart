@@ -24,10 +24,10 @@ class FeedCardSideActions extends ConsumerWidget {
   Track _toTrack() {
     return Track(
       id: item.track.id,
-      userId: item.user.id,
+      userId: item.trackOwner.id,
       title: item.track.title,
-      artist: item.user.displayName,
-      artistPfp: item.user.avatar,
+      artist: item.trackOwner.displayName,
+      artistPfp: item.trackOwner.avatar,
       audioUrl: item.track.audioUrl,
       coverImage: item.track.coverUrl,
       duration: Duration(seconds: item.track.duration),
