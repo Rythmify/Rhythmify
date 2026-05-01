@@ -129,7 +129,10 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
       return Scaffold(
         appBar: AppBar(title: const Text('App icon'), centerTitle: false),
         body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF5500), strokeWidth: 2),
+          child: CircularProgressIndicator(
+            color: Color(0xFFFF5500),
+            strokeWidth: 2,
+          ),
         ),
       );
     }

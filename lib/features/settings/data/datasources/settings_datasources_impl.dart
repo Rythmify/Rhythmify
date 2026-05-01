@@ -32,6 +32,7 @@ class SettingsDatasourcesImpl implements SettingsRemoteDatasources {
         : <String, dynamic>{};
     return PrivacySettingsModel.fromJson(map);
   }
+
   @override
   Future<NotificationPreferencesModel> getNotificationPreferences() async {
     final response = await _apiClient.dio.get('/notifications/preferences');

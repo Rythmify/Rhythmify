@@ -8,7 +8,8 @@ import 'package:rythmify/features/notifications/domain/usecases/get_track_id_by_
 import 'package:rythmify/features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import 'package:rythmify/features/notifications/domain/usecases/mark_notification_as_read_usecase.dart';
 
-class MockNotificationsRepo extends Mock implements NotificationsRepoInterface {}
+class MockNotificationsRepo extends Mock
+    implements NotificationsRepoInterface {}
 
 final tNotification = NotificationEntity(
   id: 'n1',
@@ -68,9 +69,7 @@ void main() {
 
       await usecase();
 
-      verify(
-        () => mockRepo.getNotifications(page: 1, limit: 20),
-      ).called(1);
+      verify(() => mockRepo.getNotifications(page: 1, limit: 20)).called(1);
     });
 
     test('propagates repository exceptions', () async {
@@ -147,7 +146,9 @@ void main() {
     });
 
     test('returns false when user is not followed', () async {
-      when(() => mockRepo.getFollowStatus(any())).thenAnswer((_) async => false);
+      when(
+        () => mockRepo.getFollowStatus(any()),
+      ).thenAnswer((_) async => false);
 
       final result = await usecase('user-456');
 

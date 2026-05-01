@@ -28,9 +28,8 @@ class NotificationModel extends NotificationEntity {
 
     // actor['id'] may be null when the backend sends a stripped socket payload
     // (uses 'action_user_id' instead) or when actor data is incomplete.
-    final actorId = actor['id'] as String? ??
-        json['action_user_id'] as String? ??
-        '';
+    final actorId =
+        actor['id'] as String? ?? json['action_user_id'] as String? ?? '';
 
     return NotificationModel(
       id: json['id'] as String,

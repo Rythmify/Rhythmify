@@ -3,7 +3,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_follow_status_usecase.dart';
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 
-class MockGetFollowStatusUsecase extends Mock implements GetFollowStatusUsecase {}
+class MockGetFollowStatusUsecase extends Mock
+    implements GetFollowStatusUsecase {}
 
 void main() {
   late MockGetFollowStatusUsecase mockUsecase;

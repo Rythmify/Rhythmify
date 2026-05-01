@@ -18,7 +18,8 @@ import 'package:rythmify/features/notifications/presentation/providers/repo_prov
 // Mocks
 // ---------------------------------------------------------------------------
 
-class MockNotificationsRepo extends Mock implements NotificationsRepoInterface {}
+class MockNotificationsRepo extends Mock
+    implements NotificationsRepoInterface {}
 
 class MockToggleCommentLikeUseCase extends Mock
     implements ToggleCommentLikeUseCase {}
@@ -73,19 +74,20 @@ void main() {
   // =========================================================================
 
   group('followStateProvider factory', () {
-    test('builds FollowStateNotifier when repositoryprovider is overridden', () {
-      final container = ProviderContainer(
-        overrides: [
-          repositoryprovider.overrideWithValue(mockRepo),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'builds FollowStateNotifier when repositoryprovider is overridden',
+      () {
+        final container = ProviderContainer(
+          overrides: [repositoryprovider.overrideWithValue(mockRepo)],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(followStateProvider.notifier);
+        final notifier = container.read(followStateProvider.notifier);
 
-      expect(notifier, isA<FollowStateNotifier>());
-      expect(container.read(followStateProvider), isEmpty);
-    });
+        expect(notifier, isA<FollowStateNotifier>());
+        expect(container.read(followStateProvider), isEmpty);
+      },
+    );
   });
 
   // =========================================================================
@@ -96,7 +98,9 @@ void main() {
     test('returns early without error when user is not authenticated', () {
       final container = ProviderContainer(
         overrides: [
-          authProvider.overrideWith(() => MockAuthNotifier(const AuthUnauthenticated())),
+          authProvider.overrideWith(
+            () => MockAuthNotifier(const AuthUnauthenticated()),
+          ),
         ],
       );
       addTearDown(container.dispose);

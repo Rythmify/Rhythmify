@@ -78,7 +78,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (mounted) _setupSocketListeners(widget.conv!.conversationId);
         });
         _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-          if (mounted && widget.conv != null && widget.conv!.participantId.isNotEmpty) {
+          if (mounted &&
+              widget.conv != null &&
+              widget.conv!.participantId.isNotEmpty) {
             ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
           }
         });
@@ -855,19 +857,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       String? embedType,
     }) async {
       if (resolvedConvId != null) {
-        await ref.read(sendMessageProvider.notifier).sendMessage(
-          conversationId: resolvedConvId,
-          body: body,
-          embedId: embedId,
-          embedType: embedType,
-        );
+        await ref
+            .read(sendMessageProvider.notifier)
+            .sendMessage(
+              conversationId: resolvedConvId,
+              body: body,
+              embedId: embedId,
+              embedType: embedType,
+            );
       } else {
-        final conv = await ref.read(sendMessageProvider.notifier).sendMessage(
-          newParticipantId: newParticipantId,
-          body: body,
-          embedId: embedId,
-          embedType: embedType,
-        );
+        final conv = await ref
+            .read(sendMessageProvider.notifier)
+            .sendMessage(
+              newParticipantId: newParticipantId,
+              body: body,
+              embedId: embedId,
+              embedType: embedType,
+            );
         if (conv != null) {
           createdConv = conv;
           resolvedConvId = conv.conversationId;
@@ -973,7 +979,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send message. Please try again.')),
+        const SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+        ),
       );
     }
   }
@@ -1014,7 +1022,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send message. Please try again.')),
+        const SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+        ),
       );
     }
   }

@@ -34,10 +34,8 @@ void main() {
   group('getNotifications', () {
     test('performs GET /notifications and returns parsed results', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/notifications'),
@@ -68,10 +66,8 @@ void main() {
 
     test('includes unread_only and type params when provided', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/notifications'),
@@ -98,10 +94,8 @@ void main() {
 
     test('filters out newPostByFollowed notifications', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -121,38 +115,39 @@ void main() {
       expect(result.items, isEmpty);
     });
 
-    test('keeps non-newPost notifications and filters only new_post_by_followed', () async {
-      when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
-      ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          statusCode: 200,
-          data: {
-            'data': {
-              'items': [tFollowJson, tNewPostJson],
-              'unread_count': 2,
-              'pagination': {'has_next': false},
+    test(
+      'keeps non-newPost notifications and filters only new_post_by_followed',
+      () async {
+        when(
+          () => mockDio.get(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: {
+              'data': {
+                'items': [tFollowJson, tNewPostJson],
+                'unread_count': 2,
+                'pagination': {'has_next': false},
+              },
             },
-          },
-        ),
-      );
+          ),
+        );
 
-      final result = await datasource.getNotifications();
+        final result = await datasource.getNotifications();
 
-      expect(result.items.length, 1);
-      expect(result.items.first.type, NotificationType.follow);
-    });
+        expect(result.items.length, 1);
+        expect(result.items.first.type, NotificationType.follow);
+      },
+    );
 
     test('defaults unread_count to 0 when key is absent', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -174,10 +169,8 @@ void main() {
 
     test('handles empty items list', () async {
       when(
-        () => mockDio.get(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-        ),
+        () =>
+            mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
@@ -199,20 +192,25 @@ void main() {
   });
 
   group('getUnreadCount', () {
-    test('performs GET /notifications/unread-count and returns count', () async {
-      when(() => mockDio.get(any())).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          statusCode: 200,
-          data: {'data': {'unread_count': 5}},
-        ),
-      );
+    test(
+      'performs GET /notifications/unread-count and returns count',
+      () async {
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: {
+              'data': {'unread_count': 5},
+            },
+          ),
+        );
 
-      final result = await datasource.getUnreadCount();
+        final result = await datasource.getUnreadCount();
 
-      expect(result, 5);
-      verify(() => mockDio.get('/notifications/unread-count')).called(1);
-    });
+        expect(result, 5);
+        verify(() => mockDio.get('/notifications/unread-count')).called(1);
+      },
+    );
   });
 
   group('markNotificationAsRead', () {
@@ -234,7 +232,9 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
-          data: {'data': {'is_following': true}},
+          data: {
+            'data': {'is_following': true},
+          },
         ),
       );
 
@@ -249,7 +249,9 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
-          data: {'data': {'is_following': false}},
+          data: {
+            'data': {'is_following': false},
+          },
         ),
       );
 
@@ -275,7 +277,9 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
-          data: {'data': {'track_id': 'track-abc', 'is_liked_by_me': true}},
+          data: {
+            'data': {'track_id': 'track-abc', 'is_liked_by_me': true},
+          },
         ),
       );
 
@@ -291,7 +295,9 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
-          data: {'data': {'is_liked_by_me': false}},
+          data: {
+            'data': {'is_liked_by_me': false},
+          },
         ),
       );
 

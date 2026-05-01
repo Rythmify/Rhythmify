@@ -216,7 +216,7 @@ class NotificationTile extends StatelessWidget {
     }
     return _ResourceThumbnail(
       key: const Key('notification_resource_thumbnail'),
-      imageUrl: trackEmbed?.thumbnailUrl??notification.resourceImageUrl,
+      imageUrl: trackEmbed?.thumbnailUrl ?? notification.resourceImageUrl,
     );
   }
 

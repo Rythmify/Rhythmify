@@ -32,8 +32,9 @@ class SocialSettingsScreen extends ConsumerWidget {
             ),
           ),
           data: (data) {
-            final showWaveformComments =
-                ref.watch(floatingCommentsVisibilityProvider);
+            final showWaveformComments = ref.watch(
+              floatingCommentsVisibilityProvider,
+            );
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -31,28 +31,40 @@ void main() {
     group('notification types', () {
       test('maps "follow" type correctly', () {
         final model = NotificationModel.fromJson(
-          _buildJson(type: 'follow', actor: {'id': 'u1', 'display_name': 'Alice'}),
+          _buildJson(
+            type: 'follow',
+            actor: {'id': 'u1', 'display_name': 'Alice'},
+          ),
         );
         expect(model.type, NotificationType.follow);
       });
 
       test('maps "like" type correctly', () {
         final model = NotificationModel.fromJson(
-          _buildJson(type: 'like', actor: {'id': 'u1', 'display_name': 'Alice'}),
+          _buildJson(
+            type: 'like',
+            actor: {'id': 'u1', 'display_name': 'Alice'},
+          ),
         );
         expect(model.type, NotificationType.like);
       });
 
       test('maps "repost" type correctly', () {
         final model = NotificationModel.fromJson(
-          _buildJson(type: 'repost', actor: {'id': 'u1', 'display_name': 'Alice'}),
+          _buildJson(
+            type: 'repost',
+            actor: {'id': 'u1', 'display_name': 'Alice'},
+          ),
         );
         expect(model.type, NotificationType.repost);
       });
 
       test('maps "comment" type correctly', () {
         final model = NotificationModel.fromJson(
-          _buildJson(type: 'comment', actor: {'id': 'u1', 'display_name': 'Alice'}),
+          _buildJson(
+            type: 'comment',
+            actor: {'id': 'u1', 'display_name': 'Alice'},
+          ),
         );
         expect(model.type, NotificationType.comment);
       });
@@ -145,10 +157,13 @@ void main() {
         expect(model.actorId, 'action-456');
       });
 
-      test('actorId defaults to empty string when both id and action_user_id are absent', () {
-        final model = NotificationModel.fromJson(_buildJson(actor: {}));
-        expect(model.actorId, '');
-      });
+      test(
+        'actorId defaults to empty string when both id and action_user_id are absent',
+        () {
+          final model = NotificationModel.fromJson(_buildJson(actor: {}));
+          expect(model.actorId, '');
+        },
+      );
 
       test('uses actor.display_name for actorDisplayName', () {
         final model = NotificationModel.fromJson(
@@ -164,14 +179,21 @@ void main() {
         expect(model.actorDisplayName, 'alicesmith');
       });
 
-      test('actorDisplayName defaults to "Unknown" when both display_name and username are absent', () {
-        final model = NotificationModel.fromJson(_buildJson(actor: {'id': 'u1'}));
-        expect(model.actorDisplayName, 'Unknown');
-      });
+      test(
+        'actorDisplayName defaults to "Unknown" when both display_name and username are absent',
+        () {
+          final model = NotificationModel.fromJson(
+            _buildJson(actor: {'id': 'u1'}),
+          );
+          expect(model.actorDisplayName, 'Unknown');
+        },
+      );
 
       test('reads actorUsername from actor.username', () {
         final model = NotificationModel.fromJson(
-          _buildJson(actor: {'id': 'u1', 'username': 'alice', 'display_name': 'Alice'}),
+          _buildJson(
+            actor: {'id': 'u1', 'username': 'alice', 'display_name': 'Alice'},
+          ),
         );
         expect(model.actorUsername, 'alice');
       });
@@ -186,7 +208,11 @@ void main() {
       test('reads actorAvatar from actor.avatar', () {
         final model = NotificationModel.fromJson(
           _buildJson(
-            actor: {'id': 'u1', 'display_name': 'Alice', 'avatar': 'https://img.png'},
+            actor: {
+              'id': 'u1',
+              'display_name': 'Alice',
+              'avatar': 'https://img.png',
+            },
           ),
         );
         expect(model.actorAvatar, 'https://img.png');
@@ -277,7 +303,10 @@ void main() {
     group('other top-level fields', () {
       test('reads is_read correctly when true', () {
         final model = NotificationModel.fromJson(
-          _buildJson(actor: {'id': 'u1', 'display_name': 'Alice'}, isRead: true),
+          _buildJson(
+            actor: {'id': 'u1', 'display_name': 'Alice'},
+            isRead: true,
+          ),
         );
         expect(model.isRead, true);
       });

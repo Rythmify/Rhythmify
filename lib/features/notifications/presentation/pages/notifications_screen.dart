@@ -207,17 +207,17 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _emptyListMessage() {
-    String filterText='';
-    if(_filter==Filter.comments){
-      filterText='comments';
-    }else if(_filter==Filter.followings){
-      filterText='follow requests';
-    }else if(_filter==Filter.likes){
-      filterText='likes';
-    }else if(_filter==Filter.reactions){
-      filterText='reactions';
-    }else if(_filter==Filter.reposts){
-      filterText='reposts';
+    String filterText = '';
+    if (_filter == Filter.comments) {
+      filterText = 'comments';
+    } else if (_filter == Filter.followings) {
+      filterText = 'follow requests';
+    } else if (_filter == Filter.likes) {
+      filterText = 'likes';
+    } else if (_filter == Filter.reactions) {
+      filterText = 'reactions';
+    } else if (_filter == Filter.reposts) {
+      filterText = 'reposts';
     }
     return Center(
       child: Padding(
@@ -387,12 +387,15 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                     .watch(trackByCommentProvider(notification.resourceId!))
                     .value
               : null;
-          final likeRepostEmbed= (notification.type==NotificationType.like ||
-                                    notification.type==NotificationType.repost)&&
-                                  notification.resourceType==ResourceType.track&&
-                                  notification.resourceId!=null
-                                  ? ref.watch(getTrackDetailsProvider(notification.resourceId!)).value
-                                  : null;
+          final likeRepostEmbed =
+              (notification.type == NotificationType.like ||
+                      notification.type == NotificationType.repost) &&
+                  notification.resourceType == ResourceType.track &&
+                  notification.resourceId != null
+              ? ref
+                    .watch(getTrackDetailsProvider(notification.resourceId!))
+                    .value
+              : null;
           final serverIsLiked = commentData?.isLikedByMe ?? false;
           final isCommentLiked =
               state.likedCommentIds.contains(notification.resourceId)
@@ -402,7 +405,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             key: ValueKey(notification.id),
             notification: notification,
             onTap: () => _onTap(notification, commentData?.embed?.embedId),
-            trackEmbed: commentData?.embed??likeRepostEmbed,
+            trackEmbed: commentData?.embed ?? likeRepostEmbed,
             isFollowing: followState[notification.actorId] ?? false,
             onFollowTap: () {
               ref

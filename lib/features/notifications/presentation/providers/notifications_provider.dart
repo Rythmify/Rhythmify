@@ -303,6 +303,8 @@ final notificationSocketProvider = Provider<void>((ref) {
   final socket = ref.watch(socketProvider);
   final notifier = ref.read(notificationsProvider.notifier);
 
-  socket.onNotificationCreated((data) => notifier.onSocketNotificationCreated(data));
+  socket.onNotificationCreated(
+    (data) => notifier.onSocketNotificationCreated(data),
+  );
   socket.onNotificationRead((_) => notifier.onSocketNotificationRead());
 });

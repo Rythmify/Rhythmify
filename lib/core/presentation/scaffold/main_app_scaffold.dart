@@ -69,9 +69,11 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   @override
   void initState() {
     super.initState();
-    if(Platform.isAndroid){
-      Future.microtask(()async{
-        _notificationService= PushNotificationService(ref.read(routerProvider));
+    if (Platform.isAndroid) {
+      Future.microtask(() async {
+        _notificationService = PushNotificationService(
+          ref.read(routerProvider),
+        );
         await _notificationService!.initialize();
       });
     }
@@ -106,7 +108,8 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     ).routeInformationProvider.value.uri.path;
     final isChatRoute = location.contains('/chat');
     final isFeedRoute = location == '/feed';
-    final isVisible = !isChatRoute && location != '/library/settings/notifications';
+    final isVisible =
+        !isChatRoute && location != '/library/settings/notifications';
     final currentMinSize = _minSize;
     final double displacement = isVisible ? 0 : screenHeight;
 

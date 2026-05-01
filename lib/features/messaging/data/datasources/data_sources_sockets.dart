@@ -175,7 +175,9 @@ class DataSourcesSockets {
     if (_onNotificationCreated != null) {
       s.off('notification:created');
       s.on('notification:created', (data) {
-        debugPrint('🔔 RAW notification:created | type=${data.runtimeType} | data=$data');
+        debugPrint(
+          '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
+        );
         _onNotificationCreated!(data as Map<String, dynamic>);
       });
     }
@@ -183,7 +185,9 @@ class DataSourcesSockets {
     if (_onNotificationRead != null) {
       s.off('notification:read');
       s.on('notification:read', (data) {
-        debugPrint('🔕 RAW notification:read | type=${data.runtimeType} | data=$data');
+        debugPrint(
+          '🔕 RAW notification:read | type=${data.runtimeType} | data=$data',
+        );
         _onNotificationRead!(data as Map<String, dynamic>);
       });
     }
@@ -297,10 +301,14 @@ class DataSourcesSockets {
     _onNotificationCreated = callback;
     _socket?.off('notification:created');
     _socket?.on('notification:created', (data) {
-      debugPrint('🔔 RAW notification:created | type=${data.runtimeType} | data=$data');
+      debugPrint(
+        '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
+      );
       callback(data as Map<String, dynamic>);
     });
-    debugPrint('👂 onNotificationCreated listener registered | socket=${_socket?.id}');
+    debugPrint(
+      '👂 onNotificationCreated listener registered | socket=${_socket?.id}',
+    );
   }
 
   void onNotificationRead(Function(Map<String, dynamic>) callback) {

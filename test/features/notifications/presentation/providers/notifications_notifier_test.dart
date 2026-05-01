@@ -29,12 +29,14 @@ class MockMarkNotificationAsReadUsecase extends Mock
 
 class MockGetFollowUserUseCase extends Mock implements GetFollowUserUseCase {}
 
-class MockGetUnfollowUserUseCase extends Mock implements GetUnfollowUserUseCase {}
+class MockGetUnfollowUserUseCase extends Mock
+    implements GetUnfollowUserUseCase {}
 
 class MockToggleCommentLikeUseCase extends Mock
     implements ToggleCommentLikeUseCase {}
 
-class MockNotificationsRepo extends Mock implements NotificationsRepoInterface {}
+class MockNotificationsRepo extends Mock
+    implements NotificationsRepoInterface {}
 
 // ---------------------------------------------------------------------------
 // Fake FollowStateNotifier — records calls without real I/O
@@ -88,8 +90,8 @@ final tLikeNotif = NotificationEntity(
   bool hasNext = false,
 }) => (items: items, unreadCount: unread, hasNext: hasNext);
 
-({List<NotificationEntity> items, int unreadCount, bool hasNext}) _emptyPage() =>
-    (items: <NotificationEntity>[], unreadCount: 0, hasNext: false);
+({List<NotificationEntity> items, int unreadCount, bool hasNext})
+_emptyPage() => (items: <NotificationEntity>[], unreadCount: 0, hasNext: false);
 
 // ---------------------------------------------------------------------------
 
@@ -105,14 +107,14 @@ void main() {
   late NotificationsNotifier notifier;
 
   NotificationsNotifier buildNotifier() => NotificationsNotifier(
-        getNotifications: mockGetNotifications,
-        getUnreadCount: mockGetUnreadCount,
-        markAllRead: mockMarkRead,
-        followUser: mockFollow,
-        unfollowUser: mockUnfollow,
-        toggleCommentLike: mockToggleCommentLike,
-        followState: fakeFollowState,
-      );
+    getNotifications: mockGetNotifications,
+    getUnreadCount: mockGetUnreadCount,
+    markAllRead: mockMarkRead,
+    followUser: mockFollow,
+    unfollowUser: mockUnfollow,
+    toggleCommentLike: mockToggleCommentLike,
+    followState: fakeFollowState,
+  );
 
   setUp(() {
     mockGetNotifications = MockGetNotificationsUsecase();
@@ -167,11 +169,14 @@ void main() {
         expect(u.error, 'Something went wrong');
       });
 
-      test('error is preserved when neither error nor clearError is supplied', () {
-        const s = NotificationsState(error: 'preserved');
-        final u = s.copyWith(isLoading: true);
-        expect(u.error, 'preserved');
-      });
+      test(
+        'error is preserved when neither error nor clearError is supplied',
+        () {
+          const s = NotificationsState(error: 'preserved');
+          final u = s.copyWith(isLoading: true);
+          expect(u.error, 'preserved');
+        },
+      );
 
       test('updates likedCommentIds', () {
         const s = NotificationsState();
@@ -203,26 +208,30 @@ void main() {
     // -----------------------------------------------------------------------
 
     group('fetch', () {
-      test('populates items, unreadCount, hasNext, and currentPage on success', () async {
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer(
-          (_) async => _page([tFollowNotif, tLikeNotif], unread: 1, hasNext: true),
-        );
+      test(
+        'populates items, unreadCount, hasNext, and currentPage on success',
+        () async {
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer(
+            (_) async =>
+                _page([tFollowNotif, tLikeNotif], unread: 1, hasNext: true),
+          );
 
-        await notifier.fetch();
+          await notifier.fetch();
 
-        final s = notifier.state;
-        expect(s.isLoading, false);
-        expect(s.items, [tFollowNotif, tLikeNotif]);
-        expect(s.unreadCount, 1);
-        expect(s.hasNext, true);
-        expect(s.currentPage, 1);
-        expect(s.error, isNull);
-      });
+          final s = notifier.state;
+          expect(s.isLoading, false);
+          expect(s.items, [tFollowNotif, tLikeNotif]);
+          expect(s.unreadCount, 1);
+          expect(s.hasNext, true);
+          expect(s.currentPage, 1);
+          expect(s.error, isNull);
+        },
+      );
 
       test('clears existing items and error before loading', () async {
         when(
@@ -324,9 +333,7 @@ void main() {
 
         await notifier.fetch(type: 'like');
 
-        verify(
-          () => mockGetNotifications(page: 1, type: 'like'),
-        ).called(1);
+        verify(() => mockGetNotifications(page: 1, type: 'like')).called(1);
       });
     });
 
@@ -383,7 +390,10 @@ void main() {
       test('seeds followState for follow-type actors in loaded page', () async {
         when(
           () => mockGetNotifications(page: 1, type: any(named: 'type')),
-        ).thenAnswer((_) async => (items: <NotificationEntity>[], unreadCount: 0, hasNext: true));
+        ).thenAnswer(
+          (_) async =>
+              (items: <NotificationEntity>[], unreadCount: 0, hasNext: true),
+        );
         await notifier.fetch();
         fakeFollowState.fetchedIds.clear();
 
@@ -395,21 +405,24 @@ void main() {
         expect(fakeFollowState.fetchedIds, contains('actor-1'));
       });
 
-      test('sets isLoadingMore to false and preserves page on exception', () async {
-        when(
-          () => mockGetNotifications(page: 1, type: any(named: 'type')),
-        ).thenAnswer((_) async => _page([tLikeNotif], hasNext: true));
-        await notifier.fetch();
-        final pageBefore = notifier.state.currentPage;
+      test(
+        'sets isLoadingMore to false and preserves page on exception',
+        () async {
+          when(
+            () => mockGetNotifications(page: 1, type: any(named: 'type')),
+          ).thenAnswer((_) async => _page([tLikeNotif], hasNext: true));
+          await notifier.fetch();
+          final pageBefore = notifier.state.currentPage;
 
-        when(
-          () => mockGetNotifications(page: 2, type: any(named: 'type')),
-        ).thenThrow(Exception('Load failed'));
-        await notifier.loadMore();
+          when(
+            () => mockGetNotifications(page: 2, type: any(named: 'type')),
+          ).thenThrow(Exception('Load failed'));
+          await notifier.loadMore();
 
-        expect(notifier.state.isLoadingMore, false);
-        expect(notifier.state.currentPage, pageBefore);
-      });
+          expect(notifier.state.isLoadingMore, false);
+          expect(notifier.state.currentPage, pageBefore);
+        },
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -422,7 +435,10 @@ void main() {
           () => mockUnfollow(userId: any(named: 'userId')),
         ).thenAnswer((_) async => const Right(null));
 
-        notifier.toggleFollow('actor-1', true); // currently following → optimistically unfollow
+        notifier.toggleFollow(
+          'actor-1',
+          true,
+        ); // currently following → optimistically unfollow
 
         expect(fakeFollowState.setFollowingCalls.first.key, 'actor-1');
         expect(fakeFollowState.setFollowingCalls.first.value, false);
@@ -458,7 +474,10 @@ void main() {
         await notifier.toggleFollow('actor-1', true);
 
         expect(fakeFollowState.setFollowingCalls.length, 2);
-        expect(fakeFollowState.setFollowingCalls.last.value, true); // reverted to true
+        expect(
+          fakeFollowState.setFollowingCalls.last.value,
+          true,
+        ); // reverted to true
       });
 
       test('reverts on exception from usecase', () async {
@@ -468,7 +487,10 @@ void main() {
 
         await notifier.toggleFollow('actor-1', false);
 
-        expect(fakeFollowState.setFollowingCalls.last.value, false); // reverted to false
+        expect(
+          fakeFollowState.setFollowingCalls.last.value,
+          false,
+        ); // reverted to false
       });
 
       test('keeps change when Right (success) result', () async {
@@ -489,32 +511,38 @@ void main() {
     // -----------------------------------------------------------------------
 
     group('toggleCommentLike', () {
-      test('adds commentId to likedCommentIds when not currently liked', () async {
-        when(
-          () => mockToggleCommentLike(
-            any(),
-            isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
-          ),
-        ).thenAnswer((_) async => true);
+      test(
+        'adds commentId to likedCommentIds when not currently liked',
+        () async {
+          when(
+            () => mockToggleCommentLike(
+              any(),
+              isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+            ),
+          ).thenAnswer((_) async => true);
 
-        await notifier.toggleCommentLike('comment-1', false);
+          await notifier.toggleCommentLike('comment-1', false);
 
-        expect(notifier.state.likedCommentIds, contains('comment-1'));
-      });
+          expect(notifier.state.likedCommentIds, contains('comment-1'));
+        },
+      );
 
-      test('removes commentId from likedCommentIds when currently liked', () async {
-        when(
-          () => mockToggleCommentLike(
-            any(),
-            isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
-          ),
-        ).thenAnswer((_) async => false);
+      test(
+        'removes commentId from likedCommentIds when currently liked',
+        () async {
+          when(
+            () => mockToggleCommentLike(
+              any(),
+              isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+            ),
+          ).thenAnswer((_) async => false);
 
-        await notifier.toggleCommentLike('comment-1', false);
-        await notifier.toggleCommentLike('comment-1', true);
+          await notifier.toggleCommentLike('comment-1', false);
+          await notifier.toggleCommentLike('comment-1', true);
 
-        expect(notifier.state.likedCommentIds, isNot(contains('comment-1')));
-      });
+          expect(notifier.state.likedCommentIds, isNot(contains('comment-1')));
+        },
+      );
 
       test('reverts optimistic change on exception', () async {
         when(
@@ -529,26 +557,32 @@ void main() {
         expect(notifier.state.likedCommentIds, isNot(contains('comment-1')));
       });
 
-      test('preserves other liked comments when reverting a failed like', () async {
-        when(
-          () => mockToggleCommentLike(
-            any(),
-            isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
-          ),
-        ).thenAnswer((_) async => true);
-        await notifier.toggleCommentLike('comment-good', false);
+      test(
+        'preserves other liked comments when reverting a failed like',
+        () async {
+          when(
+            () => mockToggleCommentLike(
+              any(),
+              isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+            ),
+          ).thenAnswer((_) async => true);
+          await notifier.toggleCommentLike('comment-good', false);
 
-        when(
-          () => mockToggleCommentLike(
-            any(),
-            isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
-          ),
-        ).thenThrow(Exception('Like failed'));
-        await notifier.toggleCommentLike('comment-bad', false);
+          when(
+            () => mockToggleCommentLike(
+              any(),
+              isCurrentlyLiked: any(named: 'isCurrentlyLiked'),
+            ),
+          ).thenThrow(Exception('Like failed'));
+          await notifier.toggleCommentLike('comment-bad', false);
 
-        expect(notifier.state.likedCommentIds, contains('comment-good'));
-        expect(notifier.state.likedCommentIds, isNot(contains('comment-bad')));
-      });
+          expect(notifier.state.likedCommentIds, contains('comment-good'));
+          expect(
+            notifier.state.likedCommentIds,
+            isNot(contains('comment-bad')),
+          );
+        },
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -570,92 +604,101 @@ void main() {
         expect(notifier.state.unreadCount, 1);
       });
 
-      test('prepends parsed notification to items when payload is valid and no type filter', () async {
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _emptyPage());
-        await notifier.fetch(); // activeType remains null
+      test(
+        'prepends parsed notification to items when payload is valid and no type filter',
+        () async {
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer((_) async => _emptyPage());
+          await notifier.fetch(); // activeType remains null
 
-        notifier.onSocketNotificationCreated({
-          'notification': {
-            'id': 'socket-n1',
-            'type': 'follow',
-            'actor': {'id': 'u99', 'display_name': 'Charlie'},
-            'is_read': false,
-            'created_at': '2024-01-15T10:30:00.000Z',
-          },
-        });
+          notifier.onSocketNotificationCreated({
+            'notification': {
+              'id': 'socket-n1',
+              'type': 'follow',
+              'actor': {'id': 'u99', 'display_name': 'Charlie'},
+              'is_read': false,
+              'created_at': '2024-01-15T10:30:00.000Z',
+            },
+          });
 
-        expect(notifier.state.items.first.id, 'socket-n1');
-      });
+          expect(notifier.state.items.first.id, 'socket-n1');
+        },
+      );
 
-      test('falls back to silent refresh when notification key is absent', () async {
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _page([tLikeNotif]));
-        await notifier.fetch();
+      test(
+        'falls back to silent refresh when notification key is absent',
+        () async {
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer((_) async => _page([tLikeNotif]));
+          await notifier.fetch();
 
-        clearInteractions(mockGetNotifications);
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _emptyPage());
+          clearInteractions(mockGetNotifications);
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer((_) async => _emptyPage());
 
-        // No 'notification' key → cast to Map throws → silent refresh
-        notifier.onSocketNotificationCreated({'other_key': 'data'});
-        await Future.delayed(Duration.zero);
+          // No 'notification' key → cast to Map throws → silent refresh
+          notifier.onSocketNotificationCreated({'other_key': 'data'});
+          await Future.delayed(Duration.zero);
 
-        verify(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).called(greaterThanOrEqualTo(1));
-      });
+          verify(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).called(greaterThanOrEqualTo(1));
+        },
+      );
 
-      test('falls back to silent refresh when notification type does not match active filter', () async {
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _emptyPage());
-        await notifier.fetch(type: 'like'); // activeType = 'like'
+      test(
+        'falls back to silent refresh when notification type does not match active filter',
+        () async {
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer((_) async => _emptyPage());
+          await notifier.fetch(type: 'like'); // activeType = 'like'
 
-        clearInteractions(mockGetNotifications);
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _emptyPage());
+          clearInteractions(mockGetNotifications);
+          when(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).thenAnswer((_) async => _emptyPage());
 
-        notifier.onSocketNotificationCreated({
-          'notification': {
-            'id': 'socket-n2',
-            'type': 'follow', // does NOT match active filter 'like'
-            'actor': {'id': 'u77', 'display_name': 'Dave'},
-            'is_read': false,
-            'created_at': '2024-01-15T10:30:00.000Z',
-          },
-        });
-        await Future.delayed(Duration.zero);
+          notifier.onSocketNotificationCreated({
+            'notification': {
+              'id': 'socket-n2',
+              'type': 'follow', // does NOT match active filter 'like'
+              'actor': {'id': 'u77', 'display_name': 'Dave'},
+              'is_read': false,
+              'created_at': '2024-01-15T10:30:00.000Z',
+            },
+          });
+          await Future.delayed(Duration.zero);
 
-        verify(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).called(1);
-      });
+          verify(
+            () => mockGetNotifications(
+              page: any(named: 'page'),
+              type: any(named: 'type'),
+            ),
+          ).called(1);
+        },
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -702,9 +745,7 @@ void main() {
       ).thenAnswer((_) async => _page([], unread: 7));
 
       final container = ProviderContainer(
-        overrides: [
-          notificationsProvider.overrideWith((_) => notifier),
-        ],
+        overrides: [notificationsProvider.overrideWith((_) => notifier)],
       );
       addTearDown(container.dispose);
 
@@ -715,9 +756,7 @@ void main() {
 
     test('reflects 0 when no fetch has occurred', () {
       final container = ProviderContainer(
-        overrides: [
-          notificationsProvider.overrideWith((_) => notifier),
-        ],
+        overrides: [notificationsProvider.overrideWith((_) => notifier)],
       );
       addTearDown(container.dispose);
 

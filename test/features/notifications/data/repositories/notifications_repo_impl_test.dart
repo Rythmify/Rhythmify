@@ -27,27 +27,30 @@ void main() {
   });
 
   group('NotificationsRepoImpl', () {
-    test('getNotifications delegates to datasource and returns result', () async {
-      when(
-        () => mockDatasource.getNotifications(
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-          unreadOnly: any(named: 'unreadOnly'),
-          type: any(named: 'type'),
-        ),
-      ).thenAnswer(
-        (_) async => (items: [tModel], unreadCount: 2, hasNext: true),
-      );
+    test(
+      'getNotifications delegates to datasource and returns result',
+      () async {
+        when(
+          () => mockDatasource.getNotifications(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+            unreadOnly: any(named: 'unreadOnly'),
+            type: any(named: 'type'),
+          ),
+        ).thenAnswer(
+          (_) async => (items: [tModel], unreadCount: 2, hasNext: true),
+        );
 
-      final result = await repo.getNotifications(page: 1, limit: 20);
+        final result = await repo.getNotifications(page: 1, limit: 20);
 
-      expect(result.items, [tModel]);
-      expect(result.unreadCount, 2);
-      expect(result.hasNext, true);
-      verify(
-        () => mockDatasource.getNotifications(page: 1, limit: 20),
-      ).called(1);
-    });
+        expect(result.items, [tModel]);
+        expect(result.unreadCount, 2);
+        expect(result.hasNext, true);
+        verify(
+          () => mockDatasource.getNotifications(page: 1, limit: 20),
+        ).called(1);
+      },
+    );
 
     test('getNotifications passes optional params to datasource', () async {
       when(
@@ -58,10 +61,16 @@ void main() {
           type: any(named: 'type'),
         ),
       ).thenAnswer(
-        (_) async => (items: <NotificationModel>[], unreadCount: 0, hasNext: false),
+        (_) async =>
+            (items: <NotificationModel>[], unreadCount: 0, hasNext: false),
       );
 
-      await repo.getNotifications(page: 2, limit: 10, unreadOnly: true, type: 'like');
+      await repo.getNotifications(
+        page: 2,
+        limit: 10,
+        unreadOnly: true,
+        type: 'like',
+      );
 
       verify(
         () => mockDatasource.getNotifications(
@@ -106,9 +115,7 @@ void main() {
     test('getTrackIdByCommentId delegates to datasource', () async {
       when(
         () => mockDatasource.getTrackIdByCommentId(any()),
-      ).thenAnswer(
-        (_) async => (trackId: 'track-1', isLikedByMe: false),
-      );
+      ).thenAnswer((_) async => (trackId: 'track-1', isLikedByMe: false));
 
       final result = await repo.getTrackIdByCommentId('comment-1');
 
