@@ -8,7 +8,6 @@ import '../../../../core/network/api_client.dart';
 
 // ── Dependency graph ──────────────────────────────────────────────────────────
 
-/// Provides the mock data source. Swap to a real HTTP source at integration time.
 const bool _useVibesMock = false;
 
 final vibesRemoteSourceProvider = Provider<VibesRemoteSource>(

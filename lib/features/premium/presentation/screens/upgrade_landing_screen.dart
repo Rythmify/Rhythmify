@@ -1,3 +1,14 @@
+/// Upgrade landing screen for the Premium flow.
+///
+/// Shows a cinematic hero layout with layered images, pricing teaser,
+/// and a call-to-action to continue to checkout or view all plans.
+///
+/// Includes:
+/// - Background + stacked photo cards UI
+/// - Premium offer summary and pricing
+/// - Navigation to checkout and plans screen
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -56,7 +67,7 @@ class UpgradeLandingScreen extends ConsumerWidget {
             child: Image.asset(
               _kBgAsset,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (_, _, _) =>
                   Container(color: const Color(0xFF0A0A0A)),
             ),
           ),
@@ -164,7 +175,7 @@ class _PhotoCard extends StatelessWidget {
           height: height,
           fit: BoxFit.cover,
           alignment: alignment,
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (_, _, _) => Container(
             width: width,
             height: height,
             decoration: BoxDecoration(

@@ -68,3 +68,5 @@ key.properties
 
 # Explicitly un-ignore debug.keystore
 !android/app/debug.keystore
+BUGFIX_SUMMARY.md
+WINDOWS_PLAYBACK_FIX.md

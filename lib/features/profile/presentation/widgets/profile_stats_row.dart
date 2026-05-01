@@ -9,14 +9,6 @@ import '../../../../../core/theme/app_theme.dart';
 /// - 1500000 → 1.5M
 ///
 /// Used on [PublicProfilePage] below the user's display name.
-///
-/// Example usage:
-/// ```dart
-/// ProfileStatsRow(
-///   followersCount: 1240,
-///   followingCount: 380,
-/// )
-/// ```
 class ProfileStatsRow extends StatelessWidget {
   /// The total number of users following this profile.
   final int followersCount;

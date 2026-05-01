@@ -1,3 +1,28 @@
+/// Manages all subscription logic and state for the premium system.
+///
+/// Handles:
+/// - Loading subscription plans and user subscription
+/// - Checkout flow (create → confirm → refresh state)
+/// - Subscription cancellation
+/// - Feature access rules (upload, playlists, download)
+///
+/// Key state:
+/// - subscription: current user subscription
+/// - plans: available plans from backend
+/// - isLoading / isCheckingOut: UI loading states
+/// - checkoutSuccess: signals successful payment
+/// - isInitialized: ensures initial data is loaded before UI renders
+///
+/// Feature gates:
+/// - canUploadMoreTracks
+/// - canCreateMorePlaylists
+/// - canDownload / canListenOffline
+///
+/// Notes:
+/// - Free limits are enforced via constants (track/playlist caps)
+/// - All API calls go through PremiumRemoteDatasource
+library;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/subscription_plan.dart';
@@ -131,7 +156,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
 
       // Resolve planId — if empty, fetch plans and find premium UUID
       // Fallback to known backend UUID if plans endpoint returns empty
-      const _kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
+      const kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
       String resolvedPlanId = planId;
       if (resolvedPlanId.isEmpty) {
         if (state.plans.isEmpty) await loadPlans();
@@ -141,7 +166,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
                 orElse: () => state.plans.last,
               )
             : null;
-        resolvedPlanId = premiumPlan?.planId ?? _kFallbackPremiumPlanId;
+        resolvedPlanId = premiumPlan?.planId ?? kFallbackPremiumPlanId;
       }
 
       try {

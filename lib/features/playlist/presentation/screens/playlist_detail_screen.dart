@@ -1,4 +1,42 @@
 // lib/features/playlist/presentation/screens/playlist_detail_screen.dart
+/// Displays the complete details of a playlist, album, station,
+/// or generated collection.
+///
+/// Features:
+/// - Playlist metadata and artwork
+/// - Track listing with playback support
+/// - Shuffle and play-all functionality
+/// - Like/unlike playlist support
+/// - Playlist copy functionality
+/// - Playlist management options
+/// - Owner-only track suggestions
+///
+/// This screen supports multiple playlist types:
+/// - Regular playlists
+/// - Albums
+/// - Artist stations
+/// - Generated mixes
+/// - Track radios
+///
+/// Main responsibilities:
+/// - Initialize playlist data using playlistDetailProvider
+/// - Fetch full track details before playback
+/// - Build queue playback context dynamically
+/// - Display suggestions for owned playlists
+/// - Allow playlist duplication for non-owners
+/// - Manage playlist actions and navigation
+///
+/// Widgets included:
+/// - PlaylistDetailScreen     → Main detail screen
+/// - _PlaylistHeader          → Compact reusable header
+/// - _CopyPlaylistSheet       → Playlist duplication modal
+/// - _CoverImage              → Playlist artwork widget
+///
+/// Playback behavior:
+/// Tracks are converted into full Track entities before
+/// queue playback to ensure complete metadata is available.
+///
+/// Queue sources are mapped dynamically based on PlaylistType.
 library;
 
 import 'package:flutter/material.dart';
@@ -790,7 +828,7 @@ class _CoverImage extends StatelessWidget {
             ? Image.network(
                 coverUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholder(),
+                errorBuilder: (_, _, _) => _placeholder(),
               )
             : _placeholder(),
       ),

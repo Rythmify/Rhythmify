@@ -21,7 +21,6 @@ class SearchProfileCard extends StatelessWidget {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: Colors.grey[800],
-        // Falls back to a person icon if no avatar URL is available.
         backgroundImage: profile.avatarUrl != null
             ? NetworkImage(profile.avatarUrl!)
             : null,
@@ -34,7 +33,6 @@ class SearchProfileCard extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      // Follower count formatted via [Formatters.formatCount] (e.g. "5M").
       subtitle: Row(
         children: [
           const Icon(Icons.person, size: 12, color: Colors.grey),

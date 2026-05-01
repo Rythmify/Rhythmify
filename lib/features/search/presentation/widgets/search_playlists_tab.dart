@@ -77,7 +77,6 @@ class _PlaylistTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
           subtitle: Text(
             'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
             maxLines: 1,

@@ -10,8 +10,6 @@ import '../../../track_upload/presentation/providers/upload_track_provider.dart'
 import '../../../../core/domain/entities/track.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
 import '../../../player/domain/entities/queue_state.dart';
-
-// ── Added for artist name fix ──
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
 
@@ -125,15 +123,13 @@ class _UploadsPageState extends ConsumerState<UploadsPage> {
     }
   }
 
-  // ─── build ──────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(uploadsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // ── AppBar: back + inline search + filter + cast ──────────────────────
+      // ── AppBar: back + inline search + filter + cast
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         elevation: 0,

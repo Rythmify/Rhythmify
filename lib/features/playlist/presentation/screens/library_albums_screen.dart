@@ -1,4 +1,37 @@
 // lib/features/playlist/presentation/screens/library_albums_screen.dart
+/// A dedicated library screen that displays all saved albums belonging to
+/// the current user.
+///
+/// Features:
+/// • Loads albums from playlistListProvider using Riverpod.
+/// • Supports searching albums by name.
+/// • Supports sorting:
+///   - Recently added
+///   - First added
+///   - Album name
+/// • Provides album type filtering UI.
+/// • Uses a custom overlay dropdown for filtering/sorting.
+/// • Navigates to album details when an album tile is tapped.
+/// • Opens PlaylistOptionsSheet for additional album actions.
+/// • Displays loading, empty, and populated states.
+///
+/// Main Widgets:
+/// • _AlbumFilterDropdown
+///     Custom dropdown menu for sorting and filtering.
+/// • _DropdownItem
+///     Reusable selectable dropdown row.
+/// • _AlbumTile
+///     UI tile representing a single album entry.
+///
+/// Navigation:
+/// • Back → previous route
+/// • Album tap → /home/playlist/{albumId}
+///
+/// Dependencies:
+/// • Riverpod
+/// • GoRouter
+/// • Playlist providers/entities
+/// • AppTheme shared styling
 library;
 
 import 'package:flutter/material.dart';
@@ -269,6 +302,7 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => PlaylistOptionsSheet(
         playlistId: album.id,
+        playlist: album,
         isOwner: isOwner,
         onConverted: (t) {
           switch (t) {

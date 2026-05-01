@@ -4,6 +4,12 @@ import '../widgets/feed_tab_bar.dart';
 import '../widgets/feed_list.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 
+/// The main feed screen, displaying a tabbed view of the Discover
+/// and Following feeds.
+///
+/// Manages a [TabController] shared between [FeedTabBar] and the two
+/// [FeedList] instances. Stops any active playback and resets track
+/// previews whenever the user switches tabs.
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
@@ -13,8 +19,12 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen>
     with SingleTickerProviderStateMixin {
+  /// Key used to access the Discover [FeedList] state imperatively.
   final _discoverKey = GlobalKey<FeedListState>();
+
+  /// Key used to access the Following [FeedList] state imperatively.
   final _followingKey = GlobalKey<FeedListState>();
+
   late final TabController _tabController;
 
   @override

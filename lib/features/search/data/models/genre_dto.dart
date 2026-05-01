@@ -8,8 +8,13 @@ import '../../domain/entities/vibes_genre_artists.dart';
 import '../../domain/entities/vibes_genre_introducing_section.dart';
 import '../../domain/entities/vibes_genre_introducing_playlist.dart';
 
+/// A static DTO utility class for parsing all genre/vibes screen JSON
+/// responses into typed domain entities.
+///
+/// All methods are static — [GenreDto] is never instantiated directly.
+/// Mirrors the structure of [HomeDto] but scoped to genre content.
 class GenreDto {
-  // ── Shared track parser (mirrors HomeDto.parseTrack) ──────────────────────
+  // ── Shared track parser
   static Track parseTrack(Map<String, dynamic> json) {
     return TrackDto.fromJson({
       ...json,
@@ -20,11 +25,14 @@ class GenreDto {
     });
   }
 
+  /// Parses the full genre content payload into a [GenreContent] entity.
+  ///
+  /// Falls back to an empty [IntroducingSection] with a null-object
+  /// [IntroducingPlaylist] if the `introducing` field is absent.
   static GenreContent parseGenreContent(Map<String, dynamic> json) {
     return GenreContent(
       genreInfo: parseGenreInfo(json['genre'] as Map<String, dynamic>? ?? {}),
 
-      // Check if 'introducing' exists, otherwise provide a "null-object" default
       introducing: json['introducing'] != null
           ? parseIntroducingSection(json['introducing'] as Map<String, dynamic>)
           : IntroducingSection(
@@ -68,7 +76,7 @@ class GenreDto {
     );
   }
 
-  // ── GenreInfo ─────────────────────────────────────────────────────────────
+  // GenreInfo
   static GenreInfo parseGenreInfo(Map<String, dynamic> json) {
     return GenreInfo(
       id: json['id'] as String? ?? '',
@@ -81,7 +89,7 @@ class GenreDto {
     );
   }
 
-  // ── IntroducingSection ────────────────────────────────────────────────────
+  // IntroducingSection
   static IntroducingSection parseIntroducingSection(Map<String, dynamic> json) {
     return IntroducingSection(
       playlist: IntroducingPlaylist(
@@ -106,6 +114,8 @@ class GenreDto {
     );
   }
 
+  /// Returns an empty [Track] used as a fallback when no preview track
+  /// is available in the introducing section.
   static Track _emptyTrack() => TrackDto.fromJson({
     'id': '',
     'title': '',
@@ -135,7 +145,7 @@ class GenreDto {
     );
   }
 
-  // ── GenrePlaylist ─────────────────────────────────────────────────────────
+  // GenrePlaylist
   static GenrePlaylist parsePlaylist(Map<String, dynamic> json) {
     return GenrePlaylist(
       id: json['id'] as String,
@@ -150,7 +160,7 @@ class GenreDto {
     );
   }
 
-  // ── GenreAlbum ────────────────────────────────────────────────────────────
+  // GenreAlbum
   static GenreAlbum parseAlbum(Map<String, dynamic> json) {
     return GenreAlbum(
       id: json['id'] as String,
@@ -164,7 +174,7 @@ class GenreDto {
     );
   }
 
-  // ── GenreArtist ───────────────────────────────────────────────────────────
+  // GenreArtist
   static GenreArtist parseArtist(Map<String, dynamic> json) {
     return GenreArtist(
       id: json['id'] as String,
@@ -177,7 +187,7 @@ class GenreDto {
     );
   }
 
-  // ── Paginated list parsers ─────────────────────────────────────────────────
+  // Paginated list parsers
   static List<GenrePlaylist> parsePlaylistList(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>;
     return (data['playlists'] as List)

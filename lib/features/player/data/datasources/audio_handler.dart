@@ -29,6 +29,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     ),
   );
 
+  // ignore: deprecated_member_use
   final _playlist = ConcatenatingAudioSource(children: []);
 
   /// The current list of tracks in the playback queue.
@@ -170,7 +171,11 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   List<Track> get currentQueue => _currentQueue;
 
   /// Loads a new set of [Track]s into the player and prepares for playback.
-  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
+  Future<void> loadQueue(
+    List<Track> tracks, {
+    int initialIndex = 0,
+    Duration initialPosition = Duration.zero,
+  }) async {
     _currentQueue = List.from(tracks);
     final audioSources = _convertToAudioSources(tracks);
 
@@ -188,11 +193,22 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       await _player.setAudioSource(
         _playlist,
         initialIndex: effectiveIndex,
-        initialPosition: Duration.zero,
+        initialPosition: initialPosition,
       );
     } catch (e) {
       debugPrint('[RythmifyAudioHandler] loadQueue error: $e');
     }
+  }
+
+  /// Seamlessly moves a track within the native queue without stopping playback.
+  Future<void> moveTrack(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+    if (oldIndex < 0 || oldIndex >= _playlist.length) return;
+    if (newIndex < 0 || newIndex >= _playlist.length) return;
+
+    final track = _currentQueue.removeAt(oldIndex);
+    _currentQueue.insert(newIndex, track);
+    await _playlist.move(oldIndex, newIndex);
   }
 
   /// Jumps to a specific index in the current native queue without re-loading.

@@ -121,9 +121,17 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> init() async {}
 
   @override
-  Future<void> loadQueue(List<Track> tracks, {int initialIndex = 0}) async {
+  Future<void> loadQueue(
+    List<Track> tracks, {
+    int initialIndex = 0,
+    Duration initialPosition = Duration.zero,
+  }) async {
     _updateState(_currentState.copyWith(status: PlayerStatus.loading));
-    await _audioHandler.loadQueue(tracks, initialIndex: initialIndex);
+    await _audioHandler.loadQueue(
+      tracks,
+      initialIndex: initialIndex,
+      initialPosition: initialPosition,
+    );
     _queueController.add(tracks);
   }
 
@@ -152,14 +160,25 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> skipToIndex(int index) => _audioHandler.skipToIndex(index);
 
   @override
+  Future<void> moveTrack(int oldIndex, int newIndex) async {
+    await _audioHandler.moveTrack(oldIndex, newIndex);
+    _queueController.add(_audioHandler.currentQueue);
+  }
+
+  @override
   Future<void> updateQueue(List<Track> tracks) async {
     final currentIndex = _audioHandler.currentQueue.indexOf(
       _currentState.currentTrack!,
     );
     final effectiveIndex = currentIndex != -1 ? currentIndex : 0;
+    final currentPosition = _currentState.position;
 
-    // We use loadQueue but try to maintain current track if it exists in new list
-    await _audioHandler.loadQueue(tracks, initialIndex: effectiveIndex);
+    // We use loadQueue but maintain current track and position
+    await _audioHandler.loadQueue(
+      tracks,
+      initialIndex: effectiveIndex,
+      initialPosition: currentPosition,
+    );
     _queueController.add(tracks);
   }
 

@@ -48,6 +48,7 @@ import '../../core/domain/entities/track.dart';
 
 //  Player imports
 import '../../features/player/presentation/pages/full_player_page.dart';
+import '../../features/player/presentation/pages/queue_screen.dart';
 
 //  Comments imports
 import '../../features/comments/presentation/pages/comments_screen.dart';
@@ -383,6 +384,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                     },
                   ),
                   GoRoute(
+                    path: 'profile/:userId/albums',
+                    builder: (context, state) {
+                      final userId = state.pathParameters['userId']!;
+                      return UserPlaylistsPage(
+                        userId: userId,
+                        type: PlaylistPageType.albums,
+                      );
+                    },
+                  ),
+                  GoRoute(
                     path: 'profile/:userId/followers',
                     builder: (context, state) {
                       final userId = state.pathParameters['userId']!;
@@ -647,6 +658,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/player',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FullPlayerPage(),
+      ),
+      GoRoute(
+        path: '/queue',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const QueueScreen(),
       ),
       GoRoute(
         path: '/comments/:trackId',

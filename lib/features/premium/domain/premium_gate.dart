@@ -3,6 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// A UI-level helper class responsible for handling subscription-related
+/// access restrictions in a centralized way.
+///
+/// This class detects backend subscription limit errors and displays a
+/// consistent upgrade prompt across the entire app.
+///
+/// Backend Contract:
+/// - HTTP 403 with:
+///   { "error": { "code": "SUBSCRIPTION_LIMIT_REACHED" } }
+///
+/// Responsibilities:
+/// - Detect subscription limit errors from DioException
+/// - Show upgrade bottom sheet when limit is reached
+/// - Route user to upgrade screen when needed
+/// - Provide a single reusable error handler for all features
+///
+/// Usage Pattern:
+/// Call inside any onError block:
+///
+///   PremiumGate.handleError(context, error);
+///
+/// Behavior:
+/// - Returns true → handled as subscription error (UI shown)
+/// - Returns false → not subscription-related, handle normally
+///
+/// UI Component:
+/// - Displays a bottom sheet explaining the limit
+/// - Shows benefits of premium subscription
+/// - Navigates to /upgrade route when user taps "See plans"
+///
+/// Notes:
+/// - This class does NOT perform API calls
+/// - It is strictly a UI + error interpretation layer
+/// - Keeps feature modules free from duplicated subscription logic
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PREMIUM GATE
 //

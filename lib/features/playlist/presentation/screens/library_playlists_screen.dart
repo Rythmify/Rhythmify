@@ -1,4 +1,47 @@
 // lib/features/playlist/presentation/screens/library_playlists_screen.dart
+/// A full playlist management screen for the user's library.
+///
+/// Features:
+/// • Loads owned and liked playlists.
+/// • Merges liked + owned playlists while preventing duplicates.
+/// • Supports searching playlists by name.
+/// • Supports sorting:
+///   - Recently added
+///   - First added
+///   - Recently updated
+///   - Playlist name
+/// • Supports filtering:
+///   - All playlists
+///   - Liked playlists
+///   - Owned playlists
+/// • Supports pull-to-refresh.
+/// • Handles generated mixes and radio playlists.
+/// • Displays loading, empty, and populated states.
+/// • Uses custom overlay dropdown filtering UI.
+/// • Allows playlist creation through CreatePlaylistSheet.
+/// • Allows playlist actions through PlaylistOptionsSheet.
+/// • Automatically refreshes playlists when returning to screen.
+///
+/// Main Widgets:
+/// • _FilterDropdown
+///     Dropdown menu for sorting/filter selection.
+/// • _DropdownItem
+///     Reusable selectable dropdown row.
+/// • _PlaylistListTile
+///     UI tile representing a playlist/mix/radio item.
+///
+/// Navigation:
+/// • Playlist → /library/playlists/{id}
+/// • Mix → /home/mix/{id}
+/// • Radio → /home/playlist/{id}
+///
+/// Dependencies:
+/// • Riverpod
+/// • GoRouter
+/// • Playlist providers/entities
+/// • CreatePlaylistSheet
+/// • PlaylistOptionsSheet
+/// • AppTheme shared styling
 library;
 
 import 'package:flutter/material.dart';

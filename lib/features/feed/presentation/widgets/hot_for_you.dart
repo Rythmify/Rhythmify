@@ -13,6 +13,11 @@ import '../../../player/domain/entities/queue_state.dart';
 import '../providers/home_providers.dart';
 import 'shimmers/hot_for_you_shimmer.dart';
 
+/// Displays the "Hot For You 🔥" section on the home screen.
+///
+/// Watches [hotForYouProvider] and renders a shimmer while loading,
+/// an error message on failure, or a [HotForYouCard] when data is available.
+
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
 
@@ -42,6 +47,11 @@ class HotForYouSection extends ConsumerWidget {
   }
 }
 
+/// A card displaying a single recommended track with blurred artwork background,
+/// animated vinyl disc, and play/pause control.
+///
+/// The vinyl disc rotation animation plays while this card's track is
+/// the active player track, and stops otherwise.
 class HotForYouCard extends ConsumerStatefulWidget {
   final Track track;
 
@@ -66,12 +76,34 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.watch(playerStateProvider);
-    final isPlaying = playerState.status == PlayerStatus.playing;
-    final isThisTrack = playerState.currentTrack?.id == widget.track.id;
+    // Only rebuild when the status or track ID changes, NOT on every position tick.
+    final isPlaying = ref.watch(
+      playerStateProvider.select((s) => s.status == PlayerStatus.playing),
+    );
+    final currentTrackId = ref.watch(
+      playerStateProvider.select((s) => s.currentTrack?.id),
+    );
+    final isThisTrack = currentTrackId == widget.track.id;
 
+    // Listen to changes to start/stop animation without rebuilding the whole card
+    ref.listen(
+      playerStateProvider.select(
+        (s) =>
+            s.status == PlayerStatus.playing &&
+            s.currentTrack?.id == widget.track.id,
+      ),
+      (previous, next) {
+        if (next) {
+          _controller.repeat();
+        } else {
+          _controller.stop();
+        }
+      },
+    );
+
+    // Handle initial state
     if (isPlaying && isThisTrack) {
-      _controller.repeat();
+      if (!_controller.isAnimating) _controller.repeat();
     } else {
       _controller.stop();
     }
@@ -81,7 +113,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
 
-        // --- LAYER 1: Track Artwork ---
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
@@ -96,13 +127,11 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
           ),
         ),
 
-        // --- LAYER 2: Clip & Blur ---
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
 
-            // --- LAYER 3: Dark Tint & Border ---
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.black.withValues(
@@ -171,7 +200,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                                     tracks: [widget.track],
                                     initialIndex: 0,
                                     context: const QueueContext(
-                                      type: QueueSource.trending,
+                                      type: QueueSource.unknown,
                                     ),
                                   );
                             }
@@ -189,7 +218,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "${formatCount(widget.track.likeCount)} people liked your track",
+                          "${formatCount(widget.track.likeCount)} people liked this track",
                           key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.bodyNormal.copyWith(
                             fontSize: 12,
@@ -225,7 +254,10 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                 height: 70,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cd.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: Center(
                   child: Container(

@@ -1,5 +1,35 @@
 // lib/features/playlist/presentation/screens/library_stations_screen.dart
 // ignore_for_file: avoid_print
+/// A screen that displays all saved artist stations in the user's library.
+///
+/// Features:
+/// • Loads saved stations using savedStationsProvider.
+/// • Supports searching stations by station name.
+/// • Supports sorting:
+///   - Recently added
+///   - First added
+///   - Station name
+/// • Uses a custom overlay dropdown for sorting.
+/// • Supports pull-to-refresh for reloading saved stations.
+/// • Allows removing saved stations directly from the list.
+/// • Displays loading, error, empty, and populated states.
+///
+/// Main Widgets:
+/// • _StationFilterDropdown
+///     Dropdown menu used for station sorting.
+/// • _DropdownItem
+///     Reusable selectable dropdown row.
+/// • _StationTile
+///     UI tile representing a saved station.
+///
+/// Navigation:
+/// • Station tap → /home/station/{artistId}
+///
+/// Dependencies:
+/// • Riverpod
+/// • GoRouter
+/// • savedStationsProvider
+/// • AppTheme shared styling
 library;
 
 import 'package:flutter/material.dart';

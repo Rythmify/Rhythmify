@@ -1,14 +1,46 @@
 // lib/features/playlist/presentation/widgets/playlist_shared_widgets.dart
-
+/// This file contains reusable shared UI widgets used across playlist screens.
+///
+/// Features:
+/// - Playlist cover image rendering
+/// - Playlist track row widgets
+/// - Generic track row widgets
+/// - Shared bottom sheet handle
+/// - Shared option sheet tile widget
+/// - Placeholder image handling
+///
+/// Main Components:
+/// - PlaylistCoverImage:
+///     Displays playlist cover art or fallback placeholder.
+///
+/// - TrackTileInPlaylist:
+///     Displays playlist track information.
+///
+/// - TrackTileFromTrack:
+///     Displays a generic track row from a Track entity.
+///
+/// - BottomSheetHandle:
+///     Reusable drag handle for modal sheets.
+///
+/// - OptionSheetTile:
+///     Reusable option/action tile widget.
+///
+/// Dependencies:
+/// - Cached network image package
+/// - Playlist entities/models
+/// - Track entity
+/// - Shared app theme/utilities
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/utils/time_ago.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../domain/entities/playlist_entity.dart';
 import '../../domain/entities/playlist_track.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import 'dart:io';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -273,7 +305,7 @@ class TrackTileInPlaylist extends StatelessWidget {
 // TrackTileFromTrack
 // ════════════════════════════════════════════════════════════════════════════
 
-class TrackTileFromTrack extends StatelessWidget {
+class TrackTileFromTrack extends ConsumerWidget {
   const TrackTileFromTrack({
     super.key,
     required this.track,
@@ -284,7 +316,7 @@ class TrackTileFromTrack extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final minutes = track.duration.inMinutes;
     final seconds = (track.duration.inSeconds % 60).toString().padLeft(2, '0');
     final durationStr = '$minutes:$seconds';
@@ -398,7 +430,7 @@ class TrackTileFromTrack extends StatelessWidget {
             // Options menu
             IconButton(
               icon: const Icon(Icons.more_vert, color: Colors.grey, size: 24),
-              onPressed: () => _showTrackOptions(context, track),
+              onPressed: () => _showTrackOptions(context, ref, track),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             ),
@@ -415,7 +447,7 @@ class TrackTileFromTrack extends StatelessWidget {
     child: const Icon(Icons.music_note, color: Colors.grey, size: 24),
   );
 
-  void _showTrackOptions(BuildContext context, Track track) {
+  void _showTrackOptions(BuildContext context, WidgetRef ref, Track track) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -481,12 +513,24 @@ class TrackTileFromTrack extends StatelessWidget {
             OptionSheetTile(
               icon: Icons.queue_play_next,
               label: 'Play next',
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                Navigator.of(context).pop();
+                ref.read(queueStateProvider.notifier).addToQueueNext(track);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Added to Next Up')),
+                );
+              },
             ),
             OptionSheetTile(
               icon: Icons.add_to_queue,
               label: 'Play last',
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                Navigator.of(context).pop();
+                ref.read(queueStateProvider.notifier).addToQueueLast(track);
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Added to Queue')));
+              },
             ),
             OptionSheetTile(
               icon: Icons.favorite_border,

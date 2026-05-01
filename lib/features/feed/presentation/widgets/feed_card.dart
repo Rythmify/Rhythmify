@@ -8,12 +8,32 @@ import 'feed_list.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 import '../../../player/domain/entities/player_state.dart';
 
+/// A full-screen feed card that displays a single [FeedItemEntity].
+///
+/// Composes [FeedCardCover], [FeedCardSideActions], and [FeedCardBottomInfo]
+/// into a stacked layout. Overlays contextual UI based on the current
+/// playback state:
+/// - "Tap to preview" when the track is not playing and not in preview mode.
+/// - "Now Playing" when this card's track is the active player track.
+///
+/// The [fullScreen] flag switches [FeedCardCover] between its compact
+/// and full-screen rendering modes.
 class FeedCard extends ConsumerWidget {
   final FeedItemEntity item;
+
+  /// The feed tab this card belongs to, used to derive [_bottomLabel].
   final FeedTab tab;
+
+  /// Whether the card is currently in preview (audio playing inline) mode.
   final bool previewMode;
+
+  /// The ID of the track currently loaded in the player, if any.
   final String? nowPlayingTrackId;
+
+  /// Callback invoked when the user taps the play button.
   final VoidCallback? onPlay;
+
+  /// Whether to render the cover in full-screen mode.
   final bool fullScreen;
 
   const FeedCard({
@@ -97,6 +117,7 @@ class FeedCard extends ConsumerWidget {
               ),
             ),
           ),
+        // Indicator shown when this card's track is actively playing
         if (isThisTrackNowPlaying)
           const IgnorePointer(
             child: Center(
@@ -167,6 +188,13 @@ class FeedCard extends ConsumerWidget {
     );
   }
 
+  /// Derives the contextual label shown above the bottom info section.
+  ///
+  /// Priority order:
+  /// 1. [FeedItemEntity.discoverLabel] if set (custom backend label).
+  /// 2. `'Discovered for you'` for discover tab items without a label.
+  /// 3. `'<displayName> reposted'` for repost activity.
+  /// 4. `'<displayName> posted'` for original posts.
   String get _bottomLabel {
     if (item.discoverLabel != null) return item.discoverLabel!;
     if (tab == FeedTab.discover) return 'Discovered for you';

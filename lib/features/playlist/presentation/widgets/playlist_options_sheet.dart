@@ -1,4 +1,40 @@
 // lib/features/playlist/presentation/widgets/playlist_options_sheet.dart
+/// This file contains the playlist options bottom sheet shown for playlists,
+/// albums, and mixes.
+///
+/// Features:
+/// - Like/unlike playlists
+/// - Share playlist links
+/// - Copy playlist link
+/// - Show QR code sharing sheet
+/// - Queue playlist tracks (play next/play last)
+/// - Copy playlists
+/// - Edit playlists
+/// - Change playlist privacy
+/// - Delete playlists
+///
+/// Main Components:
+/// - PlaylistOptionsSheet:
+///     Main options bottom sheet widget.
+///
+/// - _CopyPlaylistSheet:
+///     Bottom sheet used to duplicate/copy playlists.
+///
+/// - _ShareRow:
+///     Displays sharing options.
+///
+/// - _QrCodeSheet:
+///     Displays a simple QR-style share sheet.
+///
+/// - _ShareIcon:
+///     Reusable share action button widget.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - GoRouter navigation
+/// - Share Plus package
+/// - Playlist entities/providers
+/// - Player providers
 library;
 
 import 'package:flutter/material.dart';
@@ -7,9 +43,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../player/presentation/providers/player_provider.dart';
-import '../../../track/presentation/providers/track_dependency_providers.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
 import '../../domain/entities/playlist_entity.dart';
+import '../../domain/entities/playlist_track.dart';
 import '../providers/playlist_provider.dart';
 import 'edit_playlist_sheet.dart';
 import 'playlist_shared_widgets.dart';
@@ -130,18 +166,24 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 key: const Key('options_play_next'),
                 icon: Icons.queue_play_next,
                 label: 'Play next',
-                onTap: () async {
+                onTap: () {
                   Navigator.of(context).pop();
-                  final tracks = detailState.tracks;
+
+                  // Only use tracks if they belong to THIS playlist
+                  final tracks = (detailState.playlist?.id == playlistId)
+                      ? detailState.tracks
+                      : <PlaylistTrack>[];
+
                   if (tracks.isEmpty) return;
-                  try {
-                    final t = await ref
-                        .read(getTrackDetailsUseCaseProvider)
-                        .call(tracks.first.id);
-                    await ref
-                        .read(playerStateProvider.notifier)
-                        .addToQueueNext(t);
-                  } catch (_) {}
+
+                  final allTracks = tracks.map((pt) => pt.toTrack()).toList();
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .addMultipleToQueueNext(allTracks);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Playlist added to Next Up')),
+                  );
                 },
               ),
 
@@ -150,18 +192,24 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 key: const Key('options_play_last'),
                 icon: Icons.add_to_queue,
                 label: 'Play last',
-                onTap: () async {
+                onTap: () {
                   Navigator.of(context).pop();
-                  final tracks = detailState.tracks;
+
+                  // Only use tracks if they belong to THIS playlist
+                  final tracks = (detailState.playlist?.id == playlistId)
+                      ? detailState.tracks
+                      : <PlaylistTrack>[];
+
                   if (tracks.isEmpty) return;
-                  try {
-                    final t = await ref
-                        .read(getTrackDetailsUseCaseProvider)
-                        .call(tracks.first.id);
-                    await ref
-                        .read(playerStateProvider.notifier)
-                        .addToQueueLast(t);
-                  } catch (_) {}
+
+                  final allTracks = tracks.map((pt) => pt.toTrack()).toList();
+                  ref
+                      .read(queueStateProvider.notifier)
+                      .addMultipleToQueueLast(allTracks);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Playlist added to Queue')),
+                  );
                 },
               ),
 
@@ -246,7 +294,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
                 ),
               ],
 
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 200),
             ],
           ),
         ),

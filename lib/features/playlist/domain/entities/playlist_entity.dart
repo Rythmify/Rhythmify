@@ -1,4 +1,36 @@
 // lib/features/playlist/domain/entities/playlist_entity.dart
+/// This file defines the PlaylistEntity domain model used throughout the
+/// playlist feature.
+///
+/// Features:
+/// - Represents playlists, albums, and stations
+/// - Stores playlist metadata and ownership information
+/// - Provides formatted/computed helper getters
+/// - Supports immutable updates using copyWith()
+///
+/// Main Components:
+/// - PlaylistType:
+///     Enum representing playlist, album, or station.
+///
+/// - PlaylistEntity:
+///     Main playlist domain entity.
+///
+/// Computed Getters:
+/// - typeLabel:
+///     Returns formatted playlist type label.
+///
+/// - detailSubtitle:
+///     Returns subtitle text for detail screens.
+///
+/// - subtitleLine:
+///     Returns formatted subtitle text for lists/cards.
+///
+/// Methods:
+/// - copyWith():
+///     Creates a modified copy of the entity.
+///
+/// Dependencies:
+/// - None
 library;
 
 enum PlaylistType { playlist, album, station }

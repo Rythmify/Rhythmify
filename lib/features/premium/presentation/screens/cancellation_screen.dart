@@ -1,3 +1,25 @@
+/// Shows active premium subscription and handles cancellation.
+///
+/// Responsibilities:
+/// - Displays active subscription status
+/// - Shows countdown timer for current session
+/// - Handles subscription cancellation
+/// - Shows premium benefits list
+///
+/// Behavior:
+/// - 5-minute session timer updates every second
+/// - Auto-renews session if not canceled
+/// - After cancel: subscription stays active until session ends
+///
+/// Actions:
+/// - Cancel subscription → disables auto-renew via backend
+/// - Resubscribe → navigates to upgrade flow
+///
+/// Notes:
+/// - Uses simulated session timer for UX purposes
+/// - endDate is optional backend data
+library;
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,7 +138,7 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 Image.asset(
                   _kBgAsset,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,

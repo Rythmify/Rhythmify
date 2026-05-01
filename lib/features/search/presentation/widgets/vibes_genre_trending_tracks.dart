@@ -16,7 +16,6 @@ class TrendingTracks extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Split tracks into pages of 3 for the horizontal paged layout.
     List<List<Track>> chunks = [];
     for (var i = 0; i < tracks.length; i += 3) {
       chunks.add(

@@ -1,9 +1,18 @@
 import '../../domain/entities/vibes_category.dart';
 import 'package:flutter/material.dart';
 
+/// A static DTO utility class for mapping genre API responses into
+/// [VibeCategory] entities with locally assigned visuals.
+///
+/// Since the `/genres` endpoint returns no images or colors, visual
+/// properties are assigned by cycling through fixed pools of heights,
+/// colors, and asset images using the item's index.
 class VibesDto {
-  // Fixed height and color pools — cycled by index since /genres returns no visuals.
+  /// Fixed heights cycled across vibe category cards to create a
+  /// staggered grid effect..
   static const List<double> _heights = [150, 230, 250, 100, 160, 75, 250, 170];
+
+  /// Accent colors cycled across vibe category cards.
   static const List<Color> _colors = [
     Color(0xFF9C27B0),
     Color.fromARGB(255, 233, 245, 10),

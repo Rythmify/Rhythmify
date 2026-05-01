@@ -38,7 +38,6 @@ class BlockedUserScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ── Block icon ──────────────────────────────────────
               Container(
                 width: 80,
                 height: 80,
@@ -55,7 +54,7 @@ class BlockedUserScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // ── Headline ─────────────────────────────────────────
+              // Headline
               Text(
                 'You blocked this account',
                 style: AppTheme.titleMedium,
@@ -64,7 +63,7 @@ class BlockedUserScreen extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // ── Sub-message ───────────────────────────────────────
+              // Sub-message
               Text(
                 'You won\'t see their content and they can\'t see yours.',
                 style: AppTheme.bodyMedium,
@@ -73,7 +72,7 @@ class BlockedUserScreen extends ConsumerWidget {
 
               const SizedBox(height: 36),
 
-              // ── Unblock button ────────────────────────────────────
+              //  Unblock button
               OutlinedButton(
                 onPressed: () => _confirmUnblock(context, ref),
                 style: OutlinedButton.styleFrom(
@@ -134,9 +133,15 @@ class BlockedUserScreen extends ConsumerWidget {
           .read(publicProfileProvider(userId).notifier)
           .unblockUser(userId);
       // Reload the profile to show the real content
-      ref
+      await ref
           .read(publicProfileProvider(userId).notifier)
           .loadProfile(userId: userId);
+      await ref
+          .read(publicProfileProvider(userId).notifier)
+          .loadPreviews(userId);
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 }

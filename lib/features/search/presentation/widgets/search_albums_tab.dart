@@ -84,7 +84,6 @@ class _AlbumTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: Colors.grey[400], fontSize: 12),
               ),
-              // Shows release year and album type (e.g. "2020 · Album").
               Text(
                 '${album['year']} · ${album['type']}',
                 maxLines: 1,
