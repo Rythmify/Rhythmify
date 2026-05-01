@@ -1835,7 +1835,6 @@ packages:
       sha256: "394f07d21f0f2255ec9e3989f21e54d3c7dc0e6e9dbce160e5a9c1a6be0e2943"
       url: "https://pub.dev"
     source: hosted
-<<<<<<< HEAD
     version: "0.6.16"
   timezone:
     dependency: transitive
@@ -1845,9 +1844,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.0"
-=======
-    version: "0.6.15"
->>>>>>> origin/Development
   typed_data:
     dependency: transitive
     description:
