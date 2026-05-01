@@ -58,10 +58,6 @@ final getGenreAllTracksProvider = Provider(
   (ref) => GetGenreAllTracks(ref.watch(genreRepositoryProvider)),
 );
 
-// ── Data providers ────────────────────────────────────────────────────────────
-// Each provider is autoDispose.family keyed by genreId, so each tab manages
-// its own independent async state and disposes when the tab is left.
-
 /// Fetches the full [GenreContent] bundle for the genre page.
 final genreContentProvider = FutureProvider.autoDispose
     .family<GenreContent, String>((ref, genreId) {

@@ -192,14 +192,13 @@ class SearchRemoteSourceImpl implements SearchRemoteSource {
                     as String? ??
                 ''
           : '';
-      final artworkUrl =
-          (map['cover_image'] as String?) ?? firstTrackCover; // ← changed
+      final artworkUrl = (map['cover_image'] as String?) ?? firstTrackCover;
       return <String, String>{
         'id': map['id'] as String? ?? '',
         'title': map['title'] as String? ?? '',
         'creator': owner['display_name'] as String? ?? '',
         'trackCount': (map['track_count'] as int? ?? 0).toString(),
-        'artworkUrl': artworkUrl, // ← changed
+        'artworkUrl': artworkUrl,
       };
     }).toList();
 

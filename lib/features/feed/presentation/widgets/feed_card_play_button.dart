@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../player/presentation/providers/player_provider.dart';
 
+/// A circular play button with an optional progress ring.
+///
+/// When [showProgress] is true, renders a [CircularProgressIndicator]
+/// around the play icon that reflects the current playback position
+/// from [playerStateProvider]. When false, the ring is always empty.
 class FeedCardPlayCircle extends ConsumerWidget {
   final bool showProgress;
   final double size;

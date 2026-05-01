@@ -38,7 +38,7 @@ class FeedListState extends ConsumerState<FeedList> {
     });
   }
 
-  // ─── Preview mode ────────────────────────────────────────────────────────
+  // Preview mode
 
   void _activatePreviewMode(Track track) {
     setState(() {
@@ -46,8 +46,6 @@ class FeedListState extends ConsumerState<FeedList> {
       _nowPlayingTrackId = null;
     });
 
-    // Always load — even if same track ID, the URL may be different
-    // (previewUrl vs streamUrl). Let the player handle deduplication.
     ref.read(playerStateProvider.notifier).loadAndPlayPreview(track);
   }
 
@@ -59,7 +57,7 @@ class FeedListState extends ConsumerState<FeedList> {
     }
   }
 
-  // ─── Bottom-info full play ───────────────────────────────────────────────
+  // Bottom-info full play
 
   /// Called by FeedCardBottomInfo when user taps title or play circle.
   /// Sets pending-expand so the sheet opens as soon as the player confirms
@@ -76,25 +74,23 @@ class FeedListState extends ConsumerState<FeedList> {
 
   void _tryExpandSheet({int attempts = 0}) {
     if (!mounted) return;
-    if (attempts > 20) return; // give up after ~400ms
+    if (attempts > 20) return;
 
     final notifier = playerSheetNotifier.value;
     if (notifier != null) {
       notifier();
-      // Schedule a second call slightly later in case the controller
-      // wasn't attached yet on the first call (first-track case)
+
       Future.delayed(const Duration(milliseconds: 120), () {
         if (mounted) notifier();
       });
     } else {
-      // Notifier not ready yet, retry next frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _tryExpandSheet(attempts: attempts + 1);
       });
     }
   }
 
-  // ─── Scroll while preview ────────────────────────────────────────────────
+  //Scroll while preview
 
   void _onPageChangedInPreviewMode(Track track) {
     // Just load and play the new track; preview mode stays active.
@@ -102,7 +98,7 @@ class FeedListState extends ConsumerState<FeedList> {
     // Keep _nowPlayingTrackId null — this is preview, not full play.
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
+  // Helpers
 
   Track _trackFrom(FeedItemEntity item, {bool preview = false}) => Track(
     id: item.track.id,
@@ -178,8 +174,6 @@ class FeedListState extends ConsumerState<FeedList> {
                 _trackFrom(items[index], preview: true),
               );
             } else if (_nowPlayingTrackId != null) {
-              // Scrolled away from a full-play card — keep audio playing
-              // but clear the "Now Playing" label since that card is gone.
               setState(() => _nowPlayingTrackId = null);
             }
           },
@@ -219,7 +213,7 @@ class FeedListState extends ConsumerState<FeedList> {
       );
     }
 
-    // ── Following tab ──
+    //Following tab
     final async = ref.watch(followingFeedProvider);
     return async.when(
       loading: () => const Center(

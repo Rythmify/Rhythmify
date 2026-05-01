@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// A styled tab bar for switching between the Discover and Following feeds.
+///
+/// Renders as a pill-shaped [TabBar] with a frosted highlight indicator,
+/// constrained to a fixed width so it floats centered over the feed content.
 class FeedTabBar extends StatelessWidget {
   final TabController controller;
 

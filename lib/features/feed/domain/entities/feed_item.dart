@@ -1,3 +1,4 @@
+/// Represents a feed item entity in the domain layer.
 class FeedItemEntity {
   final String id;
   final String type;
@@ -23,6 +24,7 @@ class FeedItemEntity {
   });
 }
 
+/// Represents feed user in the domain layer.
 class FeedUserEntity {
   final String id;
   final String username;
@@ -43,6 +45,7 @@ class FeedUserEntity {
   });
 }
 
+/// Represents feed track in the domain layer.
 class FeedTrackEntity {
   final String id;
   final String title;
@@ -71,6 +74,7 @@ class FeedTrackEntity {
   });
 }
 
+/// Represents  feed playlist in the domain layer.
 class FeedPlaylistEntity {
   final String id;
   final String title;

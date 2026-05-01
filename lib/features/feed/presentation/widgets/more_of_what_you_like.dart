@@ -5,6 +5,12 @@ import '../../../../core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'shimmers/playlist_card_shimmer.dart';
 
+/// Displays the "More of what you like" horizontal scrollable section
+/// on the home screen.
+///
+/// Watches [moreOfWhatYouLikeProvider] and renders a shimmer while loading,
+/// an error message on failure, or a list of [PlaylistSquareCard] widgets
+/// when data is available. Returns an empty widget if the list is empty.
 class MoreOfWhatYouLikeSection extends ConsumerWidget {
   const MoreOfWhatYouLikeSection({super.key});
 
@@ -64,6 +70,10 @@ class MoreOfWhatYouLikeSection extends ConsumerWidget {
   }
 }
 
+/// A square card representing a single track recommendation.
+///
+/// Displays the track cover image with the artist name below.
+/// Tapping navigates to the related tracks page for the given track [id].
 class PlaylistSquareCard extends StatelessWidget {
   final String artistName;
   final String imagePath;

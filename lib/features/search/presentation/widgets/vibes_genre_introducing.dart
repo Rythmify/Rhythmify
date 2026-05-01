@@ -7,6 +7,10 @@ import '../../../player/domain/entities/player_state.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import 'package:go_router/go_router.dart';
 
+/// Builds an image widget from a URL, asset path, or empty string.
+///
+/// Returns a grey placeholder container if [url] is empty, a network
+/// image if it starts with `http`, or an asset image otherwise.
 Widget _buildImage(
   String url, {
   required double width,
@@ -22,12 +26,21 @@ Widget _buildImage(
   return Image.asset(url, width: width, height: height, fit: fit);
 }
 
+/// Resolves an [ImageProvider] from a URL or asset path.
+///
+/// Falls back to a local placeholder asset if [url] is empty.
 ImageProvider _imageProvider(String url) {
   if (url.startsWith('http')) return NetworkImage(url);
   if (url.isNotEmpty) return AssetImage(url);
   return const AssetImage('assets/images/placeholder.png');
 }
 
+/// Displays the "Introducing" featured playlist section on the genre page.
+///
+/// Renders a two-half card: the top half shows a blurred cover background
+/// with the playlist name, description, and play/like controls; the bottom
+/// half lists up to two preview tracks via [TrackCard].
+/// Tapping the card navigates to the full playlist page.
 class IntroducingSectionWidget extends ConsumerWidget {
   final IntroducingSection introducing;
   const IntroducingSectionWidget({super.key, required this.introducing});
@@ -55,7 +68,6 @@ class IntroducingSectionWidget extends ConsumerWidget {
           height: topHalfHeight + bottomHalfHeight,
           child: Stack(
             children: [
-              // ── Top half: blurred cover background ─────────
               Positioned(
                 top: 0,
                 left: 0,
@@ -81,7 +93,6 @@ class IntroducingSectionWidget extends ConsumerWidget {
                 ),
               ),
 
-              // ── Bottom half: dark grey background ───────────
               Positioned(
                 top: topHalfHeight,
                 left: 0,
@@ -90,7 +101,6 @@ class IntroducingSectionWidget extends ConsumerWidget {
                 child: Container(color: const Color(0xFF1A1A1A)),
               ),
 
-              // ── Cover art ───────────────────────────────────
               Positioned(
                 top: 15,
                 left: 16,
@@ -104,7 +114,6 @@ class IntroducingSectionWidget extends ConsumerWidget {
                 ),
               ),
 
-              // ── Hero text + buttons ──────────────────────────
               Positioned(
                 top: 17,
                 left: 16 + coverSize + 16,
@@ -181,7 +190,6 @@ class IntroducingSectionWidget extends ConsumerWidget {
                 ),
               ),
 
-              // ── Track tiles (bottom half) ────────────────────
               Positioned(
                 top: topHalfHeight + 8,
                 left: 0,

@@ -38,7 +38,7 @@ class GenreAllTab extends ConsumerWidget {
         key: const Key('genre_all_list'),
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         children: [
-          // ── Trending ─────────────────────────────────────
+          //  Trending
           if (content.tracks.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,7 +83,7 @@ class GenreAllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Introducing ──────────────────────────────────
+          //Introducing
           if (content.playlists.isNotEmpty) ...[
             const Text(
               'Introducing',
@@ -95,7 +95,7 @@ class GenreAllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Playlists (first 4, grid) ────────────────────
+          // Playlists
           if (content.playlists.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,7 +140,7 @@ class GenreAllTab extends ConsumerWidget {
 
             const SizedBox(height: 24),
           ],
-          // ── Albums (first 4, grid) ───────────────────────
+          // Albums
           if (content.albums.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -186,7 +186,7 @@ class GenreAllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Profiles (horizontal scroll) ─────────────────
+          // Profiles
           if (content.artists.isNotEmpty) ...[
             const Text(
               'Profiles',
@@ -210,7 +210,7 @@ class GenreAllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Discover More Tracks ─────────────────────────
+          // Discover More Tracks
           if (content.tracks.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -256,7 +256,6 @@ class IntroducingWidget extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            // Uses [Image.network] for http URLs, [Image.asset] for local paths.
             child:
                 playlist.coverImage.isNotEmpty &&
                     playlist.coverImage.startsWith('http')

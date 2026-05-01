@@ -82,7 +82,7 @@ class GenrePage extends StatelessWidget {
                   bottom: 16,
                   left: 16,
                   child: Text(
-                    genreName, //  uses passed name directly
+                    genreName,
                     key: const Key('genre_title'),
                     style: const TextStyle(
                       color: Colors.white,

@@ -1,5 +1,6 @@
 import '../../../../core/domain/entities/track.dart';
 
+/// Represents a hot for you item in the domain layer.
 class HotForYou {
   final Track track;
   final String reason;
