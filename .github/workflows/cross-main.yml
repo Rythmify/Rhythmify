@@ -113,18 +113,18 @@ jobs:
           lcov --summary coverage/lcov.info 2>&1 | tee coverage/summary.txt
           echo "Coverage summary generated."
 
-      - name: Enforce 40% line coverage threshold
+      - name: Enforce 95% line coverage threshold
         run: |
           echo "Checking coverage threshold..."
           coverage=$(lcov --summary coverage/lcov.info 2>&1 | grep "lines" | grep -oP '[0-9]+\.[0-9]+(?=%)' | head -1)
           echo "Current line coverage: ${coverage}%"
-          result=$(awk "BEGIN { print (${coverage} >= 40) ? \"pass\" : \"fail\" }")
+          result=$(awk "BEGIN { print (${coverage} >= 95) ? \"pass\" : \"fail\" }")
           if [ "$result" = "fail" ]; then
-            echo "Coverage threshold not met — ${coverage}% is below the required 40%."
+            echo "Coverage threshold not met — ${coverage}% is below the required 95%."
             echo "Raise test coverage in lib/ before merging to main."
             exit 1
           fi
-          echo "Coverage threshold passed — ${coverage}% meets the required 40%."
+          echo "Coverage threshold passed — ${coverage}% meets the required 95%."
 
       - name: Upload coverage report
         if: always()
@@ -136,11 +136,34 @@ jobs:
             coverage/summary.txt
           retention-days: 7
 
-  # JOB 4 — Android release build
+  # JOB 4 — Flutter integration tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout cross-platform repo
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run Flutter integration tests
+        run: flutter test integration_test
+
+  # JOB 5 — Android release build
   build-android:
     name: Android Release Build
     runs-on: ubuntu-latest
-    needs: test
+    needs: integration-tests
 
     steps:
       - name: Checkout cross-platform repo
