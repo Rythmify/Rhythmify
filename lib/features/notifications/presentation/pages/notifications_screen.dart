@@ -6,6 +6,7 @@ import 'package:rythmify/core/theme/messaging_themes.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:rythmify/features/messaging/presentation/providers/get_track_details_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/track_by_comment_provider.dart';
 import 'package:rythmify/features/notifications/presentation/widgets/notification_tile.dart';
 
@@ -90,11 +91,12 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppTheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -115,7 +117,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Show all notifications',
                 selected: _filter == Filter.all,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.all);
                 },
               ),
@@ -125,7 +127,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Comments',
                 selected: _filter == Filter.comments,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.comments);
                 },
               ),
@@ -135,7 +137,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Likes',
                 selected: _filter == Filter.likes,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.likes);
                 },
               ),
@@ -145,7 +147,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Followings',
                 selected: _filter == Filter.followings,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.followings);
                 },
               ),
@@ -155,7 +157,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Reposts',
                 selected: _filter == Filter.reposts,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.reposts);
                 },
               ),
@@ -165,7 +167,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Reactions',
                 selected: _filter == Filter.reactions,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.reactions);
                 },
               ),
@@ -205,6 +207,18 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _emptyListMessage() {
+    String filterText = '';
+    if (_filter == Filter.comments) {
+      filterText = 'comments';
+    } else if (_filter == Filter.followings) {
+      filterText = 'follow requests';
+    } else if (_filter == Filter.likes) {
+      filterText = 'likes';
+    } else if (_filter == Filter.reactions) {
+      filterText = 'reactions';
+    } else if (_filter == Filter.reposts) {
+      filterText = 'reposts';
+    }
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -212,7 +226,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'You don\'t have any recent $_filter',
+              'You don\'t have any recent $filterText',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -223,7 +237,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             const SizedBox(height: 8),
             const Text(
               'Switch to showing all to see recent notifications',
-              style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+              style: TextStyle(color: Colors.grey, fontSize: 16, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
@@ -240,7 +254,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 ),
                 child: const Text(
                   'Show all notifications',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -350,7 +364,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
               ),
             );
           }
-          if (index >= items.length) return const SizedBox(height: 80);
+          if (index >= items.length) return const SizedBox(height: 150);
           final item = items[index];
           if (item is String) {
             return Padding(
@@ -373,6 +387,15 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                     .watch(trackByCommentProvider(notification.resourceId!))
                     .value
               : null;
+          final likeRepostEmbed =
+              (notification.type == NotificationType.like ||
+                      notification.type == NotificationType.repost) &&
+                  notification.resourceType == ResourceType.track &&
+                  notification.resourceId != null
+              ? ref
+                    .watch(getTrackDetailsProvider(notification.resourceId!))
+                    .value
+              : null;
           final serverIsLiked = commentData?.isLikedByMe ?? false;
           final isCommentLiked =
               state.likedCommentIds.contains(notification.resourceId)
@@ -382,7 +405,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             key: ValueKey(notification.id),
             notification: notification,
             onTap: () => _onTap(notification, commentData?.embed?.embedId),
-            trackEmbed: commentData?.embed,
+            trackEmbed: commentData?.embed ?? likeRepostEmbed,
             isFollowing: followState[notification.actorId] ?? false,
             onFollowTap: () {
               ref

@@ -25,6 +25,9 @@ class DataSourcesSockets {
   Function(Map<String, dynamic>)? _onUserBlocked;
   Function(Map<String, dynamic>)? _onNotificationCreated;
   Function(Map<String, dynamic>)? _onNotificationRead;
+  // Fired whenever inbox data may have changed (new notification, user:blocked).
+  // Kept separate so it survives clearConversationListeners().
+  VoidCallback? _onConversationUpdated;
 
   void setOnReconnectedToRoom(Function() callback) {
     _onReconnectedToRoom = callback;
@@ -95,6 +98,12 @@ class DataSourcesSockets {
     _socket!.onConnect((_) {
       debugPrint('✅ Socket connected | id=${_socket?.id}');
       _retryTimer?.cancel();
+      // Subscribe to the user's notification room on every (re)connect.
+      // The backend auto-joins via registerNotificationHandlers, but emitting
+      // this is a defensive fallback for cases where that handler fires after
+      // the connect event.
+      _socket!.emit('notification:subscribe');
+      debugPrint('📬 notification:subscribe emitted');
       // Re-join the conversation room that was active before the rebuild.
       if (_currentConversationId != null) {
         debugPrint('🔁 onConnect: rejoining room $_currentConversationId');
@@ -166,6 +175,9 @@ class DataSourcesSockets {
     if (_onNotificationCreated != null) {
       s.off('notification:created');
       s.on('notification:created', (data) {
+        debugPrint(
+          '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
+        );
         _onNotificationCreated!(data as Map<String, dynamic>);
       });
     }
@@ -173,6 +185,9 @@ class DataSourcesSockets {
     if (_onNotificationRead != null) {
       s.off('notification:read');
       s.on('notification:read', (data) {
+        debugPrint(
+          '🔕 RAW notification:read | type=${data.runtimeType} | data=$data',
+        );
         _onNotificationRead!(data as Map<String, dynamic>);
       });
     }
@@ -286,8 +301,14 @@ class DataSourcesSockets {
     _onNotificationCreated = callback;
     _socket?.off('notification:created');
     _socket?.on('notification:created', (data) {
+      debugPrint(
+        '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
+      );
       callback(data as Map<String, dynamic>);
     });
+    debugPrint(
+      '👂 onNotificationCreated listener registered | socket=${_socket?.id}',
+    );
   }
 
   void onNotificationRead(Function(Map<String, dynamic>) callback) {

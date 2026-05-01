@@ -73,41 +73,46 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('New Message'), centerTitle: false),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SearchBarWidget(
-              key: const Key('search_screen_new_message_search_bar'),
-              controller: controller,
-              onChanged: (value) {
-                ref.read(queryProvider.notifier).state = value.trim();
-              },
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 150),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SearchBarWidget(
+                key: const Key('search_screen_new_message_search_bar'),
+                controller: controller,
+                onChanged: (value) {
+                  ref.read(queryProvider.notifier).state = value.trim();
+                },
+              ),
             ),
-          ),
-          Expanded(
-            child: query.isEmpty
-                ? followings.when(
-                    data: (_) => followingList.isEmpty
-                        ? Text(
-                            'Start typing to sind artists and fans on SoundCloud',
-                            key: const Key('messaging_empty_Search_users_text'),
-                            textAlign: TextAlign.center,
-                            style: MessagingThemes
-                                .inboxEmptyMsg, //same theme as the emptyInbox msg
-                          )
-                        : SearchBody(users: followingList),
-                    error: (e, _) => Center(child: Text(e.toString())),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                  )
-                : searched.isEmpty && searchedUsers.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : searched.isEmpty
-                ? const SizedBox.shrink()
-                : SearchBody(users: searched),
-          ),
-        ],
+            Expanded(
+              child: query.isEmpty
+                  ? followings.when(
+                      data: (_) => followingList.isEmpty
+                          ? Text(
+                              'Start typing to sind artists and fans on SoundCloud',
+                              key: const Key(
+                                'messaging_empty_Search_users_text',
+                              ),
+                              textAlign: TextAlign.center,
+                              style: MessagingThemes
+                                  .inboxEmptyMsg, //same theme as the emptyInbox msg
+                            )
+                          : SearchBody(users: followingList),
+                      error: (e, _) => Center(child: Text(e.toString())),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                    )
+                  : searched.isEmpty && searchedUsers.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : searched.isEmpty
+                  ? const SizedBox.shrink()
+                  : SearchBody(users: searched),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,7 +4,8 @@ import 'package:rythmify/features/settings/domain/entities/privacy_settings_enti
 abstract class SettingsRepoInterface {
   Future<PrivacySettingsEntity> getPrivacySettings();
   Future<PrivacySettingsEntity> updatePrivacySettings(
-    PrivacySettingsEntity privacy,
+    PrivacySettingsEntity previous,
+    PrivacySettingsEntity updated,
   );
   Future<NotificationPreferencesEntity> getNotificationPreferences();
   Future<NotificationPreferencesEntity> updateNotificationPreferences(

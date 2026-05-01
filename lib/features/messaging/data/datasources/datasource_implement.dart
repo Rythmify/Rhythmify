@@ -259,24 +259,25 @@ class DatasourceImplement implements DatasourceInterface {
         dio.get(ApiEndPoints.getMyLikedPlaylists()),
         dio.get(
           '/playlists',
-          queryParameters: {'mine': true, 'filter': 'created'},
+          queryParameters: {'mine': true, 'filter': 'created', 'limit': 50},
         ),
       ]);
-      final List likedData = response[0].data['data']['items'] as List;
-      final List createdData = response[1].data['data']['items'] as List;
+      final List likedData = response[0].data['data']['items'] as List? ?? [];
+      final List createdData = response[1].data['data']['items'] as List? ?? [];
 
       final seen = <String>{};
       final merged = <SharedEmbedModel>[];
       for (final e in [...likedData, ...createdData]) {
-        final id = (e['playlist_id'] ?? e['id']) as String?;
-        if (id != null && seen.add(id)) {
+        final id = (e['id'] ?? e['playlist_id']) as String?;
+        final name = (e['name'] as String?) ?? (e['title'] as String?) ?? '';
+        if (id != null && name.isNotEmpty && seen.add(id)) {
           merged.add(
             SharedEmbedModel(
               embedId: id,
               embedType: 'playlist',
-              embedName: e['name'],
+              embedName: name,
               artistName: null,
-              thumbnailUrl: e['cover_image'],
+              thumbnailUrl: e['cover_image'] as String?,
             ),
           );
         }

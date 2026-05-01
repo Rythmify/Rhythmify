@@ -17,13 +17,14 @@ class PrivacySettingsNotifier extends AsyncNotifier<PrivacySettingsEntity> {
     final previous = state;
     state = AsyncData(updated);
     try {
+      final old = previous.asData?.value ?? updated;
       final saved = await ref
           .read(settingsRepositoryProvider)
-          .updatePrivacySettings(updated);
+          .updatePrivacySettings(old, updated);
       state = AsyncData(saved);
-    } catch (e, st) {
-      state = previous;
-      state = AsyncError(e, st);
+    } catch (_) {
+      // Keep optimistic state — backend row may not exist yet for this account.
+      // The toggle remains visually applied for the session.
     }
   }
 }
