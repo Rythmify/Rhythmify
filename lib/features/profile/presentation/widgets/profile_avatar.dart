@@ -29,6 +29,12 @@ class ProfileAvatar extends StatelessWidget {
   /// Defaults to `false`.
   final bool showCameraIcon;
 
+  /// The width of the border around the avatar.
+  final double borderWidth;
+
+  /// The color of the border around the avatar.
+  final Color borderColor;
+
   /// Callback invoked when the avatar is tapped.
   ///
   /// Only active when wrapped in a [GestureDetector].
@@ -40,6 +46,8 @@ class ProfileAvatar extends StatelessWidget {
     this.avatarUrl,
     this.radius = 60,
     this.showCameraIcon = false,
+    this.borderWidth = 0,
+    this.borderColor = Colors.transparent,
     this.onTap,
   });
 
@@ -48,18 +56,44 @@ class ProfileAvatar extends StatelessWidget {
     return GestureDetector(
       key: const Key('profile_avatar_gesture'),
       onTap: onTap,
-      child: Stack(
-        children: [
-          // Use CachedNetworkImage for better error handling
-          avatarUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: avatarUrl!,
-                  imageBuilder: (context, imageProvider) => CircleAvatar(
-                    radius: radius,
-                    backgroundColor: AppTheme.surface,
-                    backgroundImage: imageProvider,
-                  ),
-                  placeholder: (context, url) => CircleAvatar(
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: borderWidth > 0
+              ? Border.all(color: borderColor, width: borderWidth)
+              : null,
+        ),
+        child: Stack(
+          children: [
+            // Use CachedNetworkImage for better error handling
+            avatarUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl!,
+                    imageBuilder: (context, imageProvider) => CircleAvatar(
+                      radius: radius,
+                      backgroundColor: AppTheme.surface,
+                      backgroundImage: imageProvider,
+                    ),
+                    placeholder: (context, url) => CircleAvatar(
+                      radius: radius,
+                      backgroundColor: AppTheme.surface,
+                      child: Icon(
+                        Icons.person,
+                        size: radius,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => CircleAvatar(
+                      radius: radius,
+                      backgroundColor: AppTheme.surface,
+                      child: Icon(
+                        Icons.person,
+                        size: radius,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  )
+                : CircleAvatar(
                     radius: radius,
                     backgroundColor: AppTheme.surface,
                     child: Icon(
@@ -68,44 +102,26 @@ class ProfileAvatar extends StatelessWidget {
                       color: AppTheme.textSecondary,
                     ),
                   ),
-                  errorWidget: (context, url, error) => CircleAvatar(
-                    radius: radius,
-                    backgroundColor: AppTheme.surface,
-                    child: Icon(
-                      Icons.person,
-                      size: radius,
-                      color: AppTheme.textSecondary,
-                    ),
+            // Camera icon overlay for edit mode
+            if (showCameraIcon)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.surface,
+                    shape: BoxShape.circle,
                   ),
-                )
-              : CircleAvatar(
-                  radius: radius,
-                  backgroundColor: AppTheme.surface,
-                  child: Icon(
-                    Icons.person,
-                    size: radius,
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 16,
                     color: AppTheme.textSecondary,
                   ),
                 ),
-          // Camera icon overlay for edit mode
-          if (showCameraIcon)
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: AppTheme.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 16,
-                  color: AppTheme.textSecondary,
-                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
