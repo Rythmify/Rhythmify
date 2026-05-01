@@ -178,8 +178,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         serverClientId:
             '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
       );
-
-      // Sign out first to ensure account picker shows
       await googleSignIn.signOut();
 
       late GoogleSignInAccount? googleUser;
@@ -205,8 +203,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
           'Failed to get Google ID token. Device may not support Google Sign-In.',
         );
       }
-
-      // For Firebase integration (optional - can remove if not needed)
       try {
         final credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
@@ -217,9 +213,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         debugPrint('Firebase auth exception: $e');
         throw Exception('Firebase authentication failed: ${e.message}');
       }
-
-      // Send the Google OAuth ID token to backend
-      // This is what the backend validates with google-auth-library
       final response = await client.dio.post(
         '/auth/google',
         data: {'id_token': idToken, 'platform': 'mobile'},
@@ -394,8 +387,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       //    the backend first since GET /auth/oauth/github is itself a redirect.
       final baseUrl = client.dio.options.baseUrl;
       final authUrl = '$baseUrl/auth/oauth/github';
-
-      // 2. Open browser — blocks until rythmify://oauth?code=...&state=... fires
       late String result;
       try {
         result = await FlutterWebAuth2.authenticate(

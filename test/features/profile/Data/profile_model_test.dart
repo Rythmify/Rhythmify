@@ -50,4 +50,54 @@ void main() {
     expect(model.followersCount, 3);
     expect(model.followingCount, 2);
   });
+
+  test('_readCount parses doubles and strings', () {
+    final model1 = ProfileModel.fromJson({
+      'id': 'u1',
+      'display_name': 'User',
+      'followers_count': 3.7,
+      'following_count': '5',
+    });
+
+    expect(model1.followersCount, 3);
+    expect(model1.followingCount, 5);
+  });
+
+  test('_readCount falls back to secondary key', () {
+    final model = ProfileModel.fromJson({
+      'id': 'u1',
+      'display_name': 'User',
+      'followersCount': 10,
+      'followingCount': 20,
+    });
+
+    expect(model.followersCount, 10);
+    expect(model.followingCount, 20);
+  });
+
+  test('_readCount treats list length as count', () {
+    final model = ProfileModel.fromJson({
+      'id': 'u1',
+      'display_name': 'User',
+      'followers_count': [1, 2, 3, 4],
+      'following_count': ['a', 'b'],
+    });
+
+    expect(model.followersCount, 4);
+    expect(model.followingCount, 2);
+  });
+
+  test('fromJson maps all social URLs with fallback keys', () {
+    final model = ProfileModel.fromJson({
+      'id': 'u1',
+      'display_name': 'User',
+      'instagramUrl': 'ig-url',
+      'facebookUrl': 'fb-url',
+      'githubUrl': 'gh-url',
+    });
+
+    expect(model.instagramUrl, 'ig-url');
+    expect(model.facebookUrl, 'fb-url');
+    expect(model.githubUrl, 'gh-url');
+  });
 }
