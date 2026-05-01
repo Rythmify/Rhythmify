@@ -91,10 +91,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Future.microtask(() {
-      if (!mounted) return;
-      _profileNotifier.loadProfile(userId: _resolvedUserId);
-    });
+    
   }
 
   @override
@@ -223,23 +220,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(_resolvedUserId));
 
-    ref.listen(
-      _resolvedUserId == 'me'
-          ? ownProfileProvider
-          : publicProfileProvider(_resolvedUserId),
-      (previous, next) {
-        if (previous is ProfileLoaded && next is ProfileLoaded) {
-          if (previous.followStatus != next.followStatus ||
-              previous.isBlocked != next.isBlocked) {
-            Future.microtask(() {
-              if (mounted) {
-                _profileNotifier.loadProfile(userId: _resolvedUserId);
-              }
-            });
-          }
-        }
-      },
-    );
 
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
