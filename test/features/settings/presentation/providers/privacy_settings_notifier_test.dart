@@ -55,7 +55,7 @@ void main() {
     });
 
     group('save', () {
-      test('optimistically applies updated entity then commits server response', () async {
+      test('optimistically applies updated entity and keeps it after confirmed patch', () async {
         when(() => mockRepo.getPrivacySettings())
             .thenAnswer((_) async => tPrivacyEntity);
 
@@ -74,8 +74,11 @@ void main() {
         await container.read(privacySettingsProvider.future);
         await container.read(privacySettingsProvider.notifier).save(updated);
 
+        // Optimistic state is kept — server response is NOT used to overwrite state.
+        // This prevents fields absent from the PATCH response (defaulted by fromJson)
+        // from reverting toggles the user just set.
         final state = container.read(privacySettingsProvider);
-        expect(state.value, serverResponse);
+        expect(state.value, updated);
         verify(() => mockRepo.updatePrivacySettings(any(), any())).called(1);
       });
 

@@ -18,13 +18,15 @@ class PrivacySettingsNotifier extends AsyncNotifier<PrivacySettingsEntity> {
     state = AsyncData(updated);
     try {
       final old = previous.asData?.value ?? updated;
-      final saved = await ref
+      await ref
           .read(settingsRepositoryProvider)
           .updatePrivacySettings(old, updated);
-      state = AsyncData(saved);
+      // Keep optimistic state — server confirmed the patch.
+      // Do NOT overwrite with the server response: fields absent from the
+      // PATCH response are defaulted by fromJson and would silently revert
+      // toggles the user just set (e.g. show_as_top_fan flipping back to true).
     } catch (_) {
       // Keep optimistic state — backend row may not exist yet for this account.
-      // The toggle remains visually applied for the session.
     }
   }
 }

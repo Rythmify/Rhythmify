@@ -62,19 +62,6 @@ class SocialSettingsScreen extends ConsumerWidget {
                         .set(value);
                   },
                 ),
-                SwitchTileWidget(
-                  key: const Key('show_activities_tile'),
-                  title:
-                      'Show my activities in social discovery playlists and modules',
-                  subtitle:
-                      "Your Likes, Reactions and other engagement may be shown to other users in discovery features such as 'Liked By' playlists or update feeds. Turning this off won't hide your Likes on your profile or tracks.",
-                  initSwitchValue: data.showActivitiesInDiscovery,
-                  onSwitchChanged: (value) {
-                    ref
-                        .read(privacySettingsProvider.notifier)
-                        .save(data.copyWith(showActivitiesInDiscovery: value));
-                  },
-                ),
                 const SizedBox(height: 2),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
