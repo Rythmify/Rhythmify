@@ -1139,6 +1139,7 @@ void main() {
 
       when(
         () => mockRepository.deleteAvatar(),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(
@@ -1179,6 +1180,7 @@ void main() {
 
       when(
         () => mockRepository.deleteCoverPhoto(),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(
@@ -1206,6 +1208,7 @@ void main() {
 
       when(
         () => mockRepository.followUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.followUser(userId: 'user-002');
@@ -1251,6 +1254,7 @@ void main() {
 
       when(
         () => mockRepository.unfollowUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.unfollowUser(userId: 'user-001');
@@ -1283,6 +1287,7 @@ void main() {
 
       when(
         () => mockRepository.unfollowUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.unfollowUser(userId: 'user-002');
@@ -1386,6 +1391,7 @@ void main() {
 
       when(
         () => mockRepository.unblockUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(

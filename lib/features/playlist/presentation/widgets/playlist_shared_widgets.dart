@@ -527,9 +527,9 @@ class TrackTileFromTrack extends ConsumerWidget {
               onTap: () {
                 Navigator.of(context).pop();
                 ref.read(queueStateProvider.notifier).addToQueueLast(track);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Added to Queue')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Added to Queue')));
               },
             ),
             OptionSheetTile(

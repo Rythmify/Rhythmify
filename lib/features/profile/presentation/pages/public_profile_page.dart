@@ -430,8 +430,12 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         key: const Key('public_profile_shuffle_gesture'),
                         onTap: () {
                           if (state.uploadedTracks.isNotEmpty) {
-                            final shuffled = List<Track>.from(state.uploadedTracks)..shuffle();
-                            ref.read(queueStateProvider.notifier).playQueue(
+                            final shuffled = List<Track>.from(
+                              state.uploadedTracks,
+                            )..shuffle();
+                            ref
+                                .read(queueStateProvider.notifier)
+                                .playQueue(
                                   tracks: shuffled,
                                   initialIndex: 0,
                                   context: QueueContext(
@@ -452,7 +456,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                         key: const Key('public_profile_play_button'),
                         onTap: () {
                           if (state.uploadedTracks.isNotEmpty) {
-                            ref.read(queueStateProvider.notifier).playQueue(
+                            ref
+                                .read(queueStateProvider.notifier)
+                                .playQueue(
                                   tracks: state.uploadedTracks,
                                   initialIndex: 0,
                                   context: QueueContext(
@@ -467,7 +473,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.3,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -668,13 +676,12 @@ class _ProfileSection extends ConsumerWidget {
                 _ => QueueSource.unknown,
               };
 
-              ref.read(queueStateProvider.notifier).playQueue(
+              ref
+                  .read(queueStateProvider.notifier)
+                  .playQueue(
                     tracks: tracks,
                     initialIndex: index,
-                    context: QueueContext(
-                      type: type,
-                      targetUserId: userId,
-                    ),
+                    context: QueueContext(type: type, targetUserId: userId),
                   );
             },
           );

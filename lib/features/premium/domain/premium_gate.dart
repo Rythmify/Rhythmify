@@ -1,3 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 /// A UI-level helper class responsible for handling subscription-related
 /// access restrictions in a centralized way.
 ///
@@ -32,10 +37,6 @@
 /// - This class does NOT perform API calls
 /// - It is strictly a UI + error interpretation layer
 /// - Keeps feature modules free from duplicated subscription logic
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PREMIUM GATE

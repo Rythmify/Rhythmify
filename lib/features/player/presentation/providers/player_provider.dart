@@ -8,21 +8,20 @@ import 'player_dependency_providers.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
 
 /// Provides the current [AppPlayerState] and exposes methods to control playback.
-final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(()
-  {
+final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
+  () {
     return PlayerNotifier();
   },
 );
 
 ///  state strictly for the UI to track the seek bar while dragging
-final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(()
-  {
+final seekDragPositionProvider = NotifierProvider<SeekDragNotifier, Duration?>(
+  () {
     return SeekDragNotifier();
   },
 );
 
-class SeekDragNotifier extends Notifier<Duration?>
-{
+class SeekDragNotifier extends Notifier<Duration?> {
   @override
   Duration? build() => null;
 
@@ -46,7 +45,6 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   final List<Track> _queue = [];
   int _currentIndex = 0;
 
-
   @override
   AppPlayerState build() {
     final getStreamUseCase = ref.read(getPlayerStateStreamUseCaseProvider);
@@ -56,25 +54,23 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
 
     // Listen to the domain stream and update the presentation state.
     final subscription = getStreamUseCase.call().listen((newState) {
-
       if (!ref.mounted) return;
 
       final oldTrackId = state.currentTrack?.id;
       final newTrackId = newState.currentTrack?.id;
 
       // If the UI is actively dragging, preserve the frozen position in state.
-      if (_isDragging){
+      if (_isDragging) {
         state = newState.copyWith(position: state.position);
-      }
-      else {
-
-        final bool suppressRecentLocalSeek =_recentLocalSeek != null &&
-            DateTime.now().difference(_recentLocalSeek!) < const Duration(milliseconds: 600);
+      } else {
+        final bool suppressRecentLocalSeek =
+            _recentLocalSeek != null &&
+            DateTime.now().difference(_recentLocalSeek!) <
+                const Duration(milliseconds: 600);
 
         if (suppressRecentLocalSeek) {
           state = newState.copyWith(position: state.position);
-        }
-        else {
+        } else {
           state = newState;
         }
       }
@@ -90,8 +86,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // Sync stopwatch with playing status
       if (newState.status == PlayerStatus.playing) {
         if (!_sessionStopwatch.isRunning) _sessionStopwatch.start();
-      }
-      else {
+      } else {
         if (_sessionStopwatch.isRunning) _sessionStopwatch.stop();
       }
 
@@ -150,8 +145,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   Future<void> loadAndPlayQueue(
     List<Track> tracks, {
     int initialIndex = 0,
-  }) async
-  {
+  }) async {
     // 1. Initiate playback for the first track to get the URL and increment count
     final targetTrack = tracks[initialIndex];
     final updatedTracks = List<Track>.from(tracks);
@@ -199,8 +193,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// Appends [track] to the end of the current queue.
   /// If nothing is playing, starts a new queue with this track.
   Future<void> addToQueueLast(Track track) async {
-    if (state.currentTrack == null)
-    {
+    if (state.currentTrack == null) {
       await loadAndPlayQueue([track]);
       return;
     }
@@ -211,14 +204,12 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
           .read(initiatePlaybackUseCaseProvider)
           .call(track.id);
       resolved = track.copyWith(streamUrl: url);
-    }
-    catch (_) {}
+    } catch (_) {}
     _queue.add(resolved);
     await ref
         .read(loadQueueUseCaseProvider)
         .call(List<Track>.from(_queue), initialIndex: _currentIndex);
   }
-
 
   /// Starts playback immediately with partial info and fetches full details in the background.
   Future<void> playOptimistic(Track initialTrack) async {
@@ -228,10 +219,11 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       streamUrl = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(initialTrack.id);
-    }
-    catch (_) {}
+    } catch (_) {}
 
-    final trackToPlay = streamUrl != null ? initialTrack.copyWith(streamUrl: streamUrl) : initialTrack;
+    final trackToPlay = streamUrl != null
+        ? initialTrack.copyWith(streamUrl: streamUrl)
+        : initialTrack;
 
     await loadAndPlayQueue([trackToPlay]);
     _updateTrackInBackground(initialTrack.id);

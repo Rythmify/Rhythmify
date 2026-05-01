@@ -24,19 +24,29 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   Widget build(BuildContext context) {
     // 1. SELECT only the parts of the queue state we need for structural changes.
     // This prevents position ticks from triggering a full rebuild of the screen.
-    final hasCurrent = ref.watch(queueStateProvider.select((s) => s.currentTrack != null));
-    final isShuffled = ref.watch(queueStateProvider.select((s) => s.isShuffled));
-    final isLoadingRecs = ref.watch(queueStateProvider.select((s) => s.isLoadingRecommendations));
+    final hasCurrent = ref.watch(
+      queueStateProvider.select((s) => s.currentTrack != null),
+    );
+    final isShuffled = ref.watch(
+      queueStateProvider.select((s) => s.isShuffled),
+    );
+    final isLoadingRecs = ref.watch(
+      queueStateProvider.select((s) => s.isLoadingRecommendations),
+    );
 
     // 2. Memoize the lists so we don't re-filter on every frame.
     final history = ref.watch(queueStateProvider.select((s) => s.history));
     final current = ref.watch(queueStateProvider.select((s) => s.currentTrack));
-    final manualUpcoming = ref.watch(queueStateProvider.select(
-      (s) => s.upcomingTracks.where((t) => !t.isRecommended).toList()
-    ));
-    final recommended = ref.watch(queueStateProvider.select(
-      (s) => s.upcomingTracks.where((t) => t.isRecommended).toList()
-    ));
+    final manualUpcoming = ref.watch(
+      queueStateProvider.select(
+        (s) => s.upcomingTracks.where((t) => !t.isRecommended).toList(),
+      ),
+    );
+    final recommended = ref.watch(
+      queueStateProvider.select(
+        (s) => s.upcomingTracks.where((t) => t.isRecommended).toList(),
+      ),
+    );
 
     if (!hasCurrent && manualUpcoming.isEmpty && history.isEmpty) {
       return Scaffold(
@@ -63,9 +73,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
             key: const Key('player_queue_shuffle_icon_button'),
             icon: Icon(
               isShuffled ? Icons.shuffle_on : Icons.shuffle,
-              color: isShuffled
-                  ? AppTheme.primaryBrand
-                  : Colors.white,
+              color: isShuffled ? AppTheme.primaryBrand : Colors.white,
             ),
             onPressed: () {
               ref.read(queueStateProvider.notifier).toggleShuffle();
@@ -256,20 +264,26 @@ class _QueueTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: track.coverImage != null
                     ? (track.coverImage!.startsWith('http')
-                        ? Image.network(
-                            track.coverImage!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.music_note,
-                                    color: Colors.grey, size: 20),
-                          )
-                        : Image.asset(
-                            track.coverImage!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.music_note,
-                                    color: Colors.grey, size: 20),
-                          ))
+                          ? Image.network(
+                              track.coverImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.music_note,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                            )
+                          : Image.asset(
+                              track.coverImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.music_note,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                            ))
                     : const Icon(
                         Icons.music_note,
                         color: Colors.grey,

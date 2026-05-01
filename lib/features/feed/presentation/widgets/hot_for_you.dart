@@ -77,18 +77,29 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
   @override
   Widget build(BuildContext context) {
     // Only rebuild when the status or track ID changes, NOT on every position tick.
-    final isPlaying = ref.watch(playerStateProvider.select((s) => s.status == PlayerStatus.playing));
-    final currentTrackId = ref.watch(playerStateProvider.select((s) => s.currentTrack?.id));
+    final isPlaying = ref.watch(
+      playerStateProvider.select((s) => s.status == PlayerStatus.playing),
+    );
+    final currentTrackId = ref.watch(
+      playerStateProvider.select((s) => s.currentTrack?.id),
+    );
     final isThisTrack = currentTrackId == widget.track.id;
 
     // Listen to changes to start/stop animation without rebuilding the whole card
-    ref.listen(playerStateProvider.select((s) => s.status == PlayerStatus.playing && s.currentTrack?.id == widget.track.id), (previous, next) {
-      if (next) {
-        _controller.repeat();
-      } else {
-        _controller.stop();
-      }
-    });
+    ref.listen(
+      playerStateProvider.select(
+        (s) =>
+            s.status == PlayerStatus.playing &&
+            s.currentTrack?.id == widget.track.id,
+      ),
+      (previous, next) {
+        if (next) {
+          _controller.repeat();
+        } else {
+          _controller.stop();
+        }
+      },
+    );
 
     // Handle initial state
     if (isPlaying && isThisTrack) {

@@ -297,7 +297,9 @@ class QueueNotifier extends Notifier<AppQueueState> {
     final int hardwareNewIndex = state.history.length + 1 + newIndex;
 
     // Seamless hardware sync using moveTrack (prevents playback restart)
-    ref.read(playerStateProvider.notifier).moveTrack(hardwareOldIndex, hardwareNewIndex);
+    ref
+        .read(playerStateProvider.notifier)
+        .moveTrack(hardwareOldIndex, hardwareNewIndex);
   }
 
   /// Adds a single track immediately after the current playing track.
@@ -367,8 +369,9 @@ class QueueNotifier extends Notifier<AppQueueState> {
     }).toList();
 
     final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
-    final firstRecIndex =
-        currentUpcoming.indexWhere((item) => item.isRecommended);
+    final firstRecIndex = currentUpcoming.indexWhere(
+      (item) => item.isRecommended,
+    );
 
     if (firstRecIndex == -1) {
       currentUpcoming.addAll(newItems);

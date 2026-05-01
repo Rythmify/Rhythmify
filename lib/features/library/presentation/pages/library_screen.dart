@@ -383,7 +383,9 @@ class _RecentlyPlayedItem extends ConsumerWidget {
     return GestureDetector(
       key: Key('library_recently_played_item_${entry.trackId}_gesture'),
       onTap: () {
-        ref.read(queueStateProvider.notifier).playQueue(
+        ref
+            .read(queueStateProvider.notifier)
+            .playQueue(
               tracks: allTracks,
               initialIndex: index,
               context: const QueueContext(type: QueueSource.listeningHistory),

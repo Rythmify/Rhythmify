@@ -75,9 +75,11 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   @override
   Widget build(BuildContext context) {
     ref.watch(notificationSocketProvider);
-    // ONLY watch the track ID to decide if we show the player sheet. 
+    // ONLY watch the track ID to decide if we show the player sheet.
     // Do NOT watch the whole state which changes every millisecond with the position.
-    final hasTrack = ref.watch(playerStateProvider.select((s) => s.currentTrack != null));
+    final hasTrack = ref.watch(
+      playerStateProvider.select((s) => s.currentTrack != null),
+    );
 
     final screenHeight = MediaQuery.of(context).size.height;
 
