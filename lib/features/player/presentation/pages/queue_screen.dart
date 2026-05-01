@@ -22,17 +22,33 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final queueState = ref.watch(queueStateProvider);
+    // 1. SELECT only the parts of the queue state we need for structural changes.
+    // This prevents position ticks from triggering a full rebuild of the screen.
+    final hasCurrent = ref.watch(
+      queueStateProvider.select((s) => s.currentTrack != null),
+    );
+    final isShuffled = ref.watch(
+      queueStateProvider.select((s) => s.isShuffled),
+    );
+    final isLoadingRecs = ref.watch(
+      queueStateProvider.select((s) => s.isLoadingRecommendations),
+    );
 
-    final history = queueState.history;
-    final current = queueState.currentTrack;
-    final allUpcoming = queueState.upcomingTracks;
+    // 2. Memoize the lists so we don't re-filter on every frame.
+    final history = ref.watch(queueStateProvider.select((s) => s.history));
+    final current = ref.watch(queueStateProvider.select((s) => s.currentTrack));
+    final manualUpcoming = ref.watch(
+      queueStateProvider.select(
+        (s) => s.upcomingTracks.where((t) => !t.isRecommended).toList(),
+      ),
+    );
+    final recommended = ref.watch(
+      queueStateProvider.select(
+        (s) => s.upcomingTracks.where((t) => t.isRecommended).toList(),
+      ),
+    );
 
-    // Split upcoming into manual vs auto-discovery
-    final manualUpcoming = allUpcoming.where((t) => !t.isRecommended).toList();
-    final recommended = allUpcoming.where((t) => t.isRecommended).toList();
-
-    if (current == null && allUpcoming.isEmpty && history.isEmpty) {
+    if (!hasCurrent && manualUpcoming.isEmpty && history.isEmpty) {
       return Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
@@ -56,10 +72,8 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
           IconButton(
             key: const Key('player_queue_shuffle_icon_button'),
             icon: Icon(
-              queueState.isShuffled ? Icons.shuffle_on : Icons.shuffle,
-              color: queueState.isShuffled
-                  ? AppTheme.primaryBrand
-                  : Colors.white,
+              isShuffled ? Icons.shuffle_on : Icons.shuffle,
+              color: isShuffled ? AppTheme.primaryBrand : Colors.white,
             ),
             onPressed: () {
               ref.read(queueStateProvider.notifier).toggleShuffle();
@@ -97,7 +111,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
           ],
 
           // --- CURRENT SECTION ---
-          if (current != null) ...[
+          if (hasCurrent && current != null) ...[
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -183,6 +197,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                 final item = recommended[index];
                 return _QueueTile(
                   item: item,
+                  showDragHandle: false,
                   onTap: () {
                     ref
                         .read(queueStateProvider.notifier)
@@ -193,7 +208,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
             ),
           ],
 
-          if (queueState.isLoadingRecommendations)
+          if (isLoadingRecs)
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(16.0),
@@ -217,12 +232,14 @@ class _QueueTile extends StatelessWidget {
   final QueueItem item;
   final bool isActive;
   final bool isHistory;
+  final bool showDragHandle;
   final VoidCallback onTap;
 
   const _QueueTile({
     required this.item,
     this.isActive = false,
     this.isHistory = false,
+    this.showDragHandle = true,
     required this.onTap,
   });
 
@@ -245,10 +262,28 @@ class _QueueTile extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child:
-                    track.coverImage != null &&
-                        track.coverImage!.startsWith('http')
-                    ? Image.network(track.coverImage!, fit: BoxFit.cover)
+                child: track.coverImage != null
+                    ? (track.coverImage!.startsWith('http')
+                          ? Image.network(
+                              track.coverImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.music_note,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                            )
+                          : Image.asset(
+                              track.coverImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.music_note,
+                                    color: Colors.grey,
+                                    size: 20,
+                                  ),
+                            ))
                     : const Icon(
                         Icons.music_note,
                         color: Colors.grey,
@@ -297,7 +332,7 @@ class _QueueTile extends StatelessWidget {
               ),
 
             // --- Drag Handle on the Right ---
-            if (!isHistory && !isActive)
+            if (!isHistory && !isActive && showDragHandle)
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),

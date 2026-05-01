@@ -1,3 +1,5 @@
+import 'subscription_plan.dart';
+
 /// Represents a subscription checkout session created when a user initiates
 /// a purchase flow for a premium plan.
 ///
@@ -20,9 +22,6 @@
 /// Notes:
 /// - This model is immutable.
 /// - JSON parsing assumes backend returns nested "plan" object.
-
-import 'subscription_plan.dart';
-
 class CheckoutSession {
   final String transactionId; // UUID string e.g. "f2c5b997-4756-..."
   final String subscriptionId; // UUID string

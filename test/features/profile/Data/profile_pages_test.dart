@@ -86,6 +86,7 @@ Widget buildWithState(ProfileState state, Widget child) {
     overrides: [
       profileProvider.overrideWith(() => _SeedNotifier(state)),
       ownProfileProvider.overrideWith(() => _SeedNotifier(state)),
+      // ignore: deprecated_member_use
       publicProfileProvider.overrideWith(() => _SeedNotifier(state)),
       audioHandlerProvider.overrideWithValue(MockAudioHandler()),
       authProvider.overrideWith(() => MockAuthNotifier()),

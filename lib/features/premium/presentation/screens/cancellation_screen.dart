@@ -138,7 +138,7 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 Image.asset(
                   _kBgAsset,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
