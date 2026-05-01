@@ -54,6 +54,10 @@ class NotificationModel extends NotificationEntity {
     );
   }
 
+  /// Maps the raw API `type` string to a [NotificationType] enum value.
+  ///
+  /// Defaults to [NotificationType.newPostByFollowed] for unrecognised values,
+  /// which are then filtered out at the datasource level.
   static NotificationType _mapType(String type) {
     switch (type) {
       case 'follow':
@@ -71,6 +75,9 @@ class NotificationModel extends NotificationEntity {
     }
   }
 
+  /// Maps the raw API `resource_type` string to a [ResourceType] enum value.
+  ///
+  /// Returns `null` for follow notifications, which have no associated resource.
   static ResourceType? _mapResourceType(String? type) {
     switch (type) {
       case 'track':

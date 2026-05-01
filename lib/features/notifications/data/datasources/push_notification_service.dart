@@ -143,7 +143,10 @@ class PushNotificationService {
     final type = data['type'] as String?;
     if (type == null) return null;
     final resourceType = data['resource_type'] as String? ?? '';
-    final resourceId = data['resource_id'] as String? ?? '';
+    final resourceId =
+        (data['resource_id'] ?? data['referenceId'] ?? data['conversationId'])
+            as String? ??
+        '';
     return '$type:$resourceType:$resourceId';
   }
 
@@ -160,7 +163,9 @@ class PushNotificationService {
   void _navigateFromData(Map<String, dynamic> data) {
     _navigateByType(
       type: data['type'] as String?,
-      resourceId: (data['resource_id'] ?? data['referenceId']) as String?,
+      resourceId:
+          (data['resource_id'] ?? data['referenceId'] ?? data['conversationId'])
+              as String?,
       resourceType: data['resource_type'] as String?,
     );
   }
@@ -192,8 +197,8 @@ class PushNotificationService {
           _route.push('/home/notifications');
         }
       case 'new_post_by_followed':
-        _route.push('/home/notifications');
-      case 'message':
+        _route.push('/home/behind-the-track/$resourceId');
+      case 'new_message':
         if (hasResource) {
           _route.push('/home/inbox/chat/$resourceId');
         } else {
