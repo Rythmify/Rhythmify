@@ -1,5 +1,10 @@
 import '../../domain/entities/privacy_settings_entity.dart';
 
+/// Data-layer representation of [PrivacySettingsEntity].
+///
+/// Adds [fromJson] for deserialising the API response, [toPatch] for computing
+/// a minimal PATCH body containing only changed fields, and [fromEntity]/[toDomain]
+/// for converting between domain and data types.
 class PrivacySettingsModel extends PrivacySettingsEntity {
   const PrivacySettingsModel({
     required super.isPrivate,
@@ -9,6 +14,9 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
     required super.showTopFansOnTracks,
   });
 
+  /// Deserialises from the `GET /users/me/privacy-settings` response body.
+  ///
+  /// All fields default to safe values when absent from the API response.
   factory PrivacySettingsModel.fromJson(Map<String, dynamic> json) {
     return PrivacySettingsModel(
       isPrivate: json['is_private'] as bool? ?? false,
@@ -21,6 +29,10 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
     );
   }
 
+  /// Produces a minimal patch body containing only fields that differ from [previous].
+  ///
+  /// Sending only changed fields avoids overwriting server-side defaults for
+  /// fields the client has not explicitly set (e.g. `show_as_top_fan`).
   Map<String, dynamic> toPatch(PrivacySettingsModel previous) {
     final patch = <String, dynamic>{};
     if (previous.receiveMessageFromAnyone != receiveMessageFromAnyone) {
@@ -32,9 +44,13 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
     if (previous.showAsTopFan != showAsTopFan) {
       patch['show_as_top_fan'] = showAsTopFan;
     }
+    if (previous.showTopFansOnTracks != showTopFansOnTracks) {
+      patch['show_top_fans_on_tracks'] = showTopFansOnTracks;
+    }
     return patch;
   }
 
+  /// Creates a model from a domain [entity], preserving all field values.
   factory PrivacySettingsModel.fromEntity(PrivacySettingsEntity entity) {
     return PrivacySettingsModel(
       isPrivate: entity.isPrivate,
@@ -45,6 +61,7 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
     );
   }
 
+  /// Converts this model to a pure domain [PrivacySettingsEntity].
   PrivacySettingsEntity toDomain() => PrivacySettingsEntity(
     isPrivate: isPrivate,
     receiveMessageFromAnyone: receiveMessageFromAnyone,

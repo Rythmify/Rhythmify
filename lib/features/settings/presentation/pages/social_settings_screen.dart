@@ -87,6 +87,18 @@ class SocialSettingsScreen extends ConsumerWidget {
                         .save(data.copyWith(showAsTopFan: value));
                   },
                 ),
+                SwitchTileWidget(
+                  key: const Key('show_top_fans_on_tracks_tile'),
+                  title: 'Show Top Fans on my tracks',
+                  subtitle:
+                      'Top Fans and First Fans leaderboards are visible on your uploaded tracks',
+                  initSwitchValue: data.showTopFansOnTracks,
+                  onSwitchChanged: (value) {
+                    ref
+                        .read(privacySettingsProvider.notifier)
+                        .save(data.copyWith(showTopFansOnTracks: value));
+                  },
+                ),
               ],
             );
           },
