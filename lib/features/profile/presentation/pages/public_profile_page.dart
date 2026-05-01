@@ -141,6 +141,79 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     );
   }
 
+  void _showFullScreenProfilePicture(BuildContext context, ProfileEntity profile) {
+    if (profile.avatarUrl == null) return;
+
+    showDialog(
+      context: context,
+      useSafeArea: false,
+      builder: (context) => Material(
+        color: const Color(0xFF1E1E1E), // Deep grey background
+        child: Stack(
+          children: [
+            GestureDetector(
+              key: const Key(
+                'public_profile_avatar_fullscreen_gesture_detector',
+              ),
+              onTap: () => Navigator.pop(context),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Hero(
+                    tag: 'user_avatar_${profile.id}',
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(17),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 30,
+                              spreadRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: CachedNetworkImage(
+                            imageUrl: profile.avatarUrl!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 15,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  key: const Key(
+                    'public_profile_avatar_fullscreen_close_icon_button',
+                  ),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 22),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileState = _resolvedUserId == 'me'
@@ -274,10 +347,38 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCoverPhoto(state.profile.coverUrl),
-                  const SizedBox(height: 12),
-                  ProfileAvatar(avatarUrl: state.profile.avatarUrl, radius: 60),
-                  const SizedBox(height: 12),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _buildCoverPhoto(state.profile.coverUrl),
+                      Positioned(
+                        bottom: -60,
+                        left: 12,
+                        child: GestureDetector(
+                          onTap: () => _showFullScreenProfilePicture(
+                            context,
+                            state.profile,
+                          ),
+                          child: Hero(
+                            tag: 'user_avatar_${state.profile.id}',
+                            child: ProfileAvatar(
+                              avatarUrl: state.profile.avatarUrl,
+                              radius: 60,
+                              borderWidth: 6,
+                              borderColor: AppTheme.background,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (state.profile.isUserPremium)
+                        Positioned(
+                          bottom: -45,
+                          right: 0,
+                          child: _buildPremiumBadge(),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 64),
                   Text(
                     state.profile.displayName,
                     style: AppTheme.headlineLarge,
@@ -614,6 +715,39 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         isBlank(profile.country) ||
         isBlank(profile.bio);
   }
+
+  Widget _buildPremiumBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBC02D).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFFBC02D).withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.stars_rounded,
+            color: Color(0xFFFBC02D),
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Artist Pro',
+            style: AppTheme.labelSmall.copyWith(
+              color: const Color(0xFFFBC02D),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Displays a titled section of up to 3 tracks with a "See All" button.
@@ -917,7 +1051,7 @@ class _BioTruncatedState extends State<_BioTruncated> {
           key: const Key('public_profile_bio_text'),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: AppTheme.bodyMedium,
+          style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 4),
@@ -926,7 +1060,7 @@ class _BioTruncatedState extends State<_BioTruncated> {
             child: Text(
               'See more',
               key: const Key('public_profile_bio_see_more'),
-              style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.link),
             ),
           ),
         ),
