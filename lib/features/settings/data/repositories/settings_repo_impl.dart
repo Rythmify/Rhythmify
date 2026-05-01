@@ -18,11 +18,14 @@ class SettingsRepoImpl implements SettingsRepoInterface {
 
   @override
   Future<PrivacySettingsEntity> updatePrivacySettings(
-    PrivacySettingsEntity privacy,
+    PrivacySettingsEntity previous,
+    PrivacySettingsEntity updated,
   ) async {
-    final model = await _datasource.updatePrivacySettings(
-      PrivacySettingsModel.fromEntity(privacy),
-    );
+    final previousModel = PrivacySettingsModel.fromEntity(previous);
+    final updatedModel = PrivacySettingsModel.fromEntity(updated);
+    final patch = updatedModel.toPatch(previousModel);
+    if (patch.isEmpty) return updated;
+    final model = await _datasource.patchPrivacySettings(patch);
     return model.toDomain();
   }
 

@@ -5,16 +5,123 @@ import 'package:rythmify/features/settings/presentation/providers/notification_p
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 
+void _showMessagesFromSheet(
+  BuildContext context,
+  NotificationPreferencesEntity prefs,
+  void Function(NotificationPreferencesEntity) save,
+) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: const Color(0xFF1A1A1A),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Color(0xFF3A3A3A),
+                    child: Icon(Icons.close, size: 16, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'New message',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _MessagesFromOption(
+              label: 'Off',
+              value: MessagesFrom.nobody,
+              current: prefs.messagesFrom,
+              onTap: () {
+                save(prefs.copyWith(messagesFrom: MessagesFrom.nobody));
+                Navigator.pop(context);
+              },
+            ),
+            _MessagesFromOption(
+              label: 'From people I follow',
+              value: MessagesFrom.followersOnly,
+              current: prefs.messagesFrom,
+              onTap: () {
+                save(prefs.copyWith(messagesFrom: MessagesFrom.followersOnly));
+                Navigator.pop(context);
+              },
+            ),
+            _MessagesFromOption(
+              label: 'From everyone',
+              value: MessagesFrom.everyone,
+              current: prefs.messagesFrom,
+              onTap: () {
+                save(prefs.copyWith(messagesFrom: MessagesFrom.everyone));
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'If you have disabled "Receive messages from anyone" in your '
+              'inbox settings, you will only ever receive messages and '
+              'notifications from people you follow.',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+class _MessagesFromOption extends StatelessWidget {
+  final String label;
+  final MessagesFrom value;
+  final MessagesFrom current;
+  final VoidCallback onTap;
+
+  const _MessagesFromOption({
+    required this.label,
+    required this.value,
+    required this.current,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = value == current;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+      ),
+      trailing: selected
+          ? const Icon(Icons.check_circle, color: Colors.white)
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
 bool _allPushEnabled(NotificationPreferencesEntity p) =>
     p.newFollowerPush &&
     p.repostOfYourPostPush &&
     p.newPostByFollowedPush &&
     p.likesAndPlaysPush &&
-    p.commentOnPostPush &&
-    p.featureUpdatesPush &&
-    p.surveysAndFeedbackPush &&
-    p.promotionalContentPush &&
-    p.recommendedContentPush;
+    p.commentOnPostPush;
 
 bool _allEmailEnabled(NotificationPreferencesEntity p) =>
     p.newFollowerEmail &&
@@ -22,12 +129,7 @@ bool _allEmailEnabled(NotificationPreferencesEntity p) =>
     p.newPostByFollowedEmail &&
     p.likesAndPlaysEmail &&
     p.newMessageEmail &&
-    p.commentOnPostEmail &&
-    p.featureUpdatesEmail &&
-    p.surveysAndFeedbackEmail &&
-    p.promotionalContentEmail &&
-    p.recommendedContentEmail &&
-    p.newsletterEmail;
+    p.commentOnPostEmail;
 
 class NotificationsSettingsScreen extends ConsumerWidget {
   const NotificationsSettingsScreen({super.key});
@@ -79,10 +181,6 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                     newPostByFollowedPush: value,
                     likesAndPlaysPush: value,
                     commentOnPostPush: value,
-                    featureUpdatesPush: value,
-                    surveysAndFeedbackPush: value,
-                    promotionalContentPush: value,
-                    recommendedContentPush: value,
                   ),
                 ),
               ),
@@ -126,41 +224,10 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 onSwitchChanged: (value) =>
                     save(prefs.copyWith(commentOnPostPush: value)),
               ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('push_rythmify_feature_updates'),
-                title: 'Rythmify feature updates and education',
-                initSwitchValue: prefs.featureUpdatesPush,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(featureUpdatesPush: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('push_surveys'),
-                title: 'Surveys and feedback',
-                initSwitchValue: prefs.surveysAndFeedbackPush,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(surveysAndFeedbackPush: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('push_promotional'),
-                title: 'Promotional and partnership content',
-                initSwitchValue: prefs.promotionalContentPush,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(promotionalContentPush: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('push_recommended'),
-                title: 'Recommended content',
-                initSwitchValue: prefs.recommendedContentPush,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(recommendedContentPush: value)),
-              ),
               SettingsOptionsTileWidget(
                 key: const Key('new_message'),
                 title: 'New message',
+                onTap: () => _showMessagesFromSheet(context, prefs, save),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -190,11 +257,6 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                     likesAndPlaysEmail: value,
                     newMessageEmail: value,
                     commentOnPostEmail: value,
-                    featureUpdatesEmail: value,
-                    surveysAndFeedbackEmail: value,
-                    promotionalContentEmail: value,
-                    recommendedContentEmail: value,
-                    newsletterEmail: value,
                   ),
                 ),
               ),
@@ -245,46 +307,6 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 initSwitchValue: prefs.commentOnPostEmail,
                 onSwitchChanged: (value) =>
                     save(prefs.copyWith(commentOnPostEmail: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('email_rythmify_feature_updates'),
-                title: 'Rythmify feature updates and education',
-                initSwitchValue: prefs.featureUpdatesEmail,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(featureUpdatesEmail: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('email_surveys'),
-                title: 'Surveys and feedback',
-                initSwitchValue: prefs.surveysAndFeedbackEmail,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(surveysAndFeedbackEmail: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('email_promotional'),
-                title: 'Promotional and partnership content',
-                initSwitchValue: prefs.promotionalContentEmail,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(promotionalContentEmail: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('email_recommended'),
-                title: 'Recommended content',
-                initSwitchValue: prefs.recommendedContentEmail,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(recommendedContentEmail: value)),
-              ),
-              const SizedBox(height: 4),
-              SwitchTileWidget(
-                key: const Key('email_rythmify_newsletter'),
-                title: 'Rythmify newsletter',
-                initSwitchValue: prefs.newsletterEmail,
-                onSwitchChanged: (value) =>
-                    save(prefs.copyWith(newsletterEmail: value)),
               ),
             ],
           );

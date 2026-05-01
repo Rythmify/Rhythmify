@@ -6,6 +6,7 @@ import 'package:rythmify/features/authentication/presentation/providers/auth_sta
 import 'package:rythmify/features/comments/domain/usecases/toggle_comment_like_usecase.dart';
 import 'package:rythmify/features/comments/presentation/providers/comment_di_providers.dart';
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
+import 'package:rythmify/features/notifications/data/models/notification_model.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_notifications_usecase.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_unread_count_usecase.dart';
@@ -223,9 +224,39 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   }
 
   /// Called when the socket emits a `notification:created` event.
-  /// Bumps [unreadCount] without re-fetching the list.
-  void onSocketNotificationCreated() {
+  /// Bumps [unreadCount] immediately, then either prepends the notification
+  /// optimistically (if the payload is complete) or falls back to a silent
+  /// re-fetch (when the backend sends a stripped payload without actor info).
+  void onSocketNotificationCreated(Map<String, dynamic> data) {
     state = state.copyWith(unreadCount: state.unreadCount + 1);
+    try {
+      final payload = data['notification'] as Map<String, dynamic>;
+      final notification = NotificationModel.fromJson(payload);
+      final rawType = payload['type'] as String?;
+      if (_activeType == null || rawType == _activeType) {
+        state = state.copyWith(items: [notification, ...state.items]);
+        return;
+      }
+    } catch (_) {
+      // Backend currently sends a stripped payload (action_user_id instead of
+      // nested actor object, no resource_details). Fall back to a silent
+      // re-fetch so the full notification appears in the list.
+    }
+    _silentRefresh();
+  }
+
+  /// Re-fetches page 1 without showing a loading spinner or clearing the list.
+  /// Used as a fallback when a socket event arrives but the payload can't be
+  /// fully parsed.
+  Future<void> _silentRefresh() async {
+    try {
+      final result = await _getNotifications(page: 1, type: _activeType);
+      state = state.copyWith(
+        items: result.items,
+        hasNext: result.hasNext,
+        currentPage: 1,
+      );
+    } catch (_) {}
   }
 
   /// Called when the socket emits a `notification:read` event.
@@ -272,6 +303,8 @@ final notificationSocketProvider = Provider<void>((ref) {
   final socket = ref.watch(socketProvider);
   final notifier = ref.read(notificationsProvider.notifier);
 
-  socket.onNotificationCreated((_) => notifier.onSocketNotificationCreated());
+  socket.onNotificationCreated(
+    (data) => notifier.onSocketNotificationCreated(data),
+  );
   socket.onNotificationRead((_) => notifier.onSocketNotificationRead());
 });

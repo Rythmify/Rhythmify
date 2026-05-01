@@ -213,15 +213,10 @@ class NotificationTile extends StatelessWidget {
         isFollowing: isFollowing,
         onTap: onFollowTap,
       );
-    } else if (notification.type == NotificationType.comment) {
-      return _ResourceThumbnail(
-        key: const Key('notification_resource_thumbnail'),
-        imageUrl: trackEmbed?.thumbnailUrl,
-      );
     }
     return _ResourceThumbnail(
       key: const Key('notification_resource_thumbnail'),
-      imageUrl: notification.resourceImageUrl,
+      imageUrl: trackEmbed?.thumbnailUrl ?? notification.resourceImageUrl,
     );
   }
 
