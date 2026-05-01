@@ -8,15 +8,9 @@ class AdState {
   final int trackCount;
   final bool showAd;
 
-  const AdState({
-    required this.trackCount,
-    required this.showAd,
-  });
+  const AdState({required this.trackCount, required this.showAd});
 
-  AdState copyWith({
-    int? trackCount,
-    bool? showAd,
-  }) {
+  AdState copyWith({int? trackCount, bool? showAd}) {
     return AdState(
       trackCount: trackCount ?? this.trackCount,
       showAd: showAd ?? this.showAd,
@@ -41,8 +35,10 @@ class AdNotifier extends Notifier<AdState> {
   }
 
   Future<void> incrementTrackCount() async {
-    debugPrint('[AdNotifier] incrementTrackCount called. Current count: ${state.trackCount}');
-    
+    debugPrint(
+      '[AdNotifier] incrementTrackCount called. Current count: ${state.trackCount}',
+    );
+
     // 1. Wait for premium initialization to finish to avoid race conditions
     final isInitialized = await _waitForPremiumInitialization();
     debugPrint('[AdNotifier] Premium provider initialized: $isInitialized');
@@ -50,7 +46,7 @@ class AdNotifier extends Notifier<AdState> {
     // 2. Only increment if not premium
     final isPremium = ref.read(isPremiumProvider);
     debugPrint('[AdNotifier] Premium status check: $isPremium');
-    
+
     if (isPremium) {
       // If we just found out they are premium, clear any pending counts
       if (state.trackCount > 0 || state.showAd) {
@@ -63,7 +59,7 @@ class AdNotifier extends Notifier<AdState> {
     }
 
     final newCount = state.trackCount + 1;
-    
+
     if (newCount >= _kAdThreshold) {
       debugPrint('[AdNotifier] Threshold reached, showing Ad.');
       state = state.copyWith(trackCount: 0, showAd: true);
@@ -94,7 +90,9 @@ class AdNotifier extends Notifier<AdState> {
       }
       await Future.delayed(const Duration(milliseconds: 100));
     }
-    debugPrint('[AdNotifier] Premium provider initialized after ${stopwatch.elapsedMilliseconds}ms.');
+    debugPrint(
+      '[AdNotifier] Premium provider initialized after ${stopwatch.elapsedMilliseconds}ms.',
+    );
     return true;
   }
 

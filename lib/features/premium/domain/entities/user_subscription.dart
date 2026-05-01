@@ -48,8 +48,8 @@ class UserSubscription {
 
   bool get isActive => status == 'active';
   bool get isCanceled => status == 'canceled';
-  
-  /// A user is premium if they have a valid subscription record 
+
+  /// A user is premium if they have a valid subscription record
   /// AND the status is active/canceled AND the plan is a premium tier.
   bool get isPremium {
     final hasValidId = subscriptionId != 'null' && subscriptionId.isNotEmpty;

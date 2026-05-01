@@ -16,13 +16,13 @@ Map<String, dynamic> _buildJson({
   return {
     'id': id,
     'type': type,
-    if (actor != null) 'actor': actor,
-    if (resourceType != null) 'resource_type': resourceType,
-    if (resourceId != null) 'resource_id': resourceId,
-    if (resourceDetails != null) 'resource_details': resourceDetails,
-    if (isRead != null) 'is_read': isRead,
+    'actor': ?actor,
+    'resource_type': ?resourceType,
+    'resource_id': ?resourceId,
+    'resource_details': ?resourceDetails,
+    'is_read': ?isRead,
     'created_at': createdAt,
-    if (actionUserId != null) 'action_user_id': actionUserId,
+    'action_user_id': ?actionUserId,
   };
 }
 

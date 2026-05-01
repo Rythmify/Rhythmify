@@ -123,11 +123,13 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
     final mq = MediaQuery.of(context);
     final topPad = mq.padding.top;
     final botPad = mq.padding.bottom;
-    
+
     final isPremium = ref.watch(isPremiumProvider);
     final accentColor = isPremium ? _kPurple : _kGreen;
     final lightAccentColor = isPremium ? _kPurpleLight : _kGreenLight;
-    final topGradientColor = isPremium ? const Color(0xFF2A0A5E) : const Color(0xFF0A2E10);
+    final topGradientColor = isPremium
+        ? const Color(0xFF2A0A5E)
+        : const Color(0xFF0A2E10);
 
     return Scaffold(
       backgroundColor: _kDark,
@@ -224,12 +226,15 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  isPremium 
-                    ? (_isCanceled
-                        ? 'Access ends when this session expires.'
-                        : 'You have unlimited access to all features.')
-                    : 'Upgrade to Artist Pro to unlock the full experience.',
-                  style: GoogleFonts.inter(fontSize: 13, color: lightAccentColor),
+                  isPremium
+                      ? (_isCanceled
+                            ? 'Access ends when this session expires.'
+                            : 'You have unlimited access to all features.')
+                      : 'Upgrade to Artist Pro to unlock the full experience.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: lightAccentColor,
+                  ),
                 ),
                 const SizedBox(height: 32),
 
@@ -332,7 +337,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                     child: Row(
                       children: [
                         Icon(
-                          isPremium ? Icons.workspace_premium : Icons.info_outline,
+                          isPremium
+                              ? Icons.workspace_premium
+                              : Icons.info_outline,
                           color: lightAccentColor,
                           size: 40,
                         ),
@@ -342,7 +349,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isPremium ? 'Full Access Enabled' : 'Limited Access',
+                                isPremium
+                                    ? 'Full Access Enabled'
+                                    : 'Limited Access',
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -351,9 +360,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                isPremium 
-                                  ? 'Your subscription is active and auto-renews.'
-                                  : 'Ads and upload limits are currently active.',
+                                isPremium
+                                    ? 'Your subscription is active and auto-renews.'
+                                    : 'Ads and upload limits are currently active.',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   color: Colors.white60,
@@ -371,7 +380,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.3),
+                    ),
                     color: _kCard,
                   ),
                   padding: const EdgeInsets.all(18),
@@ -379,7 +390,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isPremium ? 'Your Premium benefits' : 'Premium features you\'re missing',
+                        isPremium
+                            ? 'Your Premium benefits'
+                            : 'Premium features you\'re missing',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

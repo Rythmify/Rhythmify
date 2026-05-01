@@ -22,11 +22,7 @@ class PlayerActionBar extends ConsumerWidget {
   /// Callback to collapse the player.
   final VoidCallback? onCollapse;
 
-  const PlayerActionBar({
-    super.key,
-    required this.trackId,
-    this.onCollapse,
-  });
+  const PlayerActionBar({super.key, required this.trackId, this.onCollapse});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,10 +217,8 @@ class PlayerActionBar extends ConsumerWidget {
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     useRootNavigator: true,
-                    builder: (context) => TrackOptionsModal(
-                      track: track,
-                      onCollapse: onCollapse,
-                    ),
+                    builder: (context) =>
+                        TrackOptionsModal(track: track, onCollapse: onCollapse),
                   );
                 });
               },
