@@ -67,7 +67,7 @@ class UpgradeLandingScreen extends ConsumerWidget {
             child: Image.asset(
               _kBgAsset,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (_, _, _) =>
                   Container(color: const Color(0xFF0A0A0A)),
             ),
           ),
@@ -175,7 +175,7 @@ class _PhotoCard extends StatelessWidget {
           height: height,
           fit: BoxFit.cover,
           alignment: alignment,
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (_, _, _) => Container(
             width: width,
             height: height,
             decoration: BoxDecoration(

@@ -21,11 +21,9 @@ import 'package:rythmify/features/profile/domain/usecases/get_unblock_user_useca
 import 'package:rythmify/features/profile/domain/usecases/get_liked_tracks_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/get_uploaded_tracks_usecase.dart';
 import 'package:rythmify/features/profile/domain/usecases/get_reposted_tracks_usecase.dart';
-import 'package:rythmify/features/profile/presentation/providers/profile_provider.dart';
 import 'package:rythmify/features/profile/presentation/providers/profile_state.dart';
 import 'package:rythmify/features/playlist/domain/entities/playlist_entity.dart';
 import 'package:rythmify/features/profile/data/datasources/profile_remote_datasource.dart';
-import 'package:rythmify/features/profile/domain/usecases/get_user_connections_usecase.dart';
 
 // ---------------------------------------------------------------------------
 // Mock Classes
@@ -1141,6 +1139,7 @@ void main() {
 
       when(
         () => mockRepository.deleteAvatar(),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(
@@ -1181,6 +1180,7 @@ void main() {
 
       when(
         () => mockRepository.deleteCoverPhoto(),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(
@@ -1208,6 +1208,7 @@ void main() {
 
       when(
         () => mockRepository.followUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.followUser(userId: 'user-002');
@@ -1253,6 +1254,7 @@ void main() {
 
       when(
         () => mockRepository.unfollowUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.unfollowUser(userId: 'user-001');
@@ -1285,6 +1287,7 @@ void main() {
 
       when(
         () => mockRepository.unfollowUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       await notifier.unfollowUser(userId: 'user-002');
@@ -1388,6 +1391,7 @@ void main() {
 
       when(
         () => mockRepository.unblockUser(userId: any(named: 'userId')),
+        // ignore: void_checks
       ).thenAnswer((_) async => const Right(unit));
 
       when(

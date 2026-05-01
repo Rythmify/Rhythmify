@@ -127,6 +127,24 @@ class PlaylistTrack {
     );
   }
 
+  /// Converts this [PlaylistTrack] into a full [Track] entity.
+  /// Used for player integration where full entities are required.
+  Track toTrack() {
+    return Track(
+      id: id,
+      userId: '', // placeholder, will be resolved in background if needed
+      title: title,
+      artist: artistName,
+      audioUrl: (streamUrl ?? audioUrl) ?? '',
+      streamUrl: streamUrl,
+      duration: duration,
+      createdAt: DateTime.now(),
+      coverImage: coverUrl,
+      isLiked: isLiked,
+      playCount: playCount,
+    );
+  }
+
   // ── Track integration ───────────────────────────────────────────────────────
 
   /// Creates a [PlaylistTrack] from M13's [Track] entity.

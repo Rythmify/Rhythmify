@@ -1,3 +1,5 @@
+import 'subscription_plan.dart';
+
 /// Represents the current subscription state of a user.
 ///
 /// This model is retrieved from:
@@ -25,8 +27,6 @@
 /// Notes:
 /// - This model is immutable
 /// - Business logic is intentionally minimal and UI-friendly
-import 'subscription_plan.dart';
-
 class UserSubscription {
   final String subscriptionId; // UUID
   final String userId;

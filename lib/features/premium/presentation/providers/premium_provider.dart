@@ -156,7 +156,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
 
       // Resolve planId — if empty, fetch plans and find premium UUID
       // Fallback to known backend UUID if plans endpoint returns empty
-      const _kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
+      const kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
       String resolvedPlanId = planId;
       if (resolvedPlanId.isEmpty) {
         if (state.plans.isEmpty) await loadPlans();
@@ -166,7 +166,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
                 orElse: () => state.plans.last,
               )
             : null;
-        resolvedPlanId = premiumPlan?.planId ?? _kFallbackPremiumPlanId;
+        resolvedPlanId = premiumPlan?.planId ?? kFallbackPremiumPlanId;
       }
 
       try {

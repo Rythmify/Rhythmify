@@ -556,7 +556,7 @@ class _DarkInfoSectionState extends State<_DarkInfoSection> {
                   width: 150,
                   height: 150,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
+                  errorBuilder: (_, _, _) =>
                       const Icon(Icons.person, color: Colors.white24, size: 52),
                 ),
               ),
