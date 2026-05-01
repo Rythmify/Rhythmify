@@ -206,6 +206,18 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _emptyListMessage() {
+    String filterText='';
+    if(_filter==Filter.comments){
+      filterText='comments';
+    }else if(_filter==Filter.followings){
+      filterText='follow requests';
+    }else if(_filter==Filter.likes){
+      filterText='likes';
+    }else if(_filter==Filter.reactions){
+      filterText='reactions';
+    }else if(_filter==Filter.reposts){
+      filterText='reposts';
+    }
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -213,7 +225,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'You don\'t have any recent $_filter',
+              'You don\'t have any recent $filterText',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -224,7 +236,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
             const SizedBox(height: 8),
             const Text(
               'Switch to showing all to see recent notifications',
-              style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+              style: TextStyle(color: Colors.grey, fontSize: 16, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
@@ -241,7 +253,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 ),
                 child: const Text(
                   'Show all notifications',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
               ),
             ),

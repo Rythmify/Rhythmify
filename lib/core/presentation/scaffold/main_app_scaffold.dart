@@ -26,7 +26,7 @@ class MainAppScaffold extends ConsumerStatefulWidget {
 class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
   final DraggableScrollableController _draggableController =
       DraggableScrollableController();
-  //PushNotificationService? _notificationService;
+  PushNotificationService? _notificationService;
 
   // Heights in logical pixels
   static const double _navBarHeight = 70.0;
@@ -66,27 +66,27 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     }
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   if(Platform.isAndroid){
-  //     Future.microtask(()async{
-  //       _notificationService= PushNotificationService(ref.read(routerProvider));
-  //       await _notificationService!.Initialize();
-  //     });
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    if(Platform.isAndroid){
+      Future.microtask(()async{
+        _notificationService= PushNotificationService(ref.read(routerProvider));
+        await _notificationService!.initialize();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     ref.watch(notificationSocketProvider);
     final playerState = ref.watch(playerStateProvider);
 
-    // ref.listen<AuthState>(authProvider, (previous, next) {
-    //   if (previous is AuthAuthenticated && next is! AuthAuthenticated) {
-    //     _notificationService?.unregisterToken();
-    //   }
-    // });
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (previous is AuthAuthenticated && next is! AuthAuthenticated) {
+        _notificationService?.unregisterToken();
+      }
+    });
 
     // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
