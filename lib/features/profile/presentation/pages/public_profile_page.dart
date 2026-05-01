@@ -141,7 +141,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     );
   }
 
-  void _showFullScreenProfilePicture(BuildContext context, ProfileEntity profile) {
+  void _showFullScreenProfilePicture(
+    BuildContext context,
+    ProfileEntity profile,
+  ) {
     if (profile.avatarUrl == null) return;
 
     showDialog(
@@ -730,11 +733,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.stars_rounded,
-            color: Color(0xFFFBC02D),
-            size: 16,
-          ),
+          const Icon(Icons.stars_rounded, color: Color(0xFFFBC02D), size: 16),
           const SizedBox(width: 6),
           Text(
             'Artist Pro',
