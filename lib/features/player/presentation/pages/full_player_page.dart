@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 import '../providers/ad_provider.dart';
 import '../widgets/ad_banner_overlay.dart';
+import '../../../premium/presentation/providers/premium_provider.dart';
 
 /// The main immersive playback page of the application.
 ///
@@ -57,7 +58,8 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
     final currentTrackId = ref.watch(
       playerStateProvider.select((s) => s.currentTrack?.id),
     );
-    final showAd = ref.watch(adProvider.select((s) => s.showAd));
+    final isPremium = ref.watch(isPremiumProvider);
+    final showAd = ref.watch(adProvider.select((s) => s.showAd)) && !isPremium;
 
     // Continuous list: History + Current + Upcoming (which now includes Recommendations)
     final allItems = [

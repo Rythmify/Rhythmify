@@ -58,10 +58,14 @@ class PremiumRemoteDatasource {
 
   // POST /subscriptions/checkout  (Bearer required)
   // Body: { "subscription_plan_id": int }
-  Future<CheckoutSession> startCheckout(String planId) async {
+  Future<CheckoutSession> startCheckout(dynamic planId) async {
+    // Backend expects an integer for subscription_plan_id.
+    // Try to parse if it's a string, otherwise pass as is.
+    final parsedPlanId = int.tryParse(planId.toString()) ?? planId;
+
     final res = await _dio.post(
       '/subscriptions/checkout',
-      data: {'subscription_plan_id': planId},
+      data: {'subscription_plan_id': parsedPlanId},
     );
     return CheckoutSession.fromJson(res.data['data'] as Map<String, dynamic>);
   }
