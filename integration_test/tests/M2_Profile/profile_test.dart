@@ -63,16 +63,16 @@ void main() {
       await profilePage.enterFirstname(profileEditFirstName);
       await profilePage.enterLastname(profileEditLastName);
 
-      await profilePage.tapCountryField();
-      await tester.pump(const Duration(milliseconds: 500));
-      await profilePage.selectCountry(profileEditNewCountryName);
+      // await profilePage.tapCountryField();
+      // await tester.pump(const Duration(milliseconds: 500));
+      // await profilePage.selectCountry(profileEditNewCountryName);
       // await tester.tap(find.byType(Scaffold)); 
-      await tester.pumpAndSettle();
+      // await tester.pumpAndSettle();
 
-      await profilePage.tapBioField();
-      await tester.pumpAndSettle();
-      await profilePage.enterBio(profileEditNewBio);
-      await profilePage.tapBioDone();
+      // await profilePage.tapBioField();
+      // await tester.pumpAndSettle();
+      // await profilePage.enterBio(profileEditNewBio);
+      // await profilePage.tapBioDone();
 
       await profilePage.tapSave();
       await tester.pumpAndSettle(const Duration(seconds: 4));

@@ -68,7 +68,11 @@ class ProfilePage extends BasePage {
 
   /// Opens the country picker bottom sheet.
   Future<void> tapCountryField() async {
-    await tester.ensureVisible(find.byKey(Key(editProfileCountryGesture)));
+    await tester.dragUntilVisible(
+      find.byKey(Key(editProfileCountryGesture)),
+      find.byKey(Key(editProfileScrollView)),
+      const Offset(0, -100),
+    );
     await tester.pump();
     await tester.tap(find.byKey(Key(editProfileCountryGesture)));
     // Use explicit pumps instead of pumpAndSettle — continuous animations can
@@ -79,10 +83,15 @@ class ProfilePage extends BasePage {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  /// Taps the country list item matching [countryName] (display name, e.g. 'Egypt').
-  /// Uses text matching since ListView lazily builds items — keys outside the
-  /// viewport may not exist in the widget tree.
+  /// Scrolls the country picker list until [countryName] is visible, then taps it.
   Future<void> selectCountry(String countryName) async {
+    await tester.dragUntilVisible(
+      find.text(countryName),
+      find.byKey(const Key(editProfileCountryListView)),
+      const Offset(0, -100),
+      maxIteration: 100,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text(countryName));
     await tester.pumpAndSettle();
   }
@@ -93,7 +102,7 @@ class ProfilePage extends BasePage {
   Future<void> tapBioField() async {
     await tester.dragUntilVisible(
       find.byKey(Key(editProfileBioGesture)),
-      find.byType(SingleChildScrollView),
+      find.byKey(Key(editProfileScrollView)),
       const Offset(0, -100),
     );
     await tester.pump(const Duration(milliseconds: 300));

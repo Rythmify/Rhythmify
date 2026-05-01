@@ -166,6 +166,7 @@ void main() {
 
     // ─── TC-LIBRARY-011 | Open an album ──────────────────────────────────
     await tryTest('TC-LIBRARY-015 | Open an album', () async {
+      await libraryPage.typeInAlbumsSearch(''); // clear filter left by previous search test
       await tester.pumpAndSettle(const Duration(seconds: 2));
       await libraryPage.tapFirstAlbum();
       await tester.pumpAndSettle(const Duration(seconds: 2));

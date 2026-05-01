@@ -194,6 +194,7 @@ const String editProfilePickCoverGesture    = 'edit_profile_pick_cover_gesture';
 const String editProfileCountryGesture      = 'edit_profile_country_gesture';
 const String editProfileCountryListView     = 'edit_profile_country_list_view';
 const String editProfileBioGesture          = 'edit_profile_bio_gesture';
+const String editProfileScrollView          = 'edit_profile_scroll_view';
 
 // --- Public Profile ---
 const String publicProfileBackButton        = 'public_profile_back_button';

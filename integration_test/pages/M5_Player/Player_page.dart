@@ -68,7 +68,7 @@ class PlayerPage extends BasePage {
     }
     
     await gesture.up();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
   }
 
   // ── State Checks ─────────────────────────────────────────────────────────────

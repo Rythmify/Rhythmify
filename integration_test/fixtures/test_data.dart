@@ -98,9 +98,9 @@ const String profileEditNewName        = 'User Test';
 const String profileEditUserName       = 'yoeweida';
 const String profileEditFirstName      = 'YOMNA';
 const String profileEditLastName       = 'Mahmoud';
-const String profileEditNewCity        = 'Giza';
+const String profileEditNewCity        = 'Yafa';
 const String profileEditNewCountry     = 'EG';      
-const String profileEditNewCountryName = 'Palestine';   
+const String profileEditNewCountryName = 'Egypt';   
 const String profileEditNewBio         = 'Integration test bio';
 
 // Scroll test values

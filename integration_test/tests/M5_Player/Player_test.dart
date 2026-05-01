@@ -79,7 +79,7 @@ void main() {
     // ── TC-PLAYER-006 | Drag WaveForm Smoothly ───
     await tryTest('Drag WaveForm Smoothly', () async {    
       // 1. Wait for animations to finish
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
 
       // 2. Find the timestamp finder
       final timestampFinder = find.byKey(const Key(playerProgressBarDuration));

@@ -473,6 +473,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   ),
                 )
               : SingleChildScrollView(
+                  key: const Key('edit_profile_scroll_view'),
                   padding: const EdgeInsets.only(bottom: 174),
                   child: Column(
                     children: [
