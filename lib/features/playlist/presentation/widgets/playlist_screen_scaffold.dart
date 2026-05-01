@@ -8,7 +8,7 @@
 // Why needed: these screens use parentNavigatorKey: _rootNavigatorKey so they
 // render ABOVE MainAppScaffold. The scaffold's mini-player and nav bar are
 // underneath and invisible. This widget re-adds both locally.
-
+//not used now replaced by home wrapping in app router
 library;
 
 import 'package:flutter/material.dart';

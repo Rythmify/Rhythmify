@@ -1,9 +1,11 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../domain/entities/google_auth_data.dart';
+import '../../data/services/google_oauth_windows.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -81,25 +83,50 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   /// If user cancels Google Sign-In (returns null), this method does nothing.
   Future<void> _handleGoogleSignIn() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: const ['email', 'profile'],
-        serverClientId:
-            '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
-      );
+      String? idToken;
+      String? email;
+      String? displayName;
+      String? photoUrl;
 
-      // Sign out first to ensure account picker shows
-      await googleSignIn.signOut();
+      if (Platform.isWindows) {
+        // Windows: Use browser-based OAuth flow
+        final oauth = GoogleOAuthWindows(
+          clientId:
+              '456932364376-vcrpeja1sncvj73m928sp372o56aridp.apps.googleusercontent.com',
+        );
+        idToken = await oauth.signIn();
+        if (idToken == null) {
+          // User cancelled
+          return;
+        }
+        // Note: Windows flow doesn't return email/displayName/photoUrl
+        // They will be populated by the backend after sign-in
+      } else {
+        // Mobile platforms: Use native google_sign_in plugin
+        final GoogleSignIn googleSignIn = GoogleSignIn(
+          scopes: const ['email', 'profile'],
+          serverClientId:
+              '456932364376-4ga0v16rd7dhemov4navlepcne4u51n8.apps.googleusercontent.com',
+        );
 
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        // User cancelled—do nothing
-        return;
+        // Sign out first to ensure account picker shows
+        await googleSignIn.signOut();
+
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        if (googleUser == null) {
+          // User cancelled—do nothing
+          return;
+        }
+
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+
+        idToken = googleAuth.idToken;
+        email = googleUser.email;
+        displayName = googleUser.displayName;
+        photoUrl = googleUser.photoUrl;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final idToken = googleAuth.idToken;
       if (idToken == null || idToken.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -127,9 +154,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             '/register',
             extra: GoogleAuthData(
               idToken: idToken,
-              email: googleUser.email,
-              displayName: googleUser.displayName,
-              photoUrl: googleUser.photoUrl,
+              email: email ?? '',
+              displayName: displayName ?? '',
+              photoUrl: photoUrl,
             ),
           );
         }

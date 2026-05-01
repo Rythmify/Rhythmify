@@ -122,7 +122,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       );
     }
 
-    // Filter tracks based on search query
     final filtered = _query.isEmpty
         ? state.likedTracks
         : state.likedTracks
@@ -145,7 +144,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
       },
       child: Column(
         children: [
-          // ── Search bar ──────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Container(
@@ -181,7 +179,6 @@ class _LikesPageState extends ConsumerState<LikesPage> {
             ),
           ),
 
-          // ── Action row: shuffle + play ─────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(

@@ -1,5 +1,39 @@
 // lib/features/playlist/presentation/screens/related_tracks_screen.dart
-// ignore_for_file: avoid_print
+/// Displays either:
+/// - Related tracks based on a specific track
+/// - Artist station tracks based on an artist
+///
+/// Features:
+/// - Dynamic track loading
+/// - Full playback support
+/// - Save/unsave stations and track radios
+/// - Shuffle playback
+/// - Bottom sheet actions
+/// - Reactive saved-state updates
+///
+/// This screen supports two content modes:
+/// - RelatedTracksSource.track
+/// - RelatedTracksSource.station
+///
+/// Main responsibilities:
+/// - Load related or station tracks using Riverpod providers
+/// - Convert PlaylistTrack models into playable Track entities
+/// - Build queue playback using queueStateProvider
+/// - Toggle saved stations and saved radios
+/// - Display track metadata and playback controls
+///
+/// State management:
+/// Saved state is derived directly from providers instead of
+/// local cache storage to ensure UI consistency across the app.
+///
+/// Widgets included:
+/// - RelatedTracksScreen      → Async loader wrapper
+/// - _Body                    → Main screen implementation
+/// - _Cover                   → Artwork/placeholder widget
+///
+/// Queue context:
+/// Playback uses QueueSource.station to maintain
+/// proper queue behavior for recommendation-based playback.
 library;
 
 import 'package:flutter/material.dart';

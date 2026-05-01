@@ -1,3 +1,15 @@
+/// Shared Premium UI components and bottom sheets.
+///
+/// Provides reusable widgets and modals used across the Premium flow,
+/// including plan cards, tags, legal sheets, and upgrade prompts.
+///
+/// Includes:
+/// - Premium upgrade prompt bottom sheet
+/// - Plan cards and tag components
+/// - Terms / Privacy / Restrictions sheets
+/// - FAQ and informational sections
+library;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'premium_legal.dart';

@@ -1,3 +1,30 @@
+/// Represents the current subscription state of a user.
+///
+/// This model is retrieved from:
+/// GET /subscriptions/me
+///
+/// Responsibilities:
+/// - Store subscription lifecycle state
+/// - Link user to their active subscription plan
+/// - Provide derived state helpers for UI/business logic
+///
+/// Key Fields:
+/// - subscriptionId: Unique subscription identifier (UUID)
+/// - userId: ID of the subscribed user
+/// - status: Subscription state (pending, active, canceled, expired)
+/// - startDate: Subscription start date
+/// - endDate: Optional expiration date
+/// - autoRenew: Whether subscription renews automatically
+/// - plan: Associated SubscriptionPlan
+///
+/// Helper Methods:
+/// - isActive: true if status == active
+/// - isCanceled: true if status == canceled
+/// - isPremium: true if active and plan is premium
+///
+/// Notes:
+/// - This model is immutable
+/// - Business logic is intentionally minimal and UI-friendly
 import 'subscription_plan.dart';
 
 class UserSubscription {

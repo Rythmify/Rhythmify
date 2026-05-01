@@ -1,4 +1,33 @@
 // lib/features/playlist/presentation/widgets/add_to_playlist_sheet.dart
+/// This file contains the UI and logic for adding a track to one or more
+/// playlists using a bottom sheet.
+///
+/// Features:
+/// - Displays the user's playlists
+/// - Supports playlist searching/filtering
+/// - Allows selecting multiple playlists
+/// - Allows creating a new playlist directly from the sheet
+/// - Adds the selected track to all chosen playlists
+/// - Shows loading and success/error feedback
+///
+/// Main Components:
+/// - showAddToPlaylistSheet():
+///     Opens the modal bottom sheet.
+///
+/// - _AddToPlaylistSheet:
+///     Main stateful widget handling playlist loading, searching,
+///     selection, and saving.
+///
+/// - _PlaylistPickerRow:
+///     Reusable row widget displaying playlist info with a selectable
+///     checkbox.
+///
+/// Dependencies:
+/// - Riverpod providers
+/// - Playlist datasource/provider
+/// - PlaylistEntity model
+/// - Shared playlist UI widgets
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

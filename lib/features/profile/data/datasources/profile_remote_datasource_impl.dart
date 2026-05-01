@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rythmify/features/playlist/domain/entities/playlist_entity.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/profile_model.dart';
 import '../models/profile_user_summary_model.dart';
 import '../models/track_model.dart';
 import '../models/follow_status_model.dart';
+import '../../../playlist/data/models/playlist_model.dart';
 import 'profile_remote_datasource.dart';
 
 // coverage:ignore-file
@@ -37,10 +39,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
           'followingCount=${data['followingCount']}',
         );
       }
-
-      // GET /users/{id} does not include is_following — only GET /users/me does.
-      // For public profiles, call the dedicated follow-status endpoint and merge
-      // the result so the Follow button and follower counts are always accurate.
       if (userId != 'me') {
         try {
           final statusResp = await client.dio.get(
@@ -50,7 +48,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
               statusResp.data['data']?['is_following'] as bool? ?? false;
           data['is_following'] = isFollowing;
         } catch (_) {
-          // Unauthenticated or network error — default to false.
           data['is_following'] = data['is_following'] ?? false;
         }
       }
@@ -171,8 +168,6 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
       });
 
       await client.dio.post('/users/me/cover', data: formData);
-
-      // Reload full profile to get updated cover URL
       final profile = await getProfile(userId: 'me');
 
       return profile;
@@ -540,5 +535,34 @@ class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
         item['value'];
     final value = raw?.toString().trim();
     return (value == null || value.isEmpty) ? null : value;
+  }
+
+  @override
+  Future<List<PlaylistEntity>> getAlbums({
+    required String userId,
+    required int limit,
+  }) async {
+    try {
+      final isMine = userId == 'me';
+      final queryParams = <String, dynamic>{'limit': limit};
+
+      if (isMine) {
+        queryParams['mine'] = true;
+      } else {
+        queryParams['owner_user_id'] = userId;
+      }
+
+      final response = await client.dio.get(
+        '/playlists',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data['data'] as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
+      return PlaylistModel.fromJsonList(items);
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
   }
 }
