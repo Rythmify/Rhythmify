@@ -91,11 +91,12 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppTheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -116,7 +117,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Show all notifications',
                 selected: _filter == Filter.all,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.all);
                 },
               ),
@@ -126,7 +127,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Comments',
                 selected: _filter == Filter.comments,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.comments);
                 },
               ),
@@ -136,7 +137,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Likes',
                 selected: _filter == Filter.likes,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.likes);
                 },
               ),
@@ -146,7 +147,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Followings',
                 selected: _filter == Filter.followings,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.followings);
                 },
               ),
@@ -156,7 +157,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Reposts',
                 selected: _filter == Filter.reposts,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.reposts);
                 },
               ),
@@ -166,7 +167,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
                 label: 'Reactions',
                 selected: _filter == Filter.reactions,
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _setFilter(Filter.reactions);
                 },
               ),
@@ -363,7 +364,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
               ),
             );
           }
-          if (index >= items.length) return const SizedBox(height: 80);
+          if (index >= items.length) return const SizedBox(height: 150);
           final item = items[index];
           if (item is String) {
             return Padding(

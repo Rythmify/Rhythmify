@@ -73,7 +73,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('New Message'), centerTitle: false),
-      body: Column(
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 150),
+        child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
@@ -108,6 +110,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 : SearchBody(users: searched),
           ),
         ],
+        ),
       ),
     );
   }

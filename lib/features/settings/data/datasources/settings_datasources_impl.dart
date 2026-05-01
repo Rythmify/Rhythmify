@@ -11,24 +11,27 @@ class SettingsDatasourcesImpl implements SettingsRemoteDatasources {
   @override
   Future<PrivacySettingsModel> getPrivacySettings() async {
     final response = await _apiClient.dio.get('/users/me/privacy-settings');
-    return PrivacySettingsModel.fromJson(
-      response.data['data'] as Map<String, dynamic>,
-    );
+    final data = response.data;
+    final map = (data is Map && data['data'] != null)
+        ? data['data'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    return PrivacySettingsModel.fromJson(map);
   }
 
   @override
-  Future<PrivacySettingsModel> updatePrivacySettings(
-    PrivacySettingsModel privacy,
+  Future<PrivacySettingsModel> patchPrivacySettings(
+    Map<String, dynamic> fields,
   ) async {
     final response = await _apiClient.dio.patch(
       '/users/me/privacy-settings',
-      data: privacy.toJson(),
+      data: fields,
     );
-    return PrivacySettingsModel.fromJson(
-      response.data['data'] as Map<String, dynamic>,
-    );
+    final data = response.data;
+    final map = (data is Map && data['data'] != null)
+        ? data['data'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    return PrivacySettingsModel.fromJson(map);
   }
-
   @override
   Future<NotificationPreferencesModel> getNotificationPreferences() async {
     final response = await _apiClient.dio.get('/notifications/preferences');

@@ -30,7 +30,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Inbox'), centerTitle: false),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 130), // Space for player
+        padding: const EdgeInsets.only(bottom: 150), // Space for player
         child: convprovider.when(
           data: (conversations) {
             return conversations.isEmpty
@@ -44,7 +44,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: 130),
+        padding: EdgeInsets.only(bottom: 150),
         child: ComposeButton(
           key: Key('inbox_compose_button'),
           onPressed: () {

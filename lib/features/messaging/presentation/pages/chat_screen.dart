@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +101,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _socket.onUserBlocked((_) {
       if (mounted && widget.conv?.participantId != null) {
         ref.invalidate(isBlockedByProvider(widget.conv!.participantId));
+        ref.invalidate(conversationProvider);
       }
     });
     _socket.onMessageReceived((data) {
@@ -834,17 +836,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   // ─── Send ─────────────────────────────────────────────────────────────────
 
-  Future<void> _processAndSendMessages(
-    String conversationId,
-    String text,
-  ) async {
-    // Build a name-URL → embed map so name-based permalinks resolve to the
-    // actual embedId (which may differ from the embed name).
+  Future<Conversation?> _processAndSendMessages(
+    String? conversationId,
+    String text, {
+    String? newParticipantId,
+  }) async {
     final permalinkToEmbed = <String, SharedEmbed>{
       for (final e in _selectedEmbeds) _permalinkFor(e): e,
     };
 
     String remaining = text;
+    String? resolvedConvId = conversationId;
+    Conversation? createdConv;
+
+    Future<void> doSend({
+      String? body,
+      String? embedId,
+      String? embedType,
+    }) async {
+      if (resolvedConvId != null) {
+        await ref.read(sendMessageProvider.notifier).sendMessage(
+          conversationId: resolvedConvId,
+          body: body,
+          embedId: embedId,
+          embedType: embedType,
+        );
+      } else {
+        final conv = await ref.read(sendMessageProvider.notifier).sendMessage(
+          newParticipantId: newParticipantId,
+          body: body,
+          embedId: embedId,
+          embedType: embedType,
+        );
+        if (conv != null) {
+          createdConv = conv;
+          resolvedConvId = conv.conversationId;
+        }
+      }
+    }
 
     while (remaining.isNotEmpty) {
       String? foundUrl;
@@ -852,7 +881,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       String? extractedEmbedId;
       String? extractedEmbedType;
 
-      // 1. Name-based permalinks (library selections) — highest priority.
       for (final url in permalinkToEmbed.keys) {
         final idx = remaining.indexOf(url);
         if (idx != -1 && idx < foundIndex) {
@@ -863,10 +891,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      // 2. UUID-based copy links (tracks) — only if the listener already
-      //    confirmed this embed is valid (i.e. it's in _selectedEmbeds).
-      //    Broken/edited URLs won't be in _selectedEmbeds and fall through
-      //    to plain-text sending.
       final trackMatch = _trackUrlRegex.firstMatch(remaining);
       if (trackMatch != null && trackMatch.start < foundIndex) {
         final seg = trackMatch.group(1)!;
@@ -878,7 +902,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      // 3. UUID-based copy links (playlists) — same guard.
       final playlistMatch = _playlistUrlRegex.firstMatch(remaining);
       if (playlistMatch != null && playlistMatch.start < foundIndex) {
         final seg = playlistMatch.group(1)!;
@@ -893,27 +916,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (foundUrl != null) {
         final textBefore = remaining.substring(0, foundIndex).trim();
         if (textBefore.isNotEmpty) {
-          await ref
-              .read(sendMessageProvider.notifier)
-              .sendMessage(conversationId: conversationId, body: textBefore);
+          await doSend(body: textBefore);
         }
-        await ref
-            .read(sendMessageProvider.notifier)
-            .sendMessage(
-              conversationId: conversationId,
-              embedId: extractedEmbedId,
-              embedType: extractedEmbedType,
-            );
+        await doSend(embedId: extractedEmbedId, embedType: extractedEmbedType);
         remaining = remaining.substring(foundIndex + foundUrl.length).trim();
       } else {
         if (remaining.isNotEmpty) {
-          await ref
-              .read(sendMessageProvider.notifier)
-              .sendMessage(conversationId: conversationId, body: remaining);
+          await doSend(body: remaining);
         }
         remaining = '';
       }
     }
+
+    return createdConv;
+  }
+
+  String _messageFor403(DioException e) {
+    final code = (e.response?.data as Map?)?['error']?['code'] as String?;
+    return switch (code) {
+      'MESSAGES_DISABLED' => "This user doesn't accept messages from anyone",
+      'MESSAGES_FOLLOWERS_ONLY' =>
+        "This user only accepts messages from people they follow",
+      'MESSAGES_BLOCKED' => "You can't send messages to this user",
+      _ => 'You can no longer send messages to this user',
+    };
   }
 
   Future<void> _sendInExistingConv() async {
@@ -927,11 +953,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         controller.clear();
         setState(() => _selectedEmbeds.clear());
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      if (e.response?.statusCode == 403) {
+        final participantId = widget.conv?.participantId;
+        if (participantId != null && participantId.isNotEmpty) {
+          ref.invalidate(isBlockedByProvider(participantId));
+        }
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.response?.statusCode == 403
+                ? _messageFor403(e)
+                : 'Failed to send message. Please try again.',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Send error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to send message. Please try again.')),
+      );
     }
   }
 
@@ -939,45 +982,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
 
-      final nConv = await ref
-          .read(sendMessageProvider.notifier)
-          .ensureConversation(widget.newParticipantId!);
+      final newConv = await _processAndSendMessages(
+        null,
+        controller.text,
+        newParticipantId: widget.newParticipantId!,
+      );
 
-      final newConv =
-          nConv.participantName == 'Unknown' &&
+      if (!mounted || newConv == null) return;
+
+      final conv =
+          newConv.participantName == 'Unknown' &&
               widget.newParticipantName != null
-          ? nConv.copyWith(participantName: widget.newParticipantName)
-          : nConv;
+          ? newConv.copyWith(participantName: widget.newParticipantName)
+          : newConv;
 
-      _socket.joinConversation(newConv.conversationId);
-      _socket.onMessageReceived((data) {
-        if (mounted) {
-          ref
-              .read(messagesNotifierProvider(newConv.conversationId).notifier)
-              .appendMessage(
-                MessageModel.fromJson(data['message'] as Map<String, dynamic>),
-              );
-          ref.invalidate(conversationProvider);
-        }
-      });
-
-      await _processAndSendMessages(newConv.conversationId, controller.text);
-
-      if (mounted) {
-        ref.invalidate(conversationProvider);
-        controller.clear();
-        setState(() => _selectedEmbeds.clear());
-        context.go(
-          '/home/inbox/chat/${newConv.conversationId}',
-          extra: newConv,
-        );
-      }
+      ref.invalidate(conversationProvider);
+      controller.clear();
+      setState(() => _selectedEmbeds.clear());
+      context.go('/home/inbox/chat/${conv.conversationId}', extra: conv);
+    } on DioException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.response?.statusCode == 403
+                ? _messageFor403(e)
+                : 'Failed to send message. Please try again.',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to send message. Please try again.'),
-        ),
+        const SnackBar(content: Text('Failed to send message. Please try again.')),
       );
     }
   }
