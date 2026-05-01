@@ -20,13 +20,13 @@ void main() {
 
   /// Creates a minimal [Message] with the given [id], optionally marking it read.
   Message makeMessage(String id, {bool isRead = false}) => Message(
-        messageId: id,
-        senderId: 'user-1',
-        conversationId: 'conv-1',
-        body: 'Message $id',
-        isRead: isRead,
-        createdAt: tDate,
-      );
+    messageId: id,
+    senderId: 'user-1',
+    conversationId: 'conv-1',
+    body: 'Message $id',
+    isRead: isRead,
+    createdAt: tDate,
+  );
 
   setUp(() {
     mockRepo = MockMessagingRepository();
@@ -116,8 +116,9 @@ void main() {
     group('loadInitial — total <= 100', () {
       test('sets messages, isLoading=false, hasMore=false', () async {
         final messages = [makeMessage('m1'), makeMessage('m2')];
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => (messages, 2));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => (messages, 2));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -130,8 +131,9 @@ void main() {
 
       test('works correctly with exactly 100 messages', () async {
         final messages = List.generate(100, (i) => makeMessage('m$i'));
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => (messages, 100));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => (messages, 100));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -142,56 +144,66 @@ void main() {
     });
 
     group('loadInitial — total > 100', () {
-      test('fetches latest page and sets hasMore=true when latestOffset > 0',
-          () async {
-        final firstBatch = List.generate(100, (i) => makeMessage('first$i'));
-        final latestBatch = List.generate(50, (i) => makeMessage('latest$i'));
+      test(
+        'fetches latest page and sets hasMore=true when latestOffset > 0',
+        () async {
+          final firstBatch = List.generate(100, (i) => makeMessage('first$i'));
+          final latestBatch = List.generate(50, (i) => makeMessage('latest$i'));
 
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => (firstBatch, 150));
-        when(() => mockRepo.getMessages(any(), offset: 50))
-            .thenAnswer((_) async => (latestBatch, 150));
+          when(
+            () => mockRepo.getMessages(any(), offset: 0),
+          ).thenAnswer((_) async => (firstBatch, 150));
+          when(
+            () => mockRepo.getMessages(any(), offset: 50),
+          ).thenAnswer((_) async => (latestBatch, 150));
 
-        final notifier = buildNotifier();
-        await Future.delayed(Duration.zero);
+          final notifier = buildNotifier();
+          await Future.delayed(Duration.zero);
 
-        expect(notifier.state.messages, latestBatch);
-        expect(notifier.state.isLoading, false);
-        expect(notifier.state.hasMore, true);
-      });
+          expect(notifier.state.messages, latestBatch);
+          expect(notifier.state.isLoading, false);
+          expect(notifier.state.hasMore, true);
+        },
+      );
 
-      test('sets hasMore=false when total is exactly 200 after one loadMore',
-          () async {
-        final firstBatch = List.generate(100, (i) => makeMessage('b1_$i'));
-        final latestBatch = List.generate(100, (i) => makeMessage('b2_$i'));
+      test(
+        'sets hasMore=false when total is exactly 200 after one loadMore',
+        () async {
+          final firstBatch = List.generate(100, (i) => makeMessage('b1_$i'));
+          final latestBatch = List.generate(100, (i) => makeMessage('b2_$i'));
 
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => (firstBatch, 200));
-        when(() => mockRepo.getMessages(any(), offset: 100))
-            .thenAnswer((_) async => (latestBatch, 200));
+          when(
+            () => mockRepo.getMessages(any(), offset: 0),
+          ).thenAnswer((_) async => (firstBatch, 200));
+          when(
+            () => mockRepo.getMessages(any(), offset: 100),
+          ).thenAnswer((_) async => (latestBatch, 200));
 
-        final notifier = buildNotifier();
-        await Future.delayed(Duration.zero);
+          final notifier = buildNotifier();
+          await Future.delayed(Duration.zero);
 
-        // latestOffset = 200 - 100 = 100, hasMore = (100 > 0) = true
-        expect(notifier.state.hasMore, true);
+          // latestOffset = 200 - 100 = 100, hasMore = (100 > 0) = true
+          expect(notifier.state.hasMore, true);
 
-        // After loadMore, olderOffset = max(0, 100-100) = 0, hasMore = false
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => (firstBatch, 200));
+          // After loadMore, olderOffset = max(0, 100-100) = 0, hasMore = false
+          when(
+            () => mockRepo.getMessages(any(), offset: 0),
+          ).thenAnswer((_) async => (firstBatch, 200));
 
-        await notifier.loadMore();
+          await notifier.loadMore();
 
-        expect(notifier.state.hasMore, false);
-        expect(notifier.state.messages.first.messageId, 'b1_0');
-        expect(notifier.state.messages.last.messageId, 'b2_99');
-      });
+          expect(notifier.state.hasMore, false);
+          expect(notifier.state.messages.first.messageId, 'b1_0');
+          expect(notifier.state.messages.last.messageId, 'b2_99');
+        },
+      );
     });
 
     group('loadInitial — error handling', () {
       test('sets error state and isLoading=false on exception', () async {
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenThrow(Exception('Network error'));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -203,8 +215,9 @@ void main() {
 
       test('starts with isLoading=true before async resolves', () {
         // Stub getMessages to never complete
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async {
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async {
           await Future.delayed(const Duration(seconds: 10));
           return (<Message>[], 0);
         });
@@ -219,17 +232,20 @@ void main() {
         final latestBatch = [makeMessage('latest')];
         final olderBatch = [makeMessage('older')];
 
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => (latestBatch, 150));
-        when(() => mockRepo.getMessages(any(), offset: 50))
-            .thenAnswer((_) async => (latestBatch, 150));
+        when(
+          () => mockRepo.getMessages(any(), offset: 0),
+        ).thenAnswer((_) async => (latestBatch, 150));
+        when(
+          () => mockRepo.getMessages(any(), offset: 50),
+        ).thenAnswer((_) async => (latestBatch, 150));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
         expect(notifier.state.hasMore, true);
 
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => (olderBatch, 150));
+        when(
+          () => mockRepo.getMessages(any(), offset: 0),
+        ).thenAnswer((_) async => (olderBatch, 150));
 
         await notifier.loadMore();
 
@@ -240,8 +256,9 @@ void main() {
       });
 
       test('does nothing when hasMore is false', () async {
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([makeMessage('m1')], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([makeMessage('m1')], 1));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -250,23 +267,25 @@ void main() {
         clearInteractions(mockRepo);
         await notifier.loadMore();
 
-        verifyNever(() => mockRepo.getMessages(
-              any(),
-              offset: any(named: 'offset'),
-            ));
+        verifyNever(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        );
       });
 
       test('sets isLoadingMore to false on exception during load', () async {
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenAnswer((_) async => ([makeMessage('m1')], 150));
-        when(() => mockRepo.getMessages(any(), offset: 50))
-            .thenAnswer((_) async => ([makeMessage('m2')], 150));
+        when(
+          () => mockRepo.getMessages(any(), offset: 0),
+        ).thenAnswer((_) async => ([makeMessage('m1')], 150));
+        when(
+          () => mockRepo.getMessages(any(), offset: 50),
+        ).thenAnswer((_) async => ([makeMessage('m2')], 150));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
 
-        when(() => mockRepo.getMessages(any(), offset: 0))
-            .thenThrow(Exception('Load failed'));
+        when(
+          () => mockRepo.getMessages(any(), offset: 0),
+        ).thenThrow(Exception('Load failed'));
 
         await notifier.loadMore();
 
@@ -276,15 +295,17 @@ void main() {
 
     group('refresh', () {
       test('re-runs loadInitial and resets to latest page', () async {
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([makeMessage('m1')], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([makeMessage('m1')], 1));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
         expect(notifier.state.messages.first.messageId, 'm1');
 
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([makeMessage('m2')], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([makeMessage('m2')], 1));
 
         await notifier.refresh();
 
@@ -297,8 +318,9 @@ void main() {
         final m1 = makeMessage('m1');
         final m2 = makeMessage('m2');
 
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([m1], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([m1], 1));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -309,8 +331,9 @@ void main() {
       });
 
       test('appends to empty list', () async {
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => (<Message>[], 0));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => (<Message>[], 0));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -328,8 +351,9 @@ void main() {
         final m2 = makeMessage('m2', isRead: false);
         final m3 = makeMessage('m3', isRead: false);
 
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([m1, m2, m3], 3));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([m1, m2, m3], 3));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -344,8 +368,9 @@ void main() {
       test('does not change anything for non-existing messageId', () async {
         final m1 = makeMessage('m1', isRead: false);
 
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([m1], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([m1], 1));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);
@@ -358,8 +383,9 @@ void main() {
       test('can mark an already-read message (no-op on isRead)', () async {
         final m1 = makeMessage('m1', isRead: true);
 
-        when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-            .thenAnswer((_) async => ([m1], 1));
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => ([m1], 1));
 
         final notifier = buildNotifier();
         await Future.delayed(Duration.zero);

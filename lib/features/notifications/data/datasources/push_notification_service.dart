@@ -163,7 +163,9 @@ class PushNotificationService {
   void _navigateFromData(Map<String, dynamic> data) {
     _navigateByType(
       type: data['type'] as String?,
-      resourceId: (data['resource_id'] ?? data['referenceId'] ?? data['conversationId']) as String?,
+      resourceId:
+          (data['resource_id'] ?? data['referenceId'] ?? data['conversationId'])
+              as String?,
       resourceType: data['resource_type'] as String?,
     );
   }

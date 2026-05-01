@@ -10,20 +10,20 @@ class MockDio extends Mock implements Dio {}
 
 /// Creates a successful [Response] wrapping [data] with HTTP 200.
 Response<dynamic> _resp(dynamic data) => Response<dynamic>(
-      data: data,
-      statusCode: 200,
-      requestOptions: RequestOptions(path: ''),
-    );
+  data: data,
+  statusCode: 200,
+  requestOptions: RequestOptions(path: ''),
+);
 
 /// Creates a [DioException] with the given [statusCode] for error-path testing.
 DioException _dioEx(int statusCode) => DioException(
-      requestOptions: RequestOptions(path: ''),
-      response: Response<dynamic>(
-        statusCode: statusCode,
-        requestOptions: RequestOptions(path: ''),
-      ),
-      type: DioExceptionType.badResponse,
-    );
+  requestOptions: RequestOptions(path: ''),
+  response: Response<dynamic>(
+    statusCode: statusCode,
+    requestOptions: RequestOptions(path: ''),
+  ),
+  type: DioExceptionType.badResponse,
+);
 
 /// Tests for [DatasourceImplement] — the Dio-backed HTTP datasource.
 ///
@@ -62,9 +62,13 @@ void main() {
 
   group('getConversations', () {
     test('returns list of conversations on success', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': [tConvJson]},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'items': [tConvJson],
+          },
+        }),
+      );
 
       final result = await ds.getConversations();
 
@@ -74,9 +78,11 @@ void main() {
     });
 
     test('returns empty list when items is empty', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': []},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'items': []},
+        }),
+      );
 
       expect(await ds.getConversations(), isEmpty);
     });
@@ -92,12 +98,14 @@ void main() {
 
   group('getMessages', () {
     test('parses messages when data field is a Map', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'messages': [tMsgJson],
-              'pagination': {'total': 1},
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'messages': [tMsgJson],
+            'pagination': {'total': 1},
+          },
+        }),
+      );
 
       final (msgs, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -107,10 +115,12 @@ void main() {
     });
 
     test('parses messages when data field is a List', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': [tMsgJson],
-            'pagination': {'total': 1},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': [tMsgJson],
+          'pagination': {'total': 1},
+        }),
+      );
 
       final (msgs, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -119,8 +129,9 @@ void main() {
     });
 
     test('returns empty list and zero total when data field is null', () async {
-      when(() => mockDio.get(any()))
-          .thenAnswer((_) async => _resp({'data': null}));
+      when(
+        () => mockDio.get(any()),
+      ).thenAnswer((_) async => _resp({'data': null}));
 
       final (msgs, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -129,12 +140,14 @@ void main() {
     });
 
     test('uses pagination.total from map when present', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'messages': [tMsgJson],
-              'pagination': {'total': 99},
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'messages': [tMsgJson],
+            'pagination': {'total': 99},
+          },
+        }),
+      );
 
       final (_, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -142,9 +155,13 @@ void main() {
     });
 
     test('falls back to message count when pagination absent', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'messages': [tMsgJson]},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'messages': [tMsgJson],
+          },
+        }),
+      );
 
       final (_, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -152,10 +169,12 @@ void main() {
     });
 
     test('uses top-level pagination when data is a List', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': [tMsgJson],
-            'pagination': {'total': 10},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': [tMsgJson],
+          'pagination': {'total': 10},
+        }),
+      );
 
       final (_, total) = await ds.getMessages(conversationId: 'c1');
 
@@ -173,8 +192,9 @@ void main() {
 
   group('sendMessage', () {
     test('returns parsed MessageModel on success', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({'data': tMsgJson}));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => _resp({'data': tMsgJson}));
 
       final req = SentMessageRequestModel(body: 'Hi');
       final result = await ds.sendMessage(
@@ -187,56 +207,72 @@ void main() {
     });
 
     test('calls the correct endpoint', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({'data': tMsgJson}));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => _resp({'data': tMsgJson}));
 
       await ds.sendMessage(
         conversationId: 'c1',
         requestContent: SentMessageRequestModel(body: 'Hi'),
       );
 
-      verify(() => mockDio.post(
-            ApiEndPoints.sendMessage('c1'),
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post(
+          ApiEndPoints.sendMessage('c1'),
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
   });
 
   // ─── newConversation ─────────────────────────────────────────────────────────
 
   group('newConversation', () {
-    test('returns conversation directly when response includes conversation key',
-        () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({
-                'data': {'conversation': tConvJson},
-              }));
+    test(
+      'returns conversation directly when response includes conversation key',
+      () async {
+        when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+          (_) async => _resp({
+            'data': {'conversation': tConvJson},
+          }),
+        );
 
-      final result = await ds.newConversation(participantId: 'u2');
+        final result = await ds.newConversation(participantId: 'u2');
 
-      expect(result.conversationId, 'c1');
-      expect(result.participantId, 'u2');
-    });
+        expect(result.conversationId, 'c1');
+        expect(result.participantId, 'u2');
+      },
+    );
 
-    test('falls back to getConversations when response has no conversation key',
-        () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({'data': {}}));
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': [tConvJson]},
-          }));
+    test(
+      'falls back to getConversations when response has no conversation key',
+      () async {
+        when(
+          () => mockDio.post(any(), data: any(named: 'data')),
+        ).thenAnswer((_) async => _resp({'data': {}}));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {
+              'items': [tConvJson],
+            },
+          }),
+        );
 
-      final result = await ds.newConversation(participantId: 'u2');
+        final result = await ds.newConversation(participantId: 'u2');
 
-      expect(result.participantId, 'u2');
-    });
+        expect(result.participantId, 'u2');
+      },
+    );
 
     test('throws when fallback finds no matching participant', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({'data': {}}));
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': []},
-          }));
+      when(
+        () => mockDio.post(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => _resp({'data': {}}));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'items': []},
+        }),
+      );
 
       expect(
         () => ds.newConversation(participantId: 'ghost-user'),
@@ -245,50 +281,54 @@ void main() {
     });
 
     test('includes body in request when provided', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({
-                'data': {'conversation': tConvJson},
-              }));
+      when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => _resp({
+          'data': {'conversation': tConvJson},
+        }),
+      );
 
       await ds.newConversation(participantId: 'u2', body: 'Hello!');
 
-      final captured = verify(() => mockDio.post(
-            any(),
-            data: captureAny(named: 'data'),
-          )).captured;
+      final captured = verify(
+        () => mockDio.post(any(), data: captureAny(named: 'data')),
+      ).captured;
       expect((captured.single as Map)['body'], 'Hello!');
     });
 
     test('includes track resource when trackId provided', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({
-                'data': {'conversation': tConvJson},
-              }));
+      when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => _resp({
+          'data': {'conversation': tConvJson},
+        }),
+      );
 
       await ds.newConversation(participantId: 'u2', trackId: 't1');
 
-      final captured = verify(() => mockDio.post(
-            any(),
-            data: captureAny(named: 'data'),
-          )).captured;
-      expect((captured.single as Map)['resource'],
-          {'type': 'track', 'id': 't1'});
+      final captured = verify(
+        () => mockDio.post(any(), data: captureAny(named: 'data')),
+      ).captured;
+      expect((captured.single as Map)['resource'], {
+        'type': 'track',
+        'id': 't1',
+      });
     });
 
     test('includes playlist resource when playlistId provided', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({
-                'data': {'conversation': tConvJson},
-              }));
+      when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => _resp({
+          'data': {'conversation': tConvJson},
+        }),
+      );
 
       await ds.newConversation(participantId: 'u2', playlistId: 'pl1');
 
-      final captured = verify(() => mockDio.post(
-            any(),
-            data: captureAny(named: 'data'),
-          )).captured;
-      expect((captured.single as Map)['resource'],
-          {'type': 'playlist', 'id': 'pl1'});
+      final captured = verify(
+        () => mockDio.post(any(), data: captureAny(named: 'data')),
+      ).captured;
+      expect((captured.single as Map)['resource'], {
+        'type': 'playlist',
+        'id': 'pl1',
+      });
     });
   });
 
@@ -296,18 +336,21 @@ void main() {
 
   group('ensureConversation', () {
     test('returns conversation on success', () async {
-      when(() => mockDio.post(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp({
-                'data': {'conversation': tConvJson},
-              }));
+      when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
+        (_) async => _resp({
+          'data': {'conversation': tConvJson},
+        }),
+      );
 
       final result = await ds.ensureConversation(participantId: 'u2');
 
       expect(result.conversationId, 'c1');
-      verify(() => mockDio.post(
-            ApiEndPoints.ensureConversation,
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post(
+          ApiEndPoints.ensureConversation,
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
   });
 
@@ -315,17 +358,21 @@ void main() {
 
   group('getUnreadCount', () {
     test('returns unread count on success', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'unread_count': 5},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'unread_count': 5},
+        }),
+      );
 
       expect(await ds.getUnreadCount(), 5);
     });
 
     test('returns 0 when count is zero', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'unread_count': 0},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'unread_count': 0},
+        }),
+      );
 
       expect(await ds.getUnreadCount(), 0);
     });
@@ -357,8 +404,9 @@ void main() {
 
   group('markMessagesAsRead', () {
     test('completes on success', () async {
-      when(() => mockDio.patch(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp(null));
+      when(
+        () => mockDio.patch(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => _resp(null));
 
       await expectLater(
         ds.markMessagesAsRead(conversationId: 'c1', messageId: 'm1'),
@@ -367,8 +415,9 @@ void main() {
     });
 
     test('swallows 409 DioException silently', () async {
-      when(() => mockDio.patch(any(), data: any(named: 'data')))
-          .thenThrow(_dioEx(409));
+      when(
+        () => mockDio.patch(any(), data: any(named: 'data')),
+      ).thenThrow(_dioEx(409));
 
       await expectLater(
         ds.markMessagesAsRead(conversationId: 'c1', messageId: 'm1'),
@@ -377,8 +426,9 @@ void main() {
     });
 
     test('rethrows non-409 DioException', () async {
-      when(() => mockDio.patch(any(), data: any(named: 'data')))
-          .thenThrow(_dioEx(500));
+      when(
+        () => mockDio.patch(any(), data: any(named: 'data')),
+      ).thenThrow(_dioEx(500));
 
       expect(
         () => ds.markMessagesAsRead(conversationId: 'c1', messageId: 'm1'),
@@ -387,15 +437,18 @@ void main() {
     });
 
     test('sends correct endpoint and payload', () async {
-      when(() => mockDio.patch(any(), data: any(named: 'data')))
-          .thenAnswer((_) async => _resp(null));
+      when(
+        () => mockDio.patch(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => _resp(null));
 
       await ds.markMessagesAsRead(conversationId: 'c1', messageId: 'm1');
 
-      verify(() => mockDio.patch(
-            ApiEndPoints.markMessagesAsRead('c1', 'm1'),
-            data: {'is_read': true},
-          )).called(1);
+      verify(
+        () => mockDio.patch(
+          ApiEndPoints.markMessagesAsRead('c1', 'm1'),
+          data: {'is_read': true},
+        ),
+      ).called(1);
     });
   });
 
@@ -403,9 +456,13 @@ void main() {
 
   group('getFollowings', () {
     test('returns list of potential conversations', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': [tUserJson]},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'items': [tUserJson],
+          },
+        }),
+      );
 
       final result = await ds.getFollowings('me');
 
@@ -415,9 +472,11 @@ void main() {
     });
 
     test('returns empty list when items is empty', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'items': []},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'items': []},
+        }),
+      );
 
       expect(await ds.getFollowings('me'), isEmpty);
     });
@@ -433,9 +492,13 @@ void main() {
 
   group('getSearchedUsers', () {
     test('returns matching users', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'users': [tUserJson]},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'users': [tUserJson],
+          },
+        }),
+      );
 
       final result = await ds.getSearchedUsers('ali');
 
@@ -444,9 +507,11 @@ void main() {
     });
 
     test('returns empty list when no users match', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'users': []},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'users': []},
+        }),
+      );
 
       expect(await ds.getSearchedUsers('zzz'), isEmpty);
     });
@@ -454,10 +519,7 @@ void main() {
     test('propagates DioException', () async {
       when(() => mockDio.get(any())).thenThrow(_dioEx(500));
 
-      expect(
-        () => ds.getSearchedUsers('ali'),
-        throwsA(isA<DioException>()),
-      );
+      expect(() => ds.getSearchedUsers('ali'), throwsA(isA<DioException>()));
     });
   });
 
@@ -465,17 +527,21 @@ void main() {
 
   group('isBlocked', () {
     test('returns true when is_blocking is true', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'is_blocking': true, 'is_blocked_by': false},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'is_blocking': true, 'is_blocked_by': false},
+        }),
+      );
 
       expect(await ds.isBlocked('u2'), true);
     });
 
     test('returns false when is_blocking is false', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'is_blocking': false, 'is_blocked_by': false},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'is_blocking': false, 'is_blocked_by': false},
+        }),
+      );
 
       expect(await ds.isBlocked('u2'), false);
     });
@@ -491,17 +557,21 @@ void main() {
 
   group('isBlockedBy', () {
     test('returns true when is_blocked_by is true', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'is_blocking': false, 'is_blocked_by': true},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'is_blocking': false, 'is_blocked_by': true},
+        }),
+      );
 
       expect(await ds.isBlockedBy('u2'), true);
     });
 
     test('returns false when is_blocked_by is false', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {'is_blocking': false, 'is_blocked_by': false},
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'is_blocking': false, 'is_blocked_by': false},
+        }),
+      );
 
       expect(await ds.isBlockedBy('u2'), false);
     });
@@ -518,17 +588,19 @@ void main() {
   group('getEmbeds', () {
     group('track', () {
       test('returns SharedEmbedModels from liked tracks', () async {
-        when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-              'data': {
-                'items': [
-                  {
-                    'track_id': 't1',
-                    'title': 'Track One',
-                    'cover_image': 'http://img',
-                  }
-                ],
-              },
-            }));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {
+              'items': [
+                {
+                  'track_id': 't1',
+                  'title': 'Track One',
+                  'cover_image': 'http://img',
+                },
+              ],
+            },
+          }),
+        );
 
         final result = await ds.getEmbeds('me', 'track');
 
@@ -539,13 +611,15 @@ void main() {
       });
 
       test('falls back to id field when track_id absent', () async {
-        when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-              'data': {
-                'items': [
-                  {'id': 't2', 'title': 'Track Two', 'cover_image': null}
-                ],
-              },
-            }));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {
+              'items': [
+                {'id': 't2', 'title': 'Track Two', 'cover_image': null},
+              ],
+            },
+          }),
+        );
 
         final result = await ds.getEmbeds('me', 'track');
 
@@ -554,30 +628,36 @@ void main() {
     });
 
     group('playlist', () {
-      test('merges liked and created playlists and deduplicates by id',
-          () async {
-        final likedItems = [
-          {'id': 'p1', 'name': 'Liked One', 'cover_image': null},
-          {'id': 'p2', 'name': 'Shared', 'cover_image': null},
-        ];
-        final createdItems = [
-          {'id': 'p2', 'name': 'Shared', 'cover_image': null},
-          {'id': 'p3', 'name': 'Created One', 'cover_image': null},
-        ];
+      test(
+        'merges liked and created playlists and deduplicates by id',
+        () async {
+          final likedItems = [
+            {'id': 'p1', 'name': 'Liked One', 'cover_image': null},
+            {'id': 'p2', 'name': 'Shared', 'cover_image': null},
+          ];
+          final createdItems = [
+            {'id': 'p2', 'name': 'Shared', 'cover_image': null},
+            {'id': 'p3', 'name': 'Created One', 'cover_image': null},
+          ];
 
-        when(() => mockDio.get(any())).thenAnswer((inv) async {
-          final url = inv.positionalArguments.first as String;
-          if (url.contains('liked-playlists')) {
-            return _resp({'data': {'items': likedItems}});
-          }
-          return _resp({'data': {'items': createdItems}});
-        });
+          when(() => mockDio.get(any())).thenAnswer((inv) async {
+            final url = inv.positionalArguments.first as String;
+            if (url.contains('liked-playlists')) {
+              return _resp({
+                'data': {'items': likedItems},
+              });
+            }
+            return _resp({
+              'data': {'items': createdItems},
+            });
+          });
 
-        final result = await ds.getEmbeds('me', 'playlist');
+          final result = await ds.getEmbeds('me', 'playlist');
 
-        expect(result, hasLength(3));
-        expect(result.map((e) => e.embedId), containsAll(['p1', 'p2', 'p3']));
-      });
+          expect(result, hasLength(3));
+          expect(result.map((e) => e.embedId), containsAll(['p1', 'p2', 'p3']));
+        },
+      );
 
       test('skips items missing id or name', () async {
         final items = [
@@ -586,8 +666,11 @@ void main() {
           {'id': 'p3', 'cover_image': null},
         ];
 
-        when(() => mockDio.get(any()))
-            .thenAnswer((_) async => _resp({'data': {'items': items}}));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {'items': items},
+          }),
+        );
 
         final result = await ds.getEmbeds('me', 'playlist');
 
@@ -597,8 +680,11 @@ void main() {
       });
 
       test('returns empty list when both sources are empty', () async {
-        when(() => mockDio.get(any()))
-            .thenAnswer((_) async => _resp({'data': {'items': []}}));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {'items': []},
+          }),
+        );
 
         expect(await ds.getEmbeds('me', 'playlist'), isEmpty);
       });
@@ -606,17 +692,15 @@ void main() {
 
     group('album', () {
       test('returns SharedEmbedModels from liked albums', () async {
-        when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-              'data': {
-                'items': [
-                  {
-                    'playlist_id': 'a1',
-                    'name': 'Album One',
-                    'cover_image': null,
-                  }
-                ],
-              },
-            }));
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
+            'data': {
+              'items': [
+                {'playlist_id': 'a1', 'name': 'Album One', 'cover_image': null},
+              ],
+            },
+          }),
+        );
 
         final result = await ds.getEmbeds('me', 'album');
 
@@ -636,14 +720,16 @@ void main() {
 
   group('getTrackDetails', () {
     test('parses track with artist_name field', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'id': 't1',
-              'title': 'My Track',
-              'artist_name': 'DJ One',
-              'cover_image': 'http://img',
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'id': 't1',
+            'title': 'My Track',
+            'artist_name': 'DJ One',
+            'cover_image': 'http://img',
+          },
+        }),
+      );
 
       final result = await ds.getTrackDetails('t1');
 
@@ -654,14 +740,16 @@ void main() {
     });
 
     test('falls back to artist field when artist_name is absent', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'id': 't1',
-              'title': 'My Track',
-              'artist': 'DJ Two',
-              'artwork_url': 'http://art',
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'id': 't1',
+            'title': 'My Track',
+            'artist': 'DJ Two',
+            'artwork_url': 'http://art',
+          },
+        }),
+      );
 
       final result = await ds.getTrackDetails('t1');
 
@@ -669,30 +757,32 @@ void main() {
       expect(result.thumbnailUrl, 'http://art');
     });
 
-    test('falls back to artists field when both artist_name and artist absent',
-        () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
+    test(
+      'falls back to artists field when both artist_name and artist absent',
+      () async {
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
             'data': {
               'id': 't1',
               'title': 'Collab',
               'artists': 'Artist A & Artist B',
               'cover_image': null,
             },
-          }));
+          }),
+        );
 
-      final result = await ds.getTrackDetails('t1');
+        final result = await ds.getTrackDetails('t1');
 
-      expect(result.artistName, 'Artist A & Artist B');
-    });
+        expect(result.artistName, 'Artist A & Artist B');
+      },
+    );
 
     test('calls correct endpoint', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'id': 't1',
-              'title': 'Track',
-              'cover_image': null,
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {'id': 't1', 'title': 'Track', 'cover_image': null},
+        }),
+      );
 
       await ds.getTrackDetails('t1');
 
@@ -704,14 +794,16 @@ void main() {
 
   group('getPlaylistDetails', () {
     test('returns playlist embed using playlist_id from response', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'playlist_id': 'pl1',
-              'name': 'My Playlist',
-              'owner_name': 'Alice',
-              'cover_image': 'http://img',
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'playlist_id': 'pl1',
+            'name': 'My Playlist',
+            'owner_name': 'Alice',
+            'cover_image': 'http://img',
+          },
+        }),
+      );
 
       final result = await ds.getPlaylistDetails('pl1', 'playlist');
 
@@ -721,36 +813,43 @@ void main() {
       expect(result.embedType, 'playlist');
     });
 
-    test('falls back to playlistId param when playlist_id absent in response',
-        () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
+    test(
+      'falls back to playlistId param when playlist_id absent in response',
+      () async {
+        when(() => mockDio.get(any())).thenAnswer(
+          (_) async => _resp({
             'data': {
               'name': 'My Album',
               'owner_name': 'Bob',
               'cover_image': null,
             },
-          }));
+          }),
+        );
 
-      final result = await ds.getPlaylistDetails('a1', 'album');
+        final result = await ds.getPlaylistDetails('a1', 'album');
 
-      expect(result.embedId, 'a1');
-      expect(result.embedType, 'album');
-    });
+        expect(result.embedId, 'a1');
+        expect(result.embedType, 'album');
+      },
+    );
 
     test('calls correct endpoint', () async {
-      when(() => mockDio.get(any())).thenAnswer((_) async => _resp({
-            'data': {
-              'playlist_id': 'pl1',
-              'name': 'P',
-              'owner_name': 'X',
-              'cover_image': null,
-            },
-          }));
+      when(() => mockDio.get(any())).thenAnswer(
+        (_) async => _resp({
+          'data': {
+            'playlist_id': 'pl1',
+            'name': 'P',
+            'owner_name': 'X',
+            'cover_image': null,
+          },
+        }),
+      );
 
       await ds.getPlaylistDetails('pl1', 'playlist');
 
-      verify(() => mockDio.get(ApiEndPoints.getPlaylistDetails('pl1')))
-          .called(1);
+      verify(
+        () => mockDio.get(ApiEndPoints.getPlaylistDetails('pl1')),
+      ).called(1);
     });
   });
 }

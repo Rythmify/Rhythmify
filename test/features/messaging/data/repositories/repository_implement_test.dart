@@ -62,8 +62,9 @@ void main() {
   group('RepositoryImplement', () {
     group('getConversations', () {
       test('delegates to datasource and returns result', () async {
-        when(() => mockDatasource.getConversations())
-            .thenAnswer((_) async => [tConversationModel]);
+        when(
+          () => mockDatasource.getConversations(),
+        ).thenAnswer((_) async => [tConversationModel]);
 
         final result = await repo.getConversations();
 
@@ -72,8 +73,9 @@ void main() {
       });
 
       test('returns empty list when datasource returns empty', () async {
-        when(() => mockDatasource.getConversations())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockDatasource.getConversations(),
+        ).thenAnswer((_) async => []);
 
         final result = await repo.getConversations();
         expect(result, isEmpty);
@@ -81,45 +83,54 @@ void main() {
     });
 
     group('getMessages', () {
-      test('delegates with correct conversationId and default offset', () async {
-        when(() => mockDatasource.getMessages(
+      test(
+        'delegates with correct conversationId and default offset',
+        () async {
+          when(
+            () => mockDatasource.getMessages(
               conversationId: any(named: 'conversationId'),
               offset: any(named: 'offset'),
-            )).thenAnswer((_) async => ([tMessageModel], 1));
+            ),
+          ).thenAnswer((_) async => ([tMessageModel], 1));
 
-        final (messages, total) = await repo.getMessages('conv-1');
+          final (messages, total) = await repo.getMessages('conv-1');
 
-        expect(messages, [tMessageModel]);
-        expect(total, 1);
-        verify(() => mockDatasource.getMessages(
-              conversationId: 'conv-1',
-              offset: 0,
-            )).called(1);
-      });
+          expect(messages, [tMessageModel]);
+          expect(total, 1);
+          verify(
+            () =>
+                mockDatasource.getMessages(conversationId: 'conv-1', offset: 0),
+          ).called(1);
+        },
+      );
 
       test('passes offset to datasource', () async {
-        when(() => mockDatasource.getMessages(
-              conversationId: any(named: 'conversationId'),
-              offset: any(named: 'offset'),
-            )).thenAnswer((_) async => ([tMessageModel], 50));
+        when(
+          () => mockDatasource.getMessages(
+            conversationId: any(named: 'conversationId'),
+            offset: any(named: 'offset'),
+          ),
+        ).thenAnswer((_) async => ([tMessageModel], 50));
 
         await repo.getMessages('conv-1', offset: 100);
 
-        verify(() => mockDatasource.getMessages(
-              conversationId: 'conv-1',
-              offset: 100,
-            )).called(1);
+        verify(
+          () =>
+              mockDatasource.getMessages(conversationId: 'conv-1', offset: 100),
+        ).called(1);
       });
     });
 
     group('startConversation', () {
       test('calls datasource.newConversation with correct args', () async {
-        when(() => mockDatasource.newConversation(
-              participantId: any(named: 'participantId'),
-              body: any(named: 'body'),
-              trackId: any(named: 'trackId'),
-              playlistId: any(named: 'playlistId'),
-            )).thenAnswer((_) async => tConversationModel);
+        when(
+          () => mockDatasource.newConversation(
+            participantId: any(named: 'participantId'),
+            body: any(named: 'body'),
+            trackId: any(named: 'trackId'),
+            playlistId: any(named: 'playlistId'),
+          ),
+        ).thenAnswer((_) async => tConversationModel);
 
         final result = await repo.startConversation(
           'user-2',
@@ -129,57 +140,73 @@ void main() {
         );
 
         expect(result, tConversationModel);
-        verify(() => mockDatasource.newConversation(
-              participantId: 'user-2',
-              body: 'Hi',
-              trackId: 'track-1',
-              playlistId: null,
-            )).called(1);
+        verify(
+          () => mockDatasource.newConversation(
+            participantId: 'user-2',
+            body: 'Hi',
+            trackId: 'track-1',
+            playlistId: null,
+          ),
+        ).called(1);
       });
 
       test('passes null body and embed when not provided', () async {
-        when(() => mockDatasource.newConversation(
-              participantId: any(named: 'participantId'),
-              body: any(named: 'body'),
-              trackId: any(named: 'trackId'),
-              playlistId: any(named: 'playlistId'),
-            )).thenAnswer((_) async => tConversationModel);
+        when(
+          () => mockDatasource.newConversation(
+            participantId: any(named: 'participantId'),
+            body: any(named: 'body'),
+            trackId: any(named: 'trackId'),
+            playlistId: any(named: 'playlistId'),
+          ),
+        ).thenAnswer((_) async => tConversationModel);
 
         await repo.startConversation('user-2', null, null, null);
 
-        verify(() => mockDatasource.newConversation(
-              participantId: 'user-2',
-              body: null,
-              trackId: null,
-              playlistId: null,
-            )).called(1);
+        verify(
+          () => mockDatasource.newConversation(
+            participantId: 'user-2',
+            body: null,
+            trackId: null,
+            playlistId: null,
+          ),
+        ).called(1);
       });
     });
 
     group('sendMessage', () {
-      test('builds SentMessageRequestModel and delegates to datasource', () async {
-        when(() => mockDatasource.sendMessage(
+      test(
+        'builds SentMessageRequestModel and delegates to datasource',
+        () async {
+          when(
+            () => mockDatasource.sendMessage(
               conversationId: any(named: 'conversationId'),
               requestContent: any(named: 'requestContent'),
-            )).thenAnswer((_) async => tMessageModel);
+            ),
+          ).thenAnswer((_) async => tMessageModel);
 
-        final result = await repo.sendMessage('conv-1', 'Hello', null, null);
+          final result = await repo.sendMessage('conv-1', 'Hello', null, null);
 
-        expect(result, tMessageModel);
-        verify(() => mockDatasource.sendMessage(
+          expect(result, tMessageModel);
+          verify(
+            () => mockDatasource.sendMessage(
               conversationId: 'conv-1',
               requestContent: any(named: 'requestContent'),
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('passes embedId and embedType to SentMessageRequestModel', () async {
         SentMessageRequestModel? captured;
-        when(() => mockDatasource.sendMessage(
-              conversationId: any(named: 'conversationId'),
-              requestContent: any(named: 'requestContent'),
-            )).thenAnswer((invocation) async {
-          captured = invocation.namedArguments[const Symbol('requestContent')]
-              as SentMessageRequestModel;
+        when(
+          () => mockDatasource.sendMessage(
+            conversationId: any(named: 'conversationId'),
+            requestContent: any(named: 'requestContent'),
+          ),
+        ).thenAnswer((invocation) async {
+          captured =
+              invocation.namedArguments[const Symbol('requestContent')]
+                  as SentMessageRequestModel;
           return tMessageModel;
         });
 
@@ -193,8 +220,9 @@ void main() {
 
     group('blockUser', () {
       test('delegates userId to datasource.blockUser', () async {
-        when(() => mockDatasource.blockUser(userId: any(named: 'userId')))
-            .thenAnswer((_) async {});
+        when(
+          () => mockDatasource.blockUser(userId: any(named: 'userId')),
+        ).thenAnswer((_) async {});
 
         await repo.blockUser('user-2');
 
@@ -204,8 +232,9 @@ void main() {
 
     group('unBlockUser', () {
       test('delegates userId to datasource.unBlockUser', () async {
-        when(() => mockDatasource.unBlockUser(userId: any(named: 'userId')))
-            .thenAnswer((_) async {});
+        when(
+          () => mockDatasource.unBlockUser(userId: any(named: 'userId')),
+        ).thenAnswer((_) async {});
 
         await repo.unBlockUser('user-2');
 
@@ -215,35 +244,45 @@ void main() {
 
     group('markMessageAsRead', () {
       test('passes messageId and conversationId in correct order', () async {
-        when(() => mockDatasource.markMessagesAsRead(
-              conversationId: any(named: 'conversationId'),
-              messageId: any(named: 'messageId'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockDatasource.markMessagesAsRead(
+            conversationId: any(named: 'conversationId'),
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenAnswer((_) async {});
 
         await repo.markMessageAsRead('msg-1', 'conv-1');
 
-        verify(() => mockDatasource.markMessagesAsRead(
-              conversationId: 'conv-1',
-              messageId: 'msg-1',
-            )).called(1);
+        verify(
+          () => mockDatasource.markMessagesAsRead(
+            conversationId: 'conv-1',
+            messageId: 'msg-1',
+          ),
+        ).called(1);
       });
     });
 
     group('getUnReadCount', () {
-      test('delegates to datasource.getUnreadCount and returns value', () async {
-        when(() => mockDatasource.getUnreadCount()).thenAnswer((_) async => 5);
+      test(
+        'delegates to datasource.getUnreadCount and returns value',
+        () async {
+          when(
+            () => mockDatasource.getUnreadCount(),
+          ).thenAnswer((_) async => 5);
 
-        final result = await repo.getUnReadCount();
+          final result = await repo.getUnReadCount();
 
-        expect(result, 5);
-        verify(() => mockDatasource.getUnreadCount()).called(1);
-      });
+          expect(result, 5);
+          verify(() => mockDatasource.getUnreadCount()).called(1);
+        },
+      );
     });
 
     group('getFollowings', () {
       test('delegates myId to datasource and returns result', () async {
-        when(() => mockDatasource.getFollowings(any()))
-            .thenAnswer((_) async => [tPotentialModel]);
+        when(
+          () => mockDatasource.getFollowings(any()),
+        ).thenAnswer((_) async => [tPotentialModel]);
 
         final result = await repo.getFollowings('my-id');
 
@@ -254,8 +293,9 @@ void main() {
 
     group('getSearchedUsers', () {
       test('delegates query to datasource and returns result', () async {
-        when(() => mockDatasource.getSearchedUsers(any()))
-            .thenAnswer((_) async => [tPotentialModel]);
+        when(
+          () => mockDatasource.getSearchedUsers(any()),
+        ).thenAnswer((_) async => [tPotentialModel]);
 
         final result = await repo.getSearchedUsers('alice');
 
@@ -266,16 +306,18 @@ void main() {
 
     group('isBlocked', () {
       test('returns true when datasource returns true', () async {
-        when(() => mockDatasource.isBlocked(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockDatasource.isBlocked(any()),
+        ).thenAnswer((_) async => true);
 
         expect(await repo.isBlocked('user-2'), true);
         verify(() => mockDatasource.isBlocked('user-2')).called(1);
       });
 
       test('returns false when datasource returns false', () async {
-        when(() => mockDatasource.isBlocked(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockDatasource.isBlocked(any()),
+        ).thenAnswer((_) async => false);
 
         expect(await repo.isBlocked('user-3'), false);
       });
@@ -283,8 +325,9 @@ void main() {
 
     group('isBlockedBy', () {
       test('returns bool from datasource', () async {
-        when(() => mockDatasource.isBlockedBy(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockDatasource.isBlockedBy(any()),
+        ).thenAnswer((_) async => true);
 
         expect(await repo.isBlockedBy('user-2'), true);
         verify(() => mockDatasource.isBlockedBy('user-2')).called(1);
@@ -292,21 +335,26 @@ void main() {
     });
 
     group('getLikedEmbeds', () {
-      test('delegates to datasource.getEmbeds with userId and embedType', () async {
-        when(() => mockDatasource.getEmbeds(any(), any()))
-            .thenAnswer((_) async => [tSharedEmbedModel]);
+      test(
+        'delegates to datasource.getEmbeds with userId and embedType',
+        () async {
+          when(
+            () => mockDatasource.getEmbeds(any(), any()),
+          ).thenAnswer((_) async => [tSharedEmbedModel]);
 
-        final result = await repo.getLikedEmbeds('user-1', 'track');
+          final result = await repo.getLikedEmbeds('user-1', 'track');
 
-        expect(result, [tSharedEmbedModel]);
-        verify(() => mockDatasource.getEmbeds('user-1', 'track')).called(1);
-      });
+          expect(result, [tSharedEmbedModel]);
+          verify(() => mockDatasource.getEmbeds('user-1', 'track')).called(1);
+        },
+      );
     });
 
     group('getTrack', () {
       test('delegates to datasource.getTrackDetails', () async {
-        when(() => mockDatasource.getTrackDetails(any()))
-            .thenAnswer((_) async => tSharedEmbedModel);
+        when(
+          () => mockDatasource.getTrackDetails(any()),
+        ).thenAnswer((_) async => tSharedEmbedModel);
 
         final result = await repo.getTrack('track-1');
 
@@ -316,30 +364,37 @@ void main() {
     });
 
     group('getPlaylist', () {
-      test('delegates to datasource.getPlaylistDetails with id and type', () async {
-        when(() => mockDatasource.getPlaylistDetails(any(), any()))
-            .thenAnswer((_) async => tSharedEmbedModel);
+      test(
+        'delegates to datasource.getPlaylistDetails with id and type',
+        () async {
+          when(
+            () => mockDatasource.getPlaylistDetails(any(), any()),
+          ).thenAnswer((_) async => tSharedEmbedModel);
 
-        final result = await repo.getPlaylist('pl-1', 'playlist');
+          final result = await repo.getPlaylist('pl-1', 'playlist');
 
-        expect(result, tSharedEmbedModel);
-        verify(() => mockDatasource.getPlaylistDetails('pl-1', 'playlist'))
-            .called(1);
-      });
+          expect(result, tSharedEmbedModel);
+          verify(
+            () => mockDatasource.getPlaylistDetails('pl-1', 'playlist'),
+          ).called(1);
+        },
+      );
     });
 
     group('ensureConversation', () {
       test('delegates participantId to datasource', () async {
-        when(() => mockDatasource.ensureConversation(
-              participantId: any(named: 'participantId'),
-            )).thenAnswer((_) async => tConversationModel);
+        when(
+          () => mockDatasource.ensureConversation(
+            participantId: any(named: 'participantId'),
+          ),
+        ).thenAnswer((_) async => tConversationModel);
 
         final result = await repo.ensureConversation('user-2');
 
         expect(result, tConversationModel);
-        verify(() => mockDatasource.ensureConversation(
-              participantId: 'user-2',
-            )).called(1);
+        verify(
+          () => mockDatasource.ensureConversation(participantId: 'user-2'),
+        ).called(1);
       });
     });
   });

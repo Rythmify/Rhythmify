@@ -46,8 +46,14 @@ void main() {
       test('overrides isPrivate only', () {
         final updated = tEntity.copyWith(isPrivate: true);
         expect(updated.isPrivate, true);
-        expect(updated.receiveMessageFromAnyone, tEntity.receiveMessageFromAnyone);
-        expect(updated.showActivitiesInDiscovery, tEntity.showActivitiesInDiscovery);
+        expect(
+          updated.receiveMessageFromAnyone,
+          tEntity.receiveMessageFromAnyone,
+        );
+        expect(
+          updated.showActivitiesInDiscovery,
+          tEntity.showActivitiesInDiscovery,
+        );
         expect(updated.showAsTopFan, tEntity.showAsTopFan);
         expect(updated.showTopFansOnTracks, tEntity.showTopFansOnTracks);
       });
@@ -85,8 +91,14 @@ void main() {
         expect(updated.isPrivate, true);
         expect(updated.showAsTopFan, false);
         expect(updated.showTopFansOnTracks, false);
-        expect(updated.receiveMessageFromAnyone, tEntity.receiveMessageFromAnyone);
-        expect(updated.showActivitiesInDiscovery, tEntity.showActivitiesInDiscovery);
+        expect(
+          updated.receiveMessageFromAnyone,
+          tEntity.receiveMessageFromAnyone,
+        );
+        expect(
+          updated.showActivitiesInDiscovery,
+          tEntity.showActivitiesInDiscovery,
+        );
       });
     });
   });

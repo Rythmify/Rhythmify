@@ -41,18 +41,22 @@ void main() {
   }
 
   group('conversationProvider wiring', () {
-    test('executes GetConversationsUsecase and returns conversations', () async {
-      when(() => mockRepo.getConversations())
-          .thenAnswer((_) async => [tConversation]);
+    test(
+      'executes GetConversationsUsecase and returns conversations',
+      () async {
+        when(
+          () => mockRepo.getConversations(),
+        ).thenAnswer((_) async => [tConversation]);
 
-      final container = buildContainer();
-      addTearDown(container.dispose);
+        final container = buildContainer();
+        addTearDown(container.dispose);
 
-      final result = await container.read(conversationProvider.future);
+        final result = await container.read(conversationProvider.future);
 
-      expect(result, [tConversation]);
-      verify(() => mockRepo.getConversations()).called(1);
-    });
+        expect(result, [tConversation]);
+        verify(() => mockRepo.getConversations()).called(1);
+      },
+    );
 
     test('returns empty list when repo has no conversations', () async {
       when(() => mockRepo.getConversations()).thenAnswer((_) async => []);
@@ -73,8 +77,7 @@ void main() {
       final container = buildContainer();
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(isBlockedProvider('user-2').future);
+      final result = await container.read(isBlockedProvider('user-2').future);
 
       expect(result, true);
       verify(() => mockRepo.isBlocked('user-2')).called(1);
@@ -86,26 +89,29 @@ void main() {
       final container = buildContainer();
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(isBlockedProvider('user-3').future);
+      final result = await container.read(isBlockedProvider('user-3').future);
 
       expect(result, false);
     });
   });
 
   group('isBlockedByProvider wiring', () {
-    test('executes IsBlockedByUsecase and returns true when blocked by', () async {
-      when(() => mockRepo.isBlockedBy(any())).thenAnswer((_) async => true);
+    test(
+      'executes IsBlockedByUsecase and returns true when blocked by',
+      () async {
+        when(() => mockRepo.isBlockedBy(any())).thenAnswer((_) async => true);
 
-      final container = buildContainer();
-      addTearDown(container.dispose);
+        final container = buildContainer();
+        addTearDown(container.dispose);
 
-      final result =
-          await container.read(isBlockedByProvider('user-2').future);
+        final result = await container.read(
+          isBlockedByProvider('user-2').future,
+        );
 
-      expect(result, true);
-      verify(() => mockRepo.isBlockedBy('user-2')).called(1);
-    });
+        expect(result, true);
+        verify(() => mockRepo.isBlockedBy('user-2')).called(1);
+      },
+    );
 
     test('returns false when not blocked by participant', () async {
       when(() => mockRepo.isBlockedBy(any())).thenAnswer((_) async => false);
@@ -113,8 +119,7 @@ void main() {
       final container = buildContainer();
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(isBlockedByProvider('user-3').future);
+      final result = await container.read(isBlockedByProvider('user-3').future);
 
       expect(result, false);
     });

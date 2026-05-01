@@ -61,16 +61,16 @@ void main() {
       });
 
       test('defaults receiveMessageFromAnyone to true when null', () {
-        final model = PrivacySettingsModel.fromJson(
-          {'receive_messages_from_anyone': null},
-        );
+        final model = PrivacySettingsModel.fromJson({
+          'receive_messages_from_anyone': null,
+        });
         expect(model.receiveMessageFromAnyone, true);
       });
 
       test('defaults showActivitiesInDiscovery to true when null', () {
-        final model = PrivacySettingsModel.fromJson(
-          {'show_activities_in_discovery': null},
-        );
+        final model = PrivacySettingsModel.fromJson({
+          'show_activities_in_discovery': null,
+        });
         expect(model.showActivitiesInDiscovery, true);
       });
 
@@ -80,9 +80,9 @@ void main() {
       });
 
       test('defaults showTopFansOnTracks to true when null', () {
-        final model = PrivacySettingsModel.fromJson(
-          {'show_top_fans_on_tracks': null},
-        );
+        final model = PrivacySettingsModel.fromJson({
+          'show_top_fans_on_tracks': null,
+        });
         expect(model.showTopFansOnTracks, true);
       });
     });
@@ -191,8 +191,14 @@ void main() {
         final model = PrivacySettingsModel.fromEntity(tEntity);
 
         expect(model.isPrivate, tEntity.isPrivate);
-        expect(model.receiveMessageFromAnyone, tEntity.receiveMessageFromAnyone);
-        expect(model.showActivitiesInDiscovery, tEntity.showActivitiesInDiscovery);
+        expect(
+          model.receiveMessageFromAnyone,
+          tEntity.receiveMessageFromAnyone,
+        );
+        expect(
+          model.showActivitiesInDiscovery,
+          tEntity.showActivitiesInDiscovery,
+        );
         expect(model.showAsTopFan, tEntity.showAsTopFan);
         expect(model.showTopFansOnTracks, tEntity.showTopFansOnTracks);
       });
@@ -204,8 +210,14 @@ void main() {
 
         expect(entity, isA<PrivacySettingsEntity>());
         expect(entity.isPrivate, tModel.isPrivate);
-        expect(entity.receiveMessageFromAnyone, tModel.receiveMessageFromAnyone);
-        expect(entity.showActivitiesInDiscovery, tModel.showActivitiesInDiscovery);
+        expect(
+          entity.receiveMessageFromAnyone,
+          tModel.receiveMessageFromAnyone,
+        );
+        expect(
+          entity.showActivitiesInDiscovery,
+          tModel.showActivitiesInDiscovery,
+        );
         expect(entity.showAsTopFan, tModel.showAsTopFan);
         expect(entity.showTopFansOnTracks, tModel.showTopFansOnTracks);
       });

@@ -90,25 +90,36 @@ void main() {
 
   group('SettingsRepoImpl', () {
     group('getPrivacySettings', () {
-      test('returns PrivacySettingsEntity mapped from datasource model', () async {
-        when(() => mockDatasource.getPrivacySettings())
-            .thenAnswer((_) async => tPrivacyModel);
+      test(
+        'returns PrivacySettingsEntity mapped from datasource model',
+        () async {
+          when(
+            () => mockDatasource.getPrivacySettings(),
+          ).thenAnswer((_) async => tPrivacyModel);
 
-        final result = await repo.getPrivacySettings();
+          final result = await repo.getPrivacySettings();
 
-        expect(result, isA<PrivacySettingsEntity>());
-        expect(result.isPrivate, tPrivacyModel.isPrivate);
-        expect(result.receiveMessageFromAnyone, tPrivacyModel.receiveMessageFromAnyone);
-        expect(result.showActivitiesInDiscovery, tPrivacyModel.showActivitiesInDiscovery);
-        expect(result.showAsTopFan, tPrivacyModel.showAsTopFan);
-        expect(result.showTopFansOnTracks, tPrivacyModel.showTopFansOnTracks);
-        verify(() => mockDatasource.getPrivacySettings()).called(1);
-        verifyNoMoreInteractions(mockDatasource);
-      });
+          expect(result, isA<PrivacySettingsEntity>());
+          expect(result.isPrivate, tPrivacyModel.isPrivate);
+          expect(
+            result.receiveMessageFromAnyone,
+            tPrivacyModel.receiveMessageFromAnyone,
+          );
+          expect(
+            result.showActivitiesInDiscovery,
+            tPrivacyModel.showActivitiesInDiscovery,
+          );
+          expect(result.showAsTopFan, tPrivacyModel.showAsTopFan);
+          expect(result.showTopFansOnTracks, tPrivacyModel.showTopFansOnTracks);
+          verify(() => mockDatasource.getPrivacySettings()).called(1);
+          verifyNoMoreInteractions(mockDatasource);
+        },
+      );
 
       test('propagates exceptions from datasource', () {
-        when(() => mockDatasource.getPrivacySettings())
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockDatasource.getPrivacySettings(),
+        ).thenThrow(Exception('Network error'));
 
         expect(() => repo.getPrivacySettings(), throwsException);
       });
@@ -123,56 +134,71 @@ void main() {
         showTopFansOnTracks: true,
       );
 
-      test('returns updated entity without calling datasource when nothing changed', () async {
-        const updated = previous;
+      test(
+        'returns updated entity without calling datasource when nothing changed',
+        () async {
+          const updated = previous;
 
-        final result = await repo.updatePrivacySettings(previous, updated);
+          final result = await repo.updatePrivacySettings(previous, updated);
 
-        expect(result, updated);
-        verifyNever(() => mockDatasource.patchPrivacySettings(any()));
-      });
+          expect(result, updated);
+          verifyNever(() => mockDatasource.patchPrivacySettings(any()));
+        },
+      );
 
-      test('calls patchPrivacySettings when receiveMessageFromAnyone changes', () async {
-        const updated = PrivacySettingsEntity(
-          isPrivate: false,
-          receiveMessageFromAnyone: false,
-          showActivitiesInDiscovery: true,
-          showAsTopFan: true,
-          showTopFansOnTracks: true,
-        );
+      test(
+        'calls patchPrivacySettings when receiveMessageFromAnyone changes',
+        () async {
+          const updated = PrivacySettingsEntity(
+            isPrivate: false,
+            receiveMessageFromAnyone: false,
+            showActivitiesInDiscovery: true,
+            showAsTopFan: true,
+            showTopFansOnTracks: true,
+          );
 
-        when(() => mockDatasource.patchPrivacySettings(any()))
-            .thenAnswer((_) async => tPrivacyModel);
+          when(
+            () => mockDatasource.patchPrivacySettings(any()),
+          ).thenAnswer((_) async => tPrivacyModel);
 
-        final result = await repo.updatePrivacySettings(previous, updated);
+          final result = await repo.updatePrivacySettings(previous, updated);
 
-        expect(result, isA<PrivacySettingsEntity>());
-        final captured = verify(
-          () => mockDatasource.patchPrivacySettings(captureAny()),
-        ).captured.single as Map<String, dynamic>;
-        expect(captured['receive_messages_from_anyone'], false);
-        expect(captured.containsKey('is_private'), false);
-      });
+          expect(result, isA<PrivacySettingsEntity>());
+          final captured =
+              verify(
+                    () => mockDatasource.patchPrivacySettings(captureAny()),
+                  ).captured.single
+                  as Map<String, dynamic>;
+          expect(captured['receive_messages_from_anyone'], false);
+          expect(captured.containsKey('is_private'), false);
+        },
+      );
 
-      test('calls patchPrivacySettings when showActivitiesInDiscovery changes', () async {
-        const updated = PrivacySettingsEntity(
-          isPrivate: false,
-          receiveMessageFromAnyone: true,
-          showActivitiesInDiscovery: false,
-          showAsTopFan: true,
-          showTopFansOnTracks: true,
-        );
+      test(
+        'calls patchPrivacySettings when showActivitiesInDiscovery changes',
+        () async {
+          const updated = PrivacySettingsEntity(
+            isPrivate: false,
+            receiveMessageFromAnyone: true,
+            showActivitiesInDiscovery: false,
+            showAsTopFan: true,
+            showTopFansOnTracks: true,
+          );
 
-        when(() => mockDatasource.patchPrivacySettings(any()))
-            .thenAnswer((_) async => tPrivacyModel);
+          when(
+            () => mockDatasource.patchPrivacySettings(any()),
+          ).thenAnswer((_) async => tPrivacyModel);
 
-        await repo.updatePrivacySettings(previous, updated);
+          await repo.updatePrivacySettings(previous, updated);
 
-        final captured = verify(
-          () => mockDatasource.patchPrivacySettings(captureAny()),
-        ).captured.single as Map<String, dynamic>;
-        expect(captured['show_activities_in_discovery'], false);
-      });
+          final captured =
+              verify(
+                    () => mockDatasource.patchPrivacySettings(captureAny()),
+                  ).captured.single
+                  as Map<String, dynamic>;
+          expect(captured['show_activities_in_discovery'], false);
+        },
+      );
 
       test('calls patchPrivacySettings when showAsTopFan changes', () async {
         const updated = PrivacySettingsEntity(
@@ -183,14 +209,17 @@ void main() {
           showTopFansOnTracks: true,
         );
 
-        when(() => mockDatasource.patchPrivacySettings(any()))
-            .thenAnswer((_) async => tPrivacyModel);
+        when(
+          () => mockDatasource.patchPrivacySettings(any()),
+        ).thenAnswer((_) async => tPrivacyModel);
 
         await repo.updatePrivacySettings(previous, updated);
 
-        final captured = verify(
-          () => mockDatasource.patchPrivacySettings(captureAny()),
-        ).captured.single as Map<String, dynamic>;
+        final captured =
+            verify(
+                  () => mockDatasource.patchPrivacySettings(captureAny()),
+                ).captured.single
+                as Map<String, dynamic>;
         expect(captured['show_as_top_fan'], false);
       });
 
@@ -203,8 +232,9 @@ void main() {
           showTopFansOnTracks: true,
         );
 
-        when(() => mockDatasource.patchPrivacySettings(any()))
-            .thenThrow(Exception('Server error'));
+        when(
+          () => mockDatasource.patchPrivacySettings(any()),
+        ).thenThrow(Exception('Server error'));
 
         expect(
           () => repo.updatePrivacySettings(previous, updated),
@@ -215,8 +245,9 @@ void main() {
 
     group('getNotificationPreferences', () {
       test('returns NotificationPreferencesEntity from datasource', () async {
-        when(() => mockDatasource.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifModel);
+        when(
+          () => mockDatasource.getNotificationPreferences(),
+        ).thenAnswer((_) async => tNotifModel);
 
         final result = await repo.getNotificationPreferences();
 
@@ -229,8 +260,9 @@ void main() {
       });
 
       test('propagates exceptions from datasource', () {
-        when(() => mockDatasource.getNotificationPreferences())
-            .thenThrow(Exception('Timeout'));
+        when(
+          () => mockDatasource.getNotificationPreferences(),
+        ).thenThrow(Exception('Timeout'));
 
         expect(() => repo.getNotificationPreferences(), throwsException);
       });
@@ -238,34 +270,46 @@ void main() {
 
     group('updateNotificationPreferences', () {
       test('calls datasource and returns mapped entity', () async {
-        when(() => mockDatasource.updateNotificationPreferences(any()))
-            .thenAnswer((_) async => tNotifModel);
+        when(
+          () => mockDatasource.updateNotificationPreferences(any()),
+        ).thenAnswer((_) async => tNotifModel);
 
         final result = await repo.updateNotificationPreferences(tNotifEntity);
 
         expect(result, isA<NotificationPreferencesEntity>());
         expect(result.newFollowerPush, tNotifModel.newFollowerPush);
         expect(result.messagesFrom, tNotifModel.messagesFrom);
-        verify(() => mockDatasource.updateNotificationPreferences(any())).called(1);
+        verify(
+          () => mockDatasource.updateNotificationPreferences(any()),
+        ).called(1);
         verifyNoMoreInteractions(mockDatasource);
       });
 
-      test('passes a model built from the given entity to datasource', () async {
-        when(() => mockDatasource.updateNotificationPreferences(any()))
-            .thenAnswer((_) async => tNotifModel);
+      test(
+        'passes a model built from the given entity to datasource',
+        () async {
+          when(
+            () => mockDatasource.updateNotificationPreferences(any()),
+          ).thenAnswer((_) async => tNotifModel);
 
-        await repo.updateNotificationPreferences(tNotifEntity);
+          await repo.updateNotificationPreferences(tNotifEntity);
 
-        final captured = verify(
-          () => mockDatasource.updateNotificationPreferences(captureAny()),
-        ).captured.single as NotificationPreferencesModel;
-        expect(captured.newFollowerPush, tNotifEntity.newFollowerPush);
-        expect(captured.messagesFrom, tNotifEntity.messagesFrom);
-      });
+          final captured =
+              verify(
+                    () => mockDatasource.updateNotificationPreferences(
+                      captureAny(),
+                    ),
+                  ).captured.single
+                  as NotificationPreferencesModel;
+          expect(captured.newFollowerPush, tNotifEntity.newFollowerPush);
+          expect(captured.messagesFrom, tNotifEntity.messagesFrom);
+        },
+      );
 
       test('propagates exceptions from datasource', () {
-        when(() => mockDatasource.updateNotificationPreferences(any()))
-            .thenThrow(Exception('Bad request'));
+        when(
+          () => mockDatasource.updateNotificationPreferences(any()),
+        ).thenThrow(Exception('Bad request'));
 
         expect(
           () => repo.updateNotificationPreferences(tNotifEntity),
@@ -276,8 +320,7 @@ void main() {
 
     group('deleteMyAccount', () {
       test('delegates to datasource.deleteMyAccount', () async {
-        when(() => mockDatasource.deleteMyAccount())
-            .thenAnswer((_) async {});
+        when(() => mockDatasource.deleteMyAccount()).thenAnswer((_) async {});
 
         await repo.deleteMyAccount();
 
@@ -286,8 +329,9 @@ void main() {
       });
 
       test('propagates exceptions from datasource', () {
-        when(() => mockDatasource.deleteMyAccount())
-            .thenThrow(Exception('Forbidden'));
+        when(
+          () => mockDatasource.deleteMyAccount(),
+        ).thenThrow(Exception('Forbidden'));
 
         expect(() => repo.deleteMyAccount(), throwsException);
       });

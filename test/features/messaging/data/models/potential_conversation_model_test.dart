@@ -25,19 +25,13 @@ void main() {
       });
 
       test('falls back to user_id when id is null', () {
-        final json = {
-          'user_id': 'user-2',
-          'display_name': 'Bob',
-        };
+        final json = {'user_id': 'user-2', 'display_name': 'Bob'};
         final model = PotentialConversationModel.fromJson(json);
         expect(model.participantId, 'user-2');
       });
 
       test('optional fields default to null when absent', () {
-        final json = {
-          'id': 'user-3',
-          'display_name': 'Charlie',
-        };
+        final json = {'id': 'user-3', 'display_name': 'Charlie'};
         final model = PotentialConversationModel.fromJson(json);
         expect(model.followersCount, isNull);
         expect(model.avatar, isNull);

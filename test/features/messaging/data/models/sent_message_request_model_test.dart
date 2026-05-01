@@ -26,14 +26,17 @@ void main() {
         expect(json['resource'], {'type': 'track', 'id': 'track-123'});
       });
 
-      test('returns resource with type playlist when embedType is playlist', () {
-        final model = SentMessageRequestModel(
-          embedId: 'pl-456',
-          embedType: 'playlist',
-        );
-        final json = model.toJson();
-        expect(json['resource'], {'type': 'playlist', 'id': 'pl-456'});
-      });
+      test(
+        'returns resource with type playlist when embedType is playlist',
+        () {
+          final model = SentMessageRequestModel(
+            embedId: 'pl-456',
+            embedType: 'playlist',
+          );
+          final json = model.toJson();
+          expect(json['resource'], {'type': 'playlist', 'id': 'pl-456'});
+        },
+      );
 
       test('returns resource with type playlist when embedType is album', () {
         final model = SentMessageRequestModel(
@@ -60,11 +63,14 @@ void main() {
         expect(model.toJson(), isEmpty);
       });
 
-      test('does not include resource when embedId is null even if embedType is set', () {
-        final model = SentMessageRequestModel(embedType: 'track');
-        final json = model.toJson();
-        expect(json.containsKey('resource'), false);
-      });
+      test(
+        'does not include resource when embedId is null even if embedType is set',
+        () {
+          final model = SentMessageRequestModel(embedType: 'track');
+          final json = model.toJson();
+          expect(json.containsKey('resource'), false);
+        },
+      );
     });
 
     test('all fields are optional in constructor', () {

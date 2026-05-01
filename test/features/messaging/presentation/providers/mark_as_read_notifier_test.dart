@@ -43,10 +43,12 @@ void main() {
   setUp(() {
     mockRepo = MockMessagingRepository();
 
-    when(() => mockRepo.getConversations())
-        .thenAnswer((_) async => [tConversation]);
-    when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-        .thenAnswer((_) async => ([tMessage], 1));
+    when(
+      () => mockRepo.getConversations(),
+    ).thenAnswer((_) async => [tConversation]);
+    when(
+      () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+    ).thenAnswer((_) async => ([tMessage], 1));
   });
 
   ProviderContainer buildContainer() {
@@ -64,8 +66,9 @@ void main() {
     });
 
     test('markRead calls repo.markMessageAsRead with correct args', () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.markMessageAsRead(any(), any()),
+      ).thenAnswer((_) async {});
 
       final container = buildContainer();
       addTearDown(container.dispose);
@@ -78,8 +81,9 @@ void main() {
     });
 
     test('state returns to false after markRead completes', () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.markMessageAsRead(any(), any()),
+      ).thenAnswer((_) async {});
 
       final container = buildContainer();
       addTearDown(container.dispose);
@@ -91,24 +95,28 @@ void main() {
       expect(container.read(markAsRead), false);
     });
 
-    test('state returns to false even when exception is thrown (409 case)',
-        () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenThrow(Exception('409: Already read'));
+    test(
+      'state returns to false even when exception is thrown (409 case)',
+      () async {
+        when(
+          () => mockRepo.markMessageAsRead(any(), any()),
+        ).thenThrow(Exception('409: Already read'));
 
-      final container = buildContainer();
-      addTearDown(container.dispose);
+        final container = buildContainer();
+        addTearDown(container.dispose);
 
-      await container
-          .read(markAsRead.notifier)
-          .markRead(msgId: 'msg-1', convId: 'conv-1');
+        await container
+            .read(markAsRead.notifier)
+            .markRead(msgId: 'msg-1', convId: 'conv-1');
 
-      expect(container.read(markAsRead), false);
-    });
+        expect(container.read(markAsRead), false);
+      },
+    );
 
     test('markRead calls updateMessageRead on the messages notifier', () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.markMessageAsRead(any(), any()),
+      ).thenAnswer((_) async {});
 
       final container = buildContainer();
       addTearDown(container.dispose);
@@ -128,26 +136,28 @@ void main() {
       final container = buildContainer();
       addTearDown(container.dispose);
 
-      expect(
-        container.read(markAsRead.notifier),
-        isA<MarkAsReadNotifier>(),
-      );
+      expect(container.read(markAsRead.notifier), isA<MarkAsReadNotifier>());
     });
 
-    test('markRead with different conversationId delegates correctly', () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-          .thenAnswer((_) async => (<Message>[], 0));
+    test(
+      'markRead with different conversationId delegates correctly',
+      () async {
+        when(
+          () => mockRepo.markMessageAsRead(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+        ).thenAnswer((_) async => (<Message>[], 0));
 
-      final container = buildContainer();
-      addTearDown(container.dispose);
+        final container = buildContainer();
+        addTearDown(container.dispose);
 
-      await container
-          .read(markAsRead.notifier)
-          .markRead(msgId: 'msg-99', convId: 'conv-99');
+        await container
+            .read(markAsRead.notifier)
+            .markRead(msgId: 'msg-99', convId: 'conv-99');
 
-      verify(() => mockRepo.markMessageAsRead('msg-99', 'conv-99')).called(1);
-    });
+        verify(() => mockRepo.markMessageAsRead('msg-99', 'conv-99')).called(1);
+      },
+    );
   });
 }

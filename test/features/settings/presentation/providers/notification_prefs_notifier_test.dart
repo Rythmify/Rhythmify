@@ -50,9 +50,7 @@ void main() {
     mockRepo = MockSettingsRepoInterface();
     registerFallbackValue(tNotifEntity);
     container = ProviderContainer(
-      overrides: [
-        settingsRepositoryProvider.overrideWithValue(mockRepo),
-      ],
+      overrides: [settingsRepositoryProvider.overrideWithValue(mockRepo)],
     );
   });
 
@@ -61,8 +59,9 @@ void main() {
   group('NotificationPrefsNotifier', () {
     group('build', () {
       test('loads preferences from repository on first read', () async {
-        when(() => mockRepo.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifEntity);
+        when(
+          () => mockRepo.getNotificationPreferences(),
+        ).thenAnswer((_) async => tNotifEntity);
 
         final result = await container.read(notificationPrefsProvider.future);
 
@@ -71,8 +70,9 @@ void main() {
       });
 
       test('calls getNotificationPreferences exactly once on build', () async {
-        when(() => mockRepo.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifEntity);
+        when(
+          () => mockRepo.getNotificationPreferences(),
+        ).thenAnswer((_) async => tNotifEntity);
 
         await container.read(notificationPrefsProvider.future);
 
@@ -81,62 +81,80 @@ void main() {
     });
 
     group('save', () {
-      test('optimistically applies updated entity then commits server response', () async {
-        when(() => mockRepo.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifEntity);
+      test(
+        'optimistically applies updated entity then commits server response',
+        () async {
+          when(
+            () => mockRepo.getNotificationPreferences(),
+          ).thenAnswer((_) async => tNotifEntity);
 
-        final updated = tNotifEntity.copyWith(newFollowerPush: false);
-        final serverResponse = tNotifEntity.copyWith(
-          newFollowerPush: false,
-          newsletterEmail: false,
-        );
+          final updated = tNotifEntity.copyWith(newFollowerPush: false);
+          final serverResponse = tNotifEntity.copyWith(
+            newFollowerPush: false,
+            newsletterEmail: false,
+          );
 
-        when(() => mockRepo.updateNotificationPreferences(any()))
-            .thenAnswer((_) async => serverResponse);
+          when(
+            () => mockRepo.updateNotificationPreferences(any()),
+          ).thenAnswer((_) async => serverResponse);
 
-        await container.read(notificationPrefsProvider.future);
+          await container.read(notificationPrefsProvider.future);
 
-        await container.read(notificationPrefsProvider.notifier).save(updated);
+          await container
+              .read(notificationPrefsProvider.notifier)
+              .save(updated);
 
-        final state = container.read(notificationPrefsProvider);
-        expect(state.value, serverResponse);
-        verify(() => mockRepo.updateNotificationPreferences(any())).called(1);
-      });
+          final state = container.read(notificationPrefsProvider);
+          expect(state.value, serverResponse);
+          verify(() => mockRepo.updateNotificationPreferences(any())).called(1);
+        },
+      );
 
-      test('reverts to previous state and emits AsyncError when update fails', () async {
-        when(() => mockRepo.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifEntity);
+      test(
+        'reverts to previous state and emits AsyncError when update fails',
+        () async {
+          when(
+            () => mockRepo.getNotificationPreferences(),
+          ).thenAnswer((_) async => tNotifEntity);
 
-        when(() => mockRepo.updateNotificationPreferences(any()))
-            .thenThrow(Exception('Update failed'));
+          when(
+            () => mockRepo.updateNotificationPreferences(any()),
+          ).thenThrow(Exception('Update failed'));
 
-        await container.read(notificationPrefsProvider.future);
+          await container.read(notificationPrefsProvider.future);
 
-        final updated = tNotifEntity.copyWith(newFollowerPush: false);
-        await container.read(notificationPrefsProvider.notifier).save(updated);
+          final updated = tNotifEntity.copyWith(newFollowerPush: false);
+          await container
+              .read(notificationPrefsProvider.notifier)
+              .save(updated);
 
-        final state = container.read(notificationPrefsProvider);
-        expect(state, isA<AsyncError>());
-      });
+          final state = container.read(notificationPrefsProvider);
+          expect(state, isA<AsyncError>());
+        },
+      );
 
       test('passes the updated entity to the repository', () async {
-        when(() => mockRepo.getNotificationPreferences())
-            .thenAnswer((_) async => tNotifEntity);
+        when(
+          () => mockRepo.getNotificationPreferences(),
+        ).thenAnswer((_) async => tNotifEntity);
 
         final updated = tNotifEntity.copyWith(
           messagesFrom: MessagesFrom.nobody,
           newFollowerPush: false,
         );
 
-        when(() => mockRepo.updateNotificationPreferences(any()))
-            .thenAnswer((_) async => updated);
+        when(
+          () => mockRepo.updateNotificationPreferences(any()),
+        ).thenAnswer((_) async => updated);
 
         await container.read(notificationPrefsProvider.future);
         await container.read(notificationPrefsProvider.notifier).save(updated);
 
-        final captured = verify(
-          () => mockRepo.updateNotificationPreferences(captureAny()),
-        ).captured.single as NotificationPreferencesEntity;
+        final captured =
+            verify(
+                  () => mockRepo.updateNotificationPreferences(captureAny()),
+                ).captured.single
+                as NotificationPreferencesEntity;
         expect(captured.messagesFrom, MessagesFrom.nobody);
         expect(captured.newFollowerPush, false);
       });

@@ -123,37 +123,37 @@ void main() {
       });
 
       test('parses messages_from = everyone', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'everyone'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'everyone',
+        });
         expect(model.messagesFrom, MessagesFrom.everyone);
       });
 
       test('parses messages_from = followers_only', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'followers_only'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'followers_only',
+        });
         expect(model.messagesFrom, MessagesFrom.followersOnly);
       });
 
       test('parses messages_from = nobody', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'nobody'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'nobody',
+        });
         expect(model.messagesFrom, MessagesFrom.nobody);
       });
 
       test('defaults to everyone for an unrecognised messages_from string', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'some_unknown_value'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'some_unknown_value',
+        });
         expect(model.messagesFrom, MessagesFrom.everyone);
       });
 
       test('defaults to everyone when messages_from is null', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': null},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': null,
+        });
         expect(model.messagesFrom, MessagesFrom.everyone);
       });
     });
@@ -189,23 +189,23 @@ void main() {
       });
 
       test('serialises messages_from = everyone', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'everyone'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'everyone',
+        });
         expect(model.toJson()['messages_from'], 'everyone');
       });
 
       test('serialises messages_from = followers_only', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'followers_only'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'followers_only',
+        });
         expect(model.toJson()['messages_from'], 'followers_only');
       });
 
       test('serialises messages_from = nobody', () {
-        final model = NotificationPreferencesModel.fromJson(
-          {'messages_from': 'nobody'},
-        );
+        final model = NotificationPreferencesModel.fromJson({
+          'messages_from': 'nobody',
+        });
         expect(model.toJson()['messages_from'], 'nobody');
       });
     });

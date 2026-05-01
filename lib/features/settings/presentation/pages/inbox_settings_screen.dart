@@ -36,13 +36,15 @@ class InboxSettingsScreen extends ConsumerWidget {
                     'If turned off, only people you follow can send you messages',
                 initSwitchValue: prefs.messagesFrom == MessagesFrom.everyone,
                 onSwitchChanged: (value) {
-                  ref.read(notificationPrefsProvider.notifier).save(
-                    prefs.copyWith(
-                      messagesFrom: value
-                          ? MessagesFrom.everyone
-                          : MessagesFrom.followersOnly,
-                    ),
-                  );
+                  ref
+                      .read(notificationPrefsProvider.notifier)
+                      .save(
+                        prefs.copyWith(
+                          messagesFrom: value
+                              ? MessagesFrom.everyone
+                              : MessagesFrom.followersOnly,
+                        ),
+                      );
                 },
                 onTap: () {},
               ),

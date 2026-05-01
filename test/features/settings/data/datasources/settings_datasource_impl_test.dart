@@ -106,16 +106,21 @@ void main() {
 
   group('SettingsDatasourcesImpl', () {
     group('getPrivacySettings', () {
-      test('performs GET /users/me/privacy-settings and parses response', () async {
-        when(() => mockDio.get(any())).thenAnswer((_) async => _privacyResponse());
+      test(
+        'performs GET /users/me/privacy-settings and parses response',
+        () async {
+          when(
+            () => mockDio.get(any()),
+          ).thenAnswer((_) async => _privacyResponse());
 
-        final result = await datasource.getPrivacySettings();
+          final result = await datasource.getPrivacySettings();
 
-        expect(result, isA<PrivacySettingsModel>());
-        expect(result.isPrivate, false);
-        expect(result.receiveMessageFromAnyone, true);
-        verify(() => mockDio.get('/users/me/privacy-settings')).called(1);
-      });
+          expect(result, isA<PrivacySettingsModel>());
+          expect(result.isPrivate, false);
+          expect(result.receiveMessageFromAnyone, true);
+          verify(() => mockDio.get('/users/me/privacy-settings')).called(1);
+        },
+      );
 
       test('returns defaults when response data is null', () async {
         when(() => mockDio.get(any())).thenAnswer(
@@ -149,22 +154,25 @@ void main() {
     });
 
     group('patchPrivacySettings', () {
-      test('performs PATCH /users/me/privacy-settings with given fields', () async {
-        const fields = <String, dynamic>{'receive_messages_from_anyone': false};
+      test(
+        'performs PATCH /users/me/privacy-settings with given fields',
+        () async {
+          const fields = <String, dynamic>{
+            'receive_messages_from_anyone': false,
+          };
 
-        when(() => mockDio.patch(any(), data: any(named: 'data')))
-            .thenAnswer((_) async => _privacyResponse());
+          when(
+            () => mockDio.patch(any(), data: any(named: 'data')),
+          ).thenAnswer((_) async => _privacyResponse());
 
-        final result = await datasource.patchPrivacySettings(fields);
+          final result = await datasource.patchPrivacySettings(fields);
 
-        expect(result, isA<PrivacySettingsModel>());
-        verify(
-          () => mockDio.patch(
-            '/users/me/privacy-settings',
-            data: fields,
-          ),
-        ).called(1);
-      });
+          expect(result, isA<PrivacySettingsModel>());
+          verify(
+            () => mockDio.patch('/users/me/privacy-settings', data: fields),
+          ).called(1);
+        },
+      );
 
       test('returns defaults when patch response data is null', () async {
         when(() => mockDio.patch(any(), data: any(named: 'data'))).thenAnswer(
@@ -196,37 +204,50 @@ void main() {
     });
 
     group('getNotificationPreferences', () {
-      test('performs GET /notifications/preferences and parses response', () async {
-        when(() => mockDio.get(any())).thenAnswer((_) async => _notifResponse());
+      test(
+        'performs GET /notifications/preferences and parses response',
+        () async {
+          when(
+            () => mockDio.get(any()),
+          ).thenAnswer((_) async => _notifResponse());
 
-        final result = await datasource.getNotificationPreferences();
+          final result = await datasource.getNotificationPreferences();
 
-        expect(result, isA<NotificationPreferencesModel>());
-        expect(result.newFollowerPush, true);
-        expect(result.messagesFrom, MessagesFrom.everyone);
-        verify(() => mockDio.get('/notifications/preferences')).called(1);
-      });
+          expect(result, isA<NotificationPreferencesModel>());
+          expect(result.newFollowerPush, true);
+          expect(result.messagesFrom, MessagesFrom.everyone);
+          verify(() => mockDio.get('/notifications/preferences')).called(1);
+        },
+      );
     });
 
     group('updateNotificationPreferences', () {
-      test('performs PATCH /notifications/preferences with serialised model', () async {
-        when(() => mockDio.patch(any(), data: any(named: 'data')))
-            .thenAnswer((_) async => _notifResponse());
+      test(
+        'performs PATCH /notifications/preferences with serialised model',
+        () async {
+          when(
+            () => mockDio.patch(any(), data: any(named: 'data')),
+          ).thenAnswer((_) async => _notifResponse());
 
-        final result = await datasource.updateNotificationPreferences(tNotifModel);
+          final result = await datasource.updateNotificationPreferences(
+            tNotifModel,
+          );
 
-        expect(result, isA<NotificationPreferencesModel>());
-        expect(result.messagesFrom, MessagesFrom.everyone);
+          expect(result, isA<NotificationPreferencesModel>());
+          expect(result.messagesFrom, MessagesFrom.everyone);
 
-        final captured = verify(
-          () => mockDio.patch(
-            '/notifications/preferences',
-            data: captureAny(named: 'data'),
-          ),
-        ).captured.single as Map<String, dynamic>;
-        expect(captured['new_follower_push'], true);
-        expect(captured['messages_from'], 'everyone');
-      });
+          final captured =
+              verify(
+                    () => mockDio.patch(
+                      '/notifications/preferences',
+                      data: captureAny(named: 'data'),
+                    ),
+                  ).captured.single
+                  as Map<String, dynamic>;
+          expect(captured['new_follower_push'], true);
+          expect(captured['messages_from'], 'everyone');
+        },
+      );
     });
 
     group('deleteMyAccount', () {

@@ -42,10 +42,12 @@ void main() {
   setUp(() {
     mockRepo = MockMessagingRepository();
 
-    when(() => mockRepo.getConversations())
-        .thenAnswer((_) async => [tConversation]);
-    when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-        .thenAnswer((_) async => ([tMessage], 1));
+    when(
+      () => mockRepo.getConversations(),
+    ).thenAnswer((_) async => [tConversation]);
+    when(
+      () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+    ).thenAnswer((_) async => ([tMessage], 1));
     when(() => mockRepo.isBlocked(any())).thenAnswer((_) async => false);
   });
 
@@ -159,10 +161,7 @@ void main() {
       final container = buildContainer();
       addTearDown(container.dispose);
 
-      expect(
-        container.read(unBlockProvider.notifier),
-        isA<UnblockNotifier>(),
-      );
+      expect(container.read(unBlockProvider.notifier), isA<UnblockNotifier>());
     });
 
     test('unBlockUser propagates through usecase to repo', () async {

@@ -149,7 +149,9 @@ void main() {
       });
 
       test('overrides messagesFrom to followersOnly', () {
-        final updated = tEntity.copyWith(messagesFrom: MessagesFrom.followersOnly);
+        final updated = tEntity.copyWith(
+          messagesFrom: MessagesFrom.followersOnly,
+        );
         expect(updated.messagesFrom, MessagesFrom.followersOnly);
       });
 
@@ -213,11 +215,14 @@ void main() {
       });
 
       test('contains everyone, followersOnly and nobody', () {
-        expect(MessagesFrom.values, containsAll([
-          MessagesFrom.everyone,
-          MessagesFrom.followersOnly,
-          MessagesFrom.nobody,
-        ]));
+        expect(
+          MessagesFrom.values,
+          containsAll([
+            MessagesFrom.everyone,
+            MessagesFrom.followersOnly,
+            MessagesFrom.nobody,
+          ]),
+        );
       });
     });
   });

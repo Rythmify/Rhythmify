@@ -173,7 +173,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // reversed list: maxScrollExtent = visual top (oldest messages)
     if (pos.pixels >= pos.maxScrollExtent - 200) {
       ref
-          .read(messagesNotifierProvider(_effectiveConv!.conversationId).notifier)
+          .read(
+            messagesNotifierProvider(_effectiveConv!.conversationId).notifier,
+          )
           .loadMore();
     }
   }
@@ -247,7 +249,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    final participantId = _effectiveConv?.participantId ?? widget.newParticipantId;
+    final participantId =
+        _effectiveConv?.participantId ?? widget.newParticipantId;
 
     final isBlockedAsync = participantId != null && participantId.isNotEmpty
         ? ref.watch(isBlockedProvider(participantId))
@@ -271,7 +274,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             if (id != null) context.push('/home/profile/$id');
           },
           child: Text(
-            _effectiveConv?.participantName ?? widget.newParticipantName ?? 'Chat',
+            _effectiveConv?.participantName ??
+                widget.newParticipantName ??
+                'Chat',
             key: const Key('chat_participant_name_text'),
           ),
         ),
@@ -300,7 +305,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
         ],
       ),
-      body: (widget.convId != null && _resolvedConv == null) || !_newConvCheckDone
+      body:
+          (widget.convId != null && _resolvedConv == null) || !_newConvCheckDone
           ? const Center(child: CircularProgressIndicator())
           : _effectiveConv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
@@ -638,7 +644,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               );
                             }
@@ -1084,12 +1093,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       // If an existing conversation was found during the pre-check, send there.
       if (_resolvedConv != null) {
-        await _processAndSendMessages(_resolvedConv!.conversationId, controller.text);
+        await _processAndSendMessages(
+          _resolvedConv!.conversationId,
+          controller.text,
+        );
         if (!mounted) return;
         ref.invalidate(conversationProvider);
         controller.clear();
         setState(() => _selectedEmbeds.clear());
-        context.go('/home/inbox/chat/${_resolvedConv!.conversationId}', extra: _resolvedConv);
+        context.go(
+          '/home/inbox/chat/${_resolvedConv!.conversationId}',
+          extra: _resolvedConv,
+        );
         return;
       }
 

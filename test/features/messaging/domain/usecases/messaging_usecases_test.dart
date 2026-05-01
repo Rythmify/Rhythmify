@@ -70,8 +70,9 @@ void main() {
 
   group('GetConversationsUsecase', () {
     test('calls repo.getConversations and returns list', () async {
-      when(() => mockRepo.getConversations())
-          .thenAnswer((_) async => [tConversation]);
+      when(
+        () => mockRepo.getConversations(),
+      ).thenAnswer((_) async => [tConversation]);
 
       final result = await GetConversationsUsecase(repo: mockRepo)();
 
@@ -86,23 +87,24 @@ void main() {
     });
 
     test('propagates exceptions from repo', () {
-      when(() => mockRepo.getConversations())
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRepo.getConversations(),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => GetConversationsUsecase(repo: mockRepo)(),
-        throwsException,
-      );
+      expect(() => GetConversationsUsecase(repo: mockRepo)(), throwsException);
     });
   });
 
   group('GetMessagesUsecase', () {
     test('calls repo.getMessages with conversationId and offset', () async {
-      when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-          .thenAnswer((_) async => ([tMessage], 1));
+      when(
+        () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+      ).thenAnswer((_) async => ([tMessage], 1));
 
-      final (messages, total) =
-          await GetMessagesUsecase(repo: mockRepo)('conv-1', offset: 10);
+      final (messages, total) = await GetMessagesUsecase(repo: mockRepo)(
+        'conv-1',
+        offset: 10,
+      );
 
       expect(messages, [tMessage]);
       expect(total, 1);
@@ -110,8 +112,9 @@ void main() {
     });
 
     test('uses default offset=0 when not specified', () async {
-      when(() => mockRepo.getMessages(any(), offset: any(named: 'offset')))
-          .thenAnswer((_) async => ([tMessage], 1));
+      when(
+        () => mockRepo.getMessages(any(), offset: any(named: 'offset')),
+      ).thenAnswer((_) async => ([tMessage], 1));
 
       await GetMessagesUsecase(repo: mockRepo)('conv-1');
 
@@ -121,8 +124,9 @@ void main() {
 
   group('SendMessageUsecase', () {
     test('calls repo.sendMessage with all args', () async {
-      when(() => mockRepo.sendMessage(any(), any(), any(), any()))
-          .thenAnswer((_) async => tMessage);
+      when(
+        () => mockRepo.sendMessage(any(), any(), any(), any()),
+      ).thenAnswer((_) async => tMessage);
 
       final result = await SendMessageUsecase(repo: mockRepo)(
         'conv-1',
@@ -132,13 +136,15 @@ void main() {
       );
 
       expect(result, tMessage);
-      verify(() => mockRepo.sendMessage('conv-1', 'Hello', null, null))
-          .called(1);
+      verify(
+        () => mockRepo.sendMessage('conv-1', 'Hello', null, null),
+      ).called(1);
     });
 
     test('passes embedId and embedType through', () async {
-      when(() => mockRepo.sendMessage(any(), any(), any(), any()))
-          .thenAnswer((_) async => tMessage);
+      when(
+        () => mockRepo.sendMessage(any(), any(), any(), any()),
+      ).thenAnswer((_) async => tMessage);
 
       await SendMessageUsecase(repo: mockRepo)(
         'conv-1',
@@ -147,15 +153,17 @@ void main() {
         'track',
       );
 
-      verify(() => mockRepo.sendMessage('conv-1', null, 'track-1', 'track'))
-          .called(1);
+      verify(
+        () => mockRepo.sendMessage('conv-1', null, 'track-1', 'track'),
+      ).called(1);
     });
   });
 
   group('StartConversationUsecase', () {
     test('calls repo.startConversation with all args', () async {
-      when(() => mockRepo.startConversation(any(), any(), any(), any()))
-          .thenAnswer((_) async => tConversation);
+      when(
+        () => mockRepo.startConversation(any(), any(), any(), any()),
+      ).thenAnswer((_) async => tConversation);
 
       final result = await StartConversationUsecase(repo: mockRepo)(
         'user-2',
@@ -165,18 +173,21 @@ void main() {
       );
 
       expect(result, tConversation);
-      verify(() => mockRepo.startConversation('user-2', 'Hello', 'track-1', null))
-          .called(1);
+      verify(
+        () => mockRepo.startConversation('user-2', 'Hello', 'track-1', null),
+      ).called(1);
     });
 
     test('passes null optional args', () async {
-      when(() => mockRepo.startConversation(any(), any(), any(), any()))
-          .thenAnswer((_) async => tConversation);
+      when(
+        () => mockRepo.startConversation(any(), any(), any(), any()),
+      ).thenAnswer((_) async => tConversation);
 
       await StartConversationUsecase(repo: mockRepo)('user-2');
 
-      verify(() => mockRepo.startConversation('user-2', null, null, null))
-          .called(1);
+      verify(
+        () => mockRepo.startConversation('user-2', null, null, null),
+      ).called(1);
     });
   });
 
@@ -207,18 +218,23 @@ void main() {
   });
 
   group('MarkMessagesAsReadUsecase', () {
-    test('calls repo.markMessageAsRead with messageId then conversationId', () async {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenAnswer((_) async {});
+    test(
+      'calls repo.markMessageAsRead with messageId then conversationId',
+      () async {
+        when(
+          () => mockRepo.markMessageAsRead(any(), any()),
+        ).thenAnswer((_) async {});
 
-      await MarkMessagesAsReadUsecase(repo: mockRepo)('msg-1', 'conv-1');
+        await MarkMessagesAsReadUsecase(repo: mockRepo)('msg-1', 'conv-1');
 
-      verify(() => mockRepo.markMessageAsRead('msg-1', 'conv-1')).called(1);
-    });
+        verify(() => mockRepo.markMessageAsRead('msg-1', 'conv-1')).called(1);
+      },
+    );
 
     test('propagates exceptions', () {
-      when(() => mockRepo.markMessageAsRead(any(), any()))
-          .thenThrow(Exception('Server error'));
+      when(
+        () => mockRepo.markMessageAsRead(any(), any()),
+      ).thenThrow(Exception('Server error'));
 
       expect(
         () => MarkMessagesAsReadUsecase(repo: mockRepo)('msg-1', 'conv-1'),
@@ -246,8 +262,9 @@ void main() {
 
   group('GetFollowingsUsecase', () {
     test('calls repo.getFollowings with userId', () async {
-      when(() => mockRepo.getFollowings(any()))
-          .thenAnswer((_) async => [tPotential]);
+      when(
+        () => mockRepo.getFollowings(any()),
+      ).thenAnswer((_) async => [tPotential]);
 
       final result = await GetFollowingsUsecase(repo: mockRepo)('my-id');
 
@@ -264,8 +281,9 @@ void main() {
 
   group('GetSearchedUsersUsecase', () {
     test('calls repo.getSearchedUsers with query', () async {
-      when(() => mockRepo.getSearchedUsers(any()))
-          .thenAnswer((_) async => [tPotential]);
+      when(
+        () => mockRepo.getSearchedUsers(any()),
+      ).thenAnswer((_) async => [tPotential]);
 
       final result = await GetSearchedUsersUsecase(repo: mockRepo)('alice');
 
@@ -306,19 +324,23 @@ void main() {
 
   group('GetLikedEmbedsUseCase', () {
     test('calls repo.getLikedEmbeds with userId and embedType', () async {
-      when(() => mockRepo.getLikedEmbeds(any(), any()))
-          .thenAnswer((_) async => [tEmbed]);
+      when(
+        () => mockRepo.getLikedEmbeds(any(), any()),
+      ).thenAnswer((_) async => [tEmbed]);
 
-      final result =
-          await GetLikedEmbedsUseCase(repo: mockRepo)('user-1', 'track');
+      final result = await GetLikedEmbedsUseCase(repo: mockRepo)(
+        'user-1',
+        'track',
+      );
 
       expect(result, [tEmbed]);
       verify(() => mockRepo.getLikedEmbeds('user-1', 'track')).called(1);
     });
 
     test('returns empty list when no liked embeds', () async {
-      when(() => mockRepo.getLikedEmbeds(any(), any()))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRepo.getLikedEmbeds(any(), any()),
+      ).thenAnswer((_) async => []);
 
       expect(
         await GetLikedEmbedsUseCase(repo: mockRepo)('user-1', 'playlist'),
@@ -340,19 +362,23 @@ void main() {
 
   group('GetPlaylistDetailsUsecase', () {
     test('calls repo.getPlaylist with id and type', () async {
-      when(() => mockRepo.getPlaylist(any(), any()))
-          .thenAnswer((_) async => tEmbed);
+      when(
+        () => mockRepo.getPlaylist(any(), any()),
+      ).thenAnswer((_) async => tEmbed);
 
-      final result =
-          await GetPlaylistDetailsUsecase(repo: mockRepo)('pl-1', 'playlist');
+      final result = await GetPlaylistDetailsUsecase(repo: mockRepo)(
+        'pl-1',
+        'playlist',
+      );
 
       expect(result, tEmbed);
       verify(() => mockRepo.getPlaylist('pl-1', 'playlist')).called(1);
     });
 
     test('passes album type through', () async {
-      when(() => mockRepo.getPlaylist(any(), any()))
-          .thenAnswer((_) async => tEmbed);
+      when(
+        () => mockRepo.getPlaylist(any(), any()),
+      ).thenAnswer((_) async => tEmbed);
 
       await GetPlaylistDetailsUsecase(repo: mockRepo)('alb-1', 'album');
 
@@ -362,19 +388,20 @@ void main() {
 
   group('EnsureConversationUsecase', () {
     test('calls repo.ensureConversation and returns conversation', () async {
-      when(() => mockRepo.ensureConversation(any()))
-          .thenAnswer((_) async => tConversation);
+      when(
+        () => mockRepo.ensureConversation(any()),
+      ).thenAnswer((_) async => tConversation);
 
-      final result =
-          await EnsureConversationUsecase(repo: mockRepo)('user-2');
+      final result = await EnsureConversationUsecase(repo: mockRepo)('user-2');
 
       expect(result, tConversation);
       verify(() => mockRepo.ensureConversation('user-2')).called(1);
     });
 
     test('propagates exceptions', () {
-      when(() => mockRepo.ensureConversation(any()))
-          .thenThrow(Exception('Not found'));
+      when(
+        () => mockRepo.ensureConversation(any()),
+      ).thenThrow(Exception('Not found'));
 
       expect(
         () => EnsureConversationUsecase(repo: mockRepo)('user-99'),
