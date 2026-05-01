@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rythmify/features/settings/presentation/providers/privacy_settings_notifier.dart';
+import 'package:rythmify/features/settings/domain/entities/notification_preferences_entity.dart';
+import 'package:rythmify/features/settings/presentation/providers/notification_prefs_notifier.dart';
 import 'package:rythmify/features/settings/presentation/widgets/switch_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 
-/// Controls inbox message permissions via a switch tile.
-/// Contains a link to [NotificationsSettingsScreen] for notification preferences.
 class InboxSettingsScreen extends ConsumerWidget {
   const InboxSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final privacyAsync = ref.watch(privacySettingsProvider);
+    final prefsAsync = ref.watch(notificationPrefsProvider);
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: const Color(0xFF3A3A3A),
@@ -20,7 +19,7 @@ class InboxSettingsScreen extends ConsumerWidget {
       ),
       child: Scaffold(
         appBar: AppBar(title: const Text('Inbox Settings'), centerTitle: false),
-        body: privacyAsync.when(
+        body: prefsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: Text(
@@ -28,24 +27,28 @@ class InboxSettingsScreen extends ConsumerWidget {
               style: const TextStyle(color: Colors.white),
             ),
           ),
-          data: (data) => Column(
+          data: (prefs) => Column(
             children: [
               SwitchTileWidget(
-                key: Key('inbox_tile'),
+                key: const Key('inbox_tile'),
                 title: 'Receive messages from anyone',
                 subtitle:
-                    'If you turn this setting off, only people you follow will be able to send you messages',
-                initSwitchValue: data.receiveMessageFromAnyone,
+                    'If turned off, only people you follow can send you messages',
+                initSwitchValue: prefs.messagesFrom == MessagesFrom.everyone,
                 onSwitchChanged: (value) {
-                  ref
-                      .read(privacySettingsProvider.notifier)
-                      .save(data.copyWith(receiveMessageFromAnyone: value));
+                  ref.read(notificationPrefsProvider.notifier).save(
+                    prefs.copyWith(
+                      messagesFrom: value
+                          ? MessagesFrom.everyone
+                          : MessagesFrom.followersOnly,
+                    ),
+                  );
                 },
                 onTap: () {},
               ),
               const SizedBox(height: 24),
               SettingsOptionsTileWidget(
-                key: Key('inbox_notification_settings_tile'),
+                key: const Key('inbox_notification_settings_tile'),
                 title: 'Notification settings',
                 onTap: () {
                   context.push('/library/settings/notifications');

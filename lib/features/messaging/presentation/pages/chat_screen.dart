@@ -59,6 +59,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Conversation? _resolvedConv;
   Conversation? get _effectiveConv => widget.conv ?? _resolvedConv;
 
+  // false while the async conv-existence check is running, true once done.
+  bool _newConvCheckDone = true;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +120,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ref.invalidate(isBlockedByProvider(found.participantId));
           }
         });
+      });
+    } else if (widget.newParticipantId != null) {
+      _newConvCheckDone = false;
+      Future.microtask(() async {
+        if (!mounted) return;
+        try {
+          final repo = ref.read(repositoryprovider);
+          final convs = await repo.getConversations();
+          if (!mounted) return;
+          final found = convs.cast<Conversation?>().firstWhere(
+            (c) => c?.participantId == widget.newParticipantId,
+            orElse: () => null,
+          );
+          if (!mounted) return;
+          if (found == null) {
+            setState(() => _newConvCheckDone = true);
+            return;
+          }
+          // Existing conv found — set up exactly like the convId branch.
+          setState(() {
+            _resolvedConv = found;
+            _newConvCheckDone = true;
+          });
+          if (!mounted) return;
+          _scrollController.addListener(_onScroll);
+          ref.invalidate(messagesNotifierProvider(found.conversationId));
+          if (found.participantId.isNotEmpty) {
+            ref.invalidate(isBlockedProvider(found.participantId));
+            ref.invalidate(isBlockedByProvider(found.participantId));
+          }
+          _socket.joinConversation(found.conversationId);
+          _setupSocketListeners(found.conversationId);
+          _socket.setOnReconnectedToRoom(() {
+            if (mounted) _setupSocketListeners(found.conversationId);
+          });
+          _blockPollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+            if (mounted && found.participantId.isNotEmpty) {
+              ref.invalidate(isBlockedByProvider(found.participantId));
+            }
+          });
+        } catch (_) {
+          if (mounted) setState(() => _newConvCheckDone = true);
+        }
       });
     }
   }
@@ -254,7 +300,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
         ],
       ),
-      body: widget.convId != null && _resolvedConv == null
+      body: (widget.convId != null && _resolvedConv == null) || !_newConvCheckDone
           ? const Center(child: CircularProgressIndicator())
           : _effectiveConv == null
           ? _blanckChatPage(isBlocked: isBlocked, isBlockedBy: isBlockedBy)
@@ -585,6 +631,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           builder: (context, value, child) {
                             if (value.text.isEmpty) {
                               return const SizedBox.shrink();
+                            }
+                            if (!_newConvCheckDone) {
+                              return const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                ),
+                              );
                             }
                             return IconButton(
                               key: const Key('chat_screen_send_button'),
@@ -1025,6 +1081,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendInNewConv() async {
     try {
       if (_selectedEmbeds.isEmpty && controller.text.trim().isEmpty) return;
+
+      // If an existing conversation was found during the pre-check, send there.
+      if (_resolvedConv != null) {
+        await _processAndSendMessages(_resolvedConv!.conversationId, controller.text);
+        if (!mounted) return;
+        ref.invalidate(conversationProvider);
+        controller.clear();
+        setState(() => _selectedEmbeds.clear());
+        context.go('/home/inbox/chat/${_resolvedConv!.conversationId}', extra: _resolvedConv);
+        return;
+      }
 
       final newConv = await _processAndSendMessages(
         null,

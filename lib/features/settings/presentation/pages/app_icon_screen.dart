@@ -1,4 +1,5 @@
 import 'package:dynamic_app_icon_flutter_plus/dynamic_app_icon_flutter_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -87,6 +88,11 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   void initState() {
     super.initState();
     _loadSelected();
+    // Force-refresh subscription every time this screen opens — the provider
+    // may have been initialized before the user subscribed and never re-fetched.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(premiumProvider.notifier).loadMySubscription();
+    });
   }
 
   Future<void> _loadSelected() async {
@@ -135,6 +141,17 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
           ),
         ),
       );
+    }
+
+    final sub = premiumState.subscription;
+    debugPrint('🔑 [AppIcon] isInitialized=${premiumState.isInitialized}');
+    debugPrint('🔑 [AppIcon] isPremium=${premiumState.isPremium}');
+    debugPrint('🔑 [AppIcon] error=${premiumState.error ?? 'none'}');
+    debugPrint('🔑 [AppIcon] subscription=${sub == null ? 'NULL (no subscription)' : 'present'}');
+    if (sub != null) {
+      debugPrint('🔑 [AppIcon]   status="${sub.status}"  isActive=${sub.isActive}');
+      debugPrint('🔑 [AppIcon]   plan.name="${sub.plan.name}"  plan.isPremium=${sub.plan.isPremium}');
+      debugPrint('🔑 [AppIcon]   autoRenew=${sub.autoRenew}  endDate=${sub.endDate}');
     }
 
     final userIsPremium = premiumState.isPremium;

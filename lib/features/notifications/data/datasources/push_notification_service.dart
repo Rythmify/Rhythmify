@@ -192,7 +192,7 @@ class PushNotificationService {
           _route.push('/home/notifications');
         }
       case 'new_post_by_followed':
-        _route.push('/home/notifications');
+        _route.push('/home/behind-the-track/$resourceId');
       case 'new_message':
         if (hasResource) {
           _route.push('/home/inbox/chat/$resourceId');
