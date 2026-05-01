@@ -95,7 +95,6 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
 
                 return Stack(
                   children: [
-                    // Layer 1: Background & Gradients
                     Positioned.fill(
                       child: Container(color: AppTheme.background),
                     ),
@@ -132,7 +131,6 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
                       ),
                     ),
 
-                    // Layer 2: Dedicated Gaussian Blur Layer
                     Positioned(
                       top: 35, // Starting at the middle of the GenreTabBar
                       left: 0,
@@ -150,7 +148,6 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
                       ),
                     ),
 
-                    // Layer 3: Genres and Tracks Content
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

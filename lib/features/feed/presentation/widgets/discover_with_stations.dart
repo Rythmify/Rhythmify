@@ -266,7 +266,7 @@ class StationCard extends StatelessWidget {
   }
 }
 
-// ── Vinyl record background painter ─────────────────────────────────────────
+// Vinyl record background painter
 
 /// A [CustomPainter] that draws a vinyl record background with concentric
 /// colored rings and a subtle center hole.
@@ -321,7 +321,7 @@ class _VinylPainter extends CustomPainter {
   bool shouldRepaint(covariant _VinylPainter old) => old.ringColor != ringColor;
 }
 
-// ── Small circle avatar ──────────────────────────────────────────────────────
+//Small circle avatar
 
 /// A small circular avatar used for the left and right artist images
 /// on a [StationCard].
@@ -358,7 +358,7 @@ class _CircleAvatar extends StatelessWidget {
   }
 }
 
-// ── Center artist badge ──────────────────────────────────────────────────────
+// Center artist badge
 
 /// The large central artist badge displayed on a [StationCard].
 ///

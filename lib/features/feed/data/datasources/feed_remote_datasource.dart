@@ -146,7 +146,7 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
       type: 'discover',
       contentType: 'track',
       createdAt: DateTime.now(),
-      user: ownerUser, // for discover, poster = track owner
+      user: ownerUser,
       trackOwner: ownerUser,
       track: FeedTrackModel.fromJson(trackJson),
       discoverLabel: label,

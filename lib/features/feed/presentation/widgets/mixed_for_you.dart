@@ -99,7 +99,7 @@ class MixedPlaylistCard extends ConsumerWidget {
         '/home/mix/$id',
         extra: {
           'title': mixLabel,
-          'ownerName': currentUserName, // ← now the signed-in user's name
+          'ownerName': currentUserName,
           'mixType': 'genre',
           'coverUrl': imagePath,
           'trackCount': 0,

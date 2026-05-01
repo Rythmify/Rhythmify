@@ -91,7 +91,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
 
-        // --- LAYER 1: Track Artwork ---
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
@@ -106,13 +105,11 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
           ),
         ),
 
-        // --- LAYER 2: Clip & Blur ---
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
 
-            // --- LAYER 3: Dark Tint & Border ---
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.black.withValues(

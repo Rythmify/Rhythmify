@@ -70,7 +70,6 @@ class FeedCardCover extends StatelessWidget {
             key: const Key('feed_card_cover_stack'),
             fit: StackFit.expand,
             children: [
-              // Blurred cover image as background, or placeholder if unavailable
               if (coverUrl != null)
                 ImageFiltered(
                   key: const Key('feed_card_cover_blur'),
@@ -79,12 +78,10 @@ class FeedCardCover extends StatelessWidget {
                 )
               else
                 const _PlaceholderCover(),
-              // Dark overlay to improve contrast over the blurred background
               Container(
                 key: const Key('feed_card_cover_overlay'),
                 color: Colors.black.withValues(alpha: 0.4),
               ),
-              // Sharp centered thumbnail rendered above the blurred background
               Align(
                 key: const Key('feed_card_cover_align'),
                 alignment: const Alignment(0, -0.5),

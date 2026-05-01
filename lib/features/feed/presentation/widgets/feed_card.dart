@@ -65,7 +65,6 @@ class FeedCard extends ConsumerWidget {
           coverUrl: item.track.coverUrl,
           fullScreen: fullScreen,
         ),
-        // Bottom gradient to improve legibility of the bottom info section
         const DecoratedBox(
           key: Key('feed_card_gradient'),
           decoration: BoxDecoration(
@@ -77,7 +76,6 @@ class FeedCard extends ConsumerWidget {
             ),
           ),
         ),
-        // Dark overlay that fades out when the card is active or in preview
         IgnorePointer(
           child: AnimatedOpacity(
             key: const Key('feed_card_animated_opacity'),
@@ -90,7 +88,6 @@ class FeedCard extends ConsumerWidget {
             ),
           ),
         ),
-        // Prompt shown when the track has not been previewed yet
         if (showTapToPreview)
           const IgnorePointer(
             child: Center(
