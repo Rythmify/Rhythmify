@@ -1,5 +1,6 @@
 import '../../../../core/domain/entities/track.dart';
 
+/// Represents a mixed for you item in the domain layer.
 class MixedForYouItem {
   final String id;
   final String label;

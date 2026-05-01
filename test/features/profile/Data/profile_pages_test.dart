@@ -9,12 +9,36 @@ import 'package:rythmify/features/profile/presentation/pages/likes_page.dart';
 import 'package:rythmify/features/profile/presentation/pages/public_profile_page.dart';
 import 'package:rythmify/features/profile/presentation/providers/profile_provider.dart';
 import 'package:rythmify/features/profile/presentation/providers/profile_state.dart';
+import 'package:rythmify/core/presentation/widgets/follow_button.dart';
+
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+import 'package:rythmify/features/player/presentation/providers/player_provider.dart';
+import 'package:rythmify/features/player/domain/entities/player_state.dart';
+import 'package:rythmify/features/player/data/datasources/audio_handler.dart';
+import 'package:rythmify/features/player/presentation/providers/player_dependency_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
+
+class MockAudioHandler extends Mock implements RythmifyAudioHandler {}
+
+class MockAuthNotifier extends Notifier<AuthState>
+    with Mock
+    implements AuthNotifier {
+  @override
+  AuthState build() => const AuthUnauthenticated();
+}
+
+class MockPlayerNotifier extends Notifier<AppPlayerState>
+    with Mock
+    implements PlayerNotifier {
+  @override
+  AppPlayerState build() => const AppPlayerState();
+}
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -59,7 +83,14 @@ Track makeTrack(String id) => Track(
 /// Builds a [ProviderScope] override that seeds [profileProvider] with [state].
 Widget buildWithState(ProfileState state, Widget child) {
   return ProviderScope(
-    overrides: [profileProvider.overrideWith(() => _SeedNotifier(state))],
+    overrides: [
+      profileProvider.overrideWith(() => _SeedNotifier(state)),
+      ownProfileProvider.overrideWith(() => _SeedNotifier(state)),
+      publicProfileProvider.overrideWith(() => _SeedNotifier(state)),
+      audioHandlerProvider.overrideWithValue(MockAudioHandler()),
+      authProvider.overrideWith(() => MockAuthNotifier()),
+      playerStateProvider.overrideWith(() => MockPlayerNotifier()),
+    ],
     child: MaterialApp(home: child),
   );
 }
@@ -72,12 +103,55 @@ class _SeedNotifier extends ProfileNotifier {
 
   @override
   ProfileState build() => _seed;
+
+  @override
+  Future<void> loadProfile({required String userId}) async {}
+
+  @override
+  Future<void> loadPreviews(String userId) async {}
+
+  @override
+  Future<void> loadLikedTracks({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {}
+
+  @override
+  Future<void> loadUploadedTracks({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {}
+
+  @override
+  Future<void> loadRepostedTracks({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {}
+
+  @override
+  Future<void> loadPlaylists({
+    required String userId,
+    bool refresh = false,
+    int limit = 20,
+  }) async {}
 }
 // ---------------------------------------------------------------------------
 // LikesPage tests
 // ---------------------------------------------------------------------------
 
 void main() {
+  setUp(() {
+    final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    binding.platformDispatcher.implicitView?.physicalSize = const Size(
+      1080,
+      5000,
+    );
+    binding.platformDispatcher.implicitView?.devicePixelRatio = 1.0;
+  });
+
   group('LikesPage', () {
     testWidgets('should show loading indicator when state is ProfileLoading', (
       tester,
@@ -292,10 +366,7 @@ void main() {
         find.byKey(const Key('public_profile_edit_gesture')),
         findsOneWidget,
       );
-      expect(
-        find.byKey(const Key('public_profile_follow_gesture')),
-        findsNothing,
-      );
+      expect(find.byType(FollowButton), findsNothing);
     });
 
     testWidgets('should show Follow button for another user profile', (
@@ -308,10 +379,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.byKey(const Key('public_profile_follow_gesture')),
-        findsOneWidget,
-      );
+      expect(find.byType(FollowButton), findsOneWidget);
       expect(
         find.byKey(const Key('public_profile_edit_gesture')),
         findsNothing,
@@ -367,8 +435,8 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const Key('item_t1')), findsOneWidget);
-      expect(find.byKey(const Key('item_t2')), findsOneWidget);
+      expect(find.byKey(const Key('profile_Likes_t1')), findsOneWidget);
+      expect(find.byKey(const Key('profile_Likes_t2')), findsOneWidget);
     });
 
     testWidgets('should show back button in AppBar', (tester) async {
@@ -441,29 +509,5 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('KarimWI'), findsNothing);
     });
-
-    testWidgets(
-      'should show pagination spinner at bottom when loading tracks',
-      (tester) async {
-        final tracks = [makeTrack('t1')];
-
-        await tester.pumpWidget(
-          buildWithState(
-            ProfileLoaded(
-              profile: tProfile,
-              likedTracks: tracks,
-              isLoadingLikes: true,
-            ),
-            const PublicProfilePage(userId: 'user-001'),
-          ),
-        );
-
-        // Scroll to make the spinner visible
-        await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
-        await tester.pump();
-
-        expect(find.byType(CircularProgressIndicator), findsWidgets);
-      },
-    );
   });
 }

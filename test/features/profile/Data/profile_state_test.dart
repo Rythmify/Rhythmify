@@ -136,6 +136,7 @@ void main() {
         true, // hasMoreReposts
         const [], // playlists
         false, // isLoadingPlaylists
+        const [], // albums
         true, // isSaving
         false, // isBlocked
       ]);
@@ -192,6 +193,28 @@ void main() {
         expect(updated.isLoadingLikes, true);
         expect(updated.likedTracks, tracks);
         expect(base.isLoadingLikes, false);
+      });
+
+      test('should update uploadedTracks', () {
+        final tracks = [tTrack];
+        final updated = base.copyWith(uploadedTracks: tracks);
+        expect(updated.uploadedTracks, tracks);
+      });
+
+      test('should update repostedTracks', () {
+        final tracks = [tTrack];
+        final updated = base.copyWith(repostedTracks: tracks);
+        expect(updated.repostedTracks, tracks);
+      });
+
+      test('should update playlists', () {
+        final updated = base.copyWith(playlists: const []);
+        expect(updated.playlists, const []);
+      });
+
+      test('should update isBlocked', () {
+        final updated = base.copyWith(isBlocked: true);
+        expect(updated.isBlocked, true);
       });
     });
   });

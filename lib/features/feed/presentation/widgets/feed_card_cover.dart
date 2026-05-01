@@ -1,8 +1,21 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+/// Displays the cover image for a feed card in two visual modes:
+/// full-screen and compact.
+///
+/// In **compact mode** (default), renders a blurred version of [coverUrl]
+/// as the background with a centered sharp thumbnail on top.
+///
+/// In **full-screen mode**, renders the image directly inside a rounded
+/// bordered container with no blur effect.
+///
+/// Falls back to [_PlaceholderCover] when [coverUrl] is `null` or the
+/// network image fails to load.
 class FeedCardCover extends StatelessWidget {
   final String? coverUrl;
+
+  /// Whether to render in full-screen mode instead of compact mode.
   final bool fullScreen;
 
   const FeedCardCover({super.key, this.coverUrl, this.fullScreen = false});
@@ -100,6 +113,10 @@ class FeedCardCover extends StatelessWidget {
   }
 }
 
+/// A fallback cover displayed when no [coverUrl] is provided or when
+/// a network image fails to load.
+///
+/// Renders a dark background with a centered music note icon.
 class _PlaceholderCover extends StatelessWidget {
   const _PlaceholderCover();
 

@@ -12,15 +12,6 @@ import '../../../../../core/theme/app_theme.dart';
 /// Optionally shows a camera icon overlay when [showCameraIcon] is
 /// `true` — used on the [EditProfilePage] to indicate tappability.
 ///
-/// Example usage:
-/// ```dart
-/// ProfileAvatar(
-///   avatarUrl: 'https://cdn.rythmify.com/avatars/user.jpg',
-///   radius: 60,
-///   showCameraIcon: true,
-///   onTap: _pickAvatar,
-/// )
-/// ```
 class ProfileAvatar extends StatelessWidget {
   /// The network URL of the user's profile picture.
   ///

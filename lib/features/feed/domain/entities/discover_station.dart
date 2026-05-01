@@ -1,3 +1,4 @@
+/// Represents a [DiscoverStation] in the domain layer.
 class StationImages {
   final String? left;
   final String? center;

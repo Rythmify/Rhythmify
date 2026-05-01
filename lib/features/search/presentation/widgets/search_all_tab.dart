@@ -36,7 +36,7 @@ class AllTab extends ConsumerWidget {
         key: const Key('all_tab_list'),
         padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
         children: [
-          // ── Top Result ──────────────────────────────────────
+          //  top Result
           const _SectionTitle('Top Result'),
           const SizedBox(height: 12),
           if (data.topResult != null)
@@ -46,7 +46,7 @@ class AllTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── Tracks ──────────────────────────────────────────
+          //Tracks
           if (data.tracks.isNotEmpty) ...[
             _SectionHeader(
               title: 'Tracks',
@@ -68,7 +68,7 @@ class AllTab extends ConsumerWidget {
 
             const SizedBox(height: 24),
           ],
-          // ── Profiles ────────────────────────────────────────
+          //Profiles
           if (data.profiles.isNotEmpty) ...[
             _SectionHeader(
               title: 'Profiles',
@@ -98,7 +98,7 @@ class AllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Playlists ───────────────────────────────────────
+          //Playlists
           if (data.playlists.isNotEmpty) ...[
             _SectionHeader(
               title: 'Playlists',
@@ -128,7 +128,7 @@ class AllTab extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // ── Albums ──────────────────────────────────────────
+          // Albums
           if (data.albums.isNotEmpty) ...[
             _SectionHeader(
               title: 'Albums',
@@ -157,7 +157,7 @@ class AllTab extends ConsumerWidget {
                 ),
           ],
 
-          // ── More Results — tracks beyond the first 3 ─────────────────────────
+          // More Results
           if (data.tracks.length > 3) ...[
             const SizedBox(height: 24),
             const _SectionTitle('More Results'),
@@ -180,7 +180,7 @@ class AllTab extends ConsumerWidget {
   }
 }
 
-// ── Playlist row ─────────────────────────────────────────────────────────────
+// Playlist row
 
 /// A single playlist row showing artwork, title, track count, and formatted duration.
 /// Accepts a raw [Map<String, String>] until a teammate-owned Playlist entity is available.
@@ -224,7 +224,7 @@ class _PlaylistRow extends StatelessWidget {
   }
 }
 
-// ── Album row ────────────────────────────────────────────────────────────────
+//Album row
 
 /// A single album row showing artwork, title, artist, year, and type.
 /// Accepts a raw [Map<String, String>] until a teammate-owned Album entity is available.
@@ -279,8 +279,6 @@ class _AlbumRow extends StatelessWidget {
     );
   }
 }
-
-// ── Private widgets ───────────────────────────────────────────────────────────
 
 /// Displays the top search result as a prominent track card with artwork,
 /// title, artist, and formatted duration.

@@ -1,3 +1,4 @@
+/// Represents a feed item entity in the domain layer.
 class FeedItemEntity {
   final String id;
   final String type;
@@ -23,6 +24,7 @@ class FeedItemEntity {
   });
 }
 
+/// Represents feed user in the domain layer.
 class FeedUserEntity {
   final String id;
   final String username;
@@ -30,6 +32,7 @@ class FeedUserEntity {
   final String? avatar;
   final int followers;
   final bool isVerified;
+  final bool isFollowing;
 
   const FeedUserEntity({
     required this.id,
@@ -38,15 +41,18 @@ class FeedUserEntity {
     this.avatar,
     required this.followers,
     required this.isVerified,
+    this.isFollowing = false,
   });
 }
 
+/// Represents feed track in the domain layer.
 class FeedTrackEntity {
   final String id;
   final String title;
   final int duration;
   final int playCount;
   final int likeCount;
+  final int commentCount;
   final String? coverUrl;
   final String audioUrl;
   final String? streamUrl;
@@ -59,6 +65,7 @@ class FeedTrackEntity {
     required this.duration,
     required this.playCount,
     required this.likeCount,
+    this.commentCount = 0,
     this.coverUrl,
     required this.audioUrl,
     this.streamUrl,
@@ -67,6 +74,7 @@ class FeedTrackEntity {
   });
 }
 
+/// Represents  feed playlist in the domain layer.
 class FeedPlaylistEntity {
   final String id;
   final String title;

@@ -6,7 +6,7 @@ import '../../../player/presentation/providers/player_provider.dart';
 import 'feed_card_play_button.dart';
 import '../../../../core/domain/entities/track.dart';
 import 'package:go_router/go_router.dart';
-
+import '../../../notifications/presentation/providers/follow_state_provider.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
 
 import '../../../player/presentation/providers/queue_provider.dart';
@@ -60,7 +60,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
     String trackId, {
     int attempts = 0,
   }) {
-    if (attempts > 40) return; // give up after 2 seconds
+    if (attempts > 40) return;
 
     Future.delayed(const Duration(milliseconds: 50), () {
       final current = ref.read(playerStateProvider).currentTrack;
@@ -73,6 +73,17 @@ class FeedCardBottomInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint(
+      'trackOwner: ${item.trackOwner.id} isFollowing: ${item.trackOwner.isFollowing}',
+    );
+    Future.microtask(() {
+      ref
+          .read(followStateProvider.notifier)
+          .setFollowing(
+            item.trackOwner.id,
+            isFollowing: item.trackOwner.isFollowing,
+          );
+    });
     return ClipRect(
       key: const Key('feed_card_bottom_info_clip'),
       child: BackdropFilter(
@@ -163,14 +174,17 @@ class FeedCardBottomInfo extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        FollowButton(targetUserId: item.user.id, compact: true),
+                        FollowButton(
+                          targetUserId: item.trackOwner.id,
+                          compact: true,
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              // ── Play circle: same behaviour as title tap ──
+
               GestureDetector(
                 onTap: () => _handlePlayTap(context, ref),
                 child: FeedCardPlayCircle(
