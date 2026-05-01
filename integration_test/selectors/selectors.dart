@@ -1,6 +1,3 @@
-// ============================================================
-// Centralized Selectors — ALL widget keys in one place
-// ============================================================
 
 // --- Core / Navigation ---
 const String mainBottomNavigationBar        = 'main_bottom_navigation_bar';
@@ -10,14 +7,11 @@ const String mainFullPlayerPage             = 'main_full_player_page';
 const String coreBottomSheetCloseButton     = 'core_bottom_sheet_close_icon_button';
 const String coreMiniPlayerWidget           = 'core_mini_player_widget';
 
-// --- Authentication ---
+// ----- Authentication -----
+// --- Login/Sign In ---
 const String authTitleText                  = 'auth_title_text';
 const String authEmailTextField             = 'auth_email_text_field_container';
 const String authContinueButton             = 'auth_continue_button';
-const String authSocialGoogleButton         = 'auth_social_google_button';
-const String authSocialFacebookButton       = 'auth_social_facebook_button';
-const String authSocialAppleButton          = 'auth_social_apple_button';
-const String authSocialGithubButton         = 'auth_social_github_button';
 const String authNeedHelpButton             = 'auth_need_help_button';
 const String onboardingCreateAccountButton  = 'onboarding_create_account_button';
 const String onboardingLoginButton          = 'onboarding_login_button';
@@ -50,8 +44,6 @@ const String authRegisterFinalContinueButton = 'authentication_create_account_pr
 const String authRegisterBackButton         = 'authentication_create_account_profile_back_icon_button';
 const String authPasswordBackButton         = 'authentication_back_icon_button';
 const String registerBackButton             = 'register_back_button';
-const String registerGoogleBanner           = 'register_google_banner';
-const String registerGoogleAvatar           = 'register_google_avatar';
 const String registerEmailField             = 'register_email_field';
 const String registerPasswordField          = 'register_password_field';
 const String registerConfirmPasswordField   = 'register_confirm_password_field';
