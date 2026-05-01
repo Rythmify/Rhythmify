@@ -22,8 +22,14 @@ import 'package:rythmify/features/messaging/domain/usecases/send_message_usecase
 import 'package:rythmify/features/messaging/domain/usecases/start_conversation_usecase.dart';
 import 'package:rythmify/features/messaging/domain/usecases/unblock_user_usecase.dart';
 
+/// Mock for [MessagingRepository] used to isolate all messaging use case tests.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+/// Tests for all messaging use cases.
+///
+/// Each use case is tested for correct parameter delegation, return value
+/// propagation, and exception re-throwing. No business logic is expected inside
+/// use cases — they are thin wrappers that call exactly one repository method.
 void main() {
   late MockMessagingRepository mockRepo;
 

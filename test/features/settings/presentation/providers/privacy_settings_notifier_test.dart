@@ -6,8 +6,10 @@ import 'package:rythmify/features/settings/domain/repositories/settings_repo_int
 import 'package:rythmify/features/settings/presentation/providers/privacy_settings_notifier.dart';
 import 'package:rythmify/features/settings/presentation/providers/settings_providers.dart';
 
+/// Mock [SettingsRepoInterface] for stubbing privacy-settings reads and writes.
 class MockSettingsRepoInterface extends Mock implements SettingsRepoInterface {}
 
+/// Fixture representing default privacy settings (public account, open messaging).
 const tPrivacyEntity = PrivacySettingsEntity(
   isPrivate: false,
   receiveMessageFromAnyone: true,
@@ -16,6 +18,14 @@ const tPrivacyEntity = PrivacySettingsEntity(
   showTopFansOnTracks: true,
 );
 
+/// Tests for [PrivacySettingsNotifier] via [privacySettingsProvider].
+///
+/// Verifies that [build] loads from the repository once, that [save] applies
+/// the optimistic state immediately and intentionally ignores the server response
+/// (to avoid defaulted fields overwriting live toggles), and that errors are
+/// silently swallowed while keeping the optimistic update in place.
+/// Also verifies that both the previous and updated entities are passed to
+/// [SettingsRepoInterface.updatePrivacySettings] for minimal PATCH diffing.
 void main() {
   late MockSettingsRepoInterface mockRepo;
   late ProviderContainer container;

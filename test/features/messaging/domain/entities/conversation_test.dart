@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 
+/// Tests for the [Conversation] domain entity.
+///
+/// Verifies field storage, optional [participantAvatar] nullability,
+/// zero [unReadCount], and [copyWith] immutability behaviour.
 void main() {
   final tDate = DateTime(2024, 6, 1, 10, 30);
 

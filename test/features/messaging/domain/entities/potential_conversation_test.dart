@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
 
+/// Tests for the [PotentialConversation] domain entity.
+///
+/// Verifies required field storage, optional field nullability, and
+/// that all optional fields are stored when explicitly provided.
 void main() {
   group('PotentialConversation', () {
     test('stores required fields', () {

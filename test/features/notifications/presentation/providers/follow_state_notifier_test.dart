@@ -3,9 +3,15 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/features/notifications/domain/usecases/get_follow_status_usecase.dart';
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 
+/// Mock for [GetFollowStatusUsecase] used to isolate [FollowStateNotifier].
 class MockGetFollowStatusUsecase extends Mock
     implements GetFollowStatusUsecase {}
 
+/// Tests for [FollowStateNotifier].
+///
+/// Verifies the initial empty-map state, that [fetchFollowState] caches
+/// the boolean result keyed by userId, and that multiple users can be tracked
+/// independently in the same state map.
 void main() {
   late MockGetFollowStatusUsecase mockUsecase;
   late FollowStateNotifier notifier;

@@ -7,8 +7,10 @@ import 'package:rythmify/features/settings/data/models/notification_preferences_
 import 'package:rythmify/features/settings/data/models/privacy_settings_model.dart';
 import 'package:rythmify/features/settings/domain/entities/notification_preferences_entity.dart';
 
+/// Mock for [ApiClient] — exposes a stubbed [Dio] instance via `.dio`.
 class MockApiClient extends Mock implements ApiClient {}
 
+/// Mock Dio client returned by [MockApiClient.dio] for HTTP response stubbing.
 class MockDio extends Mock implements Dio {}
 
 const tPrivacyJson = <String, dynamic>{
@@ -81,6 +83,12 @@ Response<dynamic> _notifResponse() => Response(
   data: {'data': tNotifJson},
 );
 
+/// Tests for [SettingsDatasourcesImpl].
+///
+/// Covers GET and PATCH /users/me/privacy-settings (including null/non-Map
+/// response fallbacks), GET and PATCH /notifications/preferences with full
+/// [NotificationPreferencesModel] round-trip, and DELETE /users/me.
+/// All HTTP calls are intercepted via [MockDio] returned by [MockApiClient.dio].
 void main() {
   late MockApiClient mockApiClient;
   late MockDio mockDio;

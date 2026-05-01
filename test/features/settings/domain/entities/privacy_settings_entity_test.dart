@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/settings/domain/entities/privacy_settings_entity.dart';
 
+/// Fixture entity with all fields set to typical defaults, used as the
+/// base for all [copyWith] and equality tests.
 const tEntity = PrivacySettingsEntity(
   isPrivate: false,
   receiveMessageFromAnyone: true,
@@ -9,6 +11,11 @@ const tEntity = PrivacySettingsEntity(
   showTopFansOnTracks: true,
 );
 
+/// Tests for [PrivacySettingsEntity].
+///
+/// Verifies [Equatable] value equality across all 5 fields, individual
+/// [copyWith] overrides per field, multi-field overrides, and that unchanged
+/// fields are preserved through every copy operation.
 void main() {
   group('PrivacySettingsEntity', () {
     test('supports value equality via Equatable', () {

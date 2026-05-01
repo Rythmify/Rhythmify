@@ -8,7 +8,14 @@ import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_
 import 'package:rythmify/features/messaging/presentation/providers/mark_as_read_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
+/// Mock for [MessagingRepository] injected via [repositoryprovider] override.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
+
+/// Tests for [MarkAsReadNotifier].
+///
+/// Verifies that [markRead] delegates the correct message and conversation IDs
+/// to the repository, that the loading state resets to `false` on completion,
+/// and that exceptions (including 409 "already read") are silently swallowed.
 
 void main() {
   late MockMessagingRepository mockRepo;

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/settings/data/models/notification_preferences_model.dart';
 import 'package:rythmify/features/settings/domain/entities/notification_preferences_entity.dart';
 
+/// Full JSON payload with all fields explicitly set (push=false, email=true)
+/// and `messages_from` as `followers_only`. Used for [fromJson] round-trip tests.
 const tFullJson = <String, dynamic>{
   'new_follower_push': false,
   'new_follower_email': true,
@@ -27,6 +29,7 @@ const tFullJson = <String, dynamic>{
   'newsletter_email': false,
 };
 
+/// Domain entity equivalent of [tFullJson] — used to verify [fromEntity] and [toDomain].
 const tEntity = NotificationPreferencesEntity(
   newFollowerPush: false,
   newFollowerEmail: true,
@@ -52,6 +55,12 @@ const tEntity = NotificationPreferencesEntity(
   newsletterEmail: false,
 );
 
+/// Tests for [NotificationPreferencesModel].
+///
+/// Covers [fromJson] mapping all 22 fields from snake_case keys, the
+/// [MessagesFrom] enum conversion in both directions, [toJson] key names,
+/// [fromEntity] copying from a domain entity, [toDomain] producing an equal
+/// entity, and the all-true default behaviour when JSON fields are absent.
 void main() {
   group('NotificationPreferencesModel', () {
     group('fromJson', () {

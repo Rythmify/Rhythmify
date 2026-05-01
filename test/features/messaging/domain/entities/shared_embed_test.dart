@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
+/// Tests for the [SharedEmbed] domain entity.
+///
+/// Verifies required field storage, optional field nullability, and that
+/// all three embed types (track, playlist, album) are accepted by the constructor.
 void main() {
   group('SharedEmbed', () {
     test('stores required fields', () {

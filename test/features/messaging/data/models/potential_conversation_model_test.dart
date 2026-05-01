@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/data/models/potential_conversation_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/potential_conversation.dart';
 
+/// Tests for [PotentialConversationModel.fromJson].
+///
+/// Covers the `id`/`user_id` fallback, optional field defaults, and
+/// the intentional omission of the `location` field (pending backend support).
 void main() {
   group('PotentialConversationModel', () {
     group('fromJson', () {

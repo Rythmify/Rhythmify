@@ -1,6 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
+/// Tests for [SentMessageRequestModel.toJson].
+///
+/// Verifies that the correct JSON keys are produced for text-only messages,
+/// track embeds, playlist embeds, album embeds (serialised as `playlist` type),
+/// combined body+embed messages, and the all-null edge case.
 void main() {
   group('SentMessageRequestModel', () {
     group('toJson', () {

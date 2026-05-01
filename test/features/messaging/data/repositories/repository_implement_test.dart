@@ -8,8 +8,14 @@ import 'package:rythmify/features/messaging/data/models/sent_message_request_mod
 import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 import 'package:rythmify/features/messaging/data/repositories/repository_implement.dart';
 
+/// Mock for [DatasourceInterface] used to isolate [RepositoryImplement] under test.
 class MockDatasourceInterface extends Mock implements DatasourceInterface {}
 
+/// Tests for [RepositoryImplement].
+///
+/// Each group verifies that the repository delegates the correct parameters to
+/// [DatasourceInterface] without adding any logic of its own, and that the
+/// [SentMessageRequestModel] is constructed correctly from raw domain arguments.
 void main() {
   late RepositoryImplement repo;
   late MockDatasourceInterface mockDatasource;

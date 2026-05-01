@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/data/models/message_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 
+/// Tests for [MessageModel] JSON serialisation and deserialisation.
+///
+/// Covers [MessageModel.fromJson] field parsing, embed fields, isRead flag,
+/// null body handling, [toJson] serialisation, and fromJson→toJson round-trips.
 void main() {
   final tDate = DateTime.parse('2024-06-01T12:00:00.000Z');
 

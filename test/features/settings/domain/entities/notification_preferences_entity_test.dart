@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/settings/domain/entities/notification_preferences_entity.dart';
 
+/// Fixture entity with alternating push=true/email=false values and
+/// [MessagesFrom.everyone], used as the base for all [copyWith] tests.
 const tEntity = NotificationPreferencesEntity(
   newFollowerPush: true,
   newFollowerEmail: false,
@@ -26,6 +28,11 @@ const tEntity = NotificationPreferencesEntity(
   newsletterEmail: true,
 );
 
+/// Tests for [NotificationPreferencesEntity].
+///
+/// Verifies [Equatable] value equality across all 22 fields, individual
+/// [copyWith] overrides for every field, multi-field overrides, and the
+/// [MessagesFrom] enum membership and cardinality.
 void main() {
   group('NotificationPreferencesEntity', () {
     test('supports value equality via Equatable', () {

@@ -8,9 +8,11 @@ import 'package:rythmify/features/notifications/domain/usecases/get_track_id_by_
 import 'package:rythmify/features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import 'package:rythmify/features/notifications/domain/usecases/mark_notification_as_read_usecase.dart';
 
+/// Mock for [NotificationsRepoInterface] used to isolate all notification use cases.
 class MockNotificationsRepo extends Mock
     implements NotificationsRepoInterface {}
 
+/// Shared notification fixture used across multiple use case tests.
 final tNotification = NotificationEntity(
   id: 'n1',
   type: NotificationType.follow,
@@ -20,6 +22,12 @@ final tNotification = NotificationEntity(
   createdAt: DateTime(2024, 1, 15),
 );
 
+/// Tests for all notification use cases.
+///
+/// Covers [GetNotificationsUsecase], [GetUnreadCountUsecase],
+/// [MarkNotificationAsReadUsecase], [GetFollowStatusUsecase], and
+/// [GetTrackIdByCommentIdUsecase] — each verified for parameter delegation
+/// and return value propagation with no added logic.
 void main() {
   late MockNotificationsRepo mockRepo;
 

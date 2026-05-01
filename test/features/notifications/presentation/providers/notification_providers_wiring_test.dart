@@ -18,14 +18,18 @@ import 'package:rythmify/features/notifications/presentation/providers/repo_prov
 // Mocks
 // ---------------------------------------------------------------------------
 
+/// Mock for [NotificationsRepoInterface] injected via [repoProvider] override.
 class MockNotificationsRepo extends Mock
     implements NotificationsRepoInterface {}
 
+/// Mock for [ToggleCommentLikeUseCase] to avoid real network calls in wiring tests.
 class MockToggleCommentLikeUseCase extends Mock
     implements ToggleCommentLikeUseCase {}
 
+/// Mock for [DataSourcesSockets] injected via [socketProvider] override.
 class MockDataSourcesSockets extends Mock implements DataSourcesSockets {}
 
+/// Fake [AuthNotifier] that returns a fixed [AuthState] without real authentication.
 class MockAuthNotifier extends AuthNotifier with Mock {
   final AuthState _initial;
   MockAuthNotifier(this._initial);
@@ -33,12 +37,18 @@ class MockAuthNotifier extends AuthNotifier with Mock {
   AuthState build() => _initial;
 }
 
+/// Minimal [FollowStateNotifier] subclass that passes through to the real implementation.
 class FakeFollowStateNotifier extends FollowStateNotifier {
   FakeFollowStateNotifier(super.usecase);
 }
 
 // ---------------------------------------------------------------------------
 
+/// Tests for provider factory wiring in the notifications feature.
+///
+/// Verifies that [notificationsProvider] builds and receives socket callbacks,
+/// follow-state updates, and comment-like toggles correctly when dependencies
+/// are overridden with mocks.
 void main() {
   late MockNotificationsRepo mockRepo;
   late MockToggleCommentLikeUseCase mockToggleCommentLike;

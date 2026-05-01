@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/domain/entities/message.dart';
 
+/// Tests for the [Message] domain entity.
+///
+/// Verifies required and optional field storage, embed fields,
+/// and [copyWith] immutability including toggling [isRead] in both directions.
 void main() {
   final tDate = DateTime(2024, 6, 1, 12, 0, 0);
 

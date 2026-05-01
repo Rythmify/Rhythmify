@@ -8,8 +8,14 @@ import 'package:rythmify/features/messaging/presentation/providers/is_blocked_by
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/repository_provider.dart';
 
+/// Mock for [MessagingRepository] injected via [repositoryprovider] override.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+/// Tests for Riverpod provider wiring in the messaging feature.
+///
+/// Verifies that [conversationProvider], [isBlockedProvider], and
+/// [isBlockedByProvider] correctly wire to their use cases via
+/// [repositoryprovider], and that results are propagated without modification.
 void main() {
   late MockMessagingRepository mockRepo;
 

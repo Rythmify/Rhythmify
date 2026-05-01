@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/data/models/conversation_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 
+/// Builds a minimal conversation JSON payload for use in [ConversationModel.fromJson] tests.
+///
+/// All fields have safe defaults; pass overrides to exercise specific branches.
 Map<String, dynamic> _buildJson({
   String id = 'conv-1',
   Map<String, dynamic>? participant,
@@ -17,6 +20,10 @@ Map<String, dynamic> _buildJson({
   };
 }
 
+/// Tests for [ConversationModel] JSON serialisation and deserialisation.
+///
+/// Covers [ConversationModel.fromJson] field parsing, avatar fallback chain,
+/// embed-type preview generation, null/missing-key handling, and [toJson] round-trips.
 void main() {
   final tDate = DateTime.parse('2024-06-01T12:00:00.000Z');
 

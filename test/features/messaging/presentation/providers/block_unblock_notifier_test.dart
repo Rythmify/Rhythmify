@@ -10,8 +10,13 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 import 'package:rythmify/features/messaging/presentation/providers/un_block_notifier.dart';
 import 'package:rythmify/features/messaging/presentation/providers/un_block_provider.dart';
 
+/// Mock for [MessagingRepository] injected via [repositoryprovider] override.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+/// Tests for [BlockUserNotifier] and [UnblockNotifier].
+///
+/// Verifies initial loading state, delegation to [MessagingRepository],
+/// and that the state returns to `false` after each operation completes.
 void main() {
   late MockMessagingRepository mockRepo;
 

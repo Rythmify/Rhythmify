@@ -11,10 +11,19 @@ import 'package:rythmify/features/messaging/presentation/providers/send_message_
 import 'package:rythmify/features/messaging/presentation/providers/send_message_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 
+/// Mock for [MessagingRepository] injected via [repositoryprovider] override.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+/// Mock for [DataSourcesSockets] injected via [socketProvider] override.
 class MockDataSourcesSockets extends Mock implements DataSourcesSockets {}
 
+/// Tests for [SendMessageNotifier].
+///
+/// Covers the two sending paths: sending within an existing conversation
+/// (delegates to [SendMessageUsecase], emits via socket, invalidates inbox)
+/// and starting a new conversation (delegates to [StartConversationUsecase],
+/// routes embedId to trackId or playlistId based on embedType).
+/// Also tests [ensureConversation] state management.
 void main() {
   late MockMessagingRepository mockRepo;
   late MockDataSourcesSockets mockSocket;

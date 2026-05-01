@@ -5,14 +5,17 @@ import 'package:rythmify/features/messaging/data/datasources/api_endpoints.dart'
 import 'package:rythmify/features/messaging/data/datasources/datasource_implement.dart';
 import 'package:rythmify/features/messaging/data/models/sent_message_request_model.dart';
 
+/// Mock Dio client used to stub HTTP responses in [DatasourceImplement] tests.
 class MockDio extends Mock implements Dio {}
 
+/// Creates a successful [Response] wrapping [data] with HTTP 200.
 Response<dynamic> _resp(dynamic data) => Response<dynamic>(
       data: data,
       statusCode: 200,
       requestOptions: RequestOptions(path: ''),
     );
 
+/// Creates a [DioException] with the given [statusCode] for error-path testing.
 DioException _dioEx(int statusCode) => DioException(
       requestOptions: RequestOptions(path: ''),
       response: Response<dynamic>(
@@ -22,6 +25,12 @@ DioException _dioEx(int statusCode) => DioException(
       type: DioExceptionType.badResponse,
     );
 
+/// Tests for [DatasourceImplement] — the Dio-backed HTTP datasource.
+///
+/// All HTTP calls are stubbed via [MockDio]. Covers response parsing for both
+/// Map and List data shapes, pagination fallbacks, 409 swallowing in
+/// [markMessagesAsRead], embed deduplication in [getEmbeds], artist-name
+/// fallbacks in [getTrackDetails], and error propagation paths.
 void main() {
   late MockDio mockDio;
   late DatasourceImplement ds;

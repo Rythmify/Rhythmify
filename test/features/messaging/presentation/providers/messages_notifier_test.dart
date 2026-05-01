@@ -4,13 +4,21 @@ import 'package:rythmify/features/messaging/domain/entities/message.dart';
 import 'package:rythmify/features/messaging/domain/repositories/messaging_repository.dart';
 import 'package:rythmify/features/messaging/presentation/providers/messages_notifier.dart';
 
+/// Mock for [MessagingRepository] used to stub [getMessages] in notifier tests.
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+/// Tests for [MessagesState] and [MessagesNotifier].
+///
+/// Covers [MessagesState.copyWith] immutability, [loadInitial] for both the
+/// ≤100 and >100 total-message paths, error state on exception, [loadMore]
+/// prepending and [hasMore] updates, [refresh] resetting pagination,
+/// [appendMessage] appending to local state, and [updateMessageRead] targeting.
 void main() {
   late MockMessagingRepository mockRepo;
 
   final tDate = DateTime(2024, 6, 1);
 
+  /// Creates a minimal [Message] with the given [id], optionally marking it read.
   Message makeMessage(String id, {bool isRead = false}) => Message(
         messageId: id,
         senderId: 'user-1',

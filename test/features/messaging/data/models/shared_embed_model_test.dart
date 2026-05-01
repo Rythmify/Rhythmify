@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/messaging/data/models/shared_embed_model.dart';
 import 'package:rythmify/features/messaging/domain/entities/shared_embed.dart';
 
+/// Tests for [SharedEmbedModel] construction and [SharedEmbedModel.fromJson].
+///
+/// Verifies field parsing for the three embed types (track, playlist, album),
+/// optional field nullability, and the [SharedEmbed] inheritance relationship.
 void main() {
   group('SharedEmbedModel', () {
     group('fromJson', () {

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/settings/data/models/privacy_settings_model.dart';
 import 'package:rythmify/features/settings/domain/entities/privacy_settings_entity.dart';
 
+/// Full JSON payload with all fields set to non-default values for thorough [fromJson] coverage.
 const tFullJson = <String, dynamic>{
   'is_private': true,
   'receive_messages_from_anyone': false,
@@ -26,6 +27,11 @@ const tEntity = PrivacySettingsEntity(
   showTopFansOnTracks: false,
 );
 
+/// Tests for [PrivacySettingsModel].
+///
+/// Covers [fromJson] field mapping and defaults, [toPatch] diff computation
+/// (only changed fields included, empty patch for identical models), [fromEntity]
+/// copying, and [toDomain] producing an equal [PrivacySettingsEntity].
 void main() {
   group('PrivacySettingsModel', () {
     group('fromJson', () {

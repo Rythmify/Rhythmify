@@ -6,8 +6,11 @@ import 'package:rythmify/features/settings/domain/repositories/settings_repo_int
 import 'package:rythmify/features/settings/presentation/providers/notification_prefs_notifier.dart';
 import 'package:rythmify/features/settings/presentation/providers/settings_providers.dart';
 
+/// Mock [SettingsRepoInterface] for stubbing notification-preference reads and writes.
 class MockSettingsRepoInterface extends Mock implements SettingsRepoInterface {}
 
+/// Fixture with every field enabled and [MessagesFrom.everyone], used as the
+/// pre-save state in all [NotificationPrefsNotifier.save] tests.
 const tNotifEntity = NotificationPreferencesEntity(
   newFollowerPush: true,
   newFollowerEmail: true,
@@ -33,6 +36,12 @@ const tNotifEntity = NotificationPreferencesEntity(
   newsletterEmail: true,
 );
 
+/// Tests for [NotificationPrefsNotifier] via [notificationPrefsProvider].
+///
+/// Verifies that [build] fetches from the repository once and exposes the entity,
+/// that [save] optimistically applies the updated entity and then commits the
+/// server response (or emits [AsyncError] and reverts on failure), and that the
+/// correct entity is forwarded to [SettingsRepoInterface.updateNotificationPreferences].
 void main() {
   late MockSettingsRepoInterface mockRepo;
   late ProviderContainer container;

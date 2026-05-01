@@ -7,6 +7,7 @@ import 'package:rythmify/features/settings/data/repositories/settings_repo_impl.
 import 'package:rythmify/features/settings/domain/entities/notification_preferences_entity.dart';
 import 'package:rythmify/features/settings/domain/entities/privacy_settings_entity.dart';
 
+/// Mock [SettingsRemoteDatasources] for stubbing all datasource calls in repo tests.
 class MockSettingsRemoteDatasources extends Mock
     implements SettingsRemoteDatasources {}
 
@@ -68,6 +69,14 @@ const tNotifEntity = NotificationPreferencesEntity(
   newsletterEmail: false,
 );
 
+/// Tests for [SettingsRepoImpl].
+///
+/// Verifies that [getPrivacySettings] and [getNotificationPreferences] delegate
+/// to the datasource and map results to domain entities. Verifies that
+/// [updatePrivacySettings] skips the datasource call when the patch diff is
+/// empty (unchanged settings), and that [updateNotificationPreferences] and
+/// [deleteMyAccount] forward to the datasource with correct arguments.
+/// Exception propagation is verified for all methods.
 void main() {
   late MockSettingsRemoteDatasources mockDatasource;
   late SettingsRepoImpl repo;
