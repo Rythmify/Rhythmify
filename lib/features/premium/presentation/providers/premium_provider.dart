@@ -137,9 +137,15 @@ class PremiumNotifier extends Notifier<PremiumState> {
     try {
       final sub = await _ds.fetchMySubscription();
       state = state.copyWith(subscription: sub, isLoading: false);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        // 404 = no active subscription — free tier, not an error
+        state = state.copyWith(isLoading: false, clearSubscription: true);
+      } else {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      }
     } catch (e) {
-      // 404 = no active subscription — free tier, not an error
-      state = state.copyWith(isLoading: false, clearSubscription: true);
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 

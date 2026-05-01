@@ -106,7 +106,7 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
     ).routeInformationProvider.value.uri.path;
     final isChatRoute = location.contains('/chat');
     final isFeedRoute = location == '/feed';
-    final isVisible = !isChatRoute;
+    final isVisible = !isChatRoute && location != '/library/settings/notifications';
     final currentMinSize = _minSize;
     final double displacement = isVisible ? 0 : screenHeight;
 
