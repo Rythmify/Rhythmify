@@ -40,18 +40,14 @@ void main() {
 
     final profilePage = ProfilePage(tester);
 
-    // ── Navigate: Home → Library tab → Account icon ──
     await tryTest('TC-PROFILE-001 | Navigate to profile page successfully', () async {
       await profilePage.goToLibraryTab();
       await profilePage.tapProfileAvatar();
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      // ─── TC-PROFILE-001 | Profile page loads with user data ───────────────
       expect(profilePage.isOnProfilePage(), true);
       expect(profilePage.isProfileDataVisible(), true);
     });
 
-
-    // ─── TC-PROFILE-002 | Edit name, city, country, bio — verify saved ────
     await tryTest('TC-PROFILE-002 | Edit profile data successfully', () async {   
       await profilePage.tapEdit();
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -83,8 +79,6 @@ void main() {
       expect(profilePage.isProfileNameVisible(profileEditNewName), true);
     });
 
-
-    // ─── TC-PROFILE-003 | Edit → Back → Continue Editing (stay on edit) ───
     await tryTest('TC-PROFILE-003 | Continue Editing Scenario', () async { 
       await profilePage.tapEdit();
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -104,7 +98,6 @@ void main() {
       expect(profilePage.isProfileNameVisible(profileEditNewName), true);
     });
 
-    // ─── TC-PROFILE-004 | Edit → Back → Discard Changes (back to profile) ─
     await tryTest('TC-PROFILE-004 | Discard Changes Scenario', () async { 
       await profilePage.tapEdit();
       await tester.pumpAndSettle(const Duration(seconds: 2));

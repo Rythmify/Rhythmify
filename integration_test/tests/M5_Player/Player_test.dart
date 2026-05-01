@@ -10,7 +10,7 @@ import '../../selectors/selectors.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('TC-PLAYER-001 | Full player — all checks', (tester) async {
+  testWidgets('M5 - PLAYER - All scenarios', (tester) async {
     app.main();
     final originalOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
@@ -64,7 +64,6 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
     });
 
-    // ── TC-PLAYER-005 | Play / pause toggles without crashing ────────────────
     await tryTest('Play & Pause track without crashing', () async {    
       await playerPage.tapPlayPause(); // pause
       await tester.pump(const Duration(seconds: 1));

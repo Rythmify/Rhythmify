@@ -39,7 +39,6 @@ void main() {
     expect(loginPage.isOnHomePage(), true);
 
 
-    // ─── TC-PREMIUM-001 | Navigate to Upgrade tab ─────────────────────────
     await tryTest('TC-PREMIUM-001 | Navigate to Upgrade tab', () async {
       await premiumPage.tapUpgradeNavButton();
       await tester.pumpAndSettle(const Duration(seconds: 3));

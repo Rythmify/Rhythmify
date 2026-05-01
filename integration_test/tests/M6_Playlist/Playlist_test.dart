@@ -38,7 +38,6 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 5));
       expect(loginPage.isOnHomePage(), true);
 
-      // ── TC-PLAYLIST-001 | Navigate Library → Playlists ────────────────────
       await tryTest('TC-PLAYLIST-001 | Navigate Library → Playlists', () async {
         await playlistPage.goToLibraryTab();
         await playlistPage.goToPlaylistsSection();
@@ -77,7 +76,6 @@ void main() {
 
       });
 
-      // ── TC-PLAYLIST-002 | Create a new playlist ───────────────────────────
       await tryTest('TC-PLAYLIST-003 | Create a new playlist', () async {
         await playlistPage.tapCreateButton();
         await playlistPage.fillPlaylistName('Integration Test Playlist');
@@ -89,16 +87,12 @@ void main() {
         //     reason: 'New playlist name should appear in the header');
       });
 
-      // ── TC-PLAYLIST-003 | Add a track from suggestions ────────────────────
       await tryTest('TC-PLAYLIST-004 | Add a track from suggestions', () async {
-        //Add first 3 tracks from the suggestions list
         await playlistPage.tapAddTrackButton();
         await playlistPage.tapSuggestionAddButtonByIndex(0);
         await tester.pumpAndSettle(const Duration(seconds: 4));
         await playlistPage.tapSuggestionAddButtonByIndex(1);
         await tester.pumpAndSettle(const Duration(seconds: 4));
-        // await playlistPage.tapSuggestionAddButtonByIndex(2);
-        // await tester.pumpAndSettle(const Duration(seconds: 2));
       });
 
       // ── Navigate back to the Playlists list ───────────────────────────────
@@ -108,32 +102,22 @@ void main() {
             reason: 'Should be back on the Playlists list');
       });
 
-      // ── TC-PLAYLIST-004..007 | Edit — tap ⋮ on the playlist row in the list
       await tryTest('TC-PLAYLIST-005 | Edit — tap ⋮ on the playlist row in the list', () async {
         await playlistPage.tapMoreForPlaylist('Integration Test Playlist');
         await playlistPage.tapOptionEdit();
         expect(playlistPage.isEditSheetOpen(), true,
             reason: 'Edit sheet should open after tapping Edit');
 
-        // TC-PLAYLIST-004 | Rename
         await playlistPage.fillEditName('Edited Integration Playlist');
-
-        // TC-PLAYLIST-005 | Add a description
         await playlistPage.fillEditDescription('Integration test description');
-
-        // TC-PLAYLIST-006 | Toggle public/private
         await playlistPage.tapEditPublicSwitch();
-
-        // TC-PLAYLIST-007 | Remove the added track
         //await playlistPage.removeTrack(0);
-
-        // await playlistPage.tapSaveEdit();
         await playlistPage.tapSaveEdit();
+
         await tester.pumpAndSettle(const Duration(seconds: 2));
         await playlistPage.pullToRefresh(libraryPlaylistsList);
       });
 
-      // // ── Verify edits are reflected on the Playlists list ──────────────────
       await tryTest('Verify edits are reflected on the Playlists list', () async {
         expect(playlistPage.isOnPlaylistsListScreen(), true,
             reason: 'Should be on the Playlists list after saving');
@@ -173,7 +157,6 @@ void main() {
             reason: 'Converted album should appear in the Albums section');
       });
 
-      // ── TC-PLAYLIST-007 | Delete the playlist from its detail screen ──────
       await tryTest('TC-PLAYLIST-007 | Delete the playlist from its detail screen', () async {
         await playlistPage.goBackToLibrary();
         await playlistPage.goToPlaylistsSection();
@@ -190,7 +173,6 @@ void main() {
         await tester.pumpAndSettle(const Duration(seconds: 2));
       });
 
-      // ─── TC-PLAYLIST-008 | Search for existing playlist ───────────────
       await tryTest('TC-PLAYLIST-008 | Search for playlist track → visible', () async {
         await playlistPage.typeInPlaylistSearch("spacetoon");
         await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -198,7 +180,6 @@ void main() {
             reason: 'Playlist should appear in search results');
       });
 
-      // ─── TC-PLAYLIST-007 | Search for non-existing playlist track ─────────
       await tryTest('TC-PLAYLIST-009 | Search for non existing playlist → not visible', () async {
         await playlistPage.typeInPlaylistSearch("non existing playlist");
         await tester.pumpAndSettle(const Duration(seconds: 2));

@@ -153,13 +153,6 @@ const String profileInfoBioText             = 'profile_info_bio_text';
 const String profileInfoFollowersStat       = 'profile_info_followers_stat';
 const String profileInfoFollowingStat       = 'profile_info_following_stat';
 const String profileInfoTracksStat          = 'profile_info_tracks_stat';
-const String profileShareMessageButton      = 'profile_share_message_button';
-const String profileShareCopyLinkButton     = 'profile_share_copy_link_button';
-const String profileShareWhatsappButton     = 'profile_share_whatsapp_button';
-const String profileShareQrCodeButton       = 'profile_share_qr_code_button';
-const String profileShareStatusButton       = 'profile_share_status_button';
-const String profileShareStoriesButton      = 'profile_share_stories_button';
-const String profileShareSmsButton          = 'profile_share_sms_button';
 const String profileShareViewInfoGesture    = 'profile_share_view_info_gesture';
 const String profileUnsavedChangesDiscard   = 'profile_unsaved_changes_discard_button';
 const String profileUnsavedChangesContinue  = 'profile_unsaved_changes_continue_button';
@@ -168,8 +161,6 @@ const String profileStatsFollowingButton    = 'profile_stats_following_button';
 const String profileUnsavedChangesTitleText = 'profile_unsaved_changes_title_text';
 const String profileUnsavedChangesDescText  = 'profile_unsaved_changes_description_text';
 const String profileConnectionsBackButton   = 'profile_connections_back_button';
-const String profileConnectionsRetryButton  = 'profile_connections_retry_button';
-const String profileConnectionsEmptyText    = 'profile_connections_empty_text';
 
 // --- Edit Profile ---
 const String editProfileBackButton          = 'edit_profile_back_button';

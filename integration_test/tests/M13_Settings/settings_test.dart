@@ -84,7 +84,7 @@ void main() {
 
     });
 
-    await tryTest('TC-SETTINGS-005 | Clear cache successfully', () async {
+    await tryTest('TC-SETTINGS-004 | Clear cache successfully', () async {
       await settingsPage.tapBasicSettings();  
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapOnClearAppCache();

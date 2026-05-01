@@ -40,22 +40,18 @@ void main() {
 
     final homePage = HomePage(tester);
 
-    // ─── TC-HOME-001 | Home tab is visible ──────────────────────────────
     await tryTest('TC-HOME-001 | Home tab is visible', () async {
       expect(homePage.isHeaderVisible(), true);
     });
 
-    // ─── TC-HOME-002 | Bottom nav bar is visible ─────────────────────────
     await tryTest('TC-HOME-002 | Bottom nav bar is visible', () async {
       expect(homePage.isAllNavTabsVisible(), true);
     });
 
-    // ─── TC-HOME-003 | All header elements are visible ───────────────────
     await tryTest('TC-HOME-003 | All header elements are visible', () async {
       expect(homePage.isAllHeaderElementsVisible(), true);
     });
 
-    // ─── TC-HOME-004 | Tap message & notifications buttons ───────────────
     await tryTest('TC-HOME-004 | Tap message button & notifications button', () async {
       await homePage.tapMessageButton();
       await tester.pump(const Duration(seconds: 3));
@@ -70,7 +66,6 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
     });
 
-    // ─── TC-HOME-005 | Trending by genre — tap genres one by one ─────────
     await tryTest('TC-HOME-005 | Trending by genre visible — tap genres one by one', () async {
       await homePage.scrollDownUntilVisible(trendingByGenreSection);
       expect(homePage.isTrendingByGenreVisible(), true);
@@ -83,24 +78,21 @@ void main() {
       expect(homePage.isTrendingByGenreVisible(), true);
     });
 
-    // ─── TC-HOME-006 | Scroll horizontally in the genre section ──────────
     await tryTest('TC-HOME-006 | User can scroll horizontally in the genre section', () async {
       await homePage.scrollHorizontallyInSection(genreTabBar);
     });
 
-    // ─── TC-HOME-007 | Hot For You — play then immediately pause ─────────
     await tryTest('TC-HOME-007 | Hot For You section visible — play and stop track', () async {
       await homePage.scrollDownUntilVisible(hotForYouSection);
       expect(homePage.isActivityCardVisible(), true);
       await homePage.tapByKeyNow(hotForYouPlayButton);
       await tester.pump(const Duration(seconds: 1));
-      await homePage.tapByKeyNow(hotForYouPlayButton); // pause immediately
+      await homePage.tapByKeyNow(hotForYouPlayButton);
       await tester.pump(const Duration(seconds: 1));
       expect(homePage.isActionButtonVisible(), true);
       await homePage.pauseIfPlaying();
     });
 
-    // ─── TC-HOME-008 | Mixed For You — scroll, open, like, return ────────
     await tryTest('TC-HOME-008 | Mixed For You — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(mixedForYouSection);
       expect(homePage.isMixedForYouVisible(), true);
@@ -121,7 +113,6 @@ void main() {
       await homePage.settle();
     });
 
-    // ─── TC-HOME-009 | Discover With Stations — scroll, open, like, return
     await tryTest('TC-HOME-009 | Discover With Stations — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(discoverWithStationsSection);
       expect(homePage.isDiscoverWithStationsVisible(), true);
@@ -143,7 +134,6 @@ void main() {
       await homePage.settle();
     });
 
-    // ─── TC-HOME-010 | More of What You Like — scroll, open, like, return
     await tryTest('TC-HOME-010 | More of What You Like — scroll, open playlist, like, return', () async {
       await homePage.scrollDownUntilVisible(moreOfWhatYouLikeSection);
       expect(homePage.isMoreOfWhatYouLikeVisible(), true);
