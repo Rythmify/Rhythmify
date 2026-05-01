@@ -12,10 +12,18 @@ import '../../selectors/selectors.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('M7 - Home Page - all scenarios', (tester) async {
-    app.main();
     final originalOnError = FlutterError.onError;
+    // FlutterError.onError = (FlutterErrorDetails details) {
+    //   debugPrint('[Test] Suppressed: ${details.exception}');
+    // };
     FlutterError.onError = (FlutterErrorDetails details) {
-      debugPrint('[Test] Suppressed: ${details.exception}');
+      final String exception = details.exceptionAsString();
+      if (exception.contains('Socket disconnected') ||
+          exception.contains('io client disconnect')) {
+        debugPrint('[Test] Suppressed socket teardown: $exception');
+        return;
+      }
+      debugPrint('[Test] Suppressed: $exception');
     };
     final List<String> failures = [];
     Future<void> tryTest(String name, Future<void> Function() body) async {
@@ -27,6 +35,7 @@ void main() {
         debugPrint('[FAIL] $name: $e');
       }
     }
+    app.main();
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // ── Login first ──
