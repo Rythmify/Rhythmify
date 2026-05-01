@@ -33,11 +33,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Clean Flutter project
+        run: flutter clean
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Android release APK
-        run: flutter build apk --release --no-pub
+        run: flutter build apk --release
 
       - name: Confirm APK was produced
         run: |
