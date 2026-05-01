@@ -128,7 +128,7 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
             },
           ),
         ),
-        if (showAd) const AdBannerOverlay(),
+        if (showAd) AdBannerOverlay(onCollapse: widget.onCollapse),
       ],
     );
   }
@@ -215,6 +215,7 @@ class _PlayerTrackPage extends ConsumerWidget {
                   PlayerActionBar(
                     key: Key('player_action_bar_${track.id}'),
                     trackId: track.id,
+                    onCollapse: onCollapse,
                   ),
               ],
             ),

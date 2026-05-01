@@ -5,7 +5,8 @@ import '../providers/ad_provider.dart';
 import 'package:go_router/go_router.dart';
 
 class AdBannerOverlay extends ConsumerWidget {
-  const AdBannerOverlay({super.key});
+  final VoidCallback? onCollapse;
+  const AdBannerOverlay({super.key, this.onCollapse});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,43 +14,48 @@ class AdBannerOverlay extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // ── Blurred Background ──────────────────────────────────────────
+          // --- Blurred Background ---
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
               ),
             ),
           ),
 
-          // ── Close Button ────────────────────────────────────────────────
+          // --- Close Button ---
           Positioned(
             top: 60,
             right: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              icon: const Icon(Icons.close, color: Color(0xFFD4AF37), size: 30),
               onPressed: () => ref.read(adProvider.notifier).dismissAd(),
             ),
           ),
 
-          // ── Ad Content ──────────────────────────────────────────────────
+          // --- Ad Content ---
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 24),
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: const Color(0xFF121212),
                 borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4A00E0).withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.8),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
+                  ),
+                  BoxShadow(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 0),
                   ),
                 ],
               ),
@@ -58,7 +64,7 @@ class AdBannerOverlay extends ConsumerWidget {
                 children: [
                   const Icon(
                     Icons.workspace_premium,
-                    color: Colors.white,
+                    color: Color(0xFFD4AF37),
                     size: 80,
                   ),
                   const SizedBox(height: 24),
@@ -66,7 +72,7 @@ class AdBannerOverlay extends ConsumerWidget {
                     "Unlock Artist Pro",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFFD4AF37),
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
@@ -86,11 +92,12 @@ class AdBannerOverlay extends ConsumerWidget {
                   ElevatedButton(
                     onPressed: () {
                       ref.read(adProvider.notifier).dismissAd();
-                      context.push('/premium');
+                      onCollapse?.call();
+                      context.go('/upgrade');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF4A00E0),
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 48,
                         vertical: 16,
