@@ -109,15 +109,18 @@ class _ProfileNotifierUnderTest extends Notifier<ProfileState> {
     }
 
     final result = await _getProfile(userId: userId);
-    await result.fold((failure) async => state = ProfileError(failure.message), (profile) async {
-      if (state is ProfileLoaded &&
-          (state as ProfileLoaded).profile.id == profile.id) {
-        state = (state as ProfileLoaded).copyWith(profile: profile);
-      } else {
-        state = ProfileLoaded(profile: profile);
-      }
-      await _loadFollowStatus(userId);
-    });
+    await result.fold(
+      (failure) async => state = ProfileError(failure.message),
+      (profile) async {
+        if (state is ProfileLoaded &&
+            (state as ProfileLoaded).profile.id == profile.id) {
+          state = (state as ProfileLoaded).copyWith(profile: profile);
+        } else {
+          state = ProfileLoaded(profile: profile);
+        }
+        await _loadFollowStatus(userId);
+      },
+    );
   }
 
   Future<void> _loadFollowStatus(String userId) async {
@@ -425,10 +428,13 @@ class _ProfileNotifierUnderTest extends Notifier<ProfileState> {
     state = current.copyWith(isSaving: true);
 
     final result = await _deleteCoverPhoto();
-    await result.fold((failure) async => state = current.copyWith(isSaving: false), (_) async {
-      state = current.copyWith(isSaving: false);
-      await loadProfile(userId: 'me');
-    });
+    await result.fold(
+      (failure) async => state = current.copyWith(isSaving: false),
+      (_) async {
+        state = current.copyWith(isSaving: false);
+        await loadProfile(userId: 'me');
+      },
+    );
   }
 
   Future<void> followUser({required String userId}) async {

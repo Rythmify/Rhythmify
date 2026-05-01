@@ -26,12 +26,16 @@ class MockProfileRepository extends Mock implements ProfileRepository {}
 
 class MockAudioHandler extends Mock implements RythmifyAudioHandler {}
 
-class MockAuthNotifier extends Notifier<AuthState> with Mock implements AuthNotifier {
+class MockAuthNotifier extends Notifier<AuthState>
+    with Mock
+    implements AuthNotifier {
   @override
   AuthState build() => const AuthUnauthenticated();
 }
 
-class MockPlayerNotifier extends Notifier<AppPlayerState> with Mock implements PlayerNotifier {
+class MockPlayerNotifier extends Notifier<AppPlayerState>
+    with Mock
+    implements PlayerNotifier {
   @override
   AppPlayerState build() => const AppPlayerState();
 }
@@ -141,7 +145,10 @@ class _SeedNotifier extends ProfileNotifier {
 void main() {
   setUp(() {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
-    binding.platformDispatcher.implicitView?.physicalSize = const Size(1080, 5000);
+    binding.platformDispatcher.implicitView?.physicalSize = const Size(
+      1080,
+      5000,
+    );
     binding.platformDispatcher.implicitView?.devicePixelRatio = 1.0;
   });
 
@@ -359,10 +366,7 @@ void main() {
         find.byKey(const Key('public_profile_edit_gesture')),
         findsOneWidget,
       );
-      expect(
-        find.byType(FollowButton),
-        findsNothing,
-      );
+      expect(find.byType(FollowButton), findsNothing);
     });
 
     testWidgets('should show Follow button for another user profile', (
@@ -375,10 +379,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.byType(FollowButton),
-        findsOneWidget,
-      );
+      expect(find.byType(FollowButton), findsOneWidget);
       expect(
         find.byKey(const Key('public_profile_edit_gesture')),
         findsNothing,
