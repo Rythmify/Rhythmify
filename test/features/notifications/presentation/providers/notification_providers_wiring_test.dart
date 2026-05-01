@@ -9,7 +9,7 @@ import 'package:rythmify/features/comments/presentation/providers/comment_di_pro
 import 'package:rythmify/features/messaging/data/datasources/data_sources_sockets.dart';
 import 'package:rythmify/features/messaging/presentation/providers/socket_provider.dart';
 import 'package:rythmify/features/notifications/domain/repositories/notifications_repo_interface.dart';
-import 'package:rythmify/features/notifications/domain/usecases/get_follow_status_usecase.dart';
+
 import 'package:rythmify/features/notifications/presentation/providers/follow_state_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:rythmify/features/notifications/presentation/providers/repo_provider.dart';
@@ -34,7 +34,7 @@ class MockAuthNotifier extends AuthNotifier with Mock {
 }
 
 class FakeFollowStateNotifier extends FollowStateNotifier {
-  FakeFollowStateNotifier(GetFollowStatusUsecase usecase) : super(usecase);
+  FakeFollowStateNotifier(super.usecase);
 }
 
 // ---------------------------------------------------------------------------
