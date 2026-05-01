@@ -5,6 +5,7 @@ import '../../domain/entities/queue_state.dart';
 import '../../domain/entities/queue_item.dart';
 import 'player_provider.dart';
 import 'player_dependency_providers.dart';
+import '../../../track/presentation/providers/track_dependency_providers.dart';
 
 final queueStateProvider = NotifierProvider<QueueNotifier, AppQueueState>(() {
   return QueueNotifier();
@@ -17,11 +18,23 @@ class QueueNotifier extends Notifier<AppQueueState> {
   AppQueueState build() {
     ref.listen(playerStateProvider, (previous, next) {
       // ── Unified Reactive Logic ─────────────────────────────────────────────
-      // We react ONLY when the native player's index changes.
-      // This covers: Swiping PageView, Pressing Next/Prev, and Auto-Advance.
-      if (previous?.queueIndex != next.queueIndex && next.queueIndex != null) {
-        _syncWithHardware(next.queueIndex!);
+      // We react differently depending on WHAT changed in the player.
+
+      final oldId = previous?.currentTrack?.id;
+      final newId = next.currentTrack?.id;
+      final oldIndex = previous?.queueIndex;
+      final newIndex = next.queueIndex;
+
+      // 1. TRACK CHANGED (Auto-advance or Skip)
+      // We sync state and check if we need to fetch more recommendations.
+      if (oldId != newId && newId != null) {
+        _syncWithHardware(newIndex ?? 0);
         _checkAndFetchRelated();
+      }
+      // 2. INDEX CHANGED (Same track, different position in hardware queue)
+      // This happens during reorders or manual queue syncs. We just sync state.
+      else if (oldIndex != newIndex && newIndex != null) {
+        _syncWithHardware(newIndex);
       }
     });
 
@@ -285,6 +298,114 @@ class QueueNotifier extends Notifier<AppQueueState> {
 
     // Seamless hardware sync using moveTrack (prevents playback restart)
     ref.read(playerStateProvider.notifier).moveTrack(hardwareOldIndex, hardwareNewIndex);
+  }
+
+  /// Adds a track immediately after the current playing track.
+  Future<void> addToQueueNext(Track track) async {
+    if (state.currentTrack == null) {
+      playQueue(tracks: [track], initialIndex: 0);
+      return;
+    }
+
+    final newItem = QueueItem(
+      track: track,
+      queueItemId: 'manual_${track.id}_${DateTime.now().millisecondsSinceEpoch}',
+    );
+
+    final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
+    currentUpcoming.insert(0, newItem);
+
+    state = state.copyWith(
+      upcomingTracks: currentUpcoming,
+      unShuffledUpcomingTracks: currentUpcoming,
+    );
+
+    await _syncHardwareQueue();
+
+    // ── BACKGROUND RESOLUTION ────────────────────────────────────────────────
+    // If the track is a skeleton (common for stations/mixes), fetch full data.
+    if (track.userId.isEmpty || track.waveformData == null) {
+      _resolveTrackInBackground(newItem);
+    }
+  }
+
+  /// Adds a track to the very end of the manual queue (before recommendations).
+  Future<void> addToQueueLast(Track track) async {
+    if (state.currentTrack == null) {
+      playQueue(tracks: [track], initialIndex: 0);
+      return;
+    }
+
+    final newItem = QueueItem(
+      track: track,
+      queueItemId: 'manual_${track.id}_${DateTime.now().millisecondsSinceEpoch}',
+    );
+
+    final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
+    final firstRecIndex =
+        currentUpcoming.indexWhere((item) => item.isRecommended);
+
+    if (firstRecIndex == -1) {
+      currentUpcoming.add(newItem);
+    } else {
+      currentUpcoming.insert(firstRecIndex, newItem);
+    }
+
+    state = state.copyWith(
+      upcomingTracks: currentUpcoming,
+      unShuffledUpcomingTracks: currentUpcoming,
+    );
+
+    await _syncHardwareQueue();
+
+    if (track.userId.isEmpty || track.waveformData == null) {
+      _resolveTrackInBackground(newItem);
+    }
+  }
+
+  /// Fetches full track details and updates the queue item in place.
+  Future<void> _resolveTrackInBackground(QueueItem item) async {
+    try {
+      final fullTrack = await ref
+          .read(getTrackDetailsUseCaseProvider)
+          .call(item.track.id);
+
+      // We might also want waveform data while we are at it
+      final waveform = await ref
+          .read(getWaveformUseCaseProvider)
+          .call(item.track.id)
+          .catchError((_) => <double>[]);
+
+      final resolvedTrack = fullTrack.copyWith(
+        waveformData: waveform.isNotEmpty ? waveform : fullTrack.waveformData,
+      );
+
+      final updatedUpcoming = state.upcomingTracks.map((it) {
+        if (it.queueItemId == item.queueItemId) {
+          return it.copyWith(track: resolvedTrack);
+        }
+        return it;
+      }).toList();
+
+      state = state.copyWith(
+        upcomingTracks: updatedUpcoming,
+        unShuffledUpcomingTracks: updatedUpcoming,
+      );
+    } catch (e) {
+      debugPrint('[QueueNotifier] Background resolution failed: $e');
+    }
+  }
+
+  /// Helper to sync the entire local state to the native hardware player.
+  Future<void> _syncHardwareQueue() async {
+    if (state.currentTrack == null) return;
+
+    final allTracks = [
+      ...state.history.map((e) => e.track),
+      state.currentTrack!.track,
+      ...state.upcomingTracks.map((e) => e.track),
+    ];
+    await ref.read(playerStateProvider.notifier).updateNativeQueue(allTracks);
   }
 
   Future<void> addToNextUp({
