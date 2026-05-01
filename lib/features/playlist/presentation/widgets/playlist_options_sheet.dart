@@ -57,6 +57,7 @@ class PlaylistOptionsSheet extends ConsumerWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
         ),
         child: SingleChildScrollView(
+          key: const Key('playlist_options_scroll_view'),
           controller: scrollController,
           child: Column(
             mainAxisSize: MainAxisSize.min,

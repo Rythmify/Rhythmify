@@ -8,6 +8,11 @@ class PlaylistPage extends BasePage {
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
+  Future<void> _tapByText(String text) async {
+    await tester.tap(find.text(text));
+    await tester.pumpAndSettle();
+  }
+
   /// Taps the Library tab in the bottom navigation bar.
   Future<void> goToLibraryTab() async {
     await tester.tap(find.text('Library'));
@@ -129,11 +134,11 @@ class PlaylistPage extends BasePage {
   }
 
   /// Taps the "Delete playlist" option in the options sheet.
-  /// Drags the sheet upward first so the Delete option becomes visible.
+  /// Scrolls the options sheet until the Delete option is visible.
   Future<void> tapOptionDelete() async {
     await tester.dragUntilVisible(
       find.byKey(Key(optionsDelete)),
-      find.byKey(Key(optionsLike)),
+      find.byKey(Key(playlistOptionsScrollView)),
       const Offset(0, -100),
       maxIteration: 20,
     );
@@ -173,16 +178,28 @@ class PlaylistPage extends BasePage {
   Future<void> tapSaveEdit() async {
     await tapByKey(editPlaylistSaveButton);
   }
+  Future<void>tapSave() async {
+    await _tapByText('Save');
+  }
 
   /// Taps the Cancel button in the Edit sheet.
   Future<void> tapCancelEdit() async {
     await tapByKey(editPlaylistCancelButton);
   }
 
-  /// Taps the remove (red minus) button for [trackId] in the Edit sheet.
+  /// Taps the remove button at [index] in the Edit sheet.
+  /// Keys use track IDs (UUIDs), so we find all remove buttons by key prefix and tap by position.
   Future<void> removeTrack(int index) async {
-    await tapByKey('edit_track_remove_$index');
-     await tester.pumpAndSettle(const Duration(seconds: 1));
+    final removeFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is IconButton &&
+          widget.key != null &&
+          widget.key.toString().contains('edit_track_remove_'),
+    );
+    await tester.ensureVisible(removeFinder.at(index));
+    await tester.pumpAndSettle();
+    await tester.tap(removeFinder.at(index));
+    await tester.pumpAndSettle(const Duration(seconds: 1));
   }
 
   // ── Suggestions (Playlist Detail) ──────────────────────────────────────────

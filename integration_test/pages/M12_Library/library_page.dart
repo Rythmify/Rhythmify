@@ -144,6 +144,7 @@ class LibraryPage extends BasePage {
 
   // ── Stations ───────────────────────────────────────────────────────────────
   Future<void> tapStationsBack() async => await tapByKey(libraryStationsBackButton);
+  Future<void> tapStationDetailBack() async => await tapByKey(libraryStationDetailScreen);
   Future<void> tapStationFilterButton()          async => await tapByKey(libraryStationsFilterButton);
   Future<void> tapStationFilterOptionFirstAdded() async => await tapByKey(libraryStationsFilterFirstAdded);
   Future<void> tapStationFilterOptionStationName() async => await tapByKey(libraryStationsFilterStationName);
