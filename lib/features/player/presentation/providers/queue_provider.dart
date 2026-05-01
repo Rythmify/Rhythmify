@@ -300,20 +300,32 @@ class QueueNotifier extends Notifier<AppQueueState> {
     ref.read(playerStateProvider.notifier).moveTrack(hardwareOldIndex, hardwareNewIndex);
   }
 
-  /// Adds a track immediately after the current playing track.
+  /// Adds a single track immediately after the current playing track.
   Future<void> addToQueueNext(Track track) async {
+    await addMultipleToQueueNext([track]);
+  }
+
+  /// Adds multiple tracks immediately after the current playing track.
+  Future<void> addMultipleToQueueNext(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+
     if (state.currentTrack == null) {
-      playQueue(tracks: [track], initialIndex: 0);
+      await playQueue(tracks: tracks, initialIndex: 0);
       return;
     }
 
-    final newItem = QueueItem(
-      track: track,
-      queueItemId: 'manual_${track.id}_${DateTime.now().millisecondsSinceEpoch}',
-    );
+    final newItems = tracks.asMap().entries.map((entry) {
+      final t = entry.value;
+      final idx = entry.key;
+      return QueueItem(
+        track: t,
+        queueItemId:
+            'manual_${t.id}_${DateTime.now().millisecondsSinceEpoch}_$idx',
+      );
+    }).toList();
 
     final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
-    currentUpcoming.insert(0, newItem);
+    currentUpcoming.insertAll(0, newItems);
 
     state = state.copyWith(
       upcomingTracks: currentUpcoming,
@@ -322,33 +334,46 @@ class QueueNotifier extends Notifier<AppQueueState> {
 
     await _syncHardwareQueue();
 
-    // ── BACKGROUND RESOLUTION ────────────────────────────────────────────────
-    // If the track is a skeleton (common for stations/mixes), fetch full data.
-    if (track.userId.isEmpty || track.waveformData == null) {
-      _resolveTrackInBackground(newItem);
+    // Background resolution for skeletons
+    for (final item in newItems) {
+      if (item.track.userId.isEmpty || item.track.waveformData == null) {
+        _resolveTrackInBackground(item);
+      }
     }
   }
 
-  /// Adds a track to the very end of the manual queue (before recommendations).
+  /// Adds a single track to the very end of the manual queue (before recommendations).
   Future<void> addToQueueLast(Track track) async {
+    await addMultipleToQueueLast([track]);
+  }
+
+  /// Adds multiple tracks to the very end of the manual queue (before recommendations).
+  Future<void> addMultipleToQueueLast(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+
     if (state.currentTrack == null) {
-      playQueue(tracks: [track], initialIndex: 0);
+      await playQueue(tracks: tracks, initialIndex: 0);
       return;
     }
 
-    final newItem = QueueItem(
-      track: track,
-      queueItemId: 'manual_${track.id}_${DateTime.now().millisecondsSinceEpoch}',
-    );
+    final newItems = tracks.asMap().entries.map((entry) {
+      final t = entry.value;
+      final idx = entry.key;
+      return QueueItem(
+        track: t,
+        queueItemId:
+            'manual_${t.id}_${DateTime.now().millisecondsSinceEpoch}_$idx',
+      );
+    }).toList();
 
     final currentUpcoming = List<QueueItem>.from(state.upcomingTracks);
     final firstRecIndex =
         currentUpcoming.indexWhere((item) => item.isRecommended);
 
     if (firstRecIndex == -1) {
-      currentUpcoming.add(newItem);
+      currentUpcoming.addAll(newItems);
     } else {
-      currentUpcoming.insert(firstRecIndex, newItem);
+      currentUpcoming.insertAll(firstRecIndex, newItems);
     }
 
     state = state.copyWith(
@@ -358,8 +383,10 @@ class QueueNotifier extends Notifier<AppQueueState> {
 
     await _syncHardwareQueue();
 
-    if (track.userId.isEmpty || track.waveformData == null) {
-      _resolveTrackInBackground(newItem);
+    for (final item in newItems) {
+      if (item.track.userId.isEmpty || item.track.waveformData == null) {
+        _resolveTrackInBackground(item);
+      }
     }
   }
 
