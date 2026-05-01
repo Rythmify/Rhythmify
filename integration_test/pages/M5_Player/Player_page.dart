@@ -23,8 +23,13 @@ class PlayerPage extends BasePage {
   }
 
   /// Taps the collapse (arrow-down) button to close the full player.
+  /// Uses .first because the PageView pre-renders adjacent pages, each
+  /// with its own collapse button sharing the same key.
   Future<void> tapCollapseButton() async {
-    await tapByKeyNow(playerFullPageCollapse);
+    final finder = find.byKey(const Key(playerFullPageCollapse));
+    await tester.ensureVisible(finder.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(finder.first);
     await tester.pump(const Duration(seconds: 2));
   }
 
@@ -86,9 +91,11 @@ class PlayerPage extends BasePage {
       isVisible(behindTheTrackBehindTrackButton);
 
   /// True when the collapse and follow buttons are rendered.
-bool isCollapseAndFollowVisible() =>
-    isVisible(playerFullPageCollapse) &&
-    find.byIcon(Icons.person_add).evaluate().isNotEmpty;
+  bool isCollapseVisible() =>
+    isVisible(playerFullPageCollapse);
+  
+  bool isFollowVisible() =>
+  find.byIcon(Icons.person_add).evaluate().isNotEmpty;
 
   /// True when all five action-bar items are rendered.
   bool isActionBarVisible() =>
