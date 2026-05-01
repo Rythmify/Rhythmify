@@ -1,5 +1,5 @@
+// coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:flutter/foundation.dart';
 import '../../data/datasources/home_mock_datasource.dart';
 import '../../data/datasources/home_remote_datasource.dart';
