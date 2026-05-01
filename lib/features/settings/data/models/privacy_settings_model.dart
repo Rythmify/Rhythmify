@@ -21,14 +21,15 @@ class PrivacySettingsModel extends PrivacySettingsEntity {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'is_private': isPrivate,
-      'receive_messages_from_anyone': receiveMessageFromAnyone,
-      'show_activities_in_discovery': showActivitiesInDiscovery,
-      'show_as_top_fan': showAsTopFan,
-      'show_top_fans_on_tracks': showTopFansOnTracks,
-    };
+  Map<String, dynamic> toPatch(PrivacySettingsModel previous) {
+    final patch = <String, dynamic>{};
+    if (previous.receiveMessageFromAnyone != receiveMessageFromAnyone)
+      patch['receive_messages_from_anyone'] = receiveMessageFromAnyone;
+    if (previous.showActivitiesInDiscovery != showActivitiesInDiscovery)
+      patch['show_activities_in_discovery'] = showActivitiesInDiscovery;
+    if (previous.showAsTopFan != showAsTopFan)
+      patch['show_as_top_fan'] = showAsTopFan;
+    return patch;
   }
 
   factory PrivacySettingsModel.fromEntity(PrivacySettingsEntity entity) {

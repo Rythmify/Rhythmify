@@ -97,7 +97,7 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   }
 
   Future<void> _selectIcon(_IconOption option) async {
-    if (option.isPremium && !ref.read(isPremiumProvider)) {
+    if (option.isPremium && !ref.read(premiumProvider).isPremium) {
       context.push('/library/settings/basic-settings/app-icons/premium-apps');
       return;
     }
@@ -123,7 +123,21 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userIsPremium = ref.watch(isPremiumProvider);
+    final premiumState = ref.watch(premiumProvider);
+
+    if (!premiumState.isInitialized) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('App icon'), centerTitle: false),
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFFF5500),
+            strokeWidth: 2,
+          ),
+        ),
+      );
+    }
+
+    final userIsPremium = premiumState.isPremium;
 
     return Theme(
       data: Theme.of(context).copyWith(

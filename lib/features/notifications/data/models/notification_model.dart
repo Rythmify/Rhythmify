@@ -26,10 +26,15 @@ class NotificationModel extends NotificationEntity {
     final actor = json['actor'] as Map<String, dynamic>? ?? {};
     final resourceDetails = json['resource_details'] as Map<String, dynamic>?;
 
+    // actor['id'] may be null when the backend sends a stripped socket payload
+    // (uses 'action_user_id' instead) or when actor data is incomplete.
+    final actorId =
+        actor['id'] as String? ?? json['action_user_id'] as String? ?? '';
+
     return NotificationModel(
       id: json['id'] as String,
       type: _mapType(json['type'] as String),
-      actorId: actor['id'] as String,
+      actorId: actorId,
       actorUsername: actor['username'] as String?,
       actorDisplayName:
           (actor['display_name'] as String?) ??

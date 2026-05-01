@@ -257,7 +257,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                                 orElse: () => null,
                               );
 
-                          return ChatScreen(conv: conv);
+                          return ChatScreen(
+                            conv: conv,
+                            newParticipantId: conv == null ? chatId : null,
+                          );
                         },
                         routes: [
                           GoRoute(

@@ -23,6 +23,14 @@ class _SwitchStateWidget extends State<SwitchWidget> {
   }
 
   @override
+  void didUpdateWidget(SwitchWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initValue != widget.initValue) {
+      _value = widget.initValue;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
