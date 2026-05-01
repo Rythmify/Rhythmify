@@ -20,6 +20,7 @@ class ProfileEntity extends Equatable {
   final int tracksCount;
   final bool isFollowing;
   final bool isVerified;
+  final bool isUserPremium;
 
   const ProfileEntity({
     required this.id,
@@ -40,6 +41,7 @@ class ProfileEntity extends Equatable {
     this.tracksCount = 0,
     this.isFollowing = false,
     this.isVerified = false,
+    this.isUserPremium = false,
   });
 
   ProfileEntity copyWith({
@@ -61,6 +63,7 @@ class ProfileEntity extends Equatable {
     int? tracksCount,
     bool? isFollowing,
     bool? isVerified,
+    bool? isUserPremium,
   }) {
     return ProfileEntity(
       id: id ?? this.id,
@@ -81,6 +84,7 @@ class ProfileEntity extends Equatable {
       tracksCount: tracksCount ?? this.tracksCount,
       isFollowing: isFollowing ?? this.isFollowing,
       isVerified: isVerified ?? this.isVerified,
+      isUserPremium: isUserPremium ?? this.isUserPremium,
     );
   }
 
@@ -111,5 +115,6 @@ class ProfileEntity extends Equatable {
     tracksCount,
     isFollowing,
     isVerified,
+    isUserPremium,
   ];
 }

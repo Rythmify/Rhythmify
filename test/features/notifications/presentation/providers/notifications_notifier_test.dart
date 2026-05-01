@@ -46,7 +46,7 @@ class FakeFollowStateNotifier extends FollowStateNotifier {
   final List<String> fetchedIds = [];
   final List<MapEntry<String, bool>> setFollowingCalls = [];
 
-  FakeFollowStateNotifier(GetFollowStatusUsecase usecase) : super(usecase);
+  FakeFollowStateNotifier(super.usecase);
 
   @override
   Future<void> fetchFollowState(String userId) async {

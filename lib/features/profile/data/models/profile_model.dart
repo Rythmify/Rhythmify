@@ -22,6 +22,7 @@ class ProfileModel extends ProfileEntity {
     required super.tracksCount,
     required super.isFollowing,
     super.isVerified,
+    super.isUserPremium,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +60,7 @@ class ProfileModel extends ProfileEntity {
     final tracksCount = json['tracks_count'] as int? ?? 0;
     final isFollowing = json['is_following'] as bool? ?? false;
     final isVerified = json['is_verified'] as bool? ?? false;
+    final isUserPremium = json['is_user_premium'] as bool? ?? false;
 
     return ProfileModel(
       id: id,
@@ -79,6 +81,7 @@ class ProfileModel extends ProfileEntity {
       tracksCount: tracksCount,
       isFollowing: isFollowing,
       isVerified: isVerified,
+      isUserPremium: isUserPremium,
     );
   }
 
@@ -102,6 +105,7 @@ class ProfileModel extends ProfileEntity {
       'tracks_count': tracksCount,
       'is_following': isFollowing,
       'is_verified': isVerified,
+      'is_user_premium': isUserPremium,
     };
   }
 

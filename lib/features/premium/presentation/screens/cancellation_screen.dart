@@ -31,6 +31,8 @@ const _kBgAsset = 'assets/images/premium_bg.jpg';
 const _kSessionDuration = Duration(minutes: 5);
 const _kPurple = Color(0xFF7B2FBE);
 const _kPurpleLight = Color(0xFFB57BEE);
+const _kGreen = Color(0xFF2E7D32);
+const _kGreenLight = Color(0xFF81C784);
 const _kDark = Color(0xFF0D0D0D);
 const _kCard = Color(0xFF1A1A1A);
 
@@ -122,6 +124,13 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
     final topPad = mq.padding.top;
     final botPad = mq.padding.bottom;
 
+    final isPremium = ref.watch(isPremiumProvider);
+    final accentColor = isPremium ? _kPurple : _kGreen;
+    final lightAccentColor = isPremium ? _kPurpleLight : _kGreenLight;
+    final topGradientColor = isPremium
+        ? const Color(0xFF2A0A5E)
+        : const Color(0xFF0A2E10);
+
     return Scaffold(
       backgroundColor: _kDark,
       body: Stack(
@@ -139,11 +148,11 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                   _kBgAsset,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0xFF2A0A5E), _kDark],
+                        colors: [topGradientColor, _kDark],
                       ),
                     ),
                   ),
@@ -193,9 +202,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                     horizontal: 10,
                     vertical: 5,
                   ),
-                  color: _kPurple,
+                  color: accentColor,
                   child: Text(
-                    '★ PREMIUM ACTIVE',
+                    isPremium ? '★ PREMIUM ACTIVE' : 'FREE TIER',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -207,7 +216,7 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 const SizedBox(height: 14),
 
                 Text(
-                  "You're Premium.",
+                  isPremium ? "You're Premium." : "Not Premium.",
                   style: GoogleFonts.inter(
                     fontSize: 30,
                     fontWeight: FontWeight.w900,
@@ -217,106 +226,163 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _isCanceled
-                      ? 'Access ends when this session expires.'
-                      : 'Auto-renews every 5 minutes. Cancel anytime.',
-                  style: GoogleFonts.inter(fontSize: 13, color: _kPurpleLight),
+                  isPremium
+                      ? (_isCanceled
+                            ? 'Access ends when this session expires.'
+                            : 'You have unlimited access to all features.')
+                      : 'Upgrade to Artist Pro to unlock the full experience.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: lightAccentColor,
+                  ),
                 ),
                 const SizedBox(height: 32),
 
-                // ── 5-min countdown card ─────────────────────────────
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: _kPurple, width: 1.5),
-                    color: _kCard,
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _isCanceled ? 'Session ends in' : 'Current session',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: _kPurpleLight,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            color: _kPurple.withValues(alpha: 0.2),
-                            child: Text(
-                              '5 MIN',
+                // ── Timer/Status Card ─────────────────────────────
+                if (isPremium && _isCanceled)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: accentColor, width: 1.5),
+                      color: _kCard,
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Session ends in',
                               style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: _kPurpleLight,
+                                fontSize: 11,
+                                color: lightAccentColor,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              color: accentColor.withValues(alpha: 0.2),
+                              child: Text(
+                                '5 MIN',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: lightAccentColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
 
-                      // Big timer display
-                      Center(
-                        child: Text(
-                          _display,
-                          style: GoogleFonts.inter(
-                            fontSize: 52,
-                            fontWeight: FontWeight.w900,
-                            color: _kPurpleLight,
-                            letterSpacing: -2,
+                        // Big timer display
+                        Center(
+                          child: Text(
+                            _display,
+                            style: GoogleFonts.inter(
+                              fontSize: 52,
+                              fontWeight: FontWeight.w900,
+                              color: lightAccentColor,
+                              letterSpacing: -2,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                      // Progress bar
-                      LinearProgressIndicator(
-                        value: _progress,
-                        backgroundColor: _kPurple.withValues(alpha: 0.2),
-                        valueColor: const AlwaysStoppedAnimation(_kPurple),
-                        minHeight: 4,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Session start',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: Colors.white24,
+                        // Progress bar
+                        LinearProgressIndicator(
+                          value: _progress,
+                          backgroundColor: accentColor.withValues(alpha: 0.2),
+                          valueColor: AlwaysStoppedAnimation(accentColor),
+                          minHeight: 4,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Session start',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.white24,
+                              ),
                             ),
-                          ),
-                          Text(
-                            _isCanceled ? 'Final session' : 'Auto-renews',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: Colors.white24,
+                            Text(
+                              'Final session',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.white24,
+                              ),
                             ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  // Status Info Card
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: accentColor, width: 1.5),
+                      color: _kCard,
+                    ),
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isPremium
+                              ? Icons.workspace_premium
+                              : Icons.info_outline,
+                          color: lightAccentColor,
+                          size: 40,
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isPremium
+                                    ? 'Full Access Enabled'
+                                    : 'Limited Access',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isPremium
+                                    ? 'Your subscription is active and auto-renews.'
+                                    : 'Ads and upload limits are currently active.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: Colors.white60,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(height: 20),
 
                 // ── Benefits ─────────────────────────────────────────
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    border: Border.all(color: _kPurple.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.3),
+                    ),
                     color: _kCard,
                   ),
                   padding: const EdgeInsets.all(18),
@@ -324,11 +390,13 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Premium benefits',
+                        isPremium
+                            ? 'Your Premium benefits'
+                            : 'Premium features you\'re missing',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: _kPurpleLight,
+                          color: lightAccentColor,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -343,9 +411,9 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.check,
-                                color: _kPurple,
+                              Icon(
+                                isPremium ? Icons.check : Icons.lock_outline,
+                                color: accentColor,
                                 size: 14,
                               ),
                               const SizedBox(width: 10),
@@ -365,59 +433,61 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // Cancel / Resubscribe
-                if (!_isCanceled) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white24),
-                        shape: const RoundedRectangleBorder(),
-                      ),
-                      onPressed: ref.watch(premiumProvider).isLoading
-                          ? null
-                          : _cancel,
-                      child: Text(
-                        'Cancel subscription',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: Colors.white38,
+                // Actions (Only for Premium)
+                if (isPremium) ...[
+                  if (!_isCanceled) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white24),
+                          shape: const RoundedRectangleBorder(),
+                        ),
+                        onPressed: ref.watch(premiumProvider).isLoading
+                            ? null
+                            : _cancel,
+                        child: Text(
+                          'Cancel subscription',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.white38,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: Text(
-                      'Premium stays active until session ends.',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: Colors.white24,
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _kPurple,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: const RoundedRectangleBorder(),
-                      ),
-                      onPressed: () => context.push('/upgrade/plans'),
+                    const SizedBox(height: 8),
+                    Center(
                       child: Text(
-                        'Resubscribe',
+                        'Premium stays active until session ends.',
                         style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontSize: 11,
+                          color: Colors.white24,
                         ),
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: const RoundedRectangleBorder(),
+                        ),
+                        onPressed: () => context.push('/upgrade/plans'),
+                        child: Text(
+                          'Resubscribe',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),

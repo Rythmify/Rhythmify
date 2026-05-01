@@ -28,6 +28,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/subscription_plan.dart';
 import '../../domain/entities/user_subscription.dart';
 import '../../data/datasources/premium_remote_datasource.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../authentication/presentation/providers/auth_state.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
+import '../../../profile/presentation/providers/profile_state.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FREE PLAN HARD LIMITS  (from OpenAPI spec)
@@ -109,6 +113,18 @@ class PremiumState {
 class PremiumNotifier extends Notifier<PremiumState> {
   @override
   PremiumState build() {
+    // 1. Listen to Auth State changes to handle Login/Logout
+    ref.listen(authProvider, (previous, next) {
+      if (next is AuthUnauthenticated) {
+        // Clear all premium data on logout
+        state = const PremiumState();
+      } else if (next is AuthAuthenticated && previous is! AuthAuthenticated) {
+        // Re-initialize for the new user
+        _init();
+      }
+    });
+
+    // 2. Initial load
     Future.microtask(_init);
     return const PremiumState();
   }
@@ -116,9 +132,19 @@ class PremiumNotifier extends Notifier<PremiumState> {
   PremiumRemoteDatasource get _ds => ref.read(premiumDatasourceProvider);
 
   Future<void> _init() async {
+    // 1. Ensure we are authenticated before trying to fetch
+    final authState = ref.read(authProvider);
+    if (authState is! AuthAuthenticated) return;
+
+    // 2. Fetch Profile FIRST (The Source of Truth)
+    // We wait for this to complete before marking initialization as finished.
+    await ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
+
+    // 3. Load plans and the detailed subscription record
     await loadPlans();
     await loadMySubscription();
-    // Mark init complete — gate screen uses this to know subscription check is done
+
+    // 4. Mark init complete - now other modules (like Ads) can trust the status
     state = state.copyWith(isInitialized: true);
   }
 
@@ -162,7 +188,7 @@ class PremiumNotifier extends Notifier<PremiumState> {
 
       // Resolve planId — if empty, fetch plans and find premium UUID
       // Fallback to known backend UUID if plans endpoint returns empty
-      const kFallbackPremiumPlanId = 'b0000002-0000-0000-0000-000000000000';
+      const kFallbackPremiumPlanId = '2';
       String resolvedPlanId = planId;
       if (resolvedPlanId.isEmpty) {
         if (state.plans.isEmpty) await loadPlans();
@@ -211,8 +237,12 @@ class PremiumNotifier extends Notifier<PremiumState> {
       // Step 2: Confirm the transaction (mock Stripe webhook)
       await _ds.confirmMockPayment(transactionId);
 
-      // Step 3: Refresh — subscription is now active
+      // Step 3: Wait briefly for backend processing
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Step 4: Refresh — subscription and profile are now active/updated
       await loadMySubscription();
+      await ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
 
       state = state.copyWith(isCheckingOut: false, checkoutSuccess: true);
     } on DioException catch (e) {
@@ -232,12 +262,15 @@ class PremiumNotifier extends Notifier<PremiumState> {
     try {
       await _ds.cancelSubscription();
       await loadMySubscription();
+      await ref.read(ownProfileProvider.notifier).loadProfile(userId: 'me');
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   void clearCheckoutSuccess() => state = state.copyWith(checkoutSuccess: false);
+
+  void clearError() => state = state.copyWith(clearError: true);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,7 +284,17 @@ final premiumProvider = NotifierProvider<PremiumNotifier, PremiumState>(
 /// Quick boolean — import this anywhere to gate a feature.
 /// Usage:  final isPremium = ref.watch(isPremiumProvider);
 final isPremiumProvider = Provider<bool>((ref) {
-  return ref.watch(premiumProvider).isPremium;
+  // 1. Primary Source: Subscription Provider (Detailed state)
+  final subscriptionPremium = ref.watch(premiumProvider).isPremium;
+  if (subscriptionPremium) return true;
+
+  // 2. Fallback Source: Own Profile (Convenience flag from backend)
+  final profileState = ref.watch(ownProfileProvider);
+  if (profileState is ProfileLoaded) {
+    return profileState.profile.isUserPremium;
+  }
+
+  return false;
 });
 
 /// Granular gate providers — use these instead of rolling your own checks.

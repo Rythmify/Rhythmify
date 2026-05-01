@@ -19,7 +19,10 @@ class PlayerActionBar extends ConsumerWidget {
   /// The ID of the track for which to display actions.
   final String trackId;
 
-  const PlayerActionBar({super.key, required this.trackId});
+  /// Callback to collapse the player.
+  final VoidCallback? onCollapse;
+
+  const PlayerActionBar({super.key, required this.trackId, this.onCollapse});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -112,6 +115,7 @@ class PlayerActionBar extends ConsumerWidget {
               key: Key('player_action_bar_comment_inkwell_$trackId'),
               onTap: () {
                 trackAsync.whenData((track) {
+                  onCollapse?.call();
                   context.pushNamed(
                     'comments',
                     pathParameters: {'trackId': track.id},
@@ -159,6 +163,7 @@ class PlayerActionBar extends ConsumerWidget {
                       track: track,
                       mode: TrackModalMode
                           .share, // Tell it to render the share view!
+                      onCollapse: onCollapse,
                     ),
                   );
                 });
@@ -212,7 +217,8 @@ class PlayerActionBar extends ConsumerWidget {
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     useRootNavigator: true,
-                    builder: (context) => TrackOptionsModal(track: track),
+                    builder: (context) =>
+                        TrackOptionsModal(track: track, onCollapse: onCollapse),
                   );
                 });
               },
