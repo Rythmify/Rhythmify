@@ -298,10 +298,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     onTap: () {
                       ref
                           .read(queueStateProvider.notifier)
-                          .addToNextUp(
-                            sourceType: 'track',
-                            sourceId: syncedTrack.id,
-                          );
+                          .addToQueueNext(syncedTrack);
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Added to Next Up')),
@@ -312,7 +309,15 @@ class TrackOptionsModal extends ConsumerWidget {
                     key: const Key('track_options_action_play_last_inkwell'),
                     icon: Icons.playlist_play,
                     label: 'Play Last',
-                    onTap: () {},
+                    onTap: () {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .addToQueueLast(syncedTrack);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to Queue')),
+                      );
+                    },
                   ),
                   _buildActionRow(
                     key: const Key(

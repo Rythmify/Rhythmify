@@ -76,12 +76,34 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.watch(playerStateProvider);
-    final isPlaying = playerState.status == PlayerStatus.playing;
-    final isThisTrack = playerState.currentTrack?.id == widget.track.id;
+    // Only rebuild when the status or track ID changes, NOT on every position tick.
+    final isPlaying = ref.watch(
+      playerStateProvider.select((s) => s.status == PlayerStatus.playing),
+    );
+    final currentTrackId = ref.watch(
+      playerStateProvider.select((s) => s.currentTrack?.id),
+    );
+    final isThisTrack = currentTrackId == widget.track.id;
 
+    // Listen to changes to start/stop animation without rebuilding the whole card
+    ref.listen(
+      playerStateProvider.select(
+        (s) =>
+            s.status == PlayerStatus.playing &&
+            s.currentTrack?.id == widget.track.id,
+      ),
+      (previous, next) {
+        if (next) {
+          _controller.repeat();
+        } else {
+          _controller.stop();
+        }
+      },
+    );
+
+    // Handle initial state
     if (isPlaying && isThisTrack) {
-      _controller.repeat();
+      if (!_controller.isAnimating) _controller.repeat();
     } else {
       _controller.stop();
     }
@@ -178,7 +200,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                                     tracks: [widget.track],
                                     initialIndex: 0,
                                     context: const QueueContext(
-                                      type: QueueSource.trending,
+                                      type: QueueSource.unknown,
                                     ),
                                   );
                             }
@@ -196,7 +218,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "${formatCount(widget.track.likeCount)} people liked your track",
+                          "${formatCount(widget.track.likeCount)} people liked this track",
                           key: const Key('hot_for_you_like_count_text'),
                           style: AppTheme.bodyNormal.copyWith(
                             fontSize: 12,
@@ -232,7 +254,10 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                 height: 70,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cd.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: Center(
                   child: Container(

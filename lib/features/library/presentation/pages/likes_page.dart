@@ -6,7 +6,8 @@ import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 
 /// Your Likes page matching SoundCloud's layout.
 ///
@@ -109,8 +110,12 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
       ref
-          .read(playerStateProvider.notifier)
-          .loadAndPlayQueue(filteredTracks, initialIndex: index);
+          .read(queueStateProvider.notifier)
+          .playQueue(
+            tracks: filteredTracks,
+            initialIndex: index,
+            context: const QueueContext(type: QueueSource.userLikes),
+          );
     }
 
     return CustomScrollView(
@@ -124,8 +129,12 @@ class _LibraryLikesPageState extends ConsumerState<LibraryLikesPage> {
               if (filteredTracks.isNotEmpty) {
                 final shuffled = List<Track>.from(filteredTracks)..shuffle();
                 ref
-                    .read(playerStateProvider.notifier)
-                    .loadAndPlayQueue(shuffled);
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: shuffled,
+                      initialIndex: 0,
+                      context: const QueueContext(type: QueueSource.userLikes),
+                    );
               }
             },
             onPlay: () => playAt(0),

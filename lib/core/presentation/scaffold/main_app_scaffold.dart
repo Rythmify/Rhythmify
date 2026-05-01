@@ -88,15 +88,23 @@ class _MainAppScaffoldState extends ConsumerState<MainAppScaffold> {
       }
     });
 
-    // Use addPostFrameCallback or Future.microtask to avoid modifying notifier during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         playerSheetNotifier.value = _expandPlayer;
         playerCollapseNotifier.value = _collapsePlayer;
       }
     });
+  }
 
-    final hasTrack = playerState.currentTrack != null;
+  @override
+  Widget build(BuildContext context) {
+    ref.watch(notificationSocketProvider);
+    // ONLY watch the track ID to decide if we show the player sheet.
+    // Do NOT watch the whole state which changes every millisecond with the position.
+    final hasTrack = ref.watch(
+      playerStateProvider.select((s) => s.currentTrack != null),
+    );
+
     final screenHeight = MediaQuery.of(context).size.height;
 
     // Use string matching directly on the shell's current location if possible,

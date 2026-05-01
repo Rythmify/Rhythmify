@@ -158,7 +158,9 @@ class _ReportPageState extends State<ReportPage> {
                   return RadioListTile<String>(
                     title: Text(reason, style: AppTheme.bodyNormal),
                     value: reason,
+                    // ignore: deprecated_member_use
                     groupValue: _selectedReason,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
                       setState(() => _selectedReason = value);
                     },

@@ -116,11 +116,6 @@ class DataSourcesSockets {
 
     _socket!.onDisconnect((reason) {
       debugPrint('❌ Socket disconnected: $reason');
-      // Refresh auth immediately so the Manager's built-in reconnect attempts
-      // use the latest token without waiting for a full rebuild.
-      if (_getToken != null) {
-        _socket?.auth = {'token': 'Bearer ${_getToken!()}'};
-      }
     });
 
     _socket!.onConnectError((err) => debugPrint('🚨 Connection error: $err'));

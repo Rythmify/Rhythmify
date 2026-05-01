@@ -8,7 +8,8 @@ import '../../../authentication/presentation/providers/auth_state.dart';
 import '../../../profile/presentation/widgets/profile_avatar.dart';
 import '../providers/library_providers.dart';
 import '../../domain/entities/library_entities.dart';
-import '../../../player/presentation/providers/player_provider.dart';
+import '../../../player/presentation/providers/queue_provider.dart';
+import '../../../player/domain/entities/queue_state.dart';
 import '../../../../core/domain/entities/track.dart';
 
 /// The Library main screen — a navigation hub matching SoundCloud's layout.
@@ -383,8 +384,12 @@ class _RecentlyPlayedItem extends ConsumerWidget {
       key: Key('library_recently_played_item_${entry.trackId}_gesture'),
       onTap: () {
         ref
-            .read(playerStateProvider.notifier)
-            .loadAndPlayQueue(allTracks, initialIndex: index);
+            .read(queueStateProvider.notifier)
+            .playQueue(
+              tracks: allTracks,
+              initialIndex: index,
+              context: const QueueContext(type: QueueSource.listeningHistory),
+            );
       },
       child: Container(
         width: 75,
