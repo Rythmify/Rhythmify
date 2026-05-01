@@ -1,3 +1,14 @@
+/// Upgrade landing screen for the Premium flow.
+///
+/// Shows a cinematic hero layout with layered images, pricing teaser,
+/// and a call-to-action to continue to checkout or view all plans.
+///
+/// Includes:
+/// - Background + stacked photo cards UI
+/// - Premium offer summary and pricing
+/// - Navigation to checkout and plans screen
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';

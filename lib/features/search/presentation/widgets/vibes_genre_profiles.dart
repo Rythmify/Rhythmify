@@ -15,14 +15,13 @@ class GenreProfileCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/home/profile/${artist.id}'),
       child: SizedBox(
-        width: 100, // Slightly increased to fit "Following" text if needed
+        width: 100,
         child: Column(
           children: [
             CircleAvatar(
               key: Key('genre_profile_avatar_${artist.id}'),
               radius: 40,
               backgroundColor: Colors.grey[800],
-              // Uses NetworkImage for http URLs, AssetImage for local paths, falls back to icon.
               backgroundImage: artist.profilePicture.isNotEmpty
                   ? (artist.profilePicture.startsWith('http')
                         ? NetworkImage(artist.profilePicture) as ImageProvider

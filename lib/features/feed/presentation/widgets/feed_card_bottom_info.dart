@@ -60,7 +60,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
     String trackId, {
     int attempts = 0,
   }) {
-    if (attempts > 40) return; // give up after 2 seconds
+    if (attempts > 40) return;
 
     Future.delayed(const Duration(milliseconds: 50), () {
       final current = ref.read(playerStateProvider).currentTrack;
@@ -184,7 +184,7 @@ class FeedCardBottomInfo extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // ── Play circle: same behaviour as title tap ──
+
               GestureDetector(
                 onTap: () => _handlePlayTap(context, ref),
                 child: FeedCardPlayCircle(

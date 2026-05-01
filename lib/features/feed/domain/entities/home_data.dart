@@ -4,6 +4,7 @@ import 'mixed_for_you_item.dart';
 import 'discover_station.dart';
 import '../../../../core/domain/entities/track.dart';
 
+/// Represents home data in the domain layer.
 class HomeData {
   final HotForYou hotForYou;
   final TrendingByGenreInitial trendingByGenre;

@@ -18,7 +18,6 @@ class GenreAlbumCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(0),
-            // Uses [Image.network] for http URLs, [Image.asset] for local paths.
             child:
                 album.coverImage.isNotEmpty &&
                     album.coverImage.startsWith('http')

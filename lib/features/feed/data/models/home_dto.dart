@@ -8,7 +8,19 @@ import '../../domain/entities/genre_tab_tracks.dart';
 import '../../domain/entities/mixed_for_you_item.dart';
 import '../../domain/entities/discover_station.dart';
 
+/// A static DTO utility class responsible for parsing all home screen
+/// JSON responses into typed domain entities.
+///
+/// All methods are static — [HomeDto] is never instantiated directly.
+/// It acts as a centralized parsing layer between the raw API response
+/// and the domain layer entities used by the home feature.
 class HomeDto {
+  /// Parses a single [Track] from a nullable JSON map.
+  ///
+  /// Returns an empty [TrackDto] if [json] is `null`. Normalizes
+  /// missing `artist` and `genre` fields by falling back to
+  /// `artist_name` and `genre_name` respectively before delegating
+  /// to [TrackDto.fromJson].
   static Track parseTrack(Map<String, dynamic>? json) {
     if (json == null) {
       return TrackDto.fromJson({});
@@ -22,6 +34,11 @@ class HomeDto {
     });
   }
 
+  /// Parses the full home screen payload into a [HomeData] entity.
+  ///
+  /// Expects a `data` map from the `GET /home` response and delegates
+  /// each section to its dedicated parse method. Null-safe defaults are
+  /// applied for every section so that a missing key never causes a crash.
   static HomeData fromJson(Map<String, dynamic> json) {
     return HomeData(
       hotForYou: parseHotForYou(
@@ -52,6 +69,10 @@ class HomeDto {
     );
   }
 
+  /// Parses the "Hot For You" section from its JSON map into a [HotForYou] entity.
+  ///
+  /// Falls back to an empty string for [HotForYou.reason] and
+  /// [DateTime.now] for [HotForYou.validUntil] if those fields are absent.
   static HotForYou parseHotForYou(Map<String, dynamic> json) {
     return HotForYou(
       track: parseTrack(json['track'] as Map<String, dynamic>?),
@@ -62,6 +83,12 @@ class HomeDto {
     );
   }
 
+  /// Parses the "Trending By Genre" section into a [TrendingByGenreInitial] entity.
+  ///
+  /// Returns an empty [TrendingByGenreInitial] with no genres and an
+  /// empty initial tab if [json] is `null`. Otherwise maps the `genres`
+  /// array into [GenreTab] instances and parses the `initial_tab` via
+  /// [parseGenreTabTracks].
   static TrendingByGenreInitial parseTrendingByGenre(
     Map<String, dynamic>? json,
   ) {
@@ -88,6 +115,10 @@ class HomeDto {
     );
   }
 
+  /// Parses a genre tab's track list into a [GenreTabTracks] entity.
+  ///
+  /// Returns an empty [GenreTabTracks] if [json] is `null`. Null entries
+  /// in the `tracks` array are filtered out before parsing.
   static GenreTabTracks parseGenreTabTracks(Map<String, dynamic>? json) {
     if (json == null) {
       return GenreTabTracks(genreId: '', genreName: '', tracks: []);
@@ -103,6 +134,11 @@ class HomeDto {
     );
   }
 
+  /// Parses a single "Mixed For You" item into a [MixedForYouItem] entity.
+  ///
+  /// Uses `mix_id` as the item identifier and `title` as the display label.
+  /// Fields not yet provided by the backend (`flavor`, `genreName`,
+  /// `trackCount`) are defaulted to empty/zero values.
   static MixedForYouItem parseMixedForYouItem(Map<String, dynamic> json) {
     return MixedForYouItem(
       id: json['mix_id']?.toString() ?? '',
@@ -116,6 +152,11 @@ class HomeDto {
     );
   }
 
+  /// Parses a single discover station into a [DiscoverStation] entity.
+  ///
+  /// The `images` field is type-checked at runtime before casting, since
+  /// the backend may return it in an inconsistent shape. Falls back to a
+  /// default [StationImages] instance if the field is not a valid map.
   static DiscoverStation parseDiscoverStation(Map<String, dynamic> json) {
     final imagesJson = json['images']; // ← no cast yet
 

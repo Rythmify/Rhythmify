@@ -64,9 +64,9 @@ class _ProfileNotifierUnderTest extends Notifier<ProfileState> {
   Future<void> loadProfile({required String userId}) async {
     state = const ProfileLoading();
     final result = await getProfileUC(userId: userId);
-    result.fold((f) => state = ProfileError(f.message), (p) {
+    await result.fold((f) async => state = ProfileError(f.message), (p) async {
       state = ProfileLoaded(profile: p);
-      loadLikedTracks(userId: userId, refresh: true);
+      await loadLikedTracks(userId: userId, refresh: true);
     });
   }
 
@@ -208,23 +208,33 @@ List<Track> makeTracks(int count) =>
 
 void main() {
   late MockProfileRepository mockRepo;
-  late _ProfileNotifierUnderTest notifier;
+  late ProviderContainer container;
+  late NotifierProvider<_ProfileNotifierUnderTest, ProfileState>
+  testProfileProvider;
 
   setUp(() {
     mockRepo = MockProfileRepository();
-    notifier = _ProfileNotifierUnderTest(
-      getProfileUC: GetProfileUseCase(mockRepo),
-      updateProfileUC: UpdateProfileUseCase(mockRepo),
-      uploadAvatarUC: UploadAvatarUseCase(mockRepo),
-      deleteAvatarUC: DeleteAvatarUseCase(mockRepo),
-      uploadCoverPhotoUC: UploadCoverPhotoUseCase(mockRepo),
-      deleteCoverPhotoUC: DeleteCoverPhotoUseCase(mockRepo),
-      followUserUC: GetFollowUserUseCase(mockRepo),
-      unfollowUserUC: GetUnfollowUserUseCase(mockRepo),
-      getLikedTracksUC: GetLikedTracksUseCase(mockRepo),
-      getUploadedTracksUC: GetUploadedTracksUseCase(mockRepo),
-      getRepostedTracksUC: GetRepostedTracksUseCase(mockRepo),
-    );
+    testProfileProvider =
+        NotifierProvider<_ProfileNotifierUnderTest, ProfileState>(() {
+          return _ProfileNotifierUnderTest(
+            getProfileUC: GetProfileUseCase(mockRepo),
+            updateProfileUC: UpdateProfileUseCase(mockRepo),
+            uploadAvatarUC: UploadAvatarUseCase(mockRepo),
+            deleteAvatarUC: DeleteAvatarUseCase(mockRepo),
+            uploadCoverPhotoUC: UploadCoverPhotoUseCase(mockRepo),
+            deleteCoverPhotoUC: DeleteCoverPhotoUseCase(mockRepo),
+            followUserUC: GetFollowUserUseCase(mockRepo),
+            unfollowUserUC: GetUnfollowUserUseCase(mockRepo),
+            getLikedTracksUC: GetLikedTracksUseCase(mockRepo),
+            getUploadedTracksUC: GetUploadedTracksUseCase(mockRepo),
+            getRepostedTracksUC: GetRepostedTracksUseCase(mockRepo),
+          );
+        });
+    container = ProviderContainer();
+  });
+
+  tearDown(() {
+    container.dispose();
   });
 
   group('ProfileNotifier', () {
@@ -240,15 +250,18 @@ void main() {
         ),
       ).thenAnswer((_) async => const Left(NetworkFailure()));
 
+      final notifier = container.read(testProfileProvider.notifier);
       await notifier.loadProfile(userId: 'user-001');
 
-      final loaded = notifier.state as ProfileLoaded;
+      final loaded = container.read(testProfileProvider) as ProfileLoaded;
       expect(loaded.isLoadingLikes, false);
     });
 
     test(
       'should not start a second load when isLoadingLikes is true',
       () async {
+        final notifier = container.read(testProfileProvider.notifier);
+        // ignore: invalid_use_of_protected_member
         notifier.state = const ProfileLoaded(
           profile: tProfile,
           isLoadingLikes: true,

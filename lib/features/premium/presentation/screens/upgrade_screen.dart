@@ -1,3 +1,16 @@
+/// Premium upgrade plans screen.
+///
+/// Displays multiple subscription plans in a swipeable PageView.
+/// Users can compare monthly/yearly Artist and Artist Pro plans
+/// and subscribe directly from each card.
+///
+/// Includes:
+/// - Animated gradient background per plan
+/// - Horizontal plan carousel
+/// - Subscription navigation to checkout
+/// - FAQ and subscription management section
+library;
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

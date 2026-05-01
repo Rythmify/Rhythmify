@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibes_genre_providers.dart';
 import '../../../track/presentation/widgets/track_card.dart';
 
+/// Displays the trending tracks tab for a specific genre.
+///
+/// Watches [genreTracksProvider] for the given [genreId] and renders
+/// a loading indicator, error message, empty state, or a scrollable
+/// list of [TrackCard] widgets accordingly.
 class GenreTrendingTab extends ConsumerWidget {
   const GenreTrendingTab({super.key, required this.genreId});
   final String genreId;

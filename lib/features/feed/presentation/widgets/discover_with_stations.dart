@@ -5,9 +5,16 @@ import 'package:go_router/go_router.dart';
 import '../providers/home_providers.dart';
 import 'shimmers/station_card_shimmer.dart';
 
+/// Displays the "Discover with Stations" horizontal scrollable section
+/// on the home screen.
+///
+/// Watches [discoverStationsProvider] and renders a shimmer list while
+/// loading, an error message on failure, or a list of [StationCard]
+/// widgets when data is available.
 class DiscoverWithStationsSection extends ConsumerWidget {
   const DiscoverWithStationsSection({super.key});
 
+  /// Accent colors cycled across station cards to give each a distinct ring.
   static const _ringColors = [
     Color(0xFF1A7AD4),
     Color(0xFFD41A4A),
@@ -75,6 +82,11 @@ class DiscoverWithStationsSection extends ConsumerWidget {
   }
 }
 
+/// A card representing a single discover station.
+///
+/// Displays a vinyl-styled artwork composed of up to three artist avatars
+/// ([leftImage], [centerImage], [rightImage]) over a [_VinylPainter]
+/// background. Tapping navigates to the station detail page.
 class StationCard extends StatelessWidget {
   final String id;
   final String artistName;
@@ -82,6 +94,8 @@ class StationCard extends StatelessWidget {
   final String? centerImage;
   final String? leftImage;
   final String? rightImage;
+
+  /// The accent color used for the vinyl ring and artist badge border.
   final Color ringColor;
   final String artistId;
 
@@ -119,10 +133,6 @@ class StationCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  // border: Border.all(
-                  //   color: Colors.grey.withValues(alpha: 0.5),
-                  //   width: 0.8,
-                  // ),
                 ),
                 child: SizedBox(
                   height: 155,
@@ -256,8 +266,13 @@ class StationCard extends StatelessWidget {
   }
 }
 
-// ── Vinyl record background painter ─────────────────────────────────────────
+// Vinyl record background painter
 
+/// A [CustomPainter] that draws a vinyl record background with concentric
+/// colored rings and a subtle center hole.
+///
+/// Ring colors alternate between two opacity levels of [ringColor] to
+/// simulate the grooved appearance of a vinyl record.
 class _VinylPainter extends CustomPainter {
   final Color ringColor;
 
@@ -306,8 +321,13 @@ class _VinylPainter extends CustomPainter {
   bool shouldRepaint(covariant _VinylPainter old) => old.ringColor != ringColor;
 }
 
-// ── Small circle avatar ──────────────────────────────────────────────────────
+//Small circle avatar
 
+/// A small circular avatar used for the left and right artist images
+/// on a [StationCard].
+///
+/// Renders a network image if [imageUrl] starts with `http`,
+/// otherwise falls back to a plain colored circle.
 class _CircleAvatar extends StatelessWidget {
   final String imageUrl;
   final double size;
@@ -338,12 +358,19 @@ class _CircleAvatar extends StatelessWidget {
   }
 }
 
-// ── Center artist badge ──────────────────────────────────────────────────────
+// Center artist badge
 
+/// The large central artist badge displayed on a [StationCard].
+///
+/// Shows the artist's profile image when a valid HTTP URL is provided.
+/// Falls back to rendering the [artistName] as styled text when no
+/// image is available.
 class _CenterArtistBadge extends StatelessWidget {
   final String? imageUrl;
   final String artistName;
   final double size;
+
+  /// The color used for the circular border around the badge.
   final Color borderColor;
 
   const _CenterArtistBadge({

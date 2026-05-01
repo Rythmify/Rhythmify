@@ -10,6 +10,7 @@ import '../widgets/profile_avatar.dart';
 import '../widgets/profile_stats_row.dart';
 import '../widgets/share_bottom_sheet.dart';
 import '../widgets/blocked_user_screen.dart';
+import '../widgets/info_bottom_sheet.dart';
 import '../../domain/entities/profile_entity.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
@@ -21,15 +22,15 @@ import '../../../player/domain/entities/queue_state.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../playlist/domain/entities/playlist_entity.dart';
 
-/// A full-screen profile page showing a user's public information and tracks.
+/// A full-screen profile page showing a user's public information,
+/// tracks, playlists, and albums.
 ///
-/// Rendered as a root-level route (outside [StatefulShellRoute]), so
-/// [MainAppScaffold] is not in the tree. The mini player and full player
-/// are therefore embedded directly in this page via a [Stack] overlay,
-/// mirroring the behaviour seen inside the library tab.
+/// Rendered as a root-level route outside [StatefulShellRoute], so the
+/// bottom navigation bar is not visible. The mini-player overlay is
+/// accounted for via bottom padding when a track is loaded.
 ///
-/// Use `key: ValueKey('public_profile_$userId')` at the call site to
-/// prevent widget-tree reuse when navigating between different profiles.
+/// Pass `key: ValueKey('public_profile_$userId')` at the call site to
+/// force a fresh widget tree when navigating between different profiles.
 class PublicProfilePage extends ConsumerStatefulWidget {
   /// The ID of the user whose profile to display, or `'me'` for the
   /// currently authenticated user.
@@ -62,13 +63,10 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         : widget.userId;
 
     Future.microtask(() async {
-      // ── Guard: skip reload if this profile is already loaded ────────────
-      final currentState = _resolvedUserId == 'me'
-          ? ref.read(ownProfileProvider)
-          : ref.read(publicProfileProvider(_resolvedUserId));
-
-      if (currentState is ProfileLoaded) return;
-      // ────────────────────────────────────────────────────────────────────
+      if (_resolvedUserId == 'me') {
+        final currentState = ref.read(ownProfileProvider);
+        if (currentState is ProfileLoaded) return;
+      }
 
       if (_resolvedUserId == 'me') {
         await ref
@@ -105,6 +103,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     super.dispose();
   }
 
+  /// Shows the share/action bottom sheet for the given [state].
   void _showShareSheet(BuildContext context, ProfileLoaded state) {
     showModalBottomSheet(
       context: context,
@@ -119,10 +118,12 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     );
   }
 
+  /// Returns the [ProfileNotifier] for the currently resolved profile.
   ProfileNotifier get _profileNotifier => _resolvedUserId == 'me'
       ? ref.read(ownProfileProvider.notifier)
       : ref.read(publicProfileProvider(_resolvedUserId).notifier);
 
+  /// Opens or creates a direct message thread with [profile].
   void _openMessageThread(ProfileEntity profile) {
     final authState = ref.read(authProvider);
     if (authState is! AuthAuthenticated) {
@@ -146,6 +147,24 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(_resolvedUserId));
 
+    ref.listen(
+      _resolvedUserId == 'me'
+          ? ownProfileProvider
+          : publicProfileProvider(_resolvedUserId),
+      (previous, next) {
+        if (previous is ProfileLoaded && next is ProfileLoaded) {
+          if (previous.followStatus != next.followStatus ||
+              previous.isBlocked != next.isBlocked) {
+            Future.microtask(() {
+              if (mounted) {
+                _profileNotifier.loadProfile(userId: _resolvedUserId);
+              }
+            });
+          }
+        }
+      },
+    );
+
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
         ? authState.user.id
@@ -153,9 +172,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     final isOwnProfile =
         widget.userId == currentUserId || widget.userId == 'me';
 
-    // ── Block guard ────────────────────────────────────────────────────────
-    // If the authenticated user has blocked this account, show the blocked
-    // screen immediately with no profile data exposed.
     if (profileState is ProfileLoaded &&
         (profileState.isBlocked || profileState.followStatus.isBlocking)) {
       return BlockedUserScreen(userId: _resolvedUserId);
@@ -233,9 +249,9 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         state.uploadedTracks.isNotEmpty ||
         state.likedTracks.isNotEmpty ||
         state.repostedTracks.isNotEmpty ||
-        state.playlists.isNotEmpty;
+        state.playlists.isNotEmpty ||
+        state.albums.isNotEmpty;
 
-    // Extra bottom padding so last item clears the mini player
     final bottomPadding = hasTrack ? 80.0 : 0.0;
 
     return RefreshIndicator(
@@ -289,10 +305,19 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                   if (state.profile.bio != null &&
                       state.profile.bio!.trim().isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(
-                      state.profile.bio!,
-                      key: const Key('public_profile_bio_text'),
-                      style: AppTheme.bodyMedium,
+                    _BioTruncated(
+                      bio: state.profile.bio!,
+                      profile: state.profile,
+                      onSeeMore: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          useRootNavigator: true,
+                          builder: (_) =>
+                              InfoBottomSheet(profile: state.profile),
+                        );
+                      },
                     ),
                   ],
                   if (isOwnProfile &&
@@ -438,6 +463,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                           }
                         },
                         child: Container(
+                          key: const Key('public_profile_play_button'),
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
@@ -510,12 +536,22 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
                       context.push('/home/profile/$_resolvedUserId/reposts'),
                 ),
               ),
+            if (state.albums.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _PlaylistsSection(
+                  title: 'Albums',
+                  playlists: state.albums.take(4).toList(),
+                  userId: _resolvedUserId,
+                  seeAllRoute: '/home/profile/$_resolvedUserId/albums',
+                ),
+              ),
             if (state.playlists.isNotEmpty)
               SliverToBoxAdapter(
                 child: _PlaylistsSection(
                   title: 'Playlists',
                   playlists: state.playlists.take(4).toList(),
                   userId: _resolvedUserId,
+                  seeAllRoute: '/home/profile/$_resolvedUserId/playlists',
                 ),
               ),
             SliverToBoxAdapter(child: SizedBox(height: 120 + bottomPadding)),
@@ -571,8 +607,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
         isBlank(profile.bio);
   }
 }
-
-// ── Profile section (tracks) ─────────────────────────────────────────────────
 
 /// Displays a titled section of up to 3 tracks with a "See All" button.
 ///
@@ -652,25 +686,29 @@ class _ProfileSection extends ConsumerWidget {
   }
 }
 
-// ── Playlists section ─────────────────────────────────────────────────────────
-
-/// Displays a titled section of playlists as a 2-column grid with a
-/// "See All" button — matching the screenshot layout with large square
-/// cover images, playlist name and owner name below each card.
+/// Displays a titled 2-column grid of playlists or albums with a "See All"
+/// button. Used for both the Playlists and Albums sections on the profile page.
+///
+/// The [seeAllRoute] parameter controls where the "See All" button navigates,
+/// allowing the same widget to serve both sections.
 class _PlaylistsSection extends ConsumerWidget {
-  /// Section title (e.g. `'Playlists'`).
+  /// Section title, e.g. `'Playlists'` or `'Albums'`.
   final String title;
 
-  /// Playlists to display — typically a `.take(4)` slice.
+  /// Items to display — typically a `.take(4)` slice.
   final List<PlaylistEntity> playlists;
 
-  /// Resolved user ID used for the "See All" navigation target.
+  /// Resolved user ID — used internally if needed by child widgets.
   final String userId;
+
+  /// The GoRouter route pushed when the user taps "See All".
+  final String seeAllRoute;
 
   const _PlaylistsSection({
     required this.title,
     required this.playlists,
     required this.userId,
+    required this.seeAllRoute,
   });
 
   @override
@@ -678,7 +716,6 @@ class _PlaylistsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Section header ───────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
           child: Row(
@@ -686,8 +723,7 @@ class _PlaylistsSection extends ConsumerWidget {
             children: [
               Text(title, style: AppTheme.titleMedium.copyWith(fontSize: 22)),
               TextButton(
-                onPressed: () =>
-                    context.push('/home/profile/$userId/playlists'),
+                onPressed: () => context.push(seeAllRoute),
                 child: Text(
                   'See All',
                   style: AppTheme.labelLarge.copyWith(
@@ -698,8 +734,6 @@ class _PlaylistsSection extends ConsumerWidget {
             ],
           ),
         ),
-
-        // ── 2-column grid ────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: GridView.builder(
@@ -710,7 +744,6 @@ class _PlaylistsSection extends ConsumerWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              // Extra height below each cell for the text labels
               childAspectRatio: 0.82,
             ),
             itemBuilder: (context, index) {
@@ -727,7 +760,6 @@ class _PlaylistsSection extends ConsumerWidget {
             },
           ),
         ),
-
         const SizedBox(height: 12),
         const Divider(color: AppTheme.surface, height: 1),
       ],
@@ -735,12 +767,9 @@ class _PlaylistsSection extends ConsumerWidget {
   }
 }
 
-// ── Playlist grid card ────────────────────────────────────────────────────────
-
-/// A card for use inside a 2-column grid: large square cover art with the
-/// playlist name and owner name rendered below, matching the screenshot.
+/// A card rendered inside a 2-column grid showing cover art, name, and owner.
 class _PlaylistGridCard extends StatelessWidget {
-  /// The playlist to display.
+  /// The playlist or album entity to display.
   final PlaylistEntity playlist;
 
   const _PlaylistGridCard({super.key, required this.playlist});
@@ -750,7 +779,6 @@ class _PlaylistGridCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Square cover image ───────────────────────────────────────────
         AspectRatio(
           aspectRatio: 1,
           child: ClipRRect(
@@ -765,20 +793,14 @@ class _PlaylistGridCard extends StatelessWidget {
                 : _coverPlaceholder(),
           ),
         ),
-
         const SizedBox(height: 6),
-
-        // ── Playlist name ────────────────────────────────────────────────
         Text(
           playlist.name,
           style: AppTheme.labelLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-
         const SizedBox(height: 2),
-
-        // ── Owner name ───────────────────────────────────────────────────
         if (playlist.ownerName.isNotEmpty)
           Text(
             playlist.ownerName,
@@ -797,8 +819,6 @@ class _PlaylistGridCard extends StatelessWidget {
     ),
   );
 }
-
-// ── Incomplete profile banner ─────────────────────────────────────────────────
 
 /// A dismissible banner prompting the user to complete their profile.
 class _IncompleteProfileBanner extends StatelessWidget {
@@ -851,6 +871,59 @@ class _IncompleteProfileBanner extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Displays bio text clamped to 2 lines with a tappable "See more" link.
+///
+/// The link always appears below the bio regardless of overflow, giving
+/// users a consistent entry point to the full [InfoBottomSheet].
+class _BioTruncated extends StatefulWidget {
+  /// The raw bio string to display.
+  final String bio;
+
+  /// The full profile entity passed to the info sheet.
+  final ProfileEntity profile;
+
+  /// Called when the user taps "See more".
+  final VoidCallback onSeeMore;
+
+  const _BioTruncated({
+    required this.bio,
+    required this.profile,
+    required this.onSeeMore,
+  });
+
+  @override
+  State<_BioTruncated> createState() => _BioTruncatedState();
+}
+
+class _BioTruncatedState extends State<_BioTruncated> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.bio,
+          key: const Key('public_profile_bio_text'),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTheme.bodyMedium,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: GestureDetector(
+            onTap: widget.onSeeMore,
+            child: Text(
+              'See more',
+              key: const Key('public_profile_bio_see_more'),
+              style: AppTheme.labelLarge.copyWith(color: AppTheme.primaryBrand),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

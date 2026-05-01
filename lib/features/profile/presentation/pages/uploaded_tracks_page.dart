@@ -32,7 +32,6 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
       await ref
           .read(profileProvider.notifier)
           .loadProfile(userId: widget.userId);
-      // Ensure we load full list (limit 20) and force refresh to bypass any limit-3 previews
       if (mounted) {
         ref
             .read(profileProvider.notifier)
@@ -43,8 +42,6 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
             );
       }
     });
-
-    // Attach scroll listener for pagination
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -170,7 +167,7 @@ class _UploadedTracksPageState extends ConsumerState<UploadedTracksPage> {
               ),
             ),
           ),
-          // ── Action row ─────────────────────────────────────────────────────
+          // Action row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(

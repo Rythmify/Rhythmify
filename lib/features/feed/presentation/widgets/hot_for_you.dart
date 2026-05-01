@@ -13,6 +13,11 @@ import '../../../player/domain/entities/queue_state.dart';
 import '../providers/home_providers.dart';
 import 'shimmers/hot_for_you_shimmer.dart';
 
+/// Displays the "Hot For You 🔥" section on the home screen.
+///
+/// Watches [hotForYouProvider] and renders a shimmer while loading,
+/// an error message on failure, or a [HotForYouCard] when data is available.
+
 class HotForYouSection extends ConsumerWidget {
   const HotForYouSection({super.key});
 
@@ -42,6 +47,11 @@ class HotForYouSection extends ConsumerWidget {
   }
 }
 
+/// A card displaying a single recommended track with blurred artwork background,
+/// animated vinyl disc, and play/pause control.
+///
+/// The vinyl disc rotation animation plays while this card's track is
+/// the active player track, and stops otherwise.
 class HotForYouCard extends ConsumerStatefulWidget {
   final Track track;
 
@@ -92,7 +102,6 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
       child: Container(
         key: Key('hot_track_card_${widget.track.id}'),
 
-        // --- LAYER 1: Track Artwork ---
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: DecorationImage(
@@ -107,13 +116,11 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
           ),
         ),
 
-        // --- LAYER 2: Clip & Blur ---
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
 
-            // --- LAYER 3: Dark Tint & Border ---
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.black.withValues(

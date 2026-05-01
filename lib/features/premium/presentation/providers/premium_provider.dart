@@ -1,3 +1,28 @@
+/// Manages all subscription logic and state for the premium system.
+///
+/// Handles:
+/// - Loading subscription plans and user subscription
+/// - Checkout flow (create → confirm → refresh state)
+/// - Subscription cancellation
+/// - Feature access rules (upload, playlists, download)
+///
+/// Key state:
+/// - subscription: current user subscription
+/// - plans: available plans from backend
+/// - isLoading / isCheckingOut: UI loading states
+/// - checkoutSuccess: signals successful payment
+/// - isInitialized: ensures initial data is loaded before UI renders
+///
+/// Feature gates:
+/// - canUploadMoreTracks
+/// - canCreateMorePlaylists
+/// - canDownload / canListenOffline
+///
+/// Notes:
+/// - Free limits are enforced via constants (track/playlist caps)
+/// - All API calls go through PremiumRemoteDatasource
+library;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/subscription_plan.dart';
