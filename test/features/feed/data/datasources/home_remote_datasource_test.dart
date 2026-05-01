@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/features/feed/data/datasources/home_remote_datasource.dart';
@@ -27,10 +27,7 @@ final tHomeResponseJson = {
     },
     'trending_by_genre': {
       'genres': [
-        {
-          'genre_id': 'electronic',
-          'genre_name': 'Electronic',
-        },
+        {'genre_id': 'electronic', 'genre_name': 'Electronic'},
       ],
       'initial_tab': {
         'genre_id': 'electronic',
@@ -160,8 +157,9 @@ void main() {
     group('getTrendingByGenre', () {
       test('should return GenreTabTracks for given genre ID', () async {
         // Arrange
-        when(() => mockDio.get('/home/trending-by-genre/electronic'))
-            .thenAnswer(
+        when(
+          () => mockDio.get('/home/trending-by-genre/electronic'),
+        ).thenAnswer(
           (_) async => Response(
             requestOptions: RequestOptions(path: ''),
             data: {'data': tGenreResponseJson['data']},
@@ -246,10 +244,7 @@ void main() {
         );
 
         // Act & Assert
-        expect(
-          () => datasource.getHotForYou(),
-          throwsA(isA<DioException>()),
-        );
+        expect(() => datasource.getHotForYou(), throwsA(isA<DioException>()));
       });
     });
 
@@ -275,9 +270,7 @@ void main() {
       test('should return empty list when no tracks available', () async {
         // Arrange
         final emptyResponse = {
-          'data': {
-            'tracks': [],
-          },
+          'data': {'tracks': []},
         };
         when(() => mockDio.get('/home/more-of-what-you-like')).thenAnswer(
           (_) async => Response(
@@ -312,24 +305,26 @@ void main() {
     });
 
     group('getMixedForYou', () {
-      test('should return list of mixed for you items when call succeeds',
-          () async {
-        // Arrange
-        when(() => mockDio.get('/home/mixed-for-you')).thenAnswer(
-          (_) async => Response(
-            requestOptions: RequestOptions(path: ''),
-            data: {'data': tHomeResponseJson['data']!['mixed_for_you']},
-            statusCode: 200,
-          ),
-        );
+      test(
+        'should return list of mixed for you items when call succeeds',
+        () async {
+          // Arrange
+          when(() => mockDio.get('/home/mixed-for-you')).thenAnswer(
+            (_) async => Response(
+              requestOptions: RequestOptions(path: ''),
+              data: {'data': tHomeResponseJson['data']!['mixed_for_you']},
+              statusCode: 200,
+            ),
+          );
 
-        // Act
-        final result = await datasource.getMixedForYou();
+          // Act
+          final result = await datasource.getMixedForYou();
 
-        // Assert
-        expect(result.isNotEmpty, true);
-        verify(() => mockDio.get('/home/mixed-for-you')).called(1);
-      });
+          // Assert
+          expect(result.isNotEmpty, true);
+          verify(() => mockDio.get('/home/mixed-for-you')).called(1);
+        },
+      );
 
       test('should return empty list when no items available', () async {
         // Arrange
@@ -358,32 +353,33 @@ void main() {
         );
 
         // Act & Assert
-        expect(
-          () => datasource.getMixedForYou(),
-          throwsA(isA<DioException>()),
-        );
+        expect(() => datasource.getMixedForYou(), throwsA(isA<DioException>()));
       });
     });
 
     group('getDiscoverStations', () {
-      test('should return list of discover stations when call succeeds',
-          () async {
-        // Arrange
-        when(() => mockDio.get('/home/discover-stations')).thenAnswer(
-          (_) async => Response(
-            requestOptions: RequestOptions(path: ''),
-            data: {'data': tHomeResponseJson['data']!['discover_with_stations']},
-            statusCode: 200,
-          ),
-        );
+      test(
+        'should return list of discover stations when call succeeds',
+        () async {
+          // Arrange
+          when(() => mockDio.get('/home/discover-stations')).thenAnswer(
+            (_) async => Response(
+              requestOptions: RequestOptions(path: ''),
+              data: {
+                'data': tHomeResponseJson['data']!['discover_with_stations'],
+              },
+              statusCode: 200,
+            ),
+          );
 
-        // Act
-        final result = await datasource.getDiscoverStations();
+          // Act
+          final result = await datasource.getDiscoverStations();
 
-        // Assert
-        expect(result.isNotEmpty, true);
-        verify(() => mockDio.get('/home/discover-stations')).called(1);
-      });
+          // Assert
+          expect(result.isNotEmpty, true);
+          verify(() => mockDio.get('/home/discover-stations')).called(1);
+        },
+      );
 
       test('should return empty list when no stations available', () async {
         // Arrange
@@ -420,38 +416,40 @@ void main() {
     });
 
     group('getMixTracks', () {
-      test('should return list of tracks for mix ID when call succeeds',
-          () async {
-        // Arrange
-        final mixResponse = {
-          'data': {
-            'tracks': [
-              {
-                'id': 'track-1',
-                'title': 'Mix Track',
-                'duration': 180,
-                'play_count': 5000,
-                'like_count': 500,
-                'audio_url': 'https://example.com/audio.mp3',
-              },
-            ],
-          },
-        };
-        when(() => mockDio.get('/home/mixes/mix-1')).thenAnswer(
-          (_) async => Response(
-            requestOptions: RequestOptions(path: ''),
-            data: mixResponse,
-            statusCode: 200,
-          ),
-        );
+      test(
+        'should return list of tracks for mix ID when call succeeds',
+        () async {
+          // Arrange
+          final mixResponse = {
+            'data': {
+              'tracks': [
+                {
+                  'id': 'track-1',
+                  'title': 'Mix Track',
+                  'duration': 180,
+                  'play_count': 5000,
+                  'like_count': 500,
+                  'audio_url': 'https://example.com/audio.mp3',
+                },
+              ],
+            },
+          };
+          when(() => mockDio.get('/home/mixes/mix-1')).thenAnswer(
+            (_) async => Response(
+              requestOptions: RequestOptions(path: ''),
+              data: mixResponse,
+              statusCode: 200,
+            ),
+          );
 
-        // Act
-        final result = await datasource.getMixTracks('mix-1');
+          // Act
+          final result = await datasource.getMixTracks('mix-1');
 
-        // Assert
-        expect(result.isNotEmpty, true);
-        verify(() => mockDio.get('/home/mixes/mix-1')).called(1);
-      });
+          // Assert
+          expect(result.isNotEmpty, true);
+          verify(() => mockDio.get('/home/mixes/mix-1')).called(1);
+        },
+      );
 
       test('should call correct endpoint with mix ID', () async {
         // Arrange
@@ -491,38 +489,40 @@ void main() {
     });
 
     group('getRelatedTracks', () {
-      test('should return list of related tracks for track ID when call succeeds',
-          () async {
-        // Arrange
-        final relatedResponse = {
-          'data': {
-            'tracks': [
-              {
-                'id': 'track-2',
-                'title': 'Related Track',
-                'duration': 180,
-                'play_count': 3000,
-                'like_count': 300,
-                'audio_url': 'https://example.com/audio.mp3',
-              },
-            ],
-          },
-        };
-        when(() => mockDio.get('/tracks/track-1/related')).thenAnswer(
-          (_) async => Response(
-            requestOptions: RequestOptions(path: ''),
-            data: relatedResponse,
-            statusCode: 200,
-          ),
-        );
+      test(
+        'should return list of related tracks for track ID when call succeeds',
+        () async {
+          // Arrange
+          final relatedResponse = {
+            'data': {
+              'tracks': [
+                {
+                  'id': 'track-2',
+                  'title': 'Related Track',
+                  'duration': 180,
+                  'play_count': 3000,
+                  'like_count': 300,
+                  'audio_url': 'https://example.com/audio.mp3',
+                },
+              ],
+            },
+          };
+          when(() => mockDio.get('/tracks/track-1/related')).thenAnswer(
+            (_) async => Response(
+              requestOptions: RequestOptions(path: ''),
+              data: relatedResponse,
+              statusCode: 200,
+            ),
+          );
 
-        // Act
-        final result = await datasource.getRelatedTracks('track-1');
+          // Act
+          final result = await datasource.getRelatedTracks('track-1');
 
-        // Assert
-        expect(result.isNotEmpty, true);
-        verify(() => mockDio.get('/tracks/track-1/related')).called(1);
-      });
+          // Assert
+          expect(result.isNotEmpty, true);
+          verify(() => mockDio.get('/tracks/track-1/related')).called(1);
+        },
+      );
 
       test('should call correct endpoint with track ID', () async {
         // Arrange
@@ -541,8 +541,9 @@ void main() {
         await datasource.getRelatedTracks('specific-track-id');
 
         // Assert
-        verify(() => mockDio.get('/tracks/specific-track-id/related'))
-            .called(1);
+        verify(
+          () => mockDio.get('/tracks/specific-track-id/related'),
+        ).called(1);
       });
 
       test('should throw exception when API call fails', () async {

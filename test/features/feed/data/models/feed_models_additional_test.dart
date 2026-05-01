@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/feed/data/models/feed_dto.dart';
 import 'package:rythmify/features/feed/data/models/home_dto.dart';
 
@@ -27,10 +27,7 @@ void main() {
     });
 
     test('falls back displayName and avatar', () {
-      final json = {
-        'id': 'user-2',
-        'username': 'bob',
-      };
+      final json = {'id': 'user-2', 'username': 'bob'};
 
       final user = FeedUserModel.fromJson(json);
 
@@ -108,11 +105,7 @@ void main() {
         'type': 'repost',
         'content_type': 'track',
         'created_at': '2024-01-01T00:00:00Z',
-        'user': {
-          'id': 'user-1',
-          'username': 'poster',
-          'displayName': 'Poster',
-        },
+        'user': {'id': 'user-1', 'username': 'poster', 'displayName': 'Poster'},
         'track': {
           'id': 'track-1',
           'title': 'A',
@@ -121,7 +114,7 @@ void main() {
           'like_count': 1,
           'user': {'id': 'owner-1', 'username': 'owner'},
           'audio_url': 'https://example.com/a.mp3',
-        }
+        },
       };
 
       final item = FeedItemModel.fromJson(json)!;
@@ -150,9 +143,9 @@ void main() {
               'title': 'From PL',
               'user': {'id': 'owner-2', 'username': 'owner2'},
               'audio_url': 'https://example.com/pl.mp3',
-            }
-          ]
-        }
+            },
+          ],
+        },
       };
 
       final item = FeedItemModel.fromJson(json)!;
@@ -191,7 +184,7 @@ void main() {
         'cover_image': 'c',
         'track_count': 1,
         'follower_count': 2,
-        'images': {'left': 'l', 'center': 'c', 'right': 'r'}
+        'images': {'left': 'l', 'center': 'c', 'right': 'r'},
       };
       final s = HomeDto.parseDiscoverStation(json);
       expect(s.id, 's1');

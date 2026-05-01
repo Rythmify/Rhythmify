@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/feed/data/models/feed_dto.dart';
 import 'package:rythmify/features/feed/domain/entities/feed_item.dart';
 
@@ -106,7 +106,11 @@ void main() {
       'audio_url': 'https://example.com/audio.mp3',
       'stream_url': 'https://example.com/stream.mp3',
       'preview_url': 'https://example.com/preview.mp3',
-      'artist': {'id': 'artist-1', 'username': 'artist', 'displayName': 'Artist'},
+      'artist': {
+        'id': 'artist-1',
+        'username': 'artist',
+        'displayName': 'Artist',
+      },
     };
 
     test('should return valid FeedTrackModel from JSON', () {
@@ -265,7 +269,11 @@ void main() {
       'play_count': 5000,
       'like_count': 500,
       'audio_url': 'https://example.com/audio.mp3',
-      'artist': {'id': 'artist-1', 'username': 'artist', 'displayName': 'Artist'},
+      'artist': {
+        'id': 'artist-1',
+        'username': 'artist',
+        'displayName': 'Artist',
+      },
     };
 
     final tPlaylistJson = {
