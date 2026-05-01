@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../domain/entities/vibes_category.dart';
 
+/// A staggered two-column masonry grid of [VibeCategory] cards.
+///
+/// Each card's height is driven by [VibeCategory.height], creating a
+/// variable-height layout via [MasonryGridView]. Non-scrollable by design
+/// — intended to be embedded inside a parent scrollable widget.
 class VibesGrid extends StatelessWidget {
   const VibesGrid({super.key, required this.vibes, required this.onVibeTap});
 
@@ -30,6 +35,10 @@ class VibesGrid extends StatelessWidget {
   }
 }
 
+/// A single vibe category card displaying a background image, a bottom
+/// gradient overlay, and the category title.
+///
+/// Tapping calls [onTap] to navigate to the genre page.
 class _VibeCard extends StatelessWidget {
   const _VibeCard({required this.vibe, required this.onTap});
 
@@ -56,7 +65,6 @@ class _VibeCard extends StatelessWidget {
                 key: Key('vibe_image_${vibe.id}'),
                 fit: BoxFit.cover,
               ),
-              // dark gradient at the bottom
               Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(

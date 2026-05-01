@@ -14,14 +14,12 @@ class SearchResults {
 
   final List<Track> tracks;
 
-  /// Raw maps until a teammate-owned Playlist entity is available.
-  final List<Map<String, String>>
-  playlists; // swap to PlaylistEntity when ready
+  /// Raw maps
+  final List<Map<String, String>> playlists;
 
   final List<ProfileEntity> profiles;
 
-  /// Raw maps until a teammate-owned Album entity is available.
-  final List<Map<String, String>> albums; // swap to AlbumEntity when ready
+  final List<Map<String, String>> albums;
 
   final TopResult? topResult;
 }
