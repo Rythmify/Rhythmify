@@ -287,8 +287,13 @@ class PlaylistPage extends BasePage {
       find.text(name).evaluate().isNotEmpty;
 
   /// Search for playlists with [query] and returns true if the "No results for [query]" message is shown.
-    Future<void> typeInPlaylistSearch(String query) async {
+  Future<void> typeInPlaylistSearch(String query) async {
     await enterTextByKey(libraryPlaylistsSearchField, query);
     await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  Future<void> pullToRefresh(String pageKey) async {
+    await tester.drag(find.byKey(Key(pageKey)), const Offset(0, 300));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
   }
 }

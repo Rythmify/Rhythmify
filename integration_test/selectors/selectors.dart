@@ -126,9 +126,9 @@ const String feedListDiscoverError          = 'feed_list_discover_error';
 const String feedListFollowingError         = 'feed_list_following_error';
 
 // --- Player ---
-const String playerFullPageTogglePlay       = 'player_full_page_toggle_play_pause_gesturedetector';
-const String playerFullPageCollapse         = 'player_full_page_collapse_iconbutton';
-const String playerFullPageAddPerson        = 'player_full_page_add_person_iconbutton';
+const String playerFullPageTogglePlay       = 'player_waveform_gesture_detector';
+const String playerFullPageCollapse         = 'player_collapse_button';
+const String playerFullPageAddPerson        = 'player_follow_button';
 const String playerFullPageNoTrackText      = 'player_full_page_no_track_text';
 const String playerMiniPlayerGesture        = 'player_mini_player_gesture_detector';
 const String playerMiniPlayerTitle          = 'player_mini_player_title_text';
@@ -331,6 +331,7 @@ const String libraryPlaylistsFilterPlaylistName      = 'library_playlists_filter
 const String libraryPlaylistsFilterAllPlaylists      = 'library_playlists_filter_all_playlists';
 const String libraryPlaylistsFilterLikedPlaylists    = 'library_playlists_filter_liked_playlists';
 const String libraryPlaylistsFilterOwnedPlaylists    = 'library_playlists_filter_owned_playlists';
+const String libraryPlaylistsList                    = 'library_playlists_list';
 
 // ── Library — Misc ────────────────────────────────────────────────────────────
 const String libraryUpgradeProButton        = 'library_upgrade_pro_button';

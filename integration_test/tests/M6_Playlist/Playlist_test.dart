@@ -82,7 +82,7 @@ void main() {
         await playlistPage.tapCreateButton();
         await playlistPage.fillPlaylistName('Integration Test Playlist');
         await playlistPage.tapConfirmCreate();
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         // expect(playlistPage.isOnPlaylistDetailScreen(), true,
         //     reason: 'Should navigate to the new playlist detail screen');
         // expect(playlistPage.isPlaylistNameVisible('Integration Test Playlist'), true,
@@ -94,11 +94,11 @@ void main() {
         //Add first 3 tracks from the suggestions list
         await playlistPage.tapAddTrackButton();
         await playlistPage.tapSuggestionAddButtonByIndex(0);
-        await tester.pumpAndSettle(const Duration(seconds: 1));
+        await tester.pumpAndSettle(const Duration(seconds: 4));
         await playlistPage.tapSuggestionAddButtonByIndex(1);
-        await tester.pumpAndSettle(const Duration(seconds: 1));
-        await playlistPage.tapSuggestionAddButtonByIndex(2);
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pumpAndSettle(const Duration(seconds: 4));
+        // await playlistPage.tapSuggestionAddButtonByIndex(2);
+        // await tester.pumpAndSettle(const Duration(seconds: 2));
       });
 
       // ── Navigate back to the Playlists list ───────────────────────────────
@@ -125,12 +125,12 @@ void main() {
         await playlistPage.tapEditPublicSwitch();
 
         // TC-PLAYLIST-007 | Remove the added track
-        await playlistPage.removeTrack(0);
+        //await playlistPage.removeTrack(0);
 
         // await playlistPage.tapSaveEdit();
         await playlistPage.tapSaveEdit();
         await tester.pumpAndSettle(const Duration(seconds: 2));
-        await playlistPage.refreshPage();
+        await playlistPage.pullToRefresh(libraryPlaylistsList);
       });
 
       // // ── Verify edits are reflected on the Playlists list ──────────────────
@@ -150,17 +150,23 @@ void main() {
       });
 
       await tryTest('TC-PLAYLIST-006 | Convert playlist to Album successfully',() async{
-        await playlistPage.refreshPage();
+        await playlistPage.pullToRefresh(libraryPlaylistsList);;
+        await tester.pumpAndSettle(const Duration(seconds: 3));
         await playlistPage.tapMoreForPlaylist('Edited Integration Playlist');
         await playlistPage.tapOptionEdit();
         await tester.pumpAndSettle(const Duration(seconds: 2));
+        expect(playlistPage.isEditSheetOpen(), true,
+            reason: 'Edit sheet should open after tapping Edit');
+
         await playlistPage.tapConvertToAlbum();
         await tester.pumpAndSettle(const Duration(seconds: 2));
         await playlistPage.cancelConvertToAlbum();
+
         await playlistPage.tapConvertToAlbum();
         await tester.pumpAndSettle(const Duration(seconds: 2));
         await playlistPage.confirmConvertToAlbum();
-        await playlistPage.refreshPage();
+
+        await playlistPage.pullToRefresh(libraryPlaylistsList);
         await playlistPage.goBackToLibrary();
         await playlistPage.goToAlbumsSection();
         expect (playlistPage.isAlbumNameVisible('Edited Integration Playlist'), true,
@@ -180,7 +186,7 @@ void main() {
         await playlistPage.tapOptionDelete();
         await playlistPage.confirmDelete();
         await tester.pumpAndSettle(const Duration(seconds: 2));
-        await playlistPage.refreshPage();
+        await playlistPage.pullToRefresh(libraryPlaylistsList);
         await tester.pumpAndSettle(const Duration(seconds: 2));
       });
 

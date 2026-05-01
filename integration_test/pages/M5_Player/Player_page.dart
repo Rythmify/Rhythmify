@@ -30,8 +30,8 @@ class PlayerPage extends BasePage {
 
   /// Taps the follow/unfollow icon button inside the full player.
   Future<void> tapFollowButton() async {
-    await tapByKeyNow(playerFullPageAddPerson);
-    await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.byIcon(Icons.person_add));
+      await tester.pump(const Duration(seconds: 2));
   }
 
   /// Taps the full-screen GestureDetector to toggle play / pause.
@@ -86,9 +86,9 @@ class PlayerPage extends BasePage {
       isVisible(behindTheTrackBehindTrackButton);
 
   /// True when the collapse and follow buttons are rendered.
-  bool isCollapseAndFollowVisible() =>
-      isVisible(playerFullPageCollapse) &&
-      isVisible(playerFullPageAddPerson);
+bool isCollapseAndFollowVisible() =>
+    isVisible(playerFullPageCollapse) &&
+    find.byIcon(Icons.person_add).evaluate().isNotEmpty;
 
   /// True when all five action-bar items are rendered.
   bool isActionBarVisible() =>

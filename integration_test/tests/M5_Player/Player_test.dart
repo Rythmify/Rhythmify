@@ -49,6 +49,16 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 3));
     });
 
+    // ── TC-PLAYER-005 | Play / pause toggles without crashing ────────────────
+    await tryTest('Play & Pause track without crashing', () async {    
+      await playerPage.tapPlayPause(); // pause
+      await tester.pump(const Duration(seconds: 1));
+      await playerPage.tapPlayPause(); // resume
+      await tester.pump(const Duration(seconds: 1));
+      await playerPage.tapPlayPause(); // pause
+      await tester.pump(const Duration(seconds: 1));
+    });
+
     await tryTest('Check visibility', () async {
       // ── TC-PLAYER-002 | Track info (title / artist) and "Behind this track" ───
       expect(playerPage.isTrackInfoVisible(), true);
@@ -67,13 +77,13 @@ void main() {
     });
 
 
-    // ── TC-PLAYER-005 | Play / pause toggles without crashing ────────────────
-    await tryTest('Play & Pause track without crashing', () async {    
-      await playerPage.tapPlayPause(); // pause
-      await tester.pump(const Duration(seconds: 1));
-      await playerPage.tapPlayPause(); // resume
-      await tester.pump(const Duration(seconds: 1));
-    });
+    // // ── TC-PLAYER-005 | Play / pause toggles without crashing ────────────────
+    // await tryTest('Play & Pause track without crashing', () async {    
+    //   await playerPage.tapPlayPause(); // pause
+    //   await tester.pump(const Duration(seconds: 1));
+    //   await playerPage.tapPlayPause(); // resume
+    //   await tester.pump(const Duration(seconds: 1));
+    // });
 
 
     // ── TC-PLAYER-006 | Drag WaveForm Smoothly ───
