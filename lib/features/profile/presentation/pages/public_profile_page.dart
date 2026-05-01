@@ -91,7 +91,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
   }
 
   @override
@@ -219,7 +218,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
     final profileState = _resolvedUserId == 'me'
         ? ref.watch(ownProfileProvider)
         : ref.watch(publicProfileProvider(_resolvedUserId));
-
 
     final authState = ref.watch(authProvider);
     final currentUserId = authState is AuthAuthenticated
