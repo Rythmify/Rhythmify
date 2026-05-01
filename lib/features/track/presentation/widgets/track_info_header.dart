@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 
@@ -52,9 +53,11 @@ class TrackInfoHeader extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: track.artworkUrl.toString().startsWith('http')
-                              ? Image.network(
-                                  track.artworkUrl,
+                              ? CachedNetworkImage(
+                                  imageUrl: track.artworkUrl,
                                   fit: BoxFit.cover,
+                                  placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
+                                  errorWidget: (c, u, e) => const Icon(Icons.error),
                                 )
                               : Image.asset(
                                   track.artworkUrl,
@@ -114,12 +117,22 @@ class TrackInfoHeader extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: track.artworkUrl.toString().startsWith('http')
-                      ? Image.network(
-                          track.artworkUrl,
+                      ? CachedNetworkImage(
+                          imageUrl: track.artworkUrl,
                           width: 110,
                           height: 110,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
+                          placeholder: (context, url) => Container(
+                                width: 110,
+                                height: 110,
+                                color: AppTheme.perfectGrey,
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white,
+                                  size: 40,
+                                ),
+                              ),
+                          errorWidget: (context, url, error) =>
                               Container(
                                 width: 110,
                                 height: 110,

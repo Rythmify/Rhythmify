@@ -14,6 +14,7 @@ enum QueueSource {
   listeningHistory,
   reposts,
   userTracks,
+  downloads,
   search,
   unknown,
 }

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/domain/entities/track.dart';
+import '../../../../core/data/models/track_dto.dart';
 
 // coverage:ignore-file
 /// Domain entities used by Library pages, use cases, and repositories.
@@ -90,6 +91,44 @@ class UploadedTrack extends Equatable {
 
   @override
   List<Object?> get props => [id, title, status, isPublic];
+}
+
+// ─────────────────────────────────────────────
+// DownloadedTrack — used in Downloads page
+// ─────────────────────────────────────────────
+class DownloadedTrack extends Equatable {
+  final Track track;
+  final String localPath;
+  final DateTime downloadedAt;
+
+  const DownloadedTrack({
+    required this.track,
+    required this.localPath,
+    required this.downloadedAt,
+  });
+
+  String get id => track.id;
+  String get title => track.title;
+  String? get artworkUrl => track.coverImage;
+
+  @override
+  List<Object?> get props => [id, localPath, downloadedAt];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'track': TrackDto.toJson(track),
+      'local_path': localPath,
+      'downloaded_at': downloadedAt.toIso8601String(),
+    };
+  }
+
+  factory DownloadedTrack.fromJson(Map<dynamic, dynamic> json) {
+    return DownloadedTrack(
+      track: TrackDto.fromJson(Map<dynamic, dynamic>.from(json['track'] as Map)),
+      localPath: json['local_path'] as String? ?? '',
+      downloadedAt: DateTime.tryParse(json['downloaded_at'] as String? ?? '') ?? DateTime.now(),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../player/presentation/providers/player_provider.dart';
@@ -29,6 +30,12 @@ class TrackCard extends ConsumerWidget {
   /// Whether to observe player state and show dynamic playback status.
   final bool observePlayerState;
 
+  /// Whether to show the more options (3 dots) icon.
+  final bool showOptions;
+
+  /// Whether to show the bottom stats row (play count, duration, etc.).
+  final bool showStats;
+
   /// Creates a [TrackCard].
   const TrackCard({
     super.key,
@@ -36,6 +43,8 @@ class TrackCard extends ConsumerWidget {
     this.onTap,
     this.queueContext,
     this.observePlayerState = true,
+    this.showOptions = true,
+    this.showStats = true,
   });
 
   // --- Formatting Helpers ---
@@ -127,16 +136,18 @@ class TrackCard extends ConsumerWidget {
                   const SizedBox(height: 2),
 
                   // 3. Bottom Status Row (Dynamic)
-                  isThisTrackLoaded
-                      ? _buildPlayingState(isPlaying)
-                      : _buildStatsState(track),
+                  if (showStats)
+                    isThisTrackLoaded
+                        ? _buildPlayingState(isPlaying)
+                        : _buildStatsState(track),
                 ],
               ),
             ),
 
             // 4. Trailing More Icon
-            InkWell(
-              key: Key('track_card_${track.id}_more_inkwell'),
+            if (showOptions)
+              InkWell(
+                key: Key('track_card_${track.id}_more_inkwell'),
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -210,12 +221,13 @@ class TrackCard extends ConsumerWidget {
 
   Widget _buildArtwork(String url) {
     if (url.startsWith('http')) {
-      return Image.network(
-        url,
+      return CachedNetworkImage(
+        imageUrl: url,
         width: 65,
         height: 65,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        placeholder: (context, url) => _buildPlaceholder(),
+        errorWidget: (context, url, error) => _buildPlaceholder(),
       );
     } else {
       return Image.asset(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/player_provider.dart';
 import '../providers/queue_provider.dart';
 import '../../domain/entities/queue_item.dart';
+import '../../domain/entities/queue_state.dart';
 import '../widgets/scrolling_artwork_background.dart';
 import '../widgets/playback_overlay_controls.dart';
 import '../widgets/track_info_box.dart';
@@ -150,6 +151,9 @@ class _PlayerTrackPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final track = item.track;
+    final queueContext = ref.watch(queueStateProvider.select((s) => s.context));
+    final isDownloadedQueue = queueContext?.type == QueueSource.downloads;
+
     return GestureDetector(
       key: Key('player_track_page_gesture_detector_${track.id}'),
       onTap: () {
@@ -179,19 +183,21 @@ class _PlayerTrackPage extends ConsumerWidget {
                   icon: Icons.keyboard_arrow_down,
                   onPressed: onCollapse ?? () => Navigator.pop(context),
                 ),
-                const SizedBox(height: 16),
-                FollowButton(
-                  targetUserId: track.userId,
-                  builder: (context, isFollowing, isInFlight, toggle) {
-                    return _CircularActionButton(
-                      key: Key('player_follow_button_${track.userId}'),
-                      icon: isFollowing
-                          ? Icons.person_add_alt_1
-                          : Icons.person_add_alt,
-                      onPressed: toggle,
-                    );
-                  },
-                ),
+                if (!isDownloadedQueue) ...[
+                  const SizedBox(height: 16),
+                  FollowButton(
+                    targetUserId: track.userId,
+                    builder: (context, isFollowing, isInFlight, toggle) {
+                      return _CircularActionButton(
+                        key: Key('player_follow_button_${track.userId}'),
+                        icon: isFollowing
+                            ? Icons.person_add_alt_1
+                            : Icons.person_add_alt,
+                        onPressed: toggle,
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
           ),
@@ -204,18 +210,22 @@ class _PlayerTrackPage extends ConsumerWidget {
               children: [
                 // Only the current track has an active/interactive waveform
                 if (isCurrent)
-                  const TrackWaveformVisualizer()
+                  AbsorbPointer(
+                    absorbing: isDownloadedQueue,
+                    child: const TrackWaveformVisualizer(),
+                  )
                 else
                   const _StaticWaveformPlaceholder(),
 
                 const SizedBox(height: 5),
-                if (isCurrent) const FloatingCommentBar(),
+                if (isCurrent && !isDownloadedQueue) const FloatingCommentBar(),
                 const SizedBox(height: 40),
                 if (isCurrent)
                   PlayerActionBar(
                     key: Key('player_action_bar_${track.id}'),
                     trackId: track.id,
                     onCollapse: onCollapse,
+                    isInteractive: !isDownloadedQueue,
                   ),
               ],
             ),
@@ -225,10 +235,13 @@ class _PlayerTrackPage extends ConsumerWidget {
           Positioned(
             top: 60,
             left: 16,
-            child: TrackInfoBox(
-              key: Key('player_track_info_box_${track.id}'),
-              trackInfo: track,
-              onNavigateBehindTrack: onNavigateBehindTrack,
+            child: IgnorePointer(
+              ignoring: isDownloadedQueue,
+              child: TrackInfoBox(
+                key: Key('player_track_info_box_${track.id}'),
+                trackInfo: track,
+                onNavigateBehindTrack: onNavigateBehindTrack,
+              ),
             ),
           ),
         ],

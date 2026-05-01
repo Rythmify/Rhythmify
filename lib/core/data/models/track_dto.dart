@@ -1,11 +1,14 @@
 import '../../domain/entities/track.dart';
 
 class TrackDto {
-  static Track fromJson(Map<String, dynamic> json) {
+  static Track fromJson(Map<dynamic, dynamic> json) {
+    // Ensure we have a Map<String, dynamic> for internal logic
+    final Map<String, dynamic> normalizedJson = Map<String, dynamic>.from(json);
+    
     // Some responses wrap data in a 'data' field
-    final Map<String, dynamic> data = json.containsKey('data')
-        ? json['data'] as Map<String, dynamic>
-        : json;
+    final Map<String, dynamic> data = normalizedJson.containsKey('data')
+        ? Map<String, dynamic>.from(normalizedJson['data'] as Map)
+        : normalizedJson;
 
     return Track(
       id: data['id'] as String? ?? '',

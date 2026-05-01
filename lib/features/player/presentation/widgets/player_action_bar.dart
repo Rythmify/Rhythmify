@@ -22,7 +22,15 @@ class PlayerActionBar extends ConsumerWidget {
   /// Callback to collapse the player.
   final VoidCallback? onCollapse;
 
-  const PlayerActionBar({super.key, required this.trackId, this.onCollapse});
+  /// Whether the actions are interactive (disabled for downloaded tracks).
+  final bool isInteractive;
+
+  const PlayerActionBar({
+    super.key,
+    required this.trackId,
+    this.onCollapse,
+    this.isInteractive = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,17 +52,17 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 1. Like Action ------
             InkWell(
               key: Key('player_action_bar_like_inkwell_$trackId'),
-              onTap: () {
-                if (track != null) {
-                  ref
-                      .read(trackInteractionProvider)
-                      .handleToggleLike(
-                        track.id,
-                        track.isLiked,
-                        currentTrack: track,
-                      );
-                }
-              },
+              onTap: isInteractive
+                  ? () {
+                      if (track != null) {
+                        ref.read(trackInteractionProvider).handleToggleLike(
+                              track.id,
+                              track.isLiked,
+                              currentTrack: track,
+                            );
+                      }
+                    }
+                  : null,
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
@@ -72,39 +80,44 @@ class PlayerActionBar extends ConsumerWidget {
                           : Icons.favorite_border,
                       color: (track?.isLiked ?? false)
                           ? AppTheme.primaryBrand
-                          : Colors.white,
+                          : (isInteractive ? Colors.white : Colors.grey),
                     ),
                     const SizedBox(width: 6),
-                    trackAsync.when(
-                      data: (_) => Text(
-                        Formatters.formatCount(track?.likeCount ?? 0),
-                        key: const Key('player_action_bar_like_count_text'),
-                        style: AppTheme.bodyNormal.copyWith(
-                          color: (track?.isLiked ?? false)
-                              ? AppTheme.primaryBrand
-                              : Colors.white,
-                        ),
-                      ),
-                      loading: () => const SizedBox(
-                        width: 10,
-                        height: 10,
-                        child: CircularProgressIndicator(
-                          key: Key(
-                            'player_action_bar_like_count_loading_indicator',
+                    !isInteractive 
+                      ? const Text(
+                          '0',
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      : trackAsync.when(
+                          data: (_) => Text(
+                            Formatters.formatCount(track?.likeCount ?? 0),
+                            key: const Key('player_action_bar_like_count_text'),
+                            style: AppTheme.bodyNormal.copyWith(
+                              color: (track?.isLiked ?? false)
+                                  ? AppTheme.primaryBrand
+                                  : (isInteractive ? Colors.white : Colors.grey),
+                            ),
                           ),
-                          strokeWidth: 2,
-                          color: Colors.white,
+                          loading: () => const SizedBox(
+                            width: 10,
+                            height: 10,
+                            child: CircularProgressIndicator(
+                              key: Key(
+                                'player_action_bar_like_count_loading_indicator',
+                              ),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          error: (a, b) => const Text(
+                            '0',
+                            key: Key('player_action_bar_like_count_error_text'),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                      error: (a, b) => const Text(
-                        '0',
-                        key: Key('player_action_bar_like_count_error_text'),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -113,16 +126,18 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 2. Comment Action ------
             InkWell(
               key: Key('player_action_bar_comment_inkwell_$trackId'),
-              onTap: () {
-                trackAsync.whenData((track) {
-                  onCollapse?.call();
-                  context.pushNamed(
-                    'comments',
-                    pathParameters: {'trackId': track.id},
-                    extra: track,
-                  );
-                });
-              },
+              onTap: isInteractive
+                  ? () {
+                      trackAsync.whenData((track) {
+                        onCollapse?.call();
+                        context.pushNamed(
+                          'comments',
+                          pathParameters: {'trackId': track.id},
+                          extra: track,
+                        );
+                      });
+                    }
+                  : null,
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
@@ -133,16 +148,18 @@ class PlayerActionBar extends ConsumerWidget {
                 ), // This changes the inkwell height and width
                 child: Row(
                   children: [
-                    const Icon(
-                      key: Key('player_action_bar_comment_icon'),
+                    Icon(
+                      key: const Key('player_action_bar_comment_icon'),
                       Icons.chat_outlined,
-                      color: Colors.white,
+                      color: isInteractive ? Colors.white : Colors.grey,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      Formatters.formatCount(track?.commentCount ?? 0),
+                      !isInteractive ? '0' : Formatters.formatCount(track?.commentCount ?? 0),
                       key: const Key('player_action_bar_comment_count_text'),
-                      style: AppTheme.bodyNormal,
+                      style: AppTheme.bodyNormal.copyWith(
+                        color: isInteractive ? Colors.white : Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -152,22 +169,24 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 3. Share Action ------
             InkWell(
               key: Key('player_action_bar_share_inkwell_$trackId'),
-              onTap: () {
-                trackAsync.whenData((track) {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useRootNavigator: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => TrackOptionsModal(
-                      track: track,
-                      mode: TrackModalMode
-                          .share, // Tell it to render the share view!
-                      onCollapse: onCollapse,
-                    ),
-                  );
-                });
-              },
+              onTap: isInteractive
+                  ? () {
+                      trackAsync.whenData((track) {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useRootNavigator: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => TrackOptionsModal(
+                            track: track,
+                            mode: TrackModalMode
+                                .share, // Tell it to render the share view!
+                            onCollapse: onCollapse,
+                          ),
+                        );
+                      });
+                    }
+                  : null,
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
@@ -179,7 +198,7 @@ class PlayerActionBar extends ConsumerWidget {
                 child: Icon(
                   key: Key('player_action_bar_share_icon'),
                   Icons.share_outlined,
-                  color: Colors.white,
+                  color: isInteractive ? Colors.white : Colors.grey,
                 ),
               ),
             ),
@@ -187,9 +206,11 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 4. Playlist Action ------
             InkWell(
               key: Key('player_action_bar_playlist_inkwell_$trackId'),
-              onTap: () {
-                context.push('/queue');
-              },
+              onTap: isInteractive
+                  ? () {
+                      context.push('/queue');
+                    }
+                  : null,
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
@@ -202,7 +223,7 @@ class PlayerActionBar extends ConsumerWidget {
                   key: Key('player_action_bar_playlist_icon'),
                   Icons.queue_music,
                   size: 25,
-                  color: Colors.white,
+                  color: isInteractive ? Colors.white : Colors.grey,
                 ),
               ),
             ),
@@ -210,18 +231,22 @@ class PlayerActionBar extends ConsumerWidget {
             // ------ 5. More Action ------
             InkWell(
               key: Key('player_action_bar_more_inkwell_$trackId'),
-              onTap: () {
-                trackAsync.whenData((track) {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    useRootNavigator: true,
-                    builder: (context) =>
-                        TrackOptionsModal(track: track, onCollapse: onCollapse),
-                  );
-                });
-              },
+              onTap: isInteractive
+                  ? () {
+                      trackAsync.whenData((track) {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          useRootNavigator: true,
+                          builder: (context) => TrackOptionsModal(
+                            track: track,
+                            onCollapse: onCollapse,
+                          ),
+                        );
+                      });
+                    }
+                  : null,
               borderRadius: BorderRadius.circular(8),
               highlightColor: Colors.white.withValues(alpha: 0.1),
               splashColor: Colors.white.withValues(alpha: 0.2),
@@ -233,7 +258,7 @@ class PlayerActionBar extends ConsumerWidget {
                 child: Icon(
                   key: Key('player_action_bar_more_icon'),
                   Icons.more_vert,
-                  color: Colors.white,
+                  color: isInteractive ? Colors.white : Colors.grey,
                 ),
               ),
             ),
