@@ -7,7 +7,6 @@ import 'package:rythmify/features/feed/domain/usecases/get_following_feed_usecas
 import 'package:rythmify/features/feed/presentation/providers/feed_providers.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
-import 'package:rythmify/features/authentication/domain/entities/user_entity.dart';
 import 'package:rythmify/features/authentication/data/models/user_model.dart';
 
 // ============ Mock AuthNotifier ============

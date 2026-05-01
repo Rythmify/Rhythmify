@@ -1,5 +1,6 @@
 import '../../../../core/domain/entities/track.dart';
 
+/// Represents a genre tab tracks in the domain layer.
 class GenreTabTracks {
   final String genreId;
   final String genreName;

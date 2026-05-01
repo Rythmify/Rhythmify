@@ -1,5 +1,10 @@
 import '../../domain/entities/feed_item.dart';
 
+/// Data model for a single feed item, extending [FeedItemEntity].
+///
+/// Handles JSON deserialization for both regular feed items (tracks and
+/// playlists posted or reposted by followed users) and bridges the
+/// data layer to the domain layer.
 class FeedItemModel extends FeedItemEntity {
   const FeedItemModel({
     required super.id,
@@ -13,6 +18,14 @@ class FeedItemModel extends FeedItemEntity {
     super.discoverLabel,
   });
 
+  /// Parses a [FeedItemModel] from a raw JSON map.
+  ///
+  /// Resolves the track to display by preferring the top-level `track`
+  /// field, falling back to the first track inside `playlist.tracks`
+  /// if present. Returns `null` if no resolvable track is found.
+  ///
+  /// The track owner is resolved in order:
+  /// `track.user` → `track.artist` → `user`.
   static FeedItemModel? fromJson(Map<String, dynamic> json) {
     final trackJson = json['track'] as Map<String, dynamic>?;
     final playlistJson = json['playlist'] as Map<String, dynamic>?;
@@ -46,6 +59,11 @@ class FeedItemModel extends FeedItemEntity {
   }
 }
 
+/// Data model for a user referenced inside a feed item, extending
+/// [FeedUserEntity].
+///
+/// Covers both the poster/reposter ([FeedItemEntity.user]) and the
+/// track owner ([FeedItemEntity.trackOwner]) roles within a feed item.
 class FeedUserModel extends FeedUserEntity {
   const FeedUserModel({
     required super.id,
@@ -57,6 +75,10 @@ class FeedUserModel extends FeedUserEntity {
     super.isFollowing,
   });
 
+  /// Parses a [FeedUserModel] from a raw JSON map.
+  ///
+  /// Falls back to `username` if `displayName` is absent, and accepts
+  /// either `profile_picture` or `avatar` as the avatar URL key.
   factory FeedUserModel.fromJson(Map<String, dynamic> json) {
     return FeedUserModel(
       id: json['id'] as String,
@@ -70,6 +92,11 @@ class FeedUserModel extends FeedUserEntity {
   }
 }
 
+/// Data model for a track referenced inside a feed item, extending
+/// [FeedTrackEntity].
+///
+/// Normalizes inconsistent backend field names (e.g. `audio_url` vs
+/// `audioUrl`, `artist` vs `user`) into a single typed entity.
 class FeedTrackModel extends FeedTrackEntity {
   const FeedTrackModel({
     required super.id,
@@ -85,6 +112,11 @@ class FeedTrackModel extends FeedTrackEntity {
     required super.uploaderUsername,
   });
 
+  /// Parses a [FeedTrackModel] from a raw JSON map.
+  ///
+  /// Resolves the uploader username from either the `artist` or `user`
+  /// nested object. Accepts both snake_case and camelCase variants for
+  /// URL fields to handle backend inconsistencies.
   factory FeedTrackModel.fromJson(Map<String, dynamic> json) {
     final artistJson =
         (json['artist'] ?? json['user']) as Map<String, dynamic>? ?? {};
@@ -106,6 +138,8 @@ class FeedTrackModel extends FeedTrackEntity {
   }
 }
 
+/// Data model for a playlist referenced inside a feed item, extending
+/// [FeedPlaylistEntity].
 class FeedPlaylistModel extends FeedPlaylistEntity {
   const FeedPlaylistModel({
     required super.id,
@@ -116,6 +150,7 @@ class FeedPlaylistModel extends FeedPlaylistEntity {
     required super.repostCount,
   });
 
+  /// Parses a [FeedPlaylistModel] from a raw JSON map.
   factory FeedPlaylistModel.fromJson(Map<String, dynamic> json) {
     return FeedPlaylistModel(
       id: json['id'] as String,

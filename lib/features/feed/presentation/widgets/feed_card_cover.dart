@@ -1,8 +1,21 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+/// Displays the cover image for a feed card in two visual modes:
+/// full-screen and compact.
+///
+/// In **compact mode** (default), renders a blurred version of [coverUrl]
+/// as the background with a centered sharp thumbnail on top.
+///
+/// In **full-screen mode**, renders the image directly inside a rounded
+/// bordered container with no blur effect.
+///
+/// Falls back to [_PlaceholderCover] when [coverUrl] is `null` or the
+/// network image fails to load.
 class FeedCardCover extends StatelessWidget {
   final String? coverUrl;
+
+  /// Whether to render in full-screen mode instead of compact mode.
   final bool fullScreen;
 
   const FeedCardCover({super.key, this.coverUrl, this.fullScreen = false});
@@ -57,6 +70,7 @@ class FeedCardCover extends StatelessWidget {
             key: const Key('feed_card_cover_stack'),
             fit: StackFit.expand,
             children: [
+              // Blurred cover image as background, or placeholder if unavailable
               if (coverUrl != null)
                 ImageFiltered(
                   key: const Key('feed_card_cover_blur'),
@@ -65,10 +79,12 @@ class FeedCardCover extends StatelessWidget {
                 )
               else
                 const _PlaceholderCover(),
+              // Dark overlay to improve contrast over the blurred background
               Container(
                 key: const Key('feed_card_cover_overlay'),
                 color: Colors.black.withValues(alpha: 0.4),
               ),
+              // Sharp centered thumbnail rendered above the blurred background
               Align(
                 key: const Key('feed_card_cover_align'),
                 alignment: const Alignment(0, -0.5),
@@ -100,6 +116,10 @@ class FeedCardCover extends StatelessWidget {
   }
 }
 
+/// A fallback cover displayed when no [coverUrl] is provided or when
+/// a network image fails to load.
+///
+/// Renders a dark background with a centered music note icon.
 class _PlaceholderCover extends StatelessWidget {
   const _PlaceholderCover();
 

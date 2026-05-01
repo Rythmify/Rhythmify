@@ -11,6 +11,7 @@ import '../providers/home_providers.dart';
 import '../../../track/presentation/widgets/bottom_sheets/track_options_modal.dart';
 import 'shimmers/trending_genre_shimmer.dart';
 
+/// Accent colors cycled across genre tabs to give each a distinct highlight.
 final List<Color> genreColors = [
   Colors.pink,
   Colors.purple,
@@ -23,6 +24,11 @@ final List<Color> genreColors = [
   const Color.fromARGB(255, 19, 45, 195),
 ];
 
+/// Displays the "Trending by Genre" section on the home screen.
+///
+/// Manages a [TabController] that rebuilds when the genre list changes.
+/// Renders a color-tinted, blurred background that animates to the selected
+/// genre's accent color. Shows a shimmer while [homeDataProvider] loads.
 class TrendingByGenre extends ConsumerStatefulWidget {
   const TrendingByGenre({super.key});
 
@@ -176,6 +182,8 @@ class _TrendingByGenreState extends ConsumerState<TrendingByGenre>
   }
 }
 
+/// A scrollable tab bar that renders each genre as a pill-shaped tab,
+/// highlighted with its assigned color from [genreColors] when selected.
 class GenreTabBar extends StatelessWidget {
   final TabController tabController;
   final List<GenreTab> genres;
@@ -234,6 +242,8 @@ class GenreTabBar extends StatelessWidget {
   }
 }
 
+/// Renders a [TabBarView] for each genre, using pre-loaded [initialTracks]
+/// for the initial tab and fetching via [trendingByGenreProvider] for others.
 class GenreTabView extends ConsumerWidget {
   final TabController tabController;
   final List<GenreTab> genres;
@@ -290,6 +300,8 @@ class GenreTabView extends ConsumerWidget {
   }
 }
 
+/// Lays out a list of [tracks] as horizontally scrollable columns of up to
+/// three tracks each. Tapping a track starts playback via [queueStateProvider].
 class _TrendingHorizontalColumns extends ConsumerWidget {
   final List<Track> tracks;
   final String genreId;

@@ -7,6 +7,11 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../authentication/presentation/providers/auth_state.dart';
 import 'shimmers/playlist_card_shimmer.dart';
 
+/// Displays the "Mixed For You" horizontal scrollable section on the home screen.
+///
+/// Watches [mixedForYouProvider] and renders a shimmer while loading,
+/// an error message on failure, or a list of [MixedPlaylistCard] widgets
+/// when data is available. Returns an empty widget if the list is empty.
 class MixedPlaylistsSection extends ConsumerWidget {
   const MixedPlaylistsSection({super.key});
 
@@ -64,6 +69,11 @@ class MixedPlaylistsSection extends ConsumerWidget {
   }
 }
 
+/// A card representing a single mixed playlist item.
+///
+/// Displays the mix cover image with the [mixLabel] overlaid at the bottom.
+/// Tapping navigates to the mix detail page, passing the signed-in user's
+/// display name as the owner.
 class MixedPlaylistCard extends ConsumerWidget {
   final String id;
   final String mixLabel;

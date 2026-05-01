@@ -93,10 +93,10 @@ void main() {
         .setMockMessageHandler('flutter/assets', (message) async {
           final key = utf8.decode(message!.buffer.asUint8List());
           if (key.contains('mock_home.json')) {
-            return ByteData.sublistView(utf8.encode(homeJson) as Uint8List);
+            return ByteData.sublistView(utf8.encode(homeJson));
           }
           if (key.contains('mock_trending_genres.json')) {
-            return ByteData.sublistView(utf8.encode(genreJson) as Uint8List);
+            return ByteData.sublistView(utf8.encode(genreJson));
           }
           return null;
         });

@@ -9,11 +9,18 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
 
+/// Displays the vertical column of interaction actions on the right side
+/// of a feed card: like, comment, and add to playlist.
+///
+/// Watches [syncedTrackProvider] to keep like count and liked state in
+/// sync with changes made elsewhere in the app.
 class FeedCardSideActions extends ConsumerWidget {
   final FeedItemEntity item;
 
   const FeedCardSideActions({super.key, required this.item});
 
+  /// Converts the feed item's track and user data into a [Track] entity
+  /// suitable for use with track interaction providers.
   Track _toTrack() {
     return Track(
       id: item.track.id,
@@ -27,7 +34,6 @@ class FeedCardSideActions extends ConsumerWidget {
       createdAt: item.createdAt,
       playCount: item.track.playCount,
       likeCount: item.track.likeCount,
-
       commentCount: item.track.commentCount,
       repostCount: 0,
     );
@@ -80,6 +86,10 @@ class FeedCardSideActions extends ConsumerWidget {
   }
 }
 
+/// A single icon + label action button used within [FeedCardSideActions].
+///
+/// Renders a tappable [Icon] with an optional text [label] below it.
+/// Defaults to white if no [color] is provided.
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
