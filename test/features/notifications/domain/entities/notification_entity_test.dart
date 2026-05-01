@@ -1,6 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// Tests for [NotificationEntity].
+///
+/// Covers default field values, [copyWith] immutability for [isRead] and
+/// [isActorFollowed], preservation of optional fields through a copy, and
+/// [Equatable] value equality via the [props] list.
 void main() {
   final tCreatedAt = DateTime(2024, 1, 15);
 

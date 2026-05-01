@@ -87,6 +87,11 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   void initState() {
     super.initState();
     _loadSelected();
+    // Force-refresh subscription every time this screen opens — the provider
+    // may have been initialized before the user subscribed and never re-fetched.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(premiumProvider.notifier).loadMySubscription();
+    });
   }
 
   Future<void> _loadSelected() async {
@@ -97,7 +102,7 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   }
 
   Future<void> _selectIcon(_IconOption option) async {
-    if (option.isPremium && !ref.read(premiumProvider).isPremium) {
+    if (option.isPremium && !ref.read(isPremiumProvider)) {
       context.push('/library/settings/basic-settings/app-icons/premium-apps');
       return;
     }
@@ -124,6 +129,7 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
   @override
   Widget build(BuildContext context) {
     final premiumState = ref.watch(premiumProvider);
+    final userIsPremium = ref.watch(isPremiumProvider);
 
     if (!premiumState.isInitialized) {
       return Scaffold(
@@ -136,8 +142,6 @@ class _AppIconScreenState extends ConsumerState<AppIconScreen> {
         ),
       );
     }
-
-    final userIsPremium = premiumState.isPremium;
 
     return Theme(
       data: Theme.of(context).copyWith(

@@ -1,7 +1,17 @@
 import 'package:equatable/equatable.dart';
 
+/// Controls who can send the user direct messages.
+///
+/// - [everyone] — any Rythmify user can send a message.
+/// - [followersOnly] — only users who follow the current user can message them.
+/// - [nobody] — direct messages are disabled entirely.
 enum MessagesFrom { everyone, followersOnly, nobody }
 
+/// Immutable entity representing all notification and messaging preferences for a user.
+///
+/// Each field is a boolean toggle controlling whether a push notification or
+/// email is sent for a specific event type. Use [copyWith] to derive updated
+/// copies when the user changes a setting.
 class NotificationPreferencesEntity extends Equatable {
   final bool newFollowerPush;
   final bool newFollowerEmail;
@@ -51,6 +61,7 @@ class NotificationPreferencesEntity extends Equatable {
     required this.newsletterEmail,
   });
 
+  /// Returns a copy of this entity with only the provided fields replaced.
   NotificationPreferencesEntity copyWith({
     bool? newFollowerPush,
     bool? newFollowerEmail,
