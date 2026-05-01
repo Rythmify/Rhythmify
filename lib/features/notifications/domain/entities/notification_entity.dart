@@ -1,9 +1,18 @@
 import 'package:equatable/equatable.dart';
 
 /// The category of action that triggered a notification.
+///
+/// - [follow] — another user started following the current user.
+/// - [like] — a track or playlist was liked.
+/// - [repost] — a track was reposted.
+/// - [comment] — a comment was left on a track.
+/// - [newPostByFollowed] — a followed user uploaded a new track. Filtered out
+///   at the data layer and never shown in the UI.
 enum NotificationType { follow, like, repost, comment, newPostByFollowed }
 
 /// The kind of content the notification refers to.
+///
+/// Used to determine the navigation target when a notification is tapped.
 enum ResourceType { track, playlist, comment }
 
 /// Core domain object representing a single in-app notification.
@@ -62,6 +71,10 @@ class NotificationEntity extends Equatable {
     required this.createdAt,
   });
 
+  /// Returns a copy of this notification with [isRead] or [isActorFollowed] replaced.
+  ///
+  /// [isActorFollowed] is not derived from the API — it is injected by
+  /// [FollowStateNotifier] after a separate follow-status fetch.
   NotificationEntity copyWith({bool? isRead, bool? isActorFollowed}) {
     return NotificationEntity(
       id: id,
