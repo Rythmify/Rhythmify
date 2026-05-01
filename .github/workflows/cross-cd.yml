@@ -40,7 +40,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Android release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-shrink
 
       - name: Confirm APK was produced
         run: |
@@ -140,7 +140,7 @@ jobs:
             - **Windows Desktop** — Extract the zip and run `rythmify.exe`
 
             ### What's New
-            See the [changelog](https://github.com/Rythmify/rythmify-cross-platform/blob/main/CHANGELOG.md) for details.
+            See the [changelog](https://github.com/Rythmify/cross/blob/main/CHANGELOG.md) for details.
           files: |
             android-release-apk/app-release.apk
             windows-release-zip/rythmify-windows.zip
