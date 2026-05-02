@@ -302,6 +302,27 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _badgeIcon(IconData icon, {required bool hasUnread}) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icon),
+        if (hasUnread)
+          Positioned(
+            top: -2,
+            right: -2,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBrand,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(width: 8, height: 8),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 /// Helper to detect if a [DioException] is related to connectivity.
@@ -378,27 +399,6 @@ class _NoInternetPlaceholder extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _badgeIcon(IconData icon, {required bool hasUnread}) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Icon(icon),
-        if (hasUnread)
-          Positioned(
-            top: -2,
-            right: -2,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBrand,
-                shape: BoxShape.circle,
-              ),
-              child: SizedBox(width: 8, height: 8),
-            ),
-          ),
-      ],
     );
   }
 }
