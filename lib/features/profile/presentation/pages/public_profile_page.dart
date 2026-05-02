@@ -716,7 +716,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           Text(
             'Artist Pro',
             style: AppTheme.labelSmall.copyWith(
-              color: const Color(0xFFFBC02D),
+              color: const Color(0xFFFFFFFF),
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
