@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_providers.dart';
-import '../../../../core/utils/formatters.dart';
 import 'package:go_router/go_router.dart';
 
 /// Search results tab displaying the playlists list from [searchResultsProvider].
@@ -68,8 +67,18 @@ class _PlaylistTile extends StatelessWidget {
               width: 50,
               height: 50,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) =>
-                  Container(width: 50, height: 50, color: Colors.grey[800]),
+              errorBuilder: (_, _, _) => Container(
+                width: 50,
+                height: 50,
+                color: Colors.grey[800],
+                child: const Center(
+                  child: Icon(
+                    Icons.music_note,
+                    color: Colors.white54,
+                    size: 32,
+                  ),
+                ),
+              ),
             ),
           ),
           title: Text(
@@ -78,7 +87,7 @@ class _PlaylistTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
+            'Playlist · ${playlist['trackCount']} tracks ',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(color: Colors.grey[400], fontSize: 12),

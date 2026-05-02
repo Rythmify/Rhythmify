@@ -27,8 +27,16 @@ class TrackTile extends ConsumerWidget {
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) =>
-                    Container(width: 50, height: 50, color: Colors.grey[800]),
+                errorBuilder: (_, _, _) => Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey[800],
+                  child: const Icon(
+                    Icons.music_note,
+                    color: Colors.white54,
+                    size: 22,
+                  ),
+                ),
               )
             : Image.asset(
                 track.artworkUrl.isNotEmpty
@@ -37,8 +45,16 @@ class TrackTile extends ConsumerWidget {
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) =>
-                    Container(width: 50, height: 50, color: Colors.grey[800]),
+                errorBuilder: (_, _, _) => Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey[800],
+                  child: const Icon(
+                    Icons.music_note,
+                    color: Colors.white54,
+                    size: 22,
+                  ),
+                ),
               ),
       ),
       title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis),

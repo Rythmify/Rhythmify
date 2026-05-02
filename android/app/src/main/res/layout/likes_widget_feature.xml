@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/likes_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/likes_widget_background"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <!-- Header: pfp | "Your likes" | logo -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp">
+
+        <ImageView
+            android:id="@+id/likes_pfp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/likes_pfp"
+            android:layout_marginStart="8dp"
+            android:layout_centerVertical="true"
+            android:text="Your likes"
+            android:textColor="#FFFFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="18dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:scaleType="fitEnd"
+            android:src="@drawable/logo" />
+
+    </RelativeLayout>
+
+    <!-- Feature track art — fills remaining space -->
+    <ImageView
+        android:id="@+id/likes_feature_art"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo" />
+
+</LinearLayout>

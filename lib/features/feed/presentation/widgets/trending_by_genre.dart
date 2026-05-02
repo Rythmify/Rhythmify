@@ -357,12 +357,22 @@ class _TrendingHorizontalColumns extends ConsumerWidget {
                                     width: 50,
                                     height: 50,
                                     color: Colors.grey[800],
+                                    child: const Icon(
+                                      Icons.music_note,
+                                      color: Colors.white54,
+                                      size: 22,
+                                    ),
                                   ),
                             )
                           : Container(
                               width: 50,
                               height: 50,
                               color: Colors.grey[800],
+                              child: const Icon(
+                                Icons.music_note,
+                                color: Colors.white54,
+                                size: 22,
+                              ),
                             ),
                     ),
                   ),
