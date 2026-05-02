@@ -1,11 +1,14 @@
 import '../../domain/entities/track.dart';
 
 class TrackDto {
-  static Track fromJson(Map<String, dynamic> json) {
+  static Track fromJson(Map<dynamic, dynamic> json) {
+    // Ensure we have a Map<String, dynamic> for internal logic
+    final Map<String, dynamic> normalizedJson = Map<String, dynamic>.from(json);
+
     // Some responses wrap data in a 'data' field
-    final Map<String, dynamic> data = json.containsKey('data')
-        ? json['data'] as Map<String, dynamic>
-        : json;
+    final Map<String, dynamic> data = normalizedJson.containsKey('data')
+        ? Map<String, dynamic>.from(normalizedJson['data'] as Map)
+        : normalizedJson;
 
     return Track(
       id: data['id'] as String? ?? '',
@@ -80,6 +83,14 @@ class TrackDto {
       explicitContent: data['explicit_content'] as bool? ?? false,
       isTrending: data['is_trending'] as bool? ?? false,
       isFeatured: data['is_featured'] as bool? ?? false,
+      isPublic: data['is_public'] as bool? ?? true,
+      isHidden: data['is_hidden'] as bool? ?? false,
+      geoRestrictionType: data['geo_restriction_type'] as String?,
+      geoRegions:
+          (data['geo_regions'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       status: data['status'] as String?,
     );
   }
@@ -121,6 +132,10 @@ class TrackDto {
       'explicit_content': track.explicitContent,
       'is_trending': track.isTrending,
       'is_featured': track.isFeatured,
+      'is_public': track.isPublic,
+      'is_hidden': track.isHidden,
+      'geo_restriction_type': track.geoRestrictionType,
+      'geo_regions': track.geoRegions,
       'status': track.status,
     };
   }

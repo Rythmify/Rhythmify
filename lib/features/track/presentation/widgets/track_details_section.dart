@@ -5,6 +5,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/presentation/widgets/custom_bottom_sheet.dart';
 import '../../../../core/domain/entities/track.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
+import '../../../premium/presentation/providers/premium_provider.dart';
+import '../../../library/presentation/providers/downloads_provider.dart';
 
 /// A horizontal bar containing interactive engagement metrics and playback controls.
 ///
@@ -60,6 +62,87 @@ class TrackDetailsSection extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
         ],
+        // Download Button for Premium Users
+        Consumer(
+          builder: (context, ref, child) {
+            final canDownload = ref.watch(canDownloadProvider);
+            if (!canDownload) return const SizedBox.shrink();
+
+            final downloadsState = ref.watch(downloadsProvider);
+            final isDownloaded = downloadsState.isDownloaded(track.id);
+            final progress = downloadsState.getProgress(track.id);
+            final error = downloadsState.getDownloadError(track.id);
+
+            String label = 'Download';
+            IconData icon = Icons.download_rounded;
+            VoidCallback? onPressed = () =>
+                ref.read(downloadsProvider.notifier).downloadTrack(track);
+
+            if (isDownloaded) {
+              label = 'Downloaded';
+              icon = Icons.download_done_rounded;
+              onPressed = null; // Already downloaded
+            } else if (progress != null) {
+              label = 'Downloading ${(progress * 100).toInt()}%';
+              icon = Icons.sync_rounded;
+              onPressed = null; // Already in progress
+            } else if (error != null) {
+              label = 'Retry Download';
+              icon = Icons.error_outline_rounded;
+              // onPressed remains the same to allow retry
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  OutlinedButton.icon(
+                    key: const Key('behind_the_track_download_button'),
+                    onPressed: onPressed,
+                    icon: progress != null
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 2,
+                              color: AppTheme.textPrimary,
+                            ),
+                          )
+                        : Icon(icon, size: 20),
+                    label: Text(label),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: isDownloaded
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
+                      side: BorderSide(
+                        color: isDownloaded
+                            ? AppTheme.primaryBrand
+                            : AppTheme.textSecondary,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                  if (error != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Download failed: $error',
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        ),
         if (track.tags.isNotEmpty)
           SizedBox(
             height: 32,

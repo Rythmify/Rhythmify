@@ -221,12 +221,18 @@ class NotificationTile extends StatelessWidget {
   }
 
   String _timeAgo(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
+    final now = DateTime.now();
+    final diff = now.difference(dt);
     if (diff.inMinutes < 1) return 'now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-    if (diff.inHours < 24) return '${diff.inHours}h';
-    if (diff.inDays < 365) return '${diff.inDays}d';
-    return '${(diff.inDays / 365).floor()}y';
+    final days = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).difference(DateTime(dt.year, dt.month, dt.day)).inDays;
+    if (days == 0) return '${diff.inHours}h';
+    if (days < 365) return '${days}d';
+    return '${(days / 365).floor()}y';
   }
 }
 

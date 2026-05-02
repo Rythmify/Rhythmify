@@ -1,7 +1,9 @@
 package com.example.rythmify
 
+import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.os.Build
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -40,6 +42,34 @@ class MainActivity : AudioServiceActivity() {
                         result.success(getAvailableIcons(pm, pkg))
                     } catch (e: Exception) {
                         result.error("ERROR", e.message, null)
+                    }
+                }
+                "pinWidget" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val manager = AppWidgetManager.getInstance(this)
+                        if (manager.isRequestPinAppWidgetSupported) {
+                            val component = ComponentName(this, PlayerWidget::class.java)
+                            manager.requestPinAppWidget(component, null, null)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } else {
+                        result.success(false)
+                    }
+                }
+                "pinLikesWidget" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val manager = AppWidgetManager.getInstance(this)
+                        if (manager.isRequestPinAppWidgetSupported) {
+                            val component = ComponentName(this, LikesWidget::class.java)
+                            manager.requestPinAppWidget(component, null, null)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    } else {
+                        result.success(false)
                     }
                 }
                 else -> result.notImplemented()

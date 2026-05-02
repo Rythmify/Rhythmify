@@ -351,9 +351,23 @@ class _CircleAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: borderColor, width: borderWidth),
         color: Colors.grey[900],
-        image: imageUrl.startsWith('http')
-            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-            : null,
+      ),
+      child: ClipOval(
+        child: imageUrl.startsWith('http')
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Center(
+                  child: Icon(
+                    Icons.music_note,
+                    color: Colors.white54,
+                    size: 20,
+                  ),
+                ),
+              )
+            : const Center(
+                child: Icon(Icons.music_note, color: Colors.white54, size: 20),
+              ),
       ),
     );
   }

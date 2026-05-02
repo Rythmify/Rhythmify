@@ -24,6 +24,7 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       'following_count': 380,
       'tracks_count': 14,
       'is_following': false,
+      'is_user_premium': true,
     },
     {
       'id': 'user-002',
@@ -38,6 +39,7 @@ class ProfileMockDatasource implements ProfileRemoteDatasource {
       'following_count': 88,
       'tracks_count': 23,
       'is_following': true,
+      'is_user_premium': true,
     },
     {
       'id': 'user-003',

@@ -19,6 +19,7 @@ import 'package:rythmify/features/profile/domain/usecases/get_unfollow_user_usec
 // Mocks
 // ---------------------------------------------------------------------------
 
+/// Mock use cases injected directly into [NotificationsNotifier] under test.
 class MockGetNotificationsUsecase extends Mock
     implements GetNotificationsUsecase {}
 
@@ -35,6 +36,7 @@ class MockGetUnfollowUserUseCase extends Mock
 class MockToggleCommentLikeUseCase extends Mock
     implements ToggleCommentLikeUseCase {}
 
+/// Mock for [NotificationsRepoInterface] used to stub follow-status lookups.
 class MockNotificationsRepo extends Mock
     implements NotificationsRepoInterface {}
 
@@ -42,11 +44,13 @@ class MockNotificationsRepo extends Mock
 // Fake FollowStateNotifier — records calls without real I/O
 // ---------------------------------------------------------------------------
 
+/// Test double for [FollowStateNotifier] that records [fetchFollowState] and
+/// [setFollowing] calls for assertion without making real network requests.
 class FakeFollowStateNotifier extends FollowStateNotifier {
   final List<String> fetchedIds = [];
   final List<MapEntry<String, bool>> setFollowingCalls = [];
 
-  FakeFollowStateNotifier(GetFollowStatusUsecase usecase) : super(usecase);
+  FakeFollowStateNotifier(super.usecase);
 
   @override
   Future<void> fetchFollowState(String userId) async {
@@ -64,8 +68,10 @@ class FakeFollowStateNotifier extends FollowStateNotifier {
 // Fixtures
 // ---------------------------------------------------------------------------
 
+/// Shared timestamp used across all notification fixtures.
 final tCreatedAt = DateTime(2024, 1, 15);
 
+/// Fixture representing an unread follow notification.
 final tFollowNotif = NotificationEntity(
   id: 'n-follow',
   type: NotificationType.follow,
@@ -84,17 +90,25 @@ final tLikeNotif = NotificationEntity(
   createdAt: tCreatedAt,
 );
 
+/// Builds a paginated notifications response record for use in mock stubs.
 ({List<NotificationEntity> items, int unreadCount, bool hasNext}) _page(
   List<NotificationEntity> items, {
   int unread = 0,
   bool hasNext = false,
 }) => (items: items, unreadCount: unread, hasNext: hasNext);
 
+/// Returns an empty page response — no items, zero unread, no next page.
 ({List<NotificationEntity> items, int unreadCount, bool hasNext})
 _emptyPage() => (items: <NotificationEntity>[], unreadCount: 0, hasNext: false);
 
 // ---------------------------------------------------------------------------
 
+/// Tests for [NotificationsNotifier].
+///
+/// Covers initial fetch, [loadMore] pagination, [markAsRead] optimistic update,
+/// [toggleFollow]/[toggleUnfollow] follow-state propagation, [onSocketNotification]
+/// prepending live events, [onNotificationRead] marking read in local state,
+/// and [toggleCommentLike] dispatching to [ToggleCommentLikeUseCase].
 void main() {
   late MockGetNotificationsUsecase mockGetNotifications;
   late MockGetUnreadCountUsecase mockGetUnreadCount;

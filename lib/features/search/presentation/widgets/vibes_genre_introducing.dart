@@ -18,10 +18,30 @@ Widget _buildImage(
   BoxFit fit = BoxFit.cover,
 }) {
   if (url.isEmpty) {
-    return Container(width: width, height: height, color: Colors.grey[800]);
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.grey[800],
+      child: const Center(
+        child: Icon(Icons.music_note, color: Colors.white54, size: 32),
+      ),
+    );
   }
   if (url.startsWith('http')) {
-    return Image.network(url, width: width, height: height, fit: fit);
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      errorBuilder: (_, _, _) => Container(
+        width: width,
+        height: height,
+        color: Colors.grey[800],
+        child: const Center(
+          child: Icon(Icons.music_note, color: Colors.white54, size: 32),
+        ),
+      ),
+    );
   }
   return Image.asset(url, width: width, height: height, fit: fit);
 }

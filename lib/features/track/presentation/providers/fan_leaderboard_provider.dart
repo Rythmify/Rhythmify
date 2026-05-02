@@ -27,5 +27,5 @@ final fanLeaderboardProvider = FutureProvider.family<FanLeaderboard, String>((
   final period = ref.watch(fanLeaderboardPeriodProvider(trackId));
   final useCase = ref.watch(getFanLeaderboardUseCaseProvider);
 
-  return useCase(trackId, period.value);
+  return useCase(trackId, period.value).timeout(const Duration(seconds: 5));
 });

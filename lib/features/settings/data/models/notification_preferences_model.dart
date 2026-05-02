@@ -1,5 +1,8 @@
 import '../../domain/entities/notification_preferences_entity.dart';
 
+/// Converts an API `messages_from` string value to a [MessagesFrom] enum.
+///
+/// Defaults to [MessagesFrom.everyone] for null or unrecognised values.
 MessagesFrom _messagesFromString(String? value) {
   switch (value) {
     case 'followers_only':
@@ -11,6 +14,7 @@ MessagesFrom _messagesFromString(String? value) {
   }
 }
 
+/// Serialises a [MessagesFrom] enum to the API string representation.
 String _messagesFromToString(MessagesFrom value) {
   switch (value) {
     case MessagesFrom.followersOnly:
@@ -22,6 +26,11 @@ String _messagesFromToString(MessagesFrom value) {
   }
 }
 
+/// Data-layer representation of [NotificationPreferencesEntity].
+///
+/// Adds JSON serialisation ([fromJson], [toJson]) and conversion helpers
+/// ([fromEntity], [toDomain]) for translating between API and domain types.
+/// All boolean fields default to `true` when absent from the API response.
 class NotificationPreferencesModel extends NotificationPreferencesEntity {
   const NotificationPreferencesModel({
     required super.newFollowerPush,
@@ -48,6 +57,7 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
     required super.newsletterEmail,
   });
 
+  /// Deserialises from the `GET /notifications/preferences` response body.
   factory NotificationPreferencesModel.fromJson(Map<String, dynamic> json) {
     return NotificationPreferencesModel(
       newFollowerPush: json['new_follower_push'] as bool? ?? true,
@@ -80,6 +90,7 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
     );
   }
 
+  /// Serialises to the body format expected by `PATCH /notifications/preferences`.
   Map<String, dynamic> toJson() {
     return {
       'new_follower_push': newFollowerPush,
@@ -107,6 +118,7 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
     };
   }
 
+  /// Creates a model from a domain [entity], preserving all field values.
   factory NotificationPreferencesModel.fromEntity(
     NotificationPreferencesEntity entity,
   ) {
@@ -136,6 +148,7 @@ class NotificationPreferencesModel extends NotificationPreferencesEntity {
     );
   }
 
+  /// Converts this model to a pure domain [NotificationPreferencesEntity].
   NotificationPreferencesEntity toDomain() => NotificationPreferencesEntity(
     newFollowerPush: newFollowerPush,
     newFollowerEmail: newFollowerEmail,

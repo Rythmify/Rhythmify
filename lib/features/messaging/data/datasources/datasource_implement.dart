@@ -17,6 +17,9 @@ class DatasourceImplement implements DatasourceInterface {
   DatasourceImplement({required this.dio});
 
   @override
+  /// Fetches all conversations for the current user from `GET /messages/conversations`.
+  ///
+  /// Expects a JSON envelope `{ data: { items: [...] } }`.
   Future<List<ConversationModel>> getConversations() async {
     final response = await dio.get(ApiEndPoints.getConversations);
     if (response.data is! Map<String, dynamic>) {
@@ -34,6 +37,11 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Fetches a page of messages for [conversationId] at [offset].
+  ///
+  /// Handles two response shapes: `data` as a Map containing `messages` + `pagination`,
+  /// or `data` as a raw List. Falls back to `rawMessages.length` when `total` is absent.
+  /// Returns a tuple of the parsed [MessageModel] list and the total message count.
   Future<(List<MessageModel>, int)> getMessages({
     required String conversationId,
     int offset = 0,
@@ -74,6 +82,9 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Sends a message to [conversationId] via `POST /messages/conversations/{id}/messages`.
+  ///
+  /// Serialises [requestContent] to JSON and returns the created [MessageModel].
   Future<MessageModel> sendMessage({
     required String conversationId,
     required SentMessageRequestModel requestContent,
@@ -86,6 +97,11 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Starts a new conversation with [participantId] via `POST /messages/new`.
+  ///
+  /// Optionally attaches a text [body] or a music resource ([trackId] or [playlistId]).
+  /// If the response does not contain a `conversation` key, falls back to fetching
+  /// the conversation list and finding the one matching [participantId].
   Future<ConversationModel> newConversation({
     required String participantId,
     String? body,
@@ -114,6 +130,10 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Ensures a conversation with [participantId] exists via `POST /messages/conversations/ensure`.
+  ///
+  /// Creates the conversation if it doesn't exist; returns the existing one otherwise.
+  /// Used when navigating to a chat screen without sending a message.
   Future<ConversationModel> ensureConversation({
     required String participantId,
   }) async {
@@ -127,22 +147,29 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Returns the total number of unread messages via `GET /messages/unread-count`.
   Future<int> getUnreadCount() async {
     final response = await dio.get(ApiEndPoints.getUnreadCount);
     return response.data['data']['unread_count'] as int;
   }
 
   @override
+  /// Blocks [userId] via `POST /users/{userId}/block`.
   Future<void> blockUser({required String userId}) async {
     await dio.post(ApiEndPoints.blockUser(userId));
   }
 
   @override
+  /// Unblocks [userId] via `DELETE /users/{userId}/block`.
   Future<void> unBlockUser({required String userId}) async {
     await dio.delete(ApiEndPoints.unBlockUser(userId));
   }
 
   @override
+  /// Marks [messageId] as read via `PATCH /messages/conversations/{convId}/messages/{msgId}/read`.
+  ///
+  /// A 409 response means the message is already read and is silently swallowed.
+  /// All other [DioException]s are rethrown.
   Future<void> markMessagesAsRead({
     required String conversationId,
     required String messageId,
@@ -159,6 +186,7 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Returns the list of users followed by the current user via `GET /users/me/following`.
   Future<List<PotentialConversationModel>> getFollowings(String myId) async {
     try {
       final url = ApiEndPoints.getFollowings();
@@ -180,6 +208,7 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Searches for users matching [query] via `GET /search?q={query}&type=users`.
   Future<List<PotentialConversationModel>> getSearchedUsers(
     String query,
   ) async {
@@ -202,6 +231,9 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Returns `true` if the current user has blocked [participantId].
+  ///
+  /// Reads the `is_blocking` field from `GET /users/{id}/follow-status`.
   Future<bool> isBlocked(String participantId) async {
     final response = await dio.get(ApiEndPoints.isBlocked(participantId));
 
@@ -217,6 +249,10 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Returns `true` if [participantId] has blocked the current user.
+  ///
+  /// Reads the `is_blocked_by` field from the same `GET /users/{id}/follow-status`
+  /// endpoint used by [isBlocked].
   Future<bool> isBlockedBy(String participantId) async {
     final response = await dio.get(
       ApiEndPoints.isBlocked(participantId), //same endpoint as isBlocked
@@ -234,6 +270,12 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Returns the current user's liked embeds filtered by [embedType].
+  ///
+  /// - `track`: fetches liked tracks from `GET /me/liked-tracks`.
+  /// - `playlist`: merges liked playlists and user-created playlists,
+  ///   deduplicating by ID so the same playlist never appears twice.
+  /// - `album`: fetches liked albums from `GET /me/liked-albums`.
   Future<List<SharedEmbedModel>> getEmbeds(
     String userId,
     String embedType,
@@ -241,8 +283,6 @@ class DatasourceImplement implements DatasourceInterface {
     if (embedType == 'track') {
       final response = await dio.get(ApiEndPoints.getMyLikedTracks());
       final List data = response.data['data']['items'];
-      // if (data.isNotEmpty)
-      //   print('🎵 liked-track item keys: ${(data.first as Map).keys.toList()}');
       return data
           .map(
             (e) => SharedEmbedModel(
@@ -303,6 +343,10 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Fetches track metadata for [trackId] from `GET /tracks/{trackId}`.
+  ///
+  /// Tries `artist_name`, then `artist`, then `artists` for the artist field
+  /// to handle inconsistencies across different track response shapes.
   Future<SharedEmbedModel> getTrackDetails(String trackId) async {
     final response = await dio.get(ApiEndPoints.getTrackDetails(trackId));
     final data = response.data['data'];
@@ -316,6 +360,11 @@ class DatasourceImplement implements DatasourceInterface {
   }
 
   @override
+  /// Fetches playlist or album metadata from `GET /playlists/{playlistId}`.
+  ///
+  /// [embedType] is passed through to [SharedEmbedModel] to distinguish
+  /// between `playlist` and `album` at the domain level.
+  /// Falls back to [playlistId] when `playlist_id` is absent from the response.
   Future<SharedEmbedModel> getPlaylistDetails(
     String playlistId,
     String embedType,

@@ -20,6 +20,7 @@ dependencies:
   dynamic_app_icon_flutter_plus: ^0.0.1
   flutter_web_auth_2: ^4.0.0   # handles the browser + deep link callback
   crypto: ^3.0.3                # for PKCE code challenge generation
+  home_widget: ^0.7.0           # home screen widget bridge (Flutter ↔ Android AppWidget)
 
   
 
@@ -36,7 +37,7 @@ dependencies:
 # Authentication
   dartz: ^0.10.1
   sign_in_with_apple: ^6.1.1
-  firebase_core: ^3.6.0
+  firebase_core: ^3.8.0
   google_sign_in: ^6.2.1
   firebase_auth: ^5.3.1
   # Navigation & Routing

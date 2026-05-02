@@ -11,6 +11,9 @@ import '../widgets/player_action_bar.dart';
 import '../widgets/waveform/track_waveform_visualizer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/presentation/widgets/follow_button.dart';
+import '../providers/ad_provider.dart';
+import '../widgets/ad_banner_overlay.dart';
+import '../../../premium/presentation/providers/premium_provider.dart';
 
 /// The main immersive playback page of the application.
 ///
@@ -55,6 +58,8 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
     final currentTrackId = ref.watch(
       playerStateProvider.select((s) => s.currentTrack?.id),
     );
+    final isPremium = ref.watch(isPremiumProvider);
+    final showAd = ref.watch(adProvider.select((s) => s.showAd)) && !isPremium;
 
     // Continuous list: History + Current + Upcoming (which now includes Recommendations)
     final allItems = [
@@ -95,31 +100,36 @@ class _FullPlayerPageState extends ConsumerState<FullPlayerPage> {
       }
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: PageView.builder(
-        key: const Key('player_full_player_pageview'),
-        controller: _pageController,
-        itemCount: allItems.length,
-        onPageChanged: (index) {
-          if (index != _currentPage) {
-            _currentPage = index;
-            ref.read(queueStateProvider.notifier).skipToIndex(index);
-          }
-        },
-        itemBuilder: (context, index) {
-          final item = allItems[index];
-          final isCurrent = item.track.id == queue.currentTrack?.track.id;
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.black,
+          body: PageView.builder(
+            key: const Key('player_full_player_pageview'),
+            controller: _pageController,
+            itemCount: allItems.length,
+            onPageChanged: (index) {
+              if (index != _currentPage) {
+                _currentPage = index;
+                ref.read(queueStateProvider.notifier).skipToIndex(index);
+              }
+            },
+            itemBuilder: (context, index) {
+              final item = allItems[index];
+              final isCurrent = item.track.id == queue.currentTrack?.track.id;
 
-          return _PlayerTrackPage(
-            item: item,
-            isCurrent: isCurrent,
-            onCollapse: widget.onCollapse,
-            onNavigateBehindTrack: () =>
-                _triggerNavigation(context, item.track.id),
-          );
-        },
-      ),
+              return _PlayerTrackPage(
+                item: item,
+                isCurrent: isCurrent,
+                onCollapse: widget.onCollapse,
+                onNavigateBehindTrack: () =>
+                    _triggerNavigation(context, item.track.id),
+              );
+            },
+          ),
+        ),
+        if (showAd) AdBannerOverlay(onCollapse: widget.onCollapse),
+      ],
     );
   }
 }
@@ -205,6 +215,7 @@ class _PlayerTrackPage extends ConsumerWidget {
                   PlayerActionBar(
                     key: Key('player_action_bar_${track.id}'),
                     trackId: track.id,
+                    onCollapse: onCollapse,
                   ),
               ],
             ),

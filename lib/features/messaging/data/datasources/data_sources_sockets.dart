@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class DataSourcesSockets {
@@ -27,7 +26,7 @@ class DataSourcesSockets {
   Function(Map<String, dynamic>)? _onNotificationRead;
   // Fired whenever inbox data may have changed (new notification, user:blocked).
   // Kept separate so it survives clearConversationListeners().
-  VoidCallback? _onConversationUpdated;
+  //VoidCallback? _onConversationUpdated;
 
   void setOnReconnectedToRoom(Function() callback) {
     _onReconnectedToRoom = callback;
@@ -48,10 +47,7 @@ class DataSourcesSockets {
     _healthCheckTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (_url == null || _getToken == null) return;
       if (!(_socket?.connected ?? false)) {
-        debugPrint('💓 Health check: not connected after 60s — rebuilding');
         _buildAndConnect();
-      } else {
-        debugPrint('💓 Health check: connected — skipping rebuild');
       }
     });
   }
@@ -81,45 +77,32 @@ class DataSourcesSockets {
 
     _socket!.io.on('reconnect_attempt', (_) {
       _socket!.auth = {'token': 'Bearer ${_getToken!()}'};
-      debugPrint('🔄 reconnect_attempt: auth token refreshed');
     });
 
     _socket!.io.on('reconnect_failed', (_) {
-      debugPrint('⚠️ reconnect_failed — rebuilding socket in 5s');
       _retryTimer?.cancel();
       _retryTimer = Timer(const Duration(seconds: 5), () {
         if (_url != null && _getToken != null) {
-          debugPrint('🔁 Rebuilding socket with fresh instance');
           _buildAndConnect();
         }
       });
     });
 
     _socket!.onConnect((_) {
-      debugPrint('✅ Socket connected | id=${_socket?.id}');
       _retryTimer?.cancel();
       // Subscribe to the user's notification room on every (re)connect.
       // The backend auto-joins via registerNotificationHandlers, but emitting
       // this is a defensive fallback for cases where that handler fires after
       // the connect event.
       _socket!.emit('notification:subscribe');
-      debugPrint('📬 notification:subscribe emitted');
       // Re-join the conversation room that was active before the rebuild.
       if (_currentConversationId != null) {
-        debugPrint('🔁 onConnect: rejoining room $_currentConversationId');
         _socket!.emit('message:join', {
           'conversationId': _currentConversationId,
         });
         _onReconnectedToRoom?.call();
       }
     });
-
-    _socket!.onDisconnect((reason) {
-      debugPrint('❌ Socket disconnected: $reason');
-    });
-
-    _socket!.onConnectError((err) => debugPrint('🚨 Connection error: $err'));
-    _socket!.onError((err) => debugPrint('🚨 Socket error: $err'));
 
     // Re-attach every stored callback to the brand-new socket instance.
     _reattachListeners();
@@ -137,9 +120,6 @@ class DataSourcesSockets {
     if (_onMessageReceived != null) {
       s.off('message:received');
       s.on('message:received', (data) {
-        debugPrint(
-          '📨 RAW message:received | type=${data.runtimeType} | data=$data',
-        );
         _onMessageReceived!(data as Map<String, dynamic>);
       });
     }
@@ -175,9 +155,6 @@ class DataSourcesSockets {
     if (_onNotificationCreated != null) {
       s.off('notification:created');
       s.on('notification:created', (data) {
-        debugPrint(
-          '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
-        );
         _onNotificationCreated!(data as Map<String, dynamic>);
       });
     }
@@ -185,30 +162,17 @@ class DataSourcesSockets {
     if (_onNotificationRead != null) {
       s.off('notification:read');
       s.on('notification:read', (data) {
-        debugPrint(
-          '🔕 RAW notification:read | type=${data.runtimeType} | data=$data',
-        );
         _onNotificationRead!(data as Map<String, dynamic>);
       });
     }
-
-    debugPrint('🔁 _reattachListeners: listeners re-bound to socket=${s.id}');
   }
 
   // ── Room management ───────────────────────────────────────────────────────
 
   void joinConversation(String conversationId) {
     _currentConversationId = conversationId;
-    debugPrint(
-      '🚪 joinConversation: $conversationId | connected=${_socket?.connected}',
-    );
     if (_socket?.connected == true) {
       _socket!.emit('message:join', {'conversationId': conversationId});
-      debugPrint('📤 message:join emitted for $conversationId');
-    } else {
-      debugPrint(
-        '⚠️  joinConversation: socket not connected — onConnect will join',
-      );
     }
   }
 
@@ -220,7 +184,6 @@ class DataSourcesSockets {
   // ── Emit helpers ──────────────────────────────────────────────────────────
 
   void sendMessage(String conversationId, Map<String, dynamic> message) {
-    debugPrint('📤 message:send | convId=$conversationId | msg=$message');
     _socket?.emit('message:send', {
       'conversationId': conversationId,
       'message': message,
@@ -255,14 +218,8 @@ class DataSourcesSockets {
     _onMessageReceived = callback;
     _socket?.off('message:received');
     _socket?.on('message:received', (data) {
-      debugPrint(
-        '📨 RAW message:received | type=${data.runtimeType} | data=$data',
-      );
       callback(data as Map<String, dynamic>);
     });
-    debugPrint(
-      '👂 onMessageReceived listener registered | socket=${_socket?.id}',
-    );
   }
 
   void onMessageReadUpdated(Function(Map<String, dynamic>) callback) {
@@ -301,14 +258,8 @@ class DataSourcesSockets {
     _onNotificationCreated = callback;
     _socket?.off('notification:created');
     _socket?.on('notification:created', (data) {
-      debugPrint(
-        '🔔 RAW notification:created | type=${data.runtimeType} | data=$data',
-      );
       callback(data as Map<String, dynamic>);
     });
-    debugPrint(
-      '👂 onNotificationCreated listener registered | socket=${_socket?.id}',
-    );
   }
 
   void onNotificationRead(Function(Map<String, dynamic>) callback) {
@@ -339,7 +290,6 @@ class DataSourcesSockets {
     if (_socket == null) return;
     _socket!.auth = {'token': 'Bearer $token'};
     if (!(_socket!.connected)) {
-      debugPrint('🔄 reconnectWithToken: connecting with fresh token');
       if (_url != null && _getToken != null) {
         _buildAndConnect();
       } else {
@@ -351,7 +301,6 @@ class DataSourcesSockets {
   void forceReconnectIfNeeded() {
     if (_socket == null || _url == null) return;
     if (!(_socket!.connected)) {
-      debugPrint('📲 App resumed — rebuilding socket');
       _buildAndConnect();
     }
   }

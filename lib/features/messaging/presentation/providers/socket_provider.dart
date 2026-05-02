@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
@@ -11,8 +10,6 @@ final socketProvider = Provider<DataSourcesSockets>((ref) {
   final userId = ref.watch(
     authProvider.select((s) => s is AuthAuthenticated ? s.user.id : null),
   );
-
-  debugPrint('🔌 socketProvider rebuilt | userId=$userId');
 
   final socket = DataSourcesSockets();
 
