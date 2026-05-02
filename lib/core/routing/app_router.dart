@@ -88,6 +88,7 @@ import '../../features/library/presentation/pages/albums_page.dart';
 import '../../features/library/presentation/pages/history_page.dart';
 import '../../features/library/presentation/pages/insights_page.dart';
 import '../../features/library/presentation/pages/likes_page.dart';
+import '../../features/library/presentation/pages/downloads_page.dart';
 
 //  Search imports
 import '../../features/search/presentation/pages/search_screen.dart';
@@ -600,6 +601,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'insights',
                     builder: (context, state) => const InsightsPage(),
+                  ),
+                  GoRoute(
+                    path: 'downloads',
+                    builder: (context, state) => const DownloadsPage(),
                   ),
                 ],
               ),

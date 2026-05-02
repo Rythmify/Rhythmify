@@ -27,6 +27,9 @@ class TrackDraft {
   // Has defaults
   final List<String> tags; // multiple tag selections
   final bool isPublic;
+  final bool isHidden;
+  final String geoRestrictionType;
+  final List<String> geoRegions; // list of country codes
   final UploadStatus status;
   final double uploadProgress;
 
@@ -59,6 +62,9 @@ class TrackDraft {
     this.caption,
     this.tags = const [],
     this.isPublic = true,
+    this.isHidden = false,
+    this.geoRestrictionType = 'worldwide',
+    this.geoRegions = const [],
     this.status = UploadStatus.draft,
     this.uploadProgress = 0.0,
     this.audioStatus = UploadStatus.uploading, // ← starts uploading
@@ -80,6 +86,9 @@ class TrackDraft {
     String? caption,
     List<String>? tags,
     bool? isPublic,
+    bool? isHidden,
+    String? geoRestrictionType,
+    List<String>? geoRegions,
     UploadStatus? status,
     double? uploadProgress,
     UploadStatus? audioStatus,
@@ -105,6 +114,9 @@ class TrackDraft {
       caption: clearCaption ? null : caption ?? this.caption,
       tags: tags ?? this.tags,
       isPublic: isPublic ?? this.isPublic,
+      isHidden: isHidden ?? this.isHidden,
+      geoRestrictionType: geoRestrictionType ?? this.geoRestrictionType,
+      geoRegions: geoRegions ?? this.geoRegions,
       status: status ?? this.status,
       uploadProgress: uploadProgress ?? this.uploadProgress,
       audioStatus: audioStatus ?? this.audioStatus,

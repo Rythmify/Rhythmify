@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +24,7 @@ import '../providers/home_providers.dart';
 import '../widgets/home_likes_card.dart';
 import '../widgets/home_top_track_card.dart';
 import '../widgets/shimmers/home_shimmer_screen.dart';
+import '../../../../core/error/error_handler.dart';
 
 // ── Added for artist name fix ──
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
@@ -108,7 +111,59 @@ class HomeScreen extends ConsumerWidget {
         (screenWidth - horizontalPadding - crossAxisSpacing) / crossAxisCount;
     final dynamicAspectRatio = itemWidth / 59.6;
 
-    final isLoading = asyncHome.isLoading && asyncHome.value == null;
+    final homeContent = ListView(
+      key: const Key('home_scroll_view'),
+      padding: const EdgeInsets.only(bottom: 150),
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        const LikesBannerWidget(),
+
+        if (latestTracks.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: crossAxisSpacing,
+                childAspectRatio: dynamicAspectRatio,
+              ),
+              itemCount: latestTracks.length,
+              itemBuilder: (context, index) => HomeTopTrackCard(
+                track: latestTracks[index],
+                allTracks: latestTracks,
+                index: index,
+              ),
+            ),
+          ),
+
+        const SizedBox(height: 4),
+
+        /// Displays trending tracks grouped by genre.
+        TrendingByGenre(),
+
+        /// Displays personalized "Hot For You" recommendations.
+        HotForYouSection(),
+
+        const SizedBox(height: 40),
+
+        /// Displays mixed playlist recommendations.
+        MixedPlaylistsSection(),
+
+        const SizedBox(height: 30),
+
+        /// Displays discovery-based station suggestions.
+        DiscoverWithStationsSection(),
+
+        //const SizedBox(height: 10),
+
+        /// Displays additional personalized music suggestions.
+        MoreOfWhatYouLikeSection(),
+      ],
+    );
 
     final unreadMessages = ref.watch(unreadMessagesCountProvider);
     final unreadNotifications =
@@ -129,21 +184,6 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.arrow_circle_up),
 
             /// Handles audio file selection and prepares it for upload.
-            ///
-            /// Workflow:
-            /// 1. Opens file picker restricted to audio files
-            /// 2. Extracts selected file path and metadata
-            /// 3. Determines audio duration using local player
-            /// 4. Initializes upload draft via Riverpod provider
-            /// 5. Navigates to upload screen if successful
-            ///
-            /// Parameters:
-            /// - Uses [context] for navigation and UI feedback
-            /// - Uses [ref] to update upload state in presentation layer
-            ///
-            /// Output:
-            /// - Initializes upload state in provider
-            /// - Navigates to '/upload-track' route on success
             onPressed: () async {
               final result = await FilePicker.platform.pickFiles(
                 type: FileType.audio,
@@ -210,9 +250,6 @@ class HomeScreen extends ConsumerWidget {
       ),
 
       /// Main scrollable feed containing multiple music discovery sections.
-      ///
-      /// Each section represents a modular UI component responsible for
-      /// displaying a specific type of recommendation or content grouping.
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () async {
@@ -226,61 +263,120 @@ class HomeScreen extends ConsumerWidget {
             ref.read(historyProvider.notifier).load(refresh: true),
           ]);
         },
-        child: isLoading
-            ? const HomeShimmerScreen()
-            : ListView(
-                key: const Key('home_scroll_view'),
-                padding: const EdgeInsets.only(bottom: 150),
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  const LikesBannerWidget(),
+        child: asyncHome.when(
+          data: (_) => homeContent,
+          loading: () => const HomeShimmerScreen(),
+          error: (error, stack) {
+            // If we have cached/previous data, continue showing it even on error.
+            if (asyncHome.hasValue) return homeContent;
 
-                  if (latestTracks.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: crossAxisSpacing,
-                          childAspectRatio: dynamicAspectRatio,
-                        ),
-                        itemCount: latestTracks.length,
-                        itemBuilder: (context, index) => HomeTopTrackCard(
-                          track: latestTracks[index],
-                          allTracks: latestTracks,
-                          index: index,
-                        ),
-                      ),
+            // If initial load fails due to connectivity, show the specific placeholder.
+            if (_isConnectivityError(error)) {
+              return const _NoInternetPlaceholder();
+            }
+
+            // Fallback for other types of errors.
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppTheme.textSecondary,
                     ),
-
-                  const SizedBox(height: 4),
-
-                  /// Displays trending tracks grouped by genre.
-                  TrendingByGenre(),
-
-                  /// Displays personalized "Hot For You" recommendations.
-                  HotForYouSection(),
-
-                  const SizedBox(height: 40),
-
-                  /// Displays mixed playlist recommendations.
-                  MixedPlaylistsSection(),
-
-                  const SizedBox(height: 30),
-
-                  /// Displays discovery-based station suggestions.
-                  DiscoverWithStationsSection(),
-
-                  //const SizedBox(height: 10),
-
-                  /// Displays additional personalized music suggestions.
-                  MoreOfWhatYouLikeSection(),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      ErrorHandler.getFriendlyMessage(error),
+                      textAlign: TextAlign.center,
+                      style: AppTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Helper to detect if a [DioException] is related to connectivity.
+bool _isConnectivityError(dynamic error) {
+  if (error is DioException) {
+    return error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError ||
+        error.error is SocketException;
+  }
+  return false;
+}
+
+/// A placeholder displayed when the home screen fails to load due to no internet.
+///
+/// It features a "wifi off" icon, a descriptive message, and a button that
+/// navigates the user to the Downloads page in the Library tab.
+class _NoInternetPlaceholder extends StatelessWidget {
+  const _NoInternetPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        // Centers the content while allowing enough height for RefreshIndicator to work.
+        height: MediaQuery.of(context).size.height - 200,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 80,
+              color: AppTheme.textSecondary,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No internet connection',
+              style: AppTheme.titleLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Please check your connection or listen to your downloaded music.',
+              style: AppTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => context.go('/library/downloads'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBrand,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Go to Downloads',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
