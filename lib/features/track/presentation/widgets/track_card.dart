@@ -36,6 +36,10 @@ class TrackCard extends ConsumerWidget {
   /// Whether to show the bottom stats row (play count, duration, etc.).
   final bool showStats;
 
+  /// Optional widget to display on the right side (e.g. a delete bin).
+  /// If provided, this replaces the default more options icon.
+  final Widget? trailing;
+
   /// Creates a [TrackCard].
   const TrackCard({
     super.key,
@@ -45,6 +49,7 @@ class TrackCard extends ConsumerWidget {
     this.observePlayerState = true,
     this.showOptions = true,
     this.showStats = true,
+    this.trailing,
   });
 
   // --- Formatting Helpers ---
@@ -144,8 +149,10 @@ class TrackCard extends ConsumerWidget {
               ),
             ),
 
-            // 4. Trailing More Icon
-            if (showOptions)
+            // 4. Trailing Action
+            if (trailing != null)
+              trailing!
+            else if (showOptions)
               InkWell(
                 key: Key('track_card_${track.id}_more_inkwell'),
                 onTap: () {
