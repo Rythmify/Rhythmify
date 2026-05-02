@@ -31,13 +31,15 @@ void main() {
       expect(convs[1].unReadCount, 0);
     });
 
-    test('returns a defensive copy so mutations do not affect internal state',
-        () async {
-      final a = await ds.getConversations();
-      a.clear();
-      final b = await ds.getConversations();
-      expect(b.length, 2);
-    });
+    test(
+      'returns a defensive copy so mutations do not affect internal state',
+      () async {
+        final a = await ds.getConversations();
+        a.clear();
+        final b = await ds.getConversations();
+        expect(b.length, 2);
+      },
+    );
   });
 
   // ── getMessages ───────────────────────────────────────────────────────────
@@ -62,14 +64,20 @@ void main() {
     });
 
     test('respects offset parameter', () async {
-      final (msgs, total) = await ds.getMessages(conversationId: 'c1', offset: 2);
+      final (msgs, total) = await ds.getMessages(
+        conversationId: 'c1',
+        offset: 2,
+      );
       expect(msgs.length, 1);
       expect(total, 3);
       expect(msgs.first.messageId, 'm3');
     });
 
     test('offset beyond total returns empty list', () async {
-      final (msgs, total) = await ds.getMessages(conversationId: 'c1', offset: 10);
+      final (msgs, total) = await ds.getMessages(
+        conversationId: 'c1',
+        offset: 10,
+      );
       expect(msgs, isEmpty);
       expect(total, 3);
     });
@@ -80,7 +88,10 @@ void main() {
   group('sendMessage', () {
     test('creates a message with body', () async {
       final req = SentMessageRequestModel(body: 'Hello');
-      final msg = await ds.sendMessage(conversationId: 'c1', requestContent: req);
+      final msg = await ds.sendMessage(
+        conversationId: 'c1',
+        requestContent: req,
+      );
       expect(msg.body, 'Hello');
       expect(msg.conversationId, 'c1');
       expect(msg.senderId, 'current_user');
@@ -93,7 +104,10 @@ void main() {
         embedType: 'track',
         embedId: 't1',
       );
-      final msg = await ds.sendMessage(conversationId: 'c1', requestContent: req);
+      final msg = await ds.sendMessage(
+        conversationId: 'c1',
+        requestContent: req,
+      );
       expect(msg.embedType, 'track');
       expect(msg.embedId, 't1');
     });
@@ -114,13 +128,16 @@ void main() {
       expect(c1.lastMessagePreview, 'Preview update');
     });
 
-    test('sends message with null body updates preview to empty string', () async {
-      final req = SentMessageRequestModel(embedType: 'track', embedId: 't1');
-      await ds.sendMessage(conversationId: 'c1', requestContent: req);
-      final convs = await ds.getConversations();
-      final c1 = convs.firstWhere((c) => c.conversationId == 'c1');
-      expect(c1.lastMessagePreview, '');
-    });
+    test(
+      'sends message with null body updates preview to empty string',
+      () async {
+        final req = SentMessageRequestModel(embedType: 'track', embedId: 't1');
+        await ds.sendMessage(conversationId: 'c1', requestContent: req);
+        final convs = await ds.getConversations();
+        final c1 = convs.firstWhere((c) => c.conversationId == 'c1');
+        expect(c1.lastMessagePreview, '');
+      },
+    );
 
     test('message sent to unknown conversation is stored', () async {
       final req = SentMessageRequestModel(body: 'Test');
@@ -137,10 +154,13 @@ void main() {
   // ── newConversation ───────────────────────────────────────────────────────
 
   group('newConversation', () {
-    test('returns existing conversation when participant already has one', () async {
-      final conv = await ds.newConversation(participantId: 'u2');
-      expect(conv.conversationId, 'c1');
-    });
+    test(
+      'returns existing conversation when participant already has one',
+      () async {
+        final conv = await ds.newConversation(participantId: 'u2');
+        expect(conv.conversationId, 'c1');
+      },
+    );
 
     test('sends message to existing conversation when body provided', () async {
       await ds.newConversation(participantId: 'u2', body: 'Re-hello');
@@ -170,23 +190,29 @@ void main() {
       expect(msgs.last.embedId, 'p1');
     });
 
-    test('creates new conversation for unknown participant with body', () async {
-      final conv = await ds.newConversation(
-        participantId: 'u7',
-        body: 'Hi Sara',
-      );
-      expect(conv.participantId, 'u7');
-      expect(conv.participantName, 'Sara');
-      expect(conv.lastMessagePreview, 'Hi Sara');
-    });
+    test(
+      'creates new conversation for unknown participant with body',
+      () async {
+        final conv = await ds.newConversation(
+          participantId: 'u7',
+          body: 'Hi Sara',
+        );
+        expect(conv.participantId, 'u7');
+        expect(conv.participantName, 'Sara');
+        expect(conv.lastMessagePreview, 'Hi Sara');
+      },
+    );
 
-    test('creates new conversation for unknown-user with fallback name', () async {
-      final conv = await ds.newConversation(
-        participantId: 'unknown_user',
-        body: 'test',
-      );
-      expect(conv.participantName, 'Unknown User');
-    });
+    test(
+      'creates new conversation for unknown-user with fallback name',
+      () async {
+        final conv = await ds.newConversation(
+          participantId: 'unknown_user',
+          body: 'test',
+        );
+        expect(conv.participantName, 'Unknown User');
+      },
+    );
 
     test('creates new conversation without body has empty preview', () async {
       final conv = await ds.newConversation(participantId: 'u8');
@@ -201,7 +227,9 @@ void main() {
         trackId: 'track-x',
       );
       expect(conv.participantId, 'u8');
-      final (msgs, _) = await ds.getMessages(conversationId: conv.conversationId);
+      final (msgs, _) = await ds.getMessages(
+        conversationId: conv.conversationId,
+      );
       expect(msgs.first.embedType, 'track');
       expect(msgs.first.embedId, 'track-x');
     });
@@ -212,22 +240,35 @@ void main() {
         body: 'playlist',
         playlistId: 'pl-x',
       );
-      final (msgs, _) = await ds.getMessages(conversationId: conv.conversationId);
+      final (msgs, _) = await ds.getMessages(
+        conversationId: conv.conversationId,
+      );
       expect(msgs.first.embedType, 'playlist');
       expect(msgs.first.embedId, 'pl-x');
     });
 
     test('new conversation without body has empty messages list', () async {
       final conv = await ds.newConversation(participantId: 'u5');
-      final (msgs, _) = await ds.getMessages(conversationId: conv.conversationId);
+      final (msgs, _) = await ds.getMessages(
+        conversationId: conv.conversationId,
+      );
       expect(msgs, isEmpty);
     });
 
-    test('returns same conversation on second call for same participant', () async {
-      final conv1 = await ds.newConversation(participantId: 'u4', body: 'first');
-      final conv2 = await ds.newConversation(participantId: 'u4', body: 'second');
-      expect(conv1.participantId, conv2.participantId);
-    });
+    test(
+      'returns same conversation on second call for same participant',
+      () async {
+        final conv1 = await ds.newConversation(
+          participantId: 'u4',
+          body: 'first',
+        );
+        final conv2 = await ds.newConversation(
+          participantId: 'u4',
+          body: 'second',
+        );
+        expect(conv1.participantId, conv2.participantId);
+      },
+    );
   });
 
   // ── ensureConversation ────────────────────────────────────────────────────
@@ -244,11 +285,14 @@ void main() {
       expect(conv.participantName, 'Sara');
     });
 
-    test('creates conversation with fallback name for truly unknown user', () async {
-      final conv = await ds.ensureConversation(participantId: 'not_in_map');
-      expect(conv.participantName, 'Unknown User');
-      expect(conv.lastMessagePreview, '');
-    });
+    test(
+      'creates conversation with fallback name for truly unknown user',
+      () async {
+        final conv = await ds.ensureConversation(participantId: 'not_in_map');
+        expect(conv.participantName, 'Unknown User');
+        expect(conv.lastMessagePreview, '');
+      },
+    );
 
     test('newly created conversation appears in list', () async {
       await ds.ensureConversation(participantId: 'u4');
@@ -457,10 +501,7 @@ void main() {
     });
 
     test('throws when track not found', () async {
-      expect(
-        () => ds.getTrackDetails('nonexistent_track'),
-        throwsStateError,
-      );
+      expect(() => ds.getTrackDetails('nonexistent_track'), throwsStateError);
     });
   });
 

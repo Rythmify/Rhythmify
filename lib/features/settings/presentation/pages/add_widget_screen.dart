@@ -27,7 +27,7 @@ class AddWidgetScreen extends StatelessWidget {
             key: Key('add_you_likes_widget'),
             imgPath: 'assets/images/likes_widget.jpeg',
             height: 250,
-            onTap:(){}
+            onTap: () {},
             // onTap: () async {
             //   final added = await WidgetPinService.requestPinLikes();
             //   if (!added && context.mounted) {
@@ -47,7 +47,7 @@ class AddWidgetScreen extends StatelessWidget {
             key: Key('add_player_widget'),
             imgPath: 'assets/images/player_widget.jpeg',
             height: 210,
-            onTap: (){}
+            onTap: () {},
             // onTap: () async {
             //   final added = await WidgetPinService.requestPin();
             //   if (!added && context.mounted) {

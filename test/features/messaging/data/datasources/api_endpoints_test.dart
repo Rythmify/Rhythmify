@@ -64,10 +64,7 @@ void main() {
     });
 
     test('getSearchedUsers returns correct path', () {
-      expect(
-        ApiEndPoints.getSearchedUsers('ali'),
-        '/search?q=ali&type=users',
-      );
+      expect(ApiEndPoints.getSearchedUsers('ali'), '/search?q=ali&type=users');
     });
 
     test('isBlocked returns correct path', () {

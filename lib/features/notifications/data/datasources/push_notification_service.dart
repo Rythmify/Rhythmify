@@ -30,11 +30,7 @@ class PushNotificationService {
   }
 
   Future<void> _requestPermission() async {
-    await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _fcm.requestPermission(alert: true, badge: true, sound: true);
   }
 
   Future<void> _initLocalNotifications() async {

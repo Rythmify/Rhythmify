@@ -46,18 +46,23 @@ class _MockSocketIoServer {
       '"pingInterval":300000,"pingTimeout":200000,"maxPayload":1000000}',
     );
 
-    _ws!.listen((raw) {
-      final data = raw.toString();
-      if (data == '2') {
-        _ws!.add('3'); // PONG
-      } else if (data.startsWith('40')) {
-        // socket.io CONNECT from client → ack and signal test
-        _ws!.add('40{"sid":"test-socket-sid"}');
-        Future<void>.delayed(const Duration(milliseconds: 20), () {
-          if (!_connected.isCompleted) _connected.complete();
-        });
-      }
-    }, onDone: () {/* client closed */});
+    _ws!.listen(
+      (raw) {
+        final data = raw.toString();
+        if (data == '2') {
+          _ws!.add('3'); // PONG
+        } else if (data.startsWith('40')) {
+          // socket.io CONNECT from client → ack and signal test
+          _ws!.add('40{"sid":"test-socket-sid"}');
+          Future<void>.delayed(const Duration(milliseconds: 20), () {
+            if (!_connected.isCompleted) _connected.complete();
+          });
+        }
+      },
+      onDone: () {
+        /* client closed */
+      },
+    );
   }
 
   /// Send a socket.io event to the client.
@@ -113,10 +118,7 @@ void main() {
     });
 
     test('onMessageReceived stores callback without error', () {
-      expect(
-        () => ds.onMessageReceived((_) {}),
-        returnsNormally,
-      );
+      expect(() => ds.onMessageReceived((_) {}), returnsNormally);
     });
 
     test('onMessageReadUpdated stores callback without error', () {
@@ -160,10 +162,7 @@ void main() {
     });
 
     test('sendMessage runs without error when not connected', () {
-      expect(
-        () => ds.sendMessage('c1', {'body': 'hello'}),
-        returnsNormally,
-      );
+      expect(() => ds.sendMessage('c1', {'body': 'hello'}), returnsNormally);
     });
 
     test('markRead runs without error when not connected', () {
@@ -231,14 +230,17 @@ void main() {
       expect(connectFired, isTrue);
     });
 
-    test('onConnect handler joins room when conversationId is pre-set', () async {
-      ds.setOnReconnectedToRoom(() {});
-      ds.joinConversation('c1'); // sets _currentConversationId before connect
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      // onConnect fires and emits 'message:join' + calls _onReconnectedToRoom
-      await server.onConnected.timeout(const Duration(seconds: 5));
-      // No assertion needed — we're verifying no error is thrown
-    });
+    test(
+      'onConnect handler joins room when conversationId is pre-set',
+      () async {
+        ds.setOnReconnectedToRoom(() {});
+        ds.joinConversation('c1'); // sets _currentConversationId before connect
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        // onConnect fires and emits 'message:join' + calls _onReconnectedToRoom
+        await server.onConnected.timeout(const Duration(seconds: 5));
+        // No assertion needed — we're verifying no error is thrown
+      },
+    );
 
     test('disconnect triggers onDisconnect handler', () async {
       ds.connect('ws://localhost:${server.port}', () => 'token');
@@ -290,17 +292,20 @@ void main() {
 
     // ── reconnect / force reconnect after connect ───────────────────────────
 
-    test('reconnectWithToken updates auth and reconnects when not connected', () async {
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
-      // After connected, calling reconnectWithToken with same token should be
-      // a no-op since socket IS connected. Disconnect first then call.
-      // We test the "not connected" branch by disconnecting:
-      ds.disconnect();
-      await Future.delayed(const Duration(milliseconds: 30));
-      // Now socket is null — reconnectWithToken returns immediately
-      expect(() => ds.reconnectWithToken('new-token'), returnsNormally);
-    });
+    test(
+      'reconnectWithToken updates auth and reconnects when not connected',
+      () async {
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
+        // After connected, calling reconnectWithToken with same token should be
+        // a no-op since socket IS connected. Disconnect first then call.
+        // We test the "not connected" branch by disconnecting:
+        ds.disconnect();
+        await Future.delayed(const Duration(milliseconds: 30));
+        // Now socket is null — reconnectWithToken returns immediately
+        expect(() => ds.reconnectWithToken('new-token'), returnsNormally);
+      },
+    );
 
     test('forceReconnectIfNeeded rebuilds socket when not connected', () async {
       final server2 = _MockSocketIoServer();
@@ -324,54 +329,64 @@ void main() {
 
     // ── listener callbacks fired by server events ───────────────────────────
 
-    test('onMessageReceived callback fires when server sends message:received',
-        () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onMessageReceived callback fires when server sends message:received',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      // Register callback BEFORE connect so _reattachListeners wires it up
-      ds.onMessageReceived((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        // Register callback BEFORE connect so _reattachListeners wires it up
+        ds.onMessageReceived((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      server.sendEvent('message:received', {'body': 'hello', 'id': 'm1'});
-      final received = await completer.future.timeout(const Duration(seconds: 3));
-      expect(received['body'], 'hello');
-    });
+        server.sendEvent('message:received', {'body': 'hello', 'id': 'm1'});
+        final received = await completer.future.timeout(
+          const Duration(seconds: 3),
+        );
+        expect(received['body'], 'hello');
+      },
+    );
 
-    test('onMessageReceived callback re-registered after calling method again',
-        () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onMessageReceived callback re-registered after calling method again',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      ds.onMessageReceived((_) {}); // first registration (pre-connect)
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        ds.onMessageReceived((_) {}); // first registration (pre-connect)
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      // Re-register after connect — exercises the public method's on() path
-      ds.onMessageReceived((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
+        // Re-register after connect — exercises the public method's on() path
+        ds.onMessageReceived((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
 
-      server.sendEvent('message:received', {'body': 'world'});
-      final received = await completer.future.timeout(const Duration(seconds: 3));
-      expect(received['body'], 'world');
-    });
+        server.sendEvent('message:received', {'body': 'world'});
+        final received = await completer.future.timeout(
+          const Duration(seconds: 3),
+        );
+        expect(received['body'], 'world');
+      },
+    );
 
-    test('onMessageReadUpdated callback fires when server sends message:read_updated',
-        () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onMessageReadUpdated callback fires when server sends message:read_updated',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      ds.onMessageReadUpdated((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        ds.onMessageReadUpdated((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      server.sendEvent('message:read_updated', {'messageId': 'm1'});
-      final data = await completer.future.timeout(const Duration(seconds: 3));
-      expect(data['messageId'], 'm1');
-    });
+        server.sendEvent('message:read_updated', {'messageId': 'm1'});
+        final data = await completer.future.timeout(const Duration(seconds: 3));
+        expect(data['messageId'], 'm1');
+      },
+    );
 
     test('onMessageReadUpdated re-registered after connect', () async {
       final completer = Completer<Map<String, dynamic>>();
@@ -415,20 +430,22 @@ void main() {
       expect(data['userId'], 'u2');
     });
 
-    test('onStopTyping callback fires when server sends message:stop_typing',
-        () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onStopTyping callback fires when server sends message:stop_typing',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      ds.onStopTyping((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        ds.onStopTyping((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      server.sendEvent('message:stop_typing', {'userId': 'u1'});
-      final data = await completer.future.timeout(const Duration(seconds: 3));
-      expect(data['userId'], 'u1');
-    });
+        server.sendEvent('message:stop_typing', {'userId': 'u1'});
+        final data = await completer.future.timeout(const Duration(seconds: 3));
+        expect(data['userId'], 'u1');
+      },
+    );
 
     test('onStopTyping re-registered after connect', () async {
       final completer = Completer<Map<String, dynamic>>();
@@ -444,19 +461,22 @@ void main() {
       expect(data['userId'], 'u3');
     });
 
-    test('onUserBlocked callback fires when server sends user:blocked', () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onUserBlocked callback fires when server sends user:blocked',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      ds.onUserBlocked((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        ds.onUserBlocked((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      server.sendEvent('user:blocked', {'userId': 'u5'});
-      final data = await completer.future.timeout(const Duration(seconds: 3));
-      expect(data['userId'], 'u5');
-    });
+        server.sendEvent('user:blocked', {'userId': 'u5'});
+        final data = await completer.future.timeout(const Duration(seconds: 3));
+        expect(data['userId'], 'u5');
+      },
+    );
 
     test('onUserBlocked re-registered after connect', () async {
       final completer = Completer<Map<String, dynamic>>();
@@ -472,19 +492,22 @@ void main() {
       expect(data['userId'], 'u6');
     });
 
-    test('onNotificationCreated callback fires on notification:created', () async {
-      final completer = Completer<Map<String, dynamic>>();
+    test(
+      'onNotificationCreated callback fires on notification:created',
+      () async {
+        final completer = Completer<Map<String, dynamic>>();
 
-      ds.onNotificationCreated((data) {
-        if (!completer.isCompleted) completer.complete(data);
-      });
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+        ds.onNotificationCreated((data) {
+          if (!completer.isCompleted) completer.complete(data);
+        });
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      server.sendEvent('notification:created', {'notifId': 'n1'});
-      final data = await completer.future.timeout(const Duration(seconds: 3));
-      expect(data['notifId'], 'n1');
-    });
+        server.sendEvent('notification:created', {'notifId': 'n1'});
+        final data = await completer.future.timeout(const Duration(seconds: 3));
+        expect(data['notifId'], 'n1');
+      },
+    );
 
     test('onNotificationCreated re-registered after connect', () async {
       final completer = Completer<Map<String, dynamic>>();
@@ -530,19 +553,22 @@ void main() {
 
     // ── clearConversationListeners ──────────────────────────────────────────
 
-    test('clearConversationListeners stops message:received from firing', () async {
-      var callCount = 0;
-      ds.onMessageReceived((_) => callCount++);
-      ds.connect('ws://localhost:${server.port}', () => 'token');
-      await server.onConnected.timeout(const Duration(seconds: 5));
+    test(
+      'clearConversationListeners stops message:received from firing',
+      () async {
+        var callCount = 0;
+        ds.onMessageReceived((_) => callCount++);
+        ds.connect('ws://localhost:${server.port}', () => 'token');
+        await server.onConnected.timeout(const Duration(seconds: 5));
 
-      ds.clearConversationListeners();
+        ds.clearConversationListeners();
 
-      // Listener was cleared — server event should not invoke the callback
-      server.sendEvent('message:received', {'body': 'ignored'});
-      await Future.delayed(const Duration(milliseconds: 100));
-      expect(callCount, 0);
-    });
+        // Listener was cleared — server event should not invoke the callback
+        server.sendEvent('message:received', {'body': 'ignored'});
+        await Future.delayed(const Duration(milliseconds: 100));
+        expect(callCount, 0);
+      },
+    );
 
     // ── reconnectWithToken with live socket ─────────────────────────────────
 
