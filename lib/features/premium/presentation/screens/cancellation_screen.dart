@@ -478,17 +478,30 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                           shape: const RoundedRectangleBorder(),
                         ),
                         onPressed: () {
-                          final currentPlan = ref.read(premiumProvider).subscription?.plan;
-                          final premiumPlans = ref.read(premiumProvider).plans.where((p) => p.isPremium).toList();
-                          
-                          final targetPlan = currentPlan ?? (premiumPlans.isNotEmpty ? premiumPlans.first : null);
-                          
+                          final currentPlan = ref
+                              .read(premiumProvider)
+                              .subscription
+                              ?.plan;
+                          final premiumPlans = ref
+                              .read(premiumProvider)
+                              .plans
+                              .where((p) => p.isPremium)
+                              .toList();
+
+                          final targetPlan =
+                              currentPlan ??
+                              (premiumPlans.isNotEmpty
+                                  ? premiumPlans.first
+                                  : null);
+
                           if (targetPlan != null) {
                             context.go(
                               '/upgrade/checkout',
                               extra: {
                                 'planId': targetPlan.planId,
-                                'planName': targetPlan.name == 'premium' ? 'Artist Pro' : targetPlan.name,
+                                'planName': targetPlan.name == 'premium'
+                                    ? 'Artist Pro'
+                                    : targetPlan.name,
                                 'price': targetPlan.price,
                                 'features': [
                                   'Unlimited track uploads',
