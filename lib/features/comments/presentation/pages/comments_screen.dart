@@ -52,9 +52,6 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Ensure the track is in the sync map for global count synchronization
-      ref.read(trackSyncProvider.notifier).syncTrack(widget.track);
-
       ref
           .read(trackCommentsProvider(widget.track.id).notifier)
           .setInitialTrack(widget.track);

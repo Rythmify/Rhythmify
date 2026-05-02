@@ -94,7 +94,7 @@ class TrackActionBar extends ConsumerWidget {
             Formatters.formatCount(syncedTrack.commentCount),
             onTap: () {
               context.push(
-                '/home/comments/${syncedTrack.id}',
+                '/comments/${syncedTrack.id}',
                 extra: syncedTrack,
               );
             },

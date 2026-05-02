@@ -80,7 +80,7 @@ class CommentDto {
       isLikedByMe: json['is_liked_by_me'] as bool? ?? false,
       replyCount: json['reply_count'] as int? ?? 0,
       parentCommentId: json['parent_comment_id'] as String?,
-      isAuthorBlocked: json['is_author_blocked'] as bool? ?? false,
+      isAuthorBlocked: json['is_user_blocked'] as bool? ?? false,
     );
   }
 

@@ -108,6 +108,7 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       key: const Key('action_button_gesture'),
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         key: const Key('action_button_column'),
