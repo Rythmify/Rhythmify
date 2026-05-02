@@ -137,10 +137,7 @@ class FansLeaderboard extends ConsumerWidget {
                   child: CircularProgressIndicator(),
                 ),
                 error: (err, stack) => const Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 40.0,
-                    horizontal: 24,
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: 40.0, horizontal: 24),
                   child: Text(
                     "Leaderboard is currently unavailable. Please check back later.",
                     style: TextStyle(color: AppTheme.textSecondary),

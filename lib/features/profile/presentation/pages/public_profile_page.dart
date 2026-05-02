@@ -64,11 +64,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
     Future.microtask(() async {
       if (_resolvedUserId == 'me') {
-        final currentState = ref.read(ownProfileProvider);
-        if (currentState is ProfileLoaded) return;
-      }
-
-      if (_resolvedUserId == 'me') {
         await ref
             .read(ownProfileProvider.notifier)
             .loadProfile(userId: _resolvedUserId);

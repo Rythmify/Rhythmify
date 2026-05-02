@@ -113,7 +113,7 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
       builder: (_) => _ConfirmDialog(),
     );
     if (confirm != true || !mounted) return;
-    
+
     setState(() => _isCanceled = true);
     await ref.read(premiumProvider.notifier).cancel();
   }

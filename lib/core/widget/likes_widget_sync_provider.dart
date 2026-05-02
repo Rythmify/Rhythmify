@@ -4,7 +4,6 @@ import '../../features/authentication/presentation/providers/auth_provider.dart'
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/library/presentation/providers/library_providers.dart';
 
-
 final likesWidgetSyncProvider = NotifierProvider<LikesWidgetSyncNotifier, void>(
   LikesWidgetSyncNotifier.new,
 );
