@@ -26,7 +26,6 @@ class SentMessageRequestModel {
         'id': embedId,
       };
     }
-    //print('📤 sendMessage JSON: $data');
     return data;
   }
 }

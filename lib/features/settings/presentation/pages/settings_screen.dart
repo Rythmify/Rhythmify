@@ -1,8 +1,13 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
 import 'package:rythmify/features/settings/presentation/widgets/settings_options_tile_widget.dart';
 import 'package:rythmify/features/settings/presentation/widgets/sign_out_button_widget.dart';
+import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 
 /// The main settings screen displaying all available settings categories as navigable tiles.
 /// Organized into three groups separated by spacing:
@@ -40,7 +45,46 @@ class SettingsScreen extends ConsumerWidget {
             //3- Upload
             key: Key('option_Upload'),
             title: 'Upload',
-            onTap: () {},
+            onTap: () async {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.audio,
+                allowMultiple: false,
+              );
+
+              if (result == null || result.files.isEmpty) return;
+              final picked = result.files.first;
+              if (picked.path == null) return;
+
+              Duration duration = Duration.zero;
+              try {
+                final player = AudioPlayer();
+                final detected = await player.setFilePath(picked.path!);
+                duration = detected ?? Duration.zero;
+                await player.dispose();
+              } catch (_) {}
+
+              // ── Fix: read display name from auth provider ──
+              final authState = ref.read(authProvider);
+              final displayName = authState is AuthAuthenticated
+                  ? authState.user.displayName
+                  : 'Your Name';
+
+              ref
+                  .read(uploadFormProvider.notifier)
+                  .initDraft(
+                    artistId: 'dev_user_001',
+                    artistName: displayName,
+                    localAudioPath: picked.path!,
+                    duration: duration,
+                    fileName: picked.name,
+                  );
+
+              if (context.mounted) {
+                context.push('/upload-track');
+                // Start audio upload right after navigating
+                ref.read(uploadFormProvider.notifier).startAudioUpload();
+              }
+            },
           ),
           SettingsOptionsTileWidget(
             //4- Basic settings

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Control what\'s playing on Rythmify</string>
+    <string name="likes_widget_description">Quickly access your latest liked tracks</string>
+</resources>

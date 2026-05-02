@@ -135,13 +135,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         _followState.fetchFollowState(n.actorId);
       }
 
-      // if (unread.isNotEmpty) {
-      //   state = state.copyWith(unreadCount: 0);
-      //   for (final n in unread) {
-      //     _markRead(n.id).catchError((_) {});
-      //   }
-      // }
-
       for (final n in unread) {
         _markRead(n.id).catchError((_) {});
       }

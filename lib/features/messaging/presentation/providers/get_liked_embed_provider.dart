@@ -11,11 +11,10 @@ import 'package:rythmify/features/messaging/presentation/providers/repository_pr
 /// use the same API endpoint.
 /// Returns a [SharedEmbed] with name, artist, and thumbnail details.
 
-final getLikedEmbedsProvider = FutureProvider.family<List<SharedEmbed>, String>(
-  (ref, embedType) async {
-    final uCase = GetLikedEmbedsUseCase(repo: ref.read(repositoryprovider));
-    final String userId = ref.watch(currentUserIdProvider);
-    final msg = await uCase(userId, embedType);
-    return msg;
-  },
-);
+final getLikedEmbedsProvider = FutureProvider.autoDispose
+    .family<List<SharedEmbed>, String>((ref, embedType) async {
+      final uCase = GetLikedEmbedsUseCase(repo: ref.read(repositoryprovider));
+      final String userId = ref.watch(currentUserIdProvider);
+      final msg = await uCase(userId, embedType);
+      return msg;
+    });
