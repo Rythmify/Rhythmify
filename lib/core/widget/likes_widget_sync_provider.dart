@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_widget/home_widget.dart';
 import 'likes_widget_updater.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../features/authentication/presentation/providers/auth_state.dart';
 import '../../features/library/presentation/providers/library_providers.dart';
-import '../routing/app_router.dart';
+
 
 final likesWidgetSyncProvider = NotifierProvider<LikesWidgetSyncNotifier, void>(
   LikesWidgetSyncNotifier.new,
