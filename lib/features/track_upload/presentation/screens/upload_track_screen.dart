@@ -506,7 +506,11 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                 const SizedBox(height: 16),
                 _PrivacySelector(
                   isPublic: draft?.isPublic ?? true,
-                  onChanged: notifier.setIsPublic,
+                  isHidden: draft?.isHidden ?? false,
+                  onChanged: (public, hidden) {
+                    notifier.setIsPublic(public);
+                    notifier.setIsHidden(hidden);
+                  },
                 ),
                 const SizedBox(height: 24),
 
@@ -1374,8 +1378,15 @@ class _TagsInput extends StatelessWidget {
 
 class _PrivacySelector extends StatelessWidget {
   final bool isPublic;
-  final ValueChanged<bool> onChanged;
-  const _PrivacySelector({required this.isPublic, required this.onChanged});
+  final bool isHidden;
+  final void Function(bool isPublic, bool isHidden) onChanged;
+
+  const _PrivacySelector({
+    required this.isPublic,
+    required this.isHidden,
+    required this.onChanged,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -1384,14 +1395,14 @@ class _PrivacySelector extends StatelessWidget {
           title: 'Public',
           subtitle: 'Anyone can find this',
           isSelected: isPublic,
-          onTap: () => onChanged(true),
+          onTap: () => onChanged(true, false),
         ),
         const SizedBox(height: 16),
         _PrivacyOption(
           title: 'Unlisted (Private)',
           subtitle: 'Anyone with private link can access',
           isSelected: !isPublic,
-          onTap: () => onChanged(false),
+          onTap: () => onChanged(false, false),
         ),
       ],
     );

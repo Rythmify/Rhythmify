@@ -70,6 +70,7 @@ class UploadTrackRemoteDataSource {
     String? caption,
     required List<String> tags,
     required bool isPublic,
+    bool isHidden = false,
     String? geoRestrictionType,
     List<String>? geoRegions,
     void Function(double progress)? onProgress,
@@ -83,6 +84,7 @@ class UploadTrackRemoteDataSource {
         'artists': artist, // spec: 'artists'
         'genre': genre,
         'is_public': isPublic, // Pass as boolean
+        'is_hidden': isHidden,
         'audio_file': await MultipartFile.fromFile(
           // spec: 'audio_file'
           audioFile.path,
@@ -110,15 +112,15 @@ class UploadTrackRemoteDataSource {
 
       final formData = FormData.fromMap(fields);
 
-      // Tags sent as repeated fields — spec: tags is array
+      // Tags sent as repeated fields — append [] so backend parses single items as arrays
       for (final tag in tags) {
-        formData.fields.add(MapEntry('tags', tag));
+        formData.fields.add(MapEntry('tags[]', tag));
       }
 
-      // Geo regions sent as repeated fields
+      // Geo regions sent as repeated fields — append [] so backend parses single items as arrays
       if (geoRegions != null) {
         for (final region in geoRegions) {
-          formData.fields.add(MapEntry('geo_regions', region));
+          formData.fields.add(MapEntry('geo_regions[]', region));
         }
       }
 

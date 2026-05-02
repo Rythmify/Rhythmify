@@ -92,7 +92,10 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
         genre: track.genre,
         tags: track.tags,
         description: track.description,
-        isPublic: true, // Default to public for now
+        isPublic: track.isPublic,
+        isHidden: track.isHidden,
+        geoRestrictionType: track.geoRestrictionType ?? 'worldwide',
+        geoRegions: track.geoRegions,
         status: UploadStatus.draft,
         audioStatus: UploadStatus.success, // Audio already on server
       ),
@@ -171,6 +174,9 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
   void setIsPublic(bool value) =>
       _updateDraft(state.draft!.copyWith(isPublic: value));
+
+  void setIsHidden(bool value) =>
+      _updateDraft(state.draft!.copyWith(isHidden: value));
 
   void setArtwork(String localPath) =>
       _updateDraft(state.draft!.copyWith(localArtworkPath: localPath));
@@ -318,6 +324,10 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
       "tags": draft.tags,
       "artists": draft.artist,
       "cover_image_path": draft.localArtworkPath,
+      "is_public": draft.isPublic,
+      "is_hidden": draft.isHidden,
+      "geo_restriction_type": draft.geoRestrictionType,
+      "geo_regions": draft.geoRegions,
     };
 
     try {

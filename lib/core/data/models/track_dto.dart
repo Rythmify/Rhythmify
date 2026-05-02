@@ -83,6 +83,14 @@ class TrackDto {
       explicitContent: data['explicit_content'] as bool? ?? false,
       isTrending: data['is_trending'] as bool? ?? false,
       isFeatured: data['is_featured'] as bool? ?? false,
+      isPublic: data['is_public'] as bool? ?? true,
+      isHidden: data['is_hidden'] as bool? ?? false,
+      geoRestrictionType: data['geo_restriction_type'] as String?,
+      geoRegions:
+          (data['geo_regions'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       status: data['status'] as String?,
     );
   }
@@ -124,7 +132,13 @@ class TrackDto {
       'explicit_content': track.explicitContent,
       'is_trending': track.isTrending,
       'is_featured': track.isFeatured,
+      'is_public': track.isPublic,
+      'is_hidden': track.isHidden,
+      'geo_restriction_type': track.geoRestrictionType,
+      'geo_regions': track.geoRegions,
       'status': track.status,
     };
   }
 }
+
+
