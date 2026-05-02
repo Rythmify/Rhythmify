@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:rythmify/core/theme/app_theme.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
 import 'package:rythmify/features/track_upload/presentation/widgets/audio_picker_widget.dart';
@@ -379,15 +381,27 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
 
     if (source == null) return;
 
-    final XFile? image = await _picker.pickImage(
-      source: source,
-      imageQuality: 85,
-      maxWidth: 1000,
-      maxHeight: 1000,
-    );
+    String? path;
+    if (Platform.isWindows) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        path = result.files.first.path;
+      }
+    } else {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1000,
+        maxHeight: 1000,
+      );
+      path = image?.path;
+    }
 
-    if (image != null) {
-      ref.read(uploadFormProvider.notifier).setArtwork(image.path);
+    if (path != null) {
+      ref.read(uploadFormProvider.notifier).setArtwork(path);
     }
   }
 
@@ -451,7 +465,9 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                 _InputField(
                   controller: _titleController,
                   hint: '',
+                  textInputAction: TextInputAction.next,
                   onChanged: notifier.setTitle,
+                  onSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 ),
                 const SizedBox(height: 24),
 
@@ -1068,18 +1084,22 @@ class _FieldLabel extends StatelessWidget {
 class _InputField extends StatelessWidget {
   final String hint;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onSubmitted;
   final int maxLines;
   final TextEditingController? controller;
   final bool showCharCount;
   final int? maxLength;
+  final TextInputAction? textInputAction;
 
   const _InputField({
     required this.hint,
     required this.onChanged,
+    this.onSubmitted,
     this.maxLines = 1,
     this.controller,
     this.showCharCount = false,
     this.maxLength,
+    this.textInputAction,
   });
 
   @override
@@ -1087,8 +1107,10 @@ class _InputField extends StatelessWidget {
     return TextField(
       controller: controller,
       onChanged: onChanged,
+      onSubmitted: onSubmitted,
       maxLines: maxLines,
       maxLength: maxLength,
+      textInputAction: textInputAction,
       style: const TextStyle(color: Colors.white, fontSize: 16),
       cursorColor: Colors.white,
       decoration: InputDecoration(

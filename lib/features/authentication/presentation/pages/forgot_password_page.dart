@@ -97,6 +97,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _onResetPassword(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';

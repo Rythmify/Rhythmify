@@ -165,6 +165,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                     color: Colors.transparent,
                     child: _QueueTile(
                       item: item,
+                      reorderableIndex: index,
                       onTap: () {
                         // Find this item's position in the FULL upcomingTracks
                         // list (which includes recommended tracks). Using the
@@ -241,6 +242,7 @@ class _QueueTile extends StatelessWidget {
   final bool isActive;
   final bool isHistory;
   final bool showDragHandle;
+  final int? reorderableIndex;
   final VoidCallback onTap;
 
   const _QueueTile({
@@ -248,6 +250,7 @@ class _QueueTile extends StatelessWidget {
     this.isActive = false,
     this.isHistory = false,
     this.showDragHandle = true,
+    this.reorderableIndex,
     required this.onTap,
   });
 
@@ -272,26 +275,26 @@ class _QueueTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: track.coverImage != null
                     ? (track.coverImage!.startsWith('http')
-                          ? Image.network(
-                              track.coverImage!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                    Icons.music_note,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                            )
-                          : Image.asset(
-                              track.coverImage!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                    Icons.music_note,
-                                    color: Colors.grey,
-                                    size: 20,
-                                  ),
-                            ))
+                        ? Image.network(
+                            track.coverImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                              Icons.music_note,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                          )
+                        : Image.asset(
+                            track.coverImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                              Icons.music_note,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                          ))
                     : const Icon(
                         Icons.music_note,
                         color: Colors.grey,
@@ -314,9 +317,7 @@ class _QueueTile extends StatelessWidget {
                     style: TextStyle(
                       color: isActive ? AppTheme.primaryBrand : Colors.white,
                       fontSize: 14,
-                      fontWeight: isActive
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   Text(
@@ -341,10 +342,20 @@ class _QueueTile extends StatelessWidget {
 
             // --- Drag Handle on the Right ---
             if (!isHistory && !isActive && showDragHandle)
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),
-              ),
+              reorderableIndex != null
+                  ? ReorderableDragStartListener(
+                      index: reorderableIndex!,
+                      child: const Padding(
+                        padding: EdgeInsets.fromLTRB(12, 12, 0, 12),
+                        child: Icon(Icons.drag_handle,
+                            color: Colors.grey, size: 20),
+                      ),
+                    )
+                  : const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child:
+                          Icon(Icons.drag_handle, color: Colors.grey, size: 20),
+                    ),
           ],
         ),
       ),

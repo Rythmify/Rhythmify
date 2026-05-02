@@ -63,12 +63,35 @@ class PickAudioUseCase {
         return const Left(FileFailure('Selected file no longer exists.'));
       }
 
-      // Auto-detect duration using just_audio
+      // Auto-detect duration using just_audio with Windows-specific handling
       Duration duration = Duration.zero;
       try {
         final player = AudioPlayer();
-        final detected = await player.setFilePath(picked.path!);
-        duration = detected ?? Duration.zero;
+        try {
+          // First attempt: standard setFilePath
+          final detected = await player.setFilePath(picked.path!);
+          duration = detected ?? Duration.zero;
+        } catch (_) {
+          // Fallback for Windows: retry with a short delay or use alternative approach
+          // This helps with cases where Windows audio codecs need time to initialize
+          await Future.delayed(const Duration(milliseconds: 100));
+          try {
+            final detected = await player.setFilePath(picked.path!);
+            duration = detected ?? Duration.zero;
+          } catch (_) {
+            // If it still fails, try initializing the AudioPlayer with a longer timeout
+            // This is necessary for certain Windows audio formats
+            if (Platform.isWindows) {
+              try {
+                await player.setUrl(picked.path!);
+                duration = player.duration ?? Duration.zero;
+              } catch (_) {
+                // Duration detection failed — not fatal
+                // UseCase will catch duration = zero during upload validation
+              }
+            }
+          }
+        }
         await player.dispose();
       } catch (_) {
         // Duration detection failed — not fatal

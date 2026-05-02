@@ -630,6 +630,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           child: MessageInputBubble(
                             key: const Key('chat_screen_message_input'),
                             controller: controller,
+                            onSubmitted: (_) async {
+                              if (controller.text.trim().isNotEmpty) {
+                                if (_effectiveConv != null) {
+                                  await _sendInExistingConv();
+                                } else if (_newConvCheckDone) {
+                                  await _sendInNewConv();
+                                }
+                              }
+                            },
                           ),
                         ),
                         ValueListenableBuilder<TextEditingValue>(

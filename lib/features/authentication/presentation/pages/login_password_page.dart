@@ -98,6 +98,7 @@ class _LoginPasswordPageState extends ConsumerState<LoginPasswordPage> {
                   controller: _passwordController,
                   isPassword: true,
                   textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _onContinue(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';

@@ -88,6 +88,7 @@ class _CreateAccountPasswordPageState
                   controller: _passwordController,
                   isPassword: true,
                   textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _onContinue(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';

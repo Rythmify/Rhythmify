@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rythmify/features/track_upload/presentation/providers/upload_track_provider.dart';
@@ -23,20 +24,29 @@ class AudioPickerWidget extends ConsumerWidget {
 
   Future<void> _replaceAudio(BuildContext context, WidgetRef ref) async {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
+      type: Platform.isWindows ? FileType.custom : FileType.audio,
+      allowedExtensions: Platform.isWindows ? ['mp3', 'wav', 'aac', 'm4a', 'flac'] : null,
       allowMultiple: false,
     );
     if (result == null || result.files.isEmpty) return;
+
     final picked = result.files.first;
     if (picked.path == null) return;
 
     Duration duration = Duration.zero;
     try {
       final player = AudioPlayer();
-      final detected = await player.setFilePath(picked.path!);
+      // Use Uri.file for safer path handling on Windows
+      final source = Platform.isWindows
+          ? AudioSource.uri(Uri.file(picked.path!))
+          : AudioSource.file(picked.path!);
+      final detected = await player.setAudioSource(source);
       duration = detected ?? Duration.zero;
       await player.dispose();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioPickerWidget] Error detecting duration: $e');
+    }
+
 
     final authState = ref.read(authProvider);
     final displayName = authState is AuthAuthenticated

@@ -182,6 +182,7 @@ class _CreateAccountProfilePageState
                   hint: 'Display name',
                   controller: _displayNameController,
                   textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _onContinue(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a display name';

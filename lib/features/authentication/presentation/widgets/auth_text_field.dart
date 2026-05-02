@@ -45,6 +45,9 @@ class AuthTextField extends StatefulWidget {
   /// Defaults to [TextInputAction.next].
   final TextInputAction textInputAction;
 
+  /// Called when the user submits the field (e.g., by pressing the "Enter" key).
+  final ValueChanged<String>? onSubmitted;
+
   /// Creates an [AuthTextField].
   const AuthTextField({
     super.key,
@@ -54,6 +57,7 @@ class AuthTextField extends StatefulWidget {
     this.validator,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
   });
 
   @override
@@ -74,6 +78,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      onFieldSubmitted: widget.onSubmitted,
       validator: widget.validator,
       style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
       decoration: InputDecoration(

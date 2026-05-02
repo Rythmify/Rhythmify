@@ -272,6 +272,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _onContinue(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';

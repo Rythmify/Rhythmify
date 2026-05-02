@@ -304,6 +304,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => _onRegister(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
@@ -322,6 +323,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: _passwordController,
                     isPassword: true,
                     textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => _onRegister(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
@@ -340,6 +342,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: _confirmPasswordController,
                     isPassword: true,
                     textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => _onRegister(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please confirm your password';
@@ -358,6 +361,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     key: const Key('register_google_email_field'),
                     controller: _emailController,
                     readOnly: true,
+                    onFieldSubmitted: (_) => _onRegister(),
                     style: AppTheme.bodyMedium.copyWith(
                       color: AppTheme.textPrimary,
                     ),

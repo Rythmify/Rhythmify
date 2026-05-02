@@ -7,8 +7,13 @@ import 'package:flutter/material.dart';
 /// by the parent [ChatScreen] which handles sending and clearing.
 class MessageInputBubble extends StatelessWidget {
   final TextEditingController controller;
+  final ValueChanged<String>? onSubmitted;
 
-  const MessageInputBubble({super.key, required this.controller});
+  const MessageInputBubble({
+    super.key,
+    required this.controller,
+    this.onSubmitted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +31,8 @@ class MessageInputBubble extends StatelessWidget {
         maxLines: 3,
         minLines: 1,
         keyboardType: TextInputType.multiline,
-        textInputAction: TextInputAction.newline,
+        textInputAction: TextInputAction.send,
+        onFieldSubmitted: onSubmitted,
         cursorColor: Colors.white,
         style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: const InputDecoration(
