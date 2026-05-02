@@ -41,7 +41,8 @@ class PickAudioUseCase {
     try {
       // Open OS file browser filtered to audio only
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
+        type: Platform.isWindows ? FileType.custom : FileType.audio,
+        allowedExtensions: Platform.isWindows ? ['mp3', 'wav', 'aac', 'm4a', 'flac'] : null,
         allowMultiple: false,
       );
 
@@ -68,28 +69,24 @@ class PickAudioUseCase {
       try {
         final player = AudioPlayer();
         try {
-          // First attempt: standard setFilePath
-          final detected = await player.setFilePath(picked.path!);
+          // Use Uri.file for Windows, standard path for other platforms
+          final source = Platform.isWindows
+              ? AudioSource.uri(Uri.file(picked.path!))
+              : AudioSource.file(picked.path!);
+          final detected = await player.setAudioSource(source);
           duration = detected ?? Duration.zero;
         } catch (_) {
-          // Fallback for Windows: retry with a short delay or use alternative approach
-          // This helps with cases where Windows audio codecs need time to initialize
-          await Future.delayed(const Duration(milliseconds: 100));
+          // Fallback: retry with delay for codec initialization
+          await Future.delayed(const Duration(milliseconds: 150));
           try {
-            final detected = await player.setFilePath(picked.path!);
+            final source = Platform.isWindows
+                ? AudioSource.uri(Uri.file(picked.path!))
+                : AudioSource.file(picked.path!);
+            final detected = await player.setAudioSource(source);
             duration = detected ?? Duration.zero;
           } catch (_) {
-            // If it still fails, try initializing the AudioPlayer with a longer timeout
-            // This is necessary for certain Windows audio formats
-            if (Platform.isWindows) {
-              try {
-                await player.setUrl(picked.path!);
-                duration = player.duration ?? Duration.zero;
-              } catch (_) {
-                // Duration detection failed — not fatal
-                // UseCase will catch duration = zero during upload validation
-              }
-            }
+            // Duration detection failed — not fatal
+            // UseCase will catch duration = zero during upload validation
           }
         }
         await player.dispose();

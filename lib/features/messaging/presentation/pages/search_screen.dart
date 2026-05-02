@@ -85,6 +85,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 onChanged: (value) {
                   ref.read(queryProvider.notifier).state = value.trim();
                 },
+                onSubmitted: (value) {
+                  ref.read(queryProvider.notifier).state = value.trim();
+                },
               ),
             ),
             Expanded(

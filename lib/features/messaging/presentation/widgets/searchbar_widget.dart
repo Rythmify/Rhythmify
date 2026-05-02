@@ -4,13 +4,19 @@ import 'package:rythmify/core/theme/messaging_themes.dart';
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
   final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
 
-  const SearchBarWidget({super.key, required this.controller, this.onChanged});
+  const SearchBarWidget({
+    super.key,
+    required this.controller,
+    this.onChanged,
+    this.onSubmitted,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: const Color(0xFF2F2F2F),
         borderRadius: BorderRadius.circular(24),
@@ -20,6 +26,7 @@ class SearchBarWidget extends StatelessWidget {
         key: const Key('messaging_search_text_field'),
         controller: controller,
         onChanged: onChanged,
+        onSubmitted: onSubmitted,
         cursorColor: MessagingThemes.msgSearchCursorColor,
         cursorWidth: 2,
         style: const TextStyle(color: Colors.white, fontSize: 16),

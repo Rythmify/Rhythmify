@@ -109,6 +109,7 @@ class _CreatePlaylistSheetState extends ConsumerState<CreatePlaylistSheet> {
             controller: _nameController,
             autofocus: true,
             maxLength: 100,
+            onSubmitted: (_) => _onCreate(),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,

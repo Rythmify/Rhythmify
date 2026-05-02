@@ -521,6 +521,7 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
                   key: const Key('comments_input_textfield'),
                   controller: _commentController,
                   focusNode: _focusNode,
+                  onSubmitted: (_) => _postComment(),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     isDense: true,

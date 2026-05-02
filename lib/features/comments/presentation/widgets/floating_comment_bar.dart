@@ -134,6 +134,7 @@ class _FloatingCommentBarState extends ConsumerState<FloatingCommentBar>
                     controller: _commentController,
                     focusNode: _focusNode,
                     style: AppTheme.bodyNormal,
+                    onSubmitted: (_) => _postComment(trackId),
                     decoration: InputDecoration(
                       hintText: 'Drop a comment...',
                       hintStyle: AppTheme.bodyNormal,
