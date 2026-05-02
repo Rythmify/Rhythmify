@@ -93,10 +93,7 @@ class TrackActionBar extends ConsumerWidget {
             Icons.chat_outlined,
             Formatters.formatCount(syncedTrack.commentCount),
             onTap: () {
-              context.push(
-                '/home/comments/${syncedTrack.id}',
-                extra: syncedTrack,
-              );
+              context.push('/comments/${syncedTrack.id}', extra: syncedTrack);
             },
           ),
           const SizedBox(width: 20),
