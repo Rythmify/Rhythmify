@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
@@ -7,52 +8,42 @@ import '../../../../core/domain/entities/track.dart';
 /// A custom [BaseAudioHandler] implementation using [just_audio] to manage
 /// background playback and system media controls.
 ///
-/// This handler bridges the application's playback logic with the operating
-/// system's media session, enabling lock screen controls, notifications, and
-/// hardware button support.
+/// Deliberately avoids [ConcatenatingAudioSource] because the Windows
+/// Media Foundation backend in just_audio_windows triggers a C++ abort()
+/// when a playlist source is used. Instead the queue is managed entirely
+/// in Dart and individual [AudioSource.uri] sources are set per track.
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
-  /// The underlying audio player instance.
-  final AudioPlayer _player = AudioPlayer(
-    audioLoadConfiguration: const AudioLoadConfiguration(
-      androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
-        maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
-        bufferForPlaybackDuration: Duration(
-          milliseconds: 500,
-        ), // Start playing fast
-        bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
-      ),
+  // Plain AudioPlayer — no AudioLoadConfiguration.
+  // Passing Android/Darwin load controls to just_audio_windows also triggers abort().
+  final AudioPlayer _player = AudioPlayer();
 
-      darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true,
-      ),
-    ),
-  );
-
-  // ignore: deprecated_member_use
-  final _playlist = ConcatenatingAudioSource(children: []);
-
-  /// The current list of tracks in the playback queue.
+  /// Dart-managed queue. The native player only ever knows about one track.
   List<Track> _currentQueue = [];
+
+  /// Index of the track the native player is currently loaded with.
+  int _currentHardwareIndex = 0;
+
+  /// Broadcasts index changes so [AudioRepositoryImpl] can update its state.
+  final _indexController = StreamController<int?>.broadcast();
 
   RythmifyAudioHandler() {
     _init();
   }
 
-  /// Initializes listeners for playback events and current index changes to
-  /// sync the [playbackState] and [mediaItem] with the system.
-  Future<void> _init() async {
-    _player.processingStateStream.listen((state) async {
-      if (state == ProcessingState.completed) {
-        final currentIndex = _player.currentIndex;
-        if (currentIndex != null && currentIndex < _playlist.length - 1) {
-          // Hardware level auto-advance
-          await _player.seek(Duration.zero, index: currentIndex + 1);
-          _player.play();
+  // ── Initialisation ────────────────────────────────────────────────────────
+
+  void _init() {
+    // Auto-advance when the current track finishes.
+    _player.processingStateStream.listen((ps) async {
+      if (ps == ProcessingState.completed) {
+        final next = _currentHardwareIndex + 1;
+        if (next < _currentQueue.length) {
+          await _loadTrackAtIndex(next);
         }
       }
     });
 
+    // Forward playback events so audio_repository_impl can build PlayerStatus.
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
       playbackState.add(
@@ -76,236 +67,222 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
             ProcessingState.ready: AudioProcessingState.ready,
             ProcessingState.completed: AudioProcessingState.completed,
           }[_player.processingState]!,
-
           playing: playing,
           updatePosition: _player.position,
           bufferedPosition: _player.bufferedPosition,
           speed: _player.speed,
-          queueIndex: event.currentIndex,
+          queueIndex: _currentHardwareIndex,
         ),
       );
     });
-
-    _player.currentIndexStream.listen((index) {
-      if (index != null && index < _currentQueue.length) {
-        final track = _currentQueue[index];
-        mediaItem.add(
-          MediaItem(
-            id: track.id,
-            title: track.title,
-            artist: track.artist,
-            duration: track.duration,
-            artUri: _resolveArtworkUri(track.artworkUrl),
-          ),
-        );
-      }
-    });
   }
 
-  /// Updates the metadata for a specific track in the queue.
-  ///
-  /// If the updated track is the one currently playing, it also updates the
-  /// system's [mediaItem].
-  Future<void> updateTrackInfo(String id, Track updatedTrack) async {
-    final index = _currentQueue.indexWhere((t) => t.id == id);
-    if (index != -1) {
-      final oldTrack = _currentQueue[index];
-      _currentQueue[index] = updatedTrack;
+  // ── Internal helpers ──────────────────────────────────────────────────────
 
-      // --- DYNAMIC SOURCE REPLACEMENT (FIX FOR SILENT ARRAY SHIFT) ---
-      // If the track previously had no URL (was a placeholder) and now has one,
-      // hot-swap the AudioSource in the native playlist so the hardware
-      // index remains perfectly aligned with the UI index.
-      final oldUrl = (oldTrack.streamUrl ?? oldTrack.audioUrl).trim();
-      final newUrl = (updatedTrack.streamUrl ?? updatedTrack.audioUrl).trim();
+  /// Loads the track at [index] into the native player and starts playback.
+  Future<void> _loadTrackAtIndex(int index, {bool autoPlay = true}) async {
+    if (index < 0 || index >= _currentQueue.length) return;
 
-      if (oldUrl.isEmpty && newUrl.isNotEmpty) {
-        final newSource = _convertToAudioSources([
-          updatedTrack,
-        ], useCache: false).first;
-        if (index < _playlist.length) {
-          await _playlist.removeAt(index);
-          await _playlist.insert(index, newSource);
-        }
+    _currentHardwareIndex = index;
+    final track = _currentQueue[index];
+
+    // Notify listeners immediately so the UI updates the track card.
+    _indexController.add(index);
+    mediaItem.add(
+      MediaItem(
+        id: track.id,
+        title: track.title,
+        artist: track.artist,
+        duration: track.duration,
+        artUri: _resolveArtworkUri(track.artworkUrl),
+        displayDescription: track.description,
+        genre: track.genre,
+        extras: {
+          'artists': track.artists,
+          'waveform': track.waveformData,
+        },
+      ),
+    );
+
+    final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
+
+    AudioSource source;
+    if (rawUrl.isEmpty) {
+      // Placeholder — no audio yet; load the silent asset so the player
+      // doesn't crash but don't auto-play it.
+      source = AudioSource.asset('assets/audio/empty.mp3', tag: track.id);
+      autoPlay = false;
+    } else if (rawUrl.startsWith('assets/')) {
+      source = AudioSource.asset(rawUrl, tag: track.id);
+    } else {
+      final uri = _resolveTrackUri(rawUrl);
+      if (uri == null) {
+        source = AudioSource.asset('assets/audio/empty.mp3', tag: track.id);
+        autoPlay = false;
+      } else {
+        source = AudioSource.uri(uri, tag: track.id);
       }
+    }
 
-      if (_player.currentIndex == index) {
-        mediaItem.add(
-          MediaItem(
-            id: updatedTrack.id,
-            title: updatedTrack.title,
-            artist: updatedTrack.artist,
-            duration: updatedTrack.duration,
-            artUri: _resolveArtworkUri(updatedTrack.artworkUrl),
-            displayDescription: updatedTrack.description,
-            genre: updatedTrack.genre,
-            extras: {
-              'artists': updatedTrack.artists,
-              'waveform': updatedTrack.waveformData,
-            },
-          ),
-        );
-      }
+    try {
+      await _player.setAudioSource(source);
+      if (autoPlay) _player.play();
+    } catch (e) {
+      debugPrint('[RythmifyAudioHandler] _loadTrackAtIndex error: $e');
     }
   }
 
-  /// Exposes the playback event stream from [AudioPlayer].
-  Stream<PlaybackEvent> get playbackEventStream => _player.playbackEventStream;
+  // ── Public API (called by AudioRepositoryImpl) ────────────────────────────
 
-  /// Exposes the current position stream from [AudioPlayer].
-  Stream<Duration> get positionStream => _player.positionStream;
-
-  /// Exposes the current index stream from [AudioPlayer].
-  Stream<int?> get currentIndexStream => _player.currentIndexStream;
-
-  /// Exposes the playing status stream from [AudioPlayer].
-  Stream<bool> get playingStream => _player.playingStream;
-
-  /// Returns whether audio is currently playing.
-  bool get playing => _player.playing;
-
-  /// Returns the current [ProcessingState] of the player.
-  ProcessingState get processingState => _player.processingState;
-
-  /// Returns the current local queue of tracks.
-  List<Track> get currentQueue => _currentQueue;
-
-  /// Loads a new set of [Track]s into the player and prepares for playback.
+  /// Loads a new queue and starts playback from [initialIndex].
   Future<void> loadQueue(
     List<Track> tracks, {
     int initialIndex = 0,
     Duration initialPosition = Duration.zero,
   }) async {
     _currentQueue = List.from(tracks);
-    final audioSources = _convertToAudioSources(tracks);
-
-    if (audioSources.isEmpty) return;
 
     try {
-      // Clear and reload fully for a context change
-      await _playlist.clear();
-      await _playlist.addAll(audioSources);
-
-      final effectiveIndex = initialIndex < audioSources.length
-          ? initialIndex
-          : 0;
-
-      await _player.setAudioSource(
-        _playlist,
-        initialIndex: effectiveIndex,
-        initialPosition: initialPosition,
-      );
+      await _loadTrackAtIndex(initialIndex, autoPlay: false);
+      if (initialPosition > Duration.zero) {
+        await _player.seek(initialPosition);
+      }
+      _player.play();
     } catch (e) {
       debugPrint('[RythmifyAudioHandler] loadQueue error: $e');
     }
   }
 
-  /// Seamlessly moves a track within the native queue without stopping playback.
-  Future<void> moveTrack(int oldIndex, int newIndex) async {
-    if (oldIndex == newIndex) return;
-    if (oldIndex < 0 || oldIndex >= _playlist.length) return;
-    if (newIndex < 0 || newIndex >= _playlist.length) return;
+  /// Updates metadata for a track that was previously a skeleton/placeholder.
+  Future<void> updateTrackInfo(String id, Track updatedTrack) async {
+    final index = _currentQueue.indexWhere((t) => t.id == id);
+    if (index == -1) return;
 
-    final track = _currentQueue.removeAt(oldIndex);
-    _currentQueue.insert(newIndex, track);
-    await _playlist.move(oldIndex, newIndex);
+    final wasPlaceholder =
+        (_currentQueue[index].streamUrl ?? _currentQueue[index].audioUrl)
+            .trim()
+            .isEmpty;
+
+    _currentQueue[index] = updatedTrack;
+
+    if (index == _currentHardwareIndex) {
+      // Update the system media item so lock-screen / notification is fresh.
+      mediaItem.add(
+        MediaItem(
+          id: updatedTrack.id,
+          title: updatedTrack.title,
+          artist: updatedTrack.artist,
+          duration: updatedTrack.duration,
+          artUri: _resolveArtworkUri(updatedTrack.artworkUrl),
+          displayDescription: updatedTrack.description,
+          genre: updatedTrack.genre,
+          extras: {
+            'artists': updatedTrack.artists,
+            'waveform': updatedTrack.waveformData,
+          },
+        ),
+      );
+
+      // If the placeholder now has a real URL, hot-swap the audio source.
+      final newUrl =
+          (updatedTrack.streamUrl ?? updatedTrack.audioUrl).trim();
+      if (wasPlaceholder && newUrl.isNotEmpty) {
+        final wasPlaying = _player.playing;
+        final position = _player.position;
+        await _loadTrackAtIndex(index, autoPlay: false);
+        if (position > Duration.zero) await _player.seek(position);
+        if (wasPlaying) _player.play();
+      }
+    }
   }
 
-  /// Jumps to a specific index in the current native queue without re-loading.
+  /// Jumps to [index] in the Dart queue and loads that track.
   Future<void> skipToIndex(int index) async {
-    if (index < 0 || index >= _playlist.length) {
-      return;
-    }
+    if (index < 0 || index >= _currentQueue.length) return;
     try {
-      await _player.seek(Duration.zero, index: index);
-      _player.play();
+      await _loadTrackAtIndex(index);
     } catch (e) {
       debugPrint('[RythmifyAudioHandler] skipToIndex error: $e');
     }
   }
 
-  /// Appends tracks to the end of the current queue.
+  /// Reorders the Dart queue without touching the native player.
+  Future<void> moveTrack(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+    if (oldIndex < 0 || oldIndex >= _currentQueue.length) return;
+    if (newIndex < 0 || newIndex >= _currentQueue.length) return;
+
+    final track = _currentQueue.removeAt(oldIndex);
+    _currentQueue.insert(newIndex, track);
+
+    // Keep the hardware index pointing at the same logical track.
+    if (_currentHardwareIndex == oldIndex) {
+      _currentHardwareIndex = newIndex;
+    } else if (oldIndex < _currentHardwareIndex &&
+        newIndex >= _currentHardwareIndex) {
+      _currentHardwareIndex--;
+    } else if (oldIndex > _currentHardwareIndex &&
+        newIndex <= _currentHardwareIndex) {
+      _currentHardwareIndex++;
+    }
+  }
+
+  /// Appends tracks to the Dart queue.
+  /// If playback had already completed, auto-advances into the new tracks.
   Future<void> appendTracks(List<Track> tracks) async {
-    final audioSources = _convertToAudioSources(tracks, useCache: false);
-    if (audioSources.isEmpty) return;
-
-    final insertionIndex = _playlist.length;
     _currentQueue.addAll(tracks);
-    await _playlist.addAll(audioSources);
-
-    // If the player reached 'completed' before the fetch finished
-    // we must manually kick-start it into the new tracks.
     if (_player.processingState == ProcessingState.completed) {
-      await _player.seek(Duration.zero, index: insertionIndex);
-      _player.play();
+      await skipToIndex(_currentHardwareIndex + 1);
     }
   }
 
-  List<AudioSource> _convertToAudioSources(
-    List<Track> tracks, {
-    bool useCache = true,
-  }) {
-    final List<AudioSource> sources = [];
+  // ── Streams & getters ─────────────────────────────────────────────────────
 
-    for (final track in tracks) {
-      final String rawUrl = (track.streamUrl ?? track.audioUrl).trim();
+  Stream<PlaybackEvent> get playbackEventStream =>
+      _player.playbackEventStream;
 
-      if (rawUrl.isEmpty) {
-        // CRITICAL FIX: Never drop tracks. Inject a silent/dummy placeholder
-        // to maintain perfect 1:1 index alignment with the UI state.
-        // This placeholder will be hot-swapped via JIT resolution before playback.
-        sources.add(
-          AudioSource.uri(
-            Uri.parse('asset:///assets/audio/empty.mp3'),
-            tag: track.id,
-          ),
-        );
-        continue;
-      }
+  Stream<Duration> get positionStream => _player.positionStream;
 
-      if (rawUrl.startsWith('assets/')) {
-        sources.add(AudioSource.asset(rawUrl, tag: track.id));
-      } else {
-        final resolvedUri = _resolveTrackUri(rawUrl);
-        if (resolvedUri != null) {
-          if (useCache) {
-            // ignore: experimental_member_use
-            sources.add(LockCachingAudioSource(resolvedUri, tag: track.id));
-          } else {
-            // Use regular URI source for background recommendations to avoid heavy caching overhead immediately
-            sources.add(AudioSource.uri(resolvedUri, tag: track.id));
-          }
-        } else {
-          sources.add(
-            AudioSource.uri(
-              Uri.parse('asset:///assets/audio/empty.mp3'),
-              tag: track.id,
-            ),
-          );
-        }
-      }
-    }
-    return sources;
-  }
+  /// Emits whenever the active track index changes.
+  Stream<int?> get currentIndexStream => _indexController.stream;
 
-  /// Clears the cached audio files from device storage to free up space.
-  /// Call this from your app's settings menu or on startup if cache size gets too large.
+  Stream<bool> get playingStream => _player.playingStream;
 
-  // Future<void> clearAudioCache() async {
-  //   await LockCachingAudioSource.clearCache();
-  // }
+  bool get playing => _player.playing;
+
+  ProcessingState get processingState => _player.processingState;
+
+  List<Track> get currentQueue => _currentQueue;
+
+  // ── BaseAudioHandler overrides ────────────────────────────────────────────
 
   @override
   Future<void> play() => _player.play();
+
   @override
   Future<void> pause() => _player.pause();
+
   @override
   Future<void> seek(Duration position) => _player.seek(position);
+
   @override
-  Future<void> skipToNext() => _player.seekToNext();
+  Future<void> skipToNext() async {
+    final next = _currentHardwareIndex + 1;
+    if (next < _currentQueue.length) {
+      await _loadTrackAtIndex(next);
+    }
+  }
+
   @override
-  Future<void> skipToPrevious() => _player.seekToPrevious();
+  Future<void> skipToPrevious() async {
+    final prev = _currentHardwareIndex - 1;
+    if (prev >= 0) {
+      await _loadTrackAtIndex(prev);
+    }
+  }
 }
+
+// ── Top-level helpers ─────────────────────────────────────────────────────
 
 Uri? _resolveTrackUri(String rawUrl) {
   if (rawUrl.isEmpty) return null;

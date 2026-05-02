@@ -30,11 +30,24 @@ class QueueItem extends Equatable {
     );
   }
 
+  // UUID v4 pattern: 8-4-4-4-12 hex chars separated by hyphens
+  static final _uuidRegex = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  );
+
+  /// Returns true only for real server-issued UUIDs.
+  /// Locally-generated IDs (prefixed 'opt_' / 'manual_') return false.
+  bool get hasServerUuid =>
+      queueItemId != null && _uuidRegex.hasMatch(queueItemId!);
+
   Map<String, dynamic> toJson() {
     final trackJson = TrackDto.toJson(track);
     return {
       ...trackJson,
-      'queue_item_id': queueItemId,
+      // Only include queue_item_id when it is a real UUID. Sending fake local
+      // IDs causes a 400 VALIDATION_FAILED from the backend.
+      if (hasServerUuid) 'queue_item_id': queueItemId,
       'queue_bucket': queueBucket,
       'source_type': sourceType,
       'source_id': sourceId,
