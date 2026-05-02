@@ -6,6 +6,7 @@ import '../../domain/entities/history_record.dart';
 import '../../../../core/domain/entities/track.dart';
 import 'player_dependency_providers.dart';
 import '../../../track/presentation/providers/track_dependency_providers.dart';
+import 'ad_provider.dart';
 
 /// Provides the current [AppPlayerState] and exposes methods to control playback.
 final playerStateProvider = NotifierProvider<PlayerNotifier, AppPlayerState>(
@@ -80,6 +81,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
         _recordCurrentSession();
         if (newTrackId != null) {
           _startNewSession(newTrackId);
+          ref.read(adProvider.notifier).incrementTrackCount();
         }
       }
 

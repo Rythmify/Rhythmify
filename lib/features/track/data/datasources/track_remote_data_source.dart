@@ -42,6 +42,9 @@ abstract class TrackRemoteDataSource {
   /// Updates the metadata for the provided track.
   Future<void> updateTrack(String trackId, Map<String, dynamic> data);
 
+  /// Updates the visibility of the provided track.
+  Future<void> updateTrackVisibility(String trackId, bool isPublic);
+
   /// Updates the cover image for the provided track.
   Future<void> updateTrackCover(String trackId, File imageFile);
 
@@ -126,10 +129,16 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
   Future<void> updateTrack(String trackId, Map<String, dynamic> data) async {
     final Map<String, dynamic> metadata = Map.from(data);
     String? artworkPath;
+    bool? isPublic;
 
     // Extract artwork path if present
     if (metadata.containsKey('cover_image_path')) {
       artworkPath = metadata.remove('cover_image_path') as String?;
+    }
+
+    // Extract is_public if present for separate API call
+    if (metadata.containsKey('is_public')) {
+      isPublic = metadata.remove('is_public') as bool?;
     }
 
     // 1. Update artwork if a new local path is provided
@@ -140,13 +149,26 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
       }
     }
 
-    // 2. Update other metadata if any remains
+    // 2. Update visibility if provided
+    if (isPublic != null) {
+      await updateTrackVisibility(trackId, isPublic);
+    }
+
+    // 3. Update other metadata if any remains
     // We filter out null values to avoid overwriting existing data with nulls
     metadata.removeWhere((key, value) => value == null);
 
     if (metadata.isNotEmpty) {
       await client.dio.patch('/tracks/$trackId', data: metadata);
     }
+  }
+
+  @override
+  Future<void> updateTrackVisibility(String trackId, bool isPublic) async {
+    await client.dio.patch(
+      '/tracks/$trackId/visibility',
+      data: {'is_public': isPublic},
+    );
   }
 
   @override

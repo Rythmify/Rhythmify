@@ -4,8 +4,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rythmify/features/notifications/data/datasources/notification_datasources_impl.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// Mock Dio client used to stub HTTP responses for [NotificationDatasourcesImpl] tests.
 class MockDio extends Mock implements Dio {}
 
+/// Tests for [NotificationDatasourcesImpl].
+///
+/// Covers [getNotifications] filtering of [NotificationType.newPostByFollowed],
+/// pagination metadata, [getUnreadCount], [markNotificationAsRead],
+/// [getFollowStatus] boolean extraction, and [getTrackIdByCommentId] parsing.
 void main() {
   late NotificationDatasourcesImpl datasource;
   late MockDio mockDio;

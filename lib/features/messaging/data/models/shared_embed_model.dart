@@ -15,6 +15,11 @@ class SharedEmbedModel extends SharedEmbed {
     super.thumbnailUrl,
   });
 
+  /// Deserialises a [SharedEmbedModel] from an already-normalised [json] map.
+  ///
+  /// This factory is used internally after the datasource has normalised
+  /// field names (e.g. mapping `track_id` → `embedId`). It is NOT called
+  /// directly on raw API responses.
   factory SharedEmbedModel.fromJson(Map<String, dynamic> json) {
     return SharedEmbedModel(
       embedId: json['embedId'] as String,

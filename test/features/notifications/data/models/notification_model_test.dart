@@ -2,6 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rythmify/features/notifications/data/models/notification_model.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// Builds a minimal notification JSON payload for [NotificationModel.fromJson] tests.
+///
+/// Supports null-propagation syntax for optional fields so absent keys are
+/// excluded from the map entirely, matching real API behaviour.
 Map<String, dynamic> _buildJson({
   String id = 'notif-1',
   String type = 'follow',
@@ -16,16 +20,22 @@ Map<String, dynamic> _buildJson({
   return {
     'id': id,
     'type': type,
-    if (actor != null) 'actor': actor,
-    if (resourceType != null) 'resource_type': resourceType,
-    if (resourceId != null) 'resource_id': resourceId,
-    if (resourceDetails != null) 'resource_details': resourceDetails,
-    if (isRead != null) 'is_read': isRead,
+    'actor': ?actor,
+    'resource_type': ?resourceType,
+    'resource_id': ?resourceId,
+    'resource_details': ?resourceDetails,
+    'is_read': ?isRead,
     'created_at': createdAt,
-    if (actionUserId != null) 'action_user_id': actionUserId,
+    'action_user_id': ?actionUserId,
   };
 }
 
+/// Tests for [NotificationModel.fromJson].
+///
+/// Covers all [NotificationType] and [ResourceType] mappings, the actor ID
+/// fallback chain (`actor.id` → `action_user_id` → empty string), display-name
+/// fallback (`display_name` → `username` → "Unknown"), cover-image fallback
+/// (`cover_image` → `cover_url`), and the [NotificationEntity] subtype check.
 void main() {
   group('NotificationModel.fromJson', () {
     group('notification types', () {

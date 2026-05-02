@@ -27,7 +27,7 @@ class DataSourcesSockets {
   Function(Map<String, dynamic>)? _onNotificationRead;
   // Fired whenever inbox data may have changed (new notification, user:blocked).
   // Kept separate so it survives clearConversationListeners().
-  VoidCallback? _onConversationUpdated;
+  //VoidCallback? _onConversationUpdated;
 
   void setOnReconnectedToRoom(Function() callback) {
     _onReconnectedToRoom = callback;

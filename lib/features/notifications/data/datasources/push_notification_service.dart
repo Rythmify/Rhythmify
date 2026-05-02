@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/core/network/api_client.dart';
@@ -18,7 +19,7 @@ class PushNotificationService {
   PushNotificationService(this._route);
 
   Future<void> initialize() async {
-    print('🔔 [PUSH] initialize() started');
+    debugPrint('🔔 [PUSH] initialize() started');
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     await _requestPermission();
@@ -28,7 +29,7 @@ class PushNotificationService {
     _handleForegroundmessages();
     _handleMessageOpenApp();
     await _handleIntitialMessage();
-    print('✅ [PUSH] initialize() complete');
+    debugPrint('✅ [PUSH] initialize() complete');
   }
 
   Future<void> _requestPermission() async {
@@ -37,7 +38,7 @@ class PushNotificationService {
       badge: true,
       sound: true,
     );
-    print('🔐 [PUSH] permission status: ${settings.authorizationStatus}');
+    debugPrint('🔐 [PUSH] permission status: ${settings.authorizationStatus}');
   }
 
   Future<void> _initLocalNotifications() async {
@@ -64,20 +65,20 @@ class PushNotificationService {
 
   Future<void> _registerToken() async {
     final token = await _fcm.getToken();
-    print('📱 [PUSH] FCM token: $token');
+    debugPrint('📱 [PUSH] FCM token: $token');
     if (token != null) _postToken(token);
   }
 
   Future<void> _postToken(String token) async {
     try {
-      print('📤 [PUSH] registering token with backend...');
+      debugPrint('📤 [PUSH] registering token with backend...');
       await apiClient.dio.post(
         '/notifications/push/register',
         data: {'token': token, 'platform': 'android'},
       );
-      print('✅ [PUSH] token registered successfully');
+      debugPrint('✅ [PUSH] token registered successfully');
     } catch (e) {
-      print('❌ [PUSH] token registration failed: $e');
+      debugPrint('❌ [PUSH] token registration failed: $e');
     }
   }
 
@@ -95,7 +96,7 @@ class PushNotificationService {
 
   void _handleForegroundmessages() {
     FirebaseMessaging.onMessage.listen((message) {
-      print(
+      debugPrint(
         '📩 [PUSH] foreground message received: title="${message.notification?.title}" data=${message.data}',
       );
       final notification = message.notification;
@@ -121,7 +122,7 @@ class PushNotificationService {
 
   void _handleMessageOpenApp() {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print(
+      debugPrint(
         '👆 [PUSH] notification tapped (app was background): data=${message.data}',
       );
       _navigateFromData(message.data);
@@ -131,7 +132,9 @@ class PushNotificationService {
   Future<void> _handleIntitialMessage() async {
     final message = await _fcm.getInitialMessage();
     if (message != null) {
-      print('🚀 [PUSH] app launched from notification: data=${message.data}');
+      debugPrint(
+        '🚀 [PUSH] app launched from notification: data=${message.data}',
+      );
       _navigateFromData(message.data);
     }
   }
@@ -140,7 +143,10 @@ class PushNotificationService {
     final type = data['type'] as String?;
     if (type == null) return null;
     final resourceType = data['resource_type'] as String? ?? '';
-    final resourceId = data['resource_id'] as String? ?? '';
+    final resourceId =
+        (data['resource_id'] ?? data['referenceId'] ?? data['conversationId'])
+            as String? ??
+        '';
     return '$type:$resourceType:$resourceId';
   }
 
@@ -157,14 +163,16 @@ class PushNotificationService {
   void _navigateFromData(Map<String, dynamic> data) {
     _navigateByType(
       type: data['type'] as String?,
-      resourceId: (data['resource_id'] ?? data['referenceId']) as String?,
+      resourceId:
+          (data['resource_id'] ?? data['referenceId'] ?? data['conversationId'])
+              as String?,
       resourceType: data['resource_type'] as String?,
     );
   }
 
   void _listenForTokenRefresh() {
     _fcm.onTokenRefresh.listen((token) {
-      print('🔄 [PUSH] token refreshed, re-registering...');
+      debugPrint('🔄 [PUSH] token refreshed, re-registering...');
       _postToken(token);
     });
   }
@@ -174,7 +182,7 @@ class PushNotificationService {
     String? resourceType,
     String? resourceId,
   }) {
-    print(
+    debugPrint(
       '🧭 [PUSH] navigating — type=$type resourceType=$resourceType resourceId=$resourceId',
     );
     final hasResource = resourceId != null && resourceId.isNotEmpty;
@@ -189,8 +197,8 @@ class PushNotificationService {
           _route.push('/home/notifications');
         }
       case 'new_post_by_followed':
-        _route.push('/home/notifications');
-      case 'message':
+        _route.push('/home/behind-the-track/$resourceId');
+      case 'new_message':
         if (hasResource) {
           _route.push('/home/inbox/chat/$resourceId');
         } else {

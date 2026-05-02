@@ -34,11 +34,13 @@ enum TrackModalMode { share, info }
 class TrackOptionsModal extends ConsumerWidget {
   final Track track;
   final TrackModalMode mode;
+  final VoidCallback? onCollapse;
 
   const TrackOptionsModal({
     super.key,
     required this.track,
     this.mode = TrackModalMode.info, // Default to info if not specified
+    this.onCollapse,
   });
 
   // --- Share Methods ---
@@ -386,6 +388,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Go to profile',
                     onTap: () {
                       Navigator.pop(context);
+                      onCollapse?.call();
                       context.push('/home/profile/${syncedTrack.userId}');
                     },
                   ),
@@ -397,6 +400,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'View comments',
                     onTap: () {
                       Navigator.pop(context);
+                      onCollapse?.call();
                       context.pushNamed(
                         'comments',
                         pathParameters: {'trackId': syncedTrack.id},
@@ -447,6 +451,7 @@ class TrackOptionsModal extends ConsumerWidget {
                     label: 'Behind This Track',
                     onTap: () {
                       Navigator.pop(context);
+                      onCollapse?.call();
                       context.pushNamed(
                         'behindTheTrack',
                         pathParameters: {'trackId': syncedTrack.id},

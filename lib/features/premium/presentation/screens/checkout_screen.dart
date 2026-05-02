@@ -59,9 +59,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    // Clear any stale success flag from a previous checkout
+    // Clear any stale success flag and errors from a previous checkout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(premiumProvider.notifier).clearCheckoutSuccess();
+      ref.read(premiumProvider.notifier).clearError();
     });
   }
 

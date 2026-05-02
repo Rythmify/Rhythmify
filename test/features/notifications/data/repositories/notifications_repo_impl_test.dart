@@ -5,9 +5,14 @@ import 'package:rythmify/features/notifications/data/models/notification_model.d
 import 'package:rythmify/features/notifications/data/repositories/notifications_repo_impl.dart';
 import 'package:rythmify/features/notifications/domain/entities/notification_entity.dart';
 
+/// Mock for [NotificationRemoteDatasources] used to isolate [NotificationsRepoImpl].
 class MockNotificationRemoteDatasources extends Mock
     implements NotificationRemoteDatasources {}
 
+/// Tests for [NotificationsRepoImpl].
+///
+/// Verifies that all five repository methods are thin delegates to
+/// [NotificationRemoteDatasources] with no parameter transformation.
 void main() {
   late NotificationsRepoImpl repo;
   late MockNotificationRemoteDatasources mockDatasource;
