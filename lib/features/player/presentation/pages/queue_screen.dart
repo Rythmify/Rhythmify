@@ -158,19 +158,17 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               },
               itemBuilder: (context, index) {
                 final item = manualUpcoming[index];
-                return ReorderableDelayedDragStartListener(
+                return Material(
                   key: ValueKey(item.queueItemId),
-                  index: index,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: _QueueTile(
-                      item: item,
-                      onTap: () {
-                        ref
-                            .read(queueStateProvider.notifier)
-                            .playFromQueue(index);
-                      },
-                    ),
+                  color: Colors.transparent,
+                  child: _QueueTile(
+                    item: item,
+                    index: index,
+                    onTap: () {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .playFromQueue(index);
+                    },
                   ),
                 );
               },
@@ -234,6 +232,7 @@ class _QueueTile extends StatelessWidget {
   final bool isHistory;
   final bool showDragHandle;
   final VoidCallback onTap;
+  final int? index;
 
   const _QueueTile({
     required this.item,
@@ -241,6 +240,7 @@ class _QueueTile extends StatelessWidget {
     this.isHistory = false,
     this.showDragHandle = true,
     required this.onTap,
+    this.index,
   });
 
   @override
@@ -333,10 +333,19 @@ class _QueueTile extends StatelessWidget {
 
             // --- Drag Handle on the Right ---
             if (!isHistory && !isActive && showDragHandle)
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),
-              ),
+              if (index != null)
+                ReorderableDragStartListener(
+                  index: index!,
+                  child: const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Icon(Icons.drag_handle, color: Colors.grey, size: 22),
+                  ),
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.drag_handle, color: Colors.grey, size: 20),
+                ),
           ],
         ),
       ),
