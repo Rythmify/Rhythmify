@@ -331,6 +331,22 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   }
 
   Future<void> _pickArtwork() async {
+    // Windows desktop: open file picker directly
+    if (Platform.isWindows) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final path = result.files.first.path;
+        if (path != null) {
+          ref.read(uploadFormProvider.notifier).setArtwork(path);
+        }
+      }
+      return;
+    }
+
+    // Mobile: show gallery/camera options
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
@@ -381,27 +397,15 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
 
     if (source == null) return;
 
-    String? path;
-    if (Platform.isWindows) {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        path = result.files.first.path;
-      }
-    } else {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        imageQuality: 85,
-        maxWidth: 1000,
-        maxHeight: 1000,
-      );
-      path = image?.path;
-    }
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1000,
+      maxHeight: 1000,
+    );
 
-    if (path != null) {
-      ref.read(uploadFormProvider.notifier).setArtwork(path);
+    if (image?.path != null) {
+      ref.read(uploadFormProvider.notifier).setArtwork(image!.path);
     }
   }
 
