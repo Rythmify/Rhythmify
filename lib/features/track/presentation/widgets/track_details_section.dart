@@ -75,7 +75,8 @@ class TrackDetailsSection extends ConsumerWidget {
 
             String label = 'Download';
             IconData icon = Icons.download_rounded;
-            VoidCallback? onPressed = () => ref.read(downloadsProvider.notifier).downloadTrack(track);
+            VoidCallback? onPressed = () =>
+                ref.read(downloadsProvider.notifier).downloadTrack(track);
 
             if (isDownloaded) {
               label = 'Downloaded';
@@ -99,21 +100,27 @@ class TrackDetailsSection extends ConsumerWidget {
                   OutlinedButton.icon(
                     key: const Key('behind_the_track_download_button'),
                     onPressed: onPressed,
-                    icon: progress != null 
-                      ? SizedBox(
-                          width: 16, 
-                          height: 16, 
-                          child: CircularProgressIndicator(
-                            value: progress,
-                            strokeWidth: 2,
-                            color: AppTheme.textPrimary,
-                          ),
-                        )
-                      : Icon(icon, size: 20),
+                    icon: progress != null
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 2,
+                              color: AppTheme.textPrimary,
+                            ),
+                          )
+                        : Icon(icon, size: 20),
                     label: Text(label),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: isDownloaded ? AppTheme.primaryBrand : AppTheme.textPrimary,
-                      side: BorderSide(color: isDownloaded ? AppTheme.primaryBrand : AppTheme.textSecondary),
+                      foregroundColor: isDownloaded
+                          ? AppTheme.primaryBrand
+                          : AppTheme.textPrimary,
+                      side: BorderSide(
+                        color: isDownloaded
+                            ? AppTheme.primaryBrand
+                            : AppTheme.textSecondary,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),

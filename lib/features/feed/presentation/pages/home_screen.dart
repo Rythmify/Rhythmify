@@ -341,7 +341,7 @@ class _NoInternetPlaceholder extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-             Text(
+            Text(
               'Please check your connection or listen to your downloaded music.',
               style: AppTheme.bodyMedium,
               textAlign: TextAlign.center,

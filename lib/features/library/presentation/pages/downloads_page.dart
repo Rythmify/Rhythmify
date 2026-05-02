@@ -88,11 +88,11 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
                 child: CircularProgressIndicator(color: AppTheme.primaryBrand),
               )
             : state.error != null && state.tracks.isEmpty
-                ? _ErrorState(
-                    error: state.error!,
-                    onRetry: () => ref.read(downloadsProvider.notifier).load(),
-                  )
-                : _buildScrollView(context, state),
+            ? _ErrorState(
+                error: state.error!,
+                onRetry: () => ref.read(downloadsProvider.notifier).load(),
+              )
+            : _buildScrollView(context, state),
       ),
     );
   }
@@ -152,7 +152,9 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
                 children: [
                   Text(
                     'Active Downloads',
-                    style: AppTheme.titleMedium.copyWith(color: AppTheme.primaryBrand),
+                    style: AppTheme.titleMedium.copyWith(
+                      color: AppTheme.primaryBrand,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ...state.downloadingProgress.entries.map((entry) {
@@ -160,7 +162,11 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
-                          const Icon(Icons.downloading, color: AppTheme.textSecondary, size: 20),
+                          const Icon(
+                            Icons.downloading,
+                            color: AppTheme.textSecondary,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -265,10 +271,7 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _DownloadsHeader extends StatelessWidget {
-  const _DownloadsHeader({
-    required this.onShuffle,
-    required this.onPlay,
-  });
+  const _DownloadsHeader({required this.onShuffle, required this.onPlay});
 
   final VoidCallback onShuffle;
   final VoidCallback onPlay;

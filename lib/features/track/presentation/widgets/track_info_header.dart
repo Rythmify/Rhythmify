@@ -56,8 +56,11 @@ class TrackInfoHeader extends StatelessWidget {
                               ? CachedNetworkImage(
                                   imageUrl: track.artworkUrl,
                                   fit: BoxFit.cover,
-                                  placeholder: (c, u) => const Center(child: CircularProgressIndicator()),
-                                  errorWidget: (c, u, e) => const Icon(Icons.error),
+                                  placeholder: (c, u) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (c, u, e) =>
+                                      const Icon(Icons.error),
                                 )
                               : Image.asset(
                                   track.artworkUrl,
@@ -123,26 +126,25 @@ class TrackInfoHeader extends StatelessWidget {
                           height: 110,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
-                                width: 110,
-                                height: 110,
-                                color: AppTheme.perfectGrey,
-                                child: const Icon(
-                                  Icons.music_note,
-                                  color: Colors.white,
-                                  size: 40,
-                                ),
-                              ),
-                          errorWidget: (context, url, error) =>
-                              Container(
-                                width: 110,
-                                height: 110,
-                                color: AppTheme.perfectGrey,
-                                child: const Icon(
-                                  Icons.music_note,
-                                  color: Colors.white,
-                                  size: 40,
-                                ),
-                              ),
+                            width: 110,
+                            height: 110,
+                            color: AppTheme.perfectGrey,
+                            child: const Icon(
+                              Icons.music_note,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 110,
+                            height: 110,
+                            color: AppTheme.perfectGrey,
+                            child: const Icon(
+                              Icons.music_note,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          ),
                         )
                       : Image.asset(
                           track.artworkUrl,

@@ -39,7 +39,13 @@ class DownloadsState extends Equatable {
   );
 
   @override
-  List<Object?> get props => [tracks, downloadingProgress, downloadErrors, isLoading, error];
+  List<Object?> get props => [
+    tracks,
+    downloadingProgress,
+    downloadErrors,
+    isLoading,
+    error,
+  ];
 }
 
 class DownloadsNotifier extends Notifier<DownloadsState> {
@@ -58,10 +64,13 @@ class DownloadsNotifier extends Notifier<DownloadsState> {
     try {
       final box = await Hive.openBox(_boxName);
       final rawData = box.get(_key) as List<dynamic>?;
-      
+
       if (rawData != null) {
         final tracks = rawData
-            .map((e) => DownloadedTrack.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) =>
+                  DownloadedTrack.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
         state = state.copyWith(tracks: tracks, isLoading: false);
       } else {
@@ -93,7 +102,7 @@ class DownloadsNotifier extends Notifier<DownloadsState> {
     // Start download
     final progressMap = Map<String, double>.from(state.downloadingProgress);
     progressMap[track.id] = 0.0;
-    
+
     final errorMap = Map<String, String>.from(state.downloadErrors);
     errorMap.remove(track.id);
 
@@ -114,8 +123,10 @@ class DownloadsNotifier extends Notifier<DownloadsState> {
       // Simulate progress
       for (int i = 1; i <= 10; i++) {
         await Future.delayed(const Duration(milliseconds: 300));
-        
-        final currentProgressMap = Map<String, double>.from(state.downloadingProgress);
+
+        final currentProgressMap = Map<String, double>.from(
+          state.downloadingProgress,
+        );
         currentProgressMap[track.id] = i / 10.0;
         state = state.copyWith(downloadingProgress: currentProgressMap);
       }
@@ -132,19 +143,23 @@ class DownloadsNotifier extends Notifier<DownloadsState> {
         downloadedAt: DateTime.now(),
       );
 
-      final finalProgressMap = Map<String, double>.from(state.downloadingProgress);
+      final finalProgressMap = Map<String, double>.from(
+        state.downloadingProgress,
+      );
       finalProgressMap.remove(track.id);
 
       state = state.copyWith(
         tracks: [completedTrack, ...state.tracks],
         downloadingProgress: finalProgressMap,
       );
-      
+
       await _saveToHive();
     } catch (e) {
-      final finalProgressMap = Map<String, double>.from(state.downloadingProgress);
+      final finalProgressMap = Map<String, double>.from(
+        state.downloadingProgress,
+      );
       finalProgressMap.remove(track.id);
-      
+
       final finalErrorMap = Map<String, String>.from(state.downloadErrors);
       finalErrorMap[track.id] = e.toString();
 

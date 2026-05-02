@@ -4,7 +4,7 @@ class TrackDto {
   static Track fromJson(Map<dynamic, dynamic> json) {
     // Ensure we have a Map<String, dynamic> for internal logic
     final Map<String, dynamic> normalizedJson = Map<String, dynamic>.from(json);
-    
+
     // Some responses wrap data in a 'data' field
     final Map<String, dynamic> data = normalizedJson.containsKey('data')
         ? Map<String, dynamic>.from(normalizedJson['data'] as Map)
@@ -140,5 +140,3 @@ class TrackDto {
     };
   }
 }
-
-

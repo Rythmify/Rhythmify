@@ -124,9 +124,13 @@ class DownloadedTrack extends Equatable {
 
   factory DownloadedTrack.fromJson(Map<dynamic, dynamic> json) {
     return DownloadedTrack(
-      track: TrackDto.fromJson(Map<dynamic, dynamic>.from(json['track'] as Map)),
+      track: TrackDto.fromJson(
+        Map<dynamic, dynamic>.from(json['track'] as Map),
+      ),
       localPath: json['local_path'] as String? ?? '',
-      downloadedAt: DateTime.tryParse(json['downloaded_at'] as String? ?? '') ?? DateTime.now(),
+      downloadedAt:
+          DateTime.tryParse(json['downloaded_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }

@@ -148,23 +148,23 @@ class TrackCard extends ConsumerWidget {
             if (showOptions)
               InkWell(
                 key: Key('track_card_${track.id}_more_inkwell'),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useRootNavigator: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => TrackOptionsModal(track: track),
-                );
-              },
-              borderRadius: BorderRadius.circular(8),
-              highlightColor: Colors.white.withValues(alpha: 0.1),
-              splashColor: Colors.white.withValues(alpha: 0.2),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: Icon(Icons.more_vert, color: Colors.grey),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useRootNavigator: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => TrackOptionsModal(track: track),
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                highlightColor: Colors.white.withValues(alpha: 0.1),
+                splashColor: Colors.white.withValues(alpha: 0.2),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: Icon(Icons.more_vert, color: Colors.grey),
+                ),
               ),
-            ),
           ],
         ),
       ),

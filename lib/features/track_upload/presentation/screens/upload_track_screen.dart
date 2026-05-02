@@ -718,8 +718,10 @@ class _AdvancedTab extends ConsumerWidget {
               runSpacing: 8,
               children: draft.geoRegions.map((code) {
                 final name = UploadTrackScreen._countries.entries
-                    .firstWhere((e) => e.value == code,
-                        orElse: () => MapEntry(code, code))
+                    .firstWhere(
+                      (e) => e.value == code,
+                      orElse: () => MapEntry(code, code),
+                    )
                     .key;
                 return Chip(
                   label: Text(
@@ -727,7 +729,11 @@ class _AdvancedTab extends ConsumerWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                   backgroundColor: Colors.white12,
-                  deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white54),
+                  deleteIcon: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: Colors.white54,
+                  ),
                   onDeleted: () => notifier.toggleGeoRegion(code),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -818,7 +824,9 @@ class _RestrictionOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.05) : Colors.transparent,
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.white : Colors.white12,
@@ -848,7 +856,11 @@ class _RestrictionOption extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
           ],
         ),
       ),
@@ -860,7 +872,8 @@ class _CountryPickerModal extends ConsumerStatefulWidget {
   const _CountryPickerModal();
 
   @override
-  ConsumerState<_CountryPickerModal> createState() => _CountryPickerModalState();
+  ConsumerState<_CountryPickerModal> createState() =>
+      _CountryPickerModalState();
 }
 
 class _CountryPickerModalState extends ConsumerState<_CountryPickerModal> {
@@ -943,7 +956,9 @@ class _CountryPickerModalState extends ConsumerState<_CountryPickerModal> {
                     entry.key,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                   trailing: Checkbox(

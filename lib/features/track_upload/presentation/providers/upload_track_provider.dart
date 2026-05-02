@@ -198,8 +198,7 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
     _updateDraft(state.draft!.copyWith(geoRegions: current));
   }
 
-  void clearGeoRegions() =>
-      _updateDraft(state.draft!.copyWith(geoRegions: []));
+  void clearGeoRegions() => _updateDraft(state.draft!.copyWith(geoRegions: []));
 
   void setUploadProgress(double progress) {
     if (state.draft == null) return;

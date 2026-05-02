@@ -135,7 +135,7 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
     if (metadata.containsKey('cover_image_path')) {
       artworkPath = metadata.remove('cover_image_path') as String?;
     }
-    
+
     // Extract is_public if present for separate API call
     if (metadata.containsKey('is_public')) {
       isPublic = metadata.remove('is_public') as bool?;
@@ -148,7 +148,7 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
         await updateTrackCover(trackId, artworkFile);
       }
     }
-    
+
     // 2. Update visibility if provided
     if (isPublic != null) {
       await updateTrackVisibility(trackId, isPublic);
@@ -165,7 +165,10 @@ class TrackRemoteDataSourceImpl implements TrackRemoteDataSource {
 
   @override
   Future<void> updateTrackVisibility(String trackId, bool isPublic) async {
-    await client.dio.patch('/tracks/$trackId/visibility', data: {'is_public': isPublic});
+    await client.dio.patch(
+      '/tracks/$trackId/visibility',
+      data: {'is_public': isPublic},
+    );
   }
 
   @override
