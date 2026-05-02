@@ -14,7 +14,7 @@ Map<String, dynamic> _buildJson({
   return {
     'id': id,
     'participant': participant ?? {'id': 'user-2', 'display_name': 'Alice'},
-    if (lastMessage != null) 'last_message': lastMessage,
+    'last_message': ?lastMessage,
     'unread_count': unreadCount,
   };
 }

@@ -197,7 +197,7 @@ void main() {
         }),
       );
 
-      expect(await result, true);
+      expect(result, true);
     });
   });
 }

@@ -299,13 +299,13 @@ final isPremiumProvider = Provider<bool>((ref) {
 
 /// Granular gate providers — use these instead of rolling your own checks.
 final canUploadTracksProvider = Provider<bool>((ref) {
-  return ref.watch(premiumProvider).canUploadMoreTracks;
+  return ref.watch(isPremiumProvider);
 });
 
 final canCreatePlaylistsProvider = Provider<bool>((ref) {
-  return ref.watch(premiumProvider).canCreateMorePlaylists;
+  return ref.watch(isPremiumProvider);
 });
 
 final canDownloadProvider = Provider<bool>((ref) {
-  return ref.watch(premiumProvider).canDownload;
+  return ref.watch(isPremiumProvider);
 });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:rythmify/core/presentation/widgets/cast_media_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
@@ -142,6 +143,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               label: 'Your uploads',
               key: const Key('library_uploads_item'),
               onTap: () => context.push('/library/uploads'),
+            ),
+            _menuItem(
+              context,
+              label: 'Downloads',
+              key: const Key('library_downloads_item'),
+              onTap: () => context.push('/library/downloads'),
             ),
 
             const SizedBox(height: 8),
@@ -399,12 +406,13 @@ class _RecentlyPlayedItem extends ConsumerWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: entry.artworkUrl != null
-                  ? Image.network(
-                      entry.artworkUrl!,
+                  ? CachedNetworkImage(
+                      imageUrl: entry.artworkUrl!,
                       width: 75,
                       height: 75,
                       fit: BoxFit.cover,
-                      errorBuilder: (c, u, e) => _placeholder(),
+                      placeholder: (c, u) => _placeholder(),
+                      errorWidget: (c, u, e) => _placeholder(),
                     )
                   : _placeholder(),
             ),

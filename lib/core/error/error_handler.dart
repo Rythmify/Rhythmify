@@ -36,8 +36,10 @@ class ErrorHandler {
       }
 
       if (error.type == DioExceptionType.connectionTimeout ||
-          error.type == DioExceptionType.receiveTimeout) {
-        return 'Connection timed out. Please check your internet.';
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.connectionError) {
+        return 'Connection error. Please check your internet.';
       }
 
       return serverMessage?.toString() ??
