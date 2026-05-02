@@ -282,26 +282,52 @@ class PlaylistRemoteDatasource {
   // ============================================================
   // ── FETCH: Tracks Inside a Playlist
   // ============================================================
-  Future<List<PlaylistTrack>> fetchPlaylistTracks(
+   Future<List<PlaylistTrack>> fetchPlaylistTracks(
     String playlistId, {
-    int page = 1,
     int limit = 20,
   }) async {
-    _log('→ GET /playlists/$playlistId/tracks  page=$page limit=$limit');
-    try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/playlists/$playlistId/tracks',
-        queryParameters: {'page': page, 'limit': limit},
+    final allTracks = <PlaylistTrack>[];
+    int page = 1;
+    bool hasNext = true;
+    const int maxPages = 20; // safety cap — 20 pages × 20 = 400 tracks max
+ 
+    while (hasNext && page <= maxPages) {
+      _log(
+        '→ GET /playlists/$playlistId/tracks  page=$page limit=$limit',
       );
-      _log('← ${response.statusCode}');
-      final data = response.data!['data'] as Map<String, dynamic>;
-      final trackList = data['tracks'] as List<dynamic>;
-      _log('← Got ${trackList.length} tracks for playlist $playlistId');
-      return PlaylistTrackModel.fromJsonList(trackList);
-    } on DioException catch (e) {
-      _logError('fetchPlaylistTracks($playlistId) failed', e);
-      rethrow;
+      try {
+        final response = await _dio.get<Map<String, dynamic>>(
+          '/playlists/$playlistId/tracks',
+          queryParameters: {'page': page, 'limit': limit},
+        );
+        _log('← ${response.statusCode}');
+ 
+        final data = response.data!['data'] as Map<String, dynamic>;
+        final trackList = data['tracks'] as List<dynamic>;
+        final pagination = data['pagination'] as Map<String, dynamic>?;
+ 
+        _log(
+          '← Page $page: ${trackList.length} tracks'
+          '  has_next=${pagination?['has_next']}',
+        );
+ 
+        final parsed = PlaylistTrackModel.fromJsonList(trackList);
+        allTracks.addAll(parsed);
+ 
+        // Check if there are more pages
+        hasNext = pagination?['has_next'] as bool? ?? false;
+        page++;
+      } on DioException catch (e) {
+        _logError('fetchPlaylistTracks($playlistId) page=$page failed', e);
+        rethrow;
+      }
     }
+ 
+    _log(
+      '← fetchPlaylistTracks done: ${allTracks.length} total tracks '
+      'across ${page - 1} page(s)',
+    );
+    return allTracks;
   }
 
   // ============================================================
