@@ -21,6 +21,10 @@ class TrackDto {
           data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',
+      artistUsername:
+          data['username'] as String? ??
+          data['artist_username'] as String? ??
+          data['user']?['username'] as String?,
 
       artistPfp:
           data['profile_picture'] as String? ??
@@ -101,6 +105,7 @@ class TrackDto {
       'user_id': track.userId,
       'title': track.title,
       'artist': track.artist,
+      'artist_username': track.artistUsername,
       'artist_pfp': track.artistPfp,
       'artist_city': track.artistCity,
       'artist_country': track.artistCountry,
