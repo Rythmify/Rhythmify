@@ -7,7 +7,6 @@ import '../providers/search_providers.dart';
 import '../widgets/track_tile.dart';
 import '../widgets/search_profiles_tab.dart';
 import '../../../../core/domain/entities/track.dart';
-import '../../../../core/utils/formatters.dart';
 import '../pages/search_seeall_page.dart';
 import '../widgets/search_tracks_tab.dart';
 import '../../../player/presentation/providers/queue_provider.dart';
@@ -203,8 +202,16 @@ class _PlaylistRow extends StatelessWidget {
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              Container(width: 50, height: 50, color: Colors.grey[800]),
+          errorBuilder: (_, _, _) => Container(
+            width: 50,
+            height: 50,
+            color: Colors.grey[800],
+            child: const Icon(
+              Icons.music_note,
+              color: Colors.white54,
+              size: 22,
+            ),
+          ),
         ),
       ),
       title: Text(
@@ -214,7 +221,7 @@ class _PlaylistRow extends StatelessWidget {
       ),
       // Duration is formatted from raw seconds via [Formatters.formatPlaylistDuration].
       subtitle: Text(
-        'Playlist · ${playlist['trackCount']} tracks · ${Formatters.formatPlaylistDuration(int.parse(playlist['totalSeconds'] ?? '0'))}',
+        'Playlist · ${playlist['trackCount']} tracks',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: Colors.grey[400], fontSize: 12),
@@ -248,8 +255,16 @@ class _AlbumRow extends StatelessWidget {
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              Container(width: 50, height: 50, color: Colors.grey[800]),
+          errorBuilder: (_, _, _) => Container(
+            width: 50,
+            height: 50,
+            color: Colors.grey[800],
+            child: const Icon(
+              Icons.music_note,
+              color: Colors.white54,
+              size: 22,
+            ),
+          ),
         ),
       ),
       title: Text(
@@ -333,8 +348,16 @@ class _TopResultCard extends ConsumerWidget {
             width: 50,
             height: 50,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(width: 50, height: 50, color: Colors.grey[800]),
+            errorBuilder: (_, _, _) => Container(
+              width: 50,
+              height: 50,
+              color: Colors.grey[800],
+              child: const Icon(
+                Icons.music_note,
+                color: Colors.white54,
+                size: 22,
+              ),
+            ),
           ),
         ),
         title: Text(
@@ -360,8 +383,16 @@ class _TopResultCard extends ConsumerWidget {
             width: 50,
             height: 50,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) =>
-                Container(width: 50, height: 50, color: Colors.grey[800]),
+            errorBuilder: (_, _, _) => Container(
+              width: 50,
+              height: 50,
+              color: Colors.grey[800],
+              child: const Icon(
+                Icons.music_note,
+                color: Colors.white54,
+                size: 22,
+              ),
+            ),
           ),
         ),
         title: Text(

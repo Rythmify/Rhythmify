@@ -265,6 +265,7 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                     height: 22,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      color: Colors.grey[800],
                       image: DecorationImage(
                         image:
                             widget.track.coverImage != null &&
@@ -299,7 +300,18 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
               child:
                   widget.track.coverImage != null &&
                       widget.track.coverImage!.startsWith('http')
-                  ? Image.network(widget.track.coverImage!, fit: BoxFit.cover)
+                  ? Image.network(
+                      widget.track.coverImage!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.music_note,
+                              color: Colors.white54,
+                              size: 28,
+                            ),
+                          ),
+                    )
                   : Image.asset(
                       widget.track.coverImage ?? widget.track.artworkUrl,
                       fit: BoxFit.cover,

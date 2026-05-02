@@ -27,8 +27,17 @@ class GenreAlbumCard extends StatelessWidget {
                     width: double.infinity,
                     height: 160,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) =>
-                        Container(height: 160, color: Colors.grey[800]),
+                    errorBuilder: (_, _, _) => Container(
+                      height: 160,
+                      color: Colors.grey[800],
+                      child: const Center(
+                        child: Icon(
+                          Icons.music_note,
+                          color: Colors.white54,
+                          size: 32,
+                        ),
+                      ),
+                    ),
                   )
                 : Image.asset(
                     album.coverImage.isNotEmpty
@@ -38,8 +47,17 @@ class GenreAlbumCard extends StatelessWidget {
                     width: double.infinity,
                     height: 160,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) =>
-                        Container(height: 160, color: Colors.grey[800]),
+                    errorBuilder: (_, _, _) => Container(
+                      height: 160,
+                      color: Colors.grey[800],
+                      child: const Center(
+                        child: Icon(
+                          Icons.music_note,
+                          color: Colors.white54,
+                          size: 32,
+                        ),
+                      ),
+                    ),
                   ),
           ),
           const SizedBox(height: 6),
