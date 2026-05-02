@@ -37,20 +37,28 @@ class SharedEmbedTileWidget extends StatelessWidget {
         tileColor: isSelected ? const Color(0xFF2F2F2F) : Colors.transparent,
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: embed.thumbnailUrl != null
+          child: (embed.thumbnailUrl != null && embed.thumbnailUrl!.isNotEmpty)
               ? Image.network(
                   embed.thumbnailUrl!,
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 48,
+                    height: 48,
+                    color: const Color(0xFF2F2F2F),
+                    child: embed.embedType == 'track'
+                        ? const Icon(Icons.music_note, color: Colors.white54)
+                        : const Icon(Icons.queue_music, color: Colors.white54),
+                  ),
                 )
               : Container(
                   width: 48,
                   height: 48,
-                  color: Color(0xFF2F2F2F),
+                  color: const Color(0xFF2F2F2F),
                   child: embed.embedType == 'track'
-                      ? Icon(Icons.music_note, color: Colors.white54)
-                      : Icon(Icons.queue_music, color: Colors.white54),
+                      ? const Icon(Icons.music_note, color: Colors.white54)
+                      : const Icon(Icons.queue_music, color: Colors.white54),
                 ),
         ),
         title: Text(
