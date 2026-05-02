@@ -19,6 +19,35 @@ class UploadTrackScreen extends ConsumerStatefulWidget {
   final track_entity.Track? track;
   const UploadTrackScreen({super.key, this.track});
 
+  static const Map<String, String> _countries = {
+    'Egypt': 'EG',
+    'Palestine': 'PS',
+    'Saudi Arabia': 'SA',
+    'United Arab Emirates': 'AE',
+    'Jordan': 'JO',
+    'Lebanon': 'LB',
+    'Syria': 'SY',
+    'Iraq': 'IQ',
+    'Kuwait': 'KW',
+    'Qatar': 'QA',
+    'Bahrain': 'BH',
+    'Oman': 'OM',
+    'Yemen': 'YE',
+    'Libya': 'LY',
+    'Tunisia': 'TN',
+    'Algeria': 'DZ',
+    'Morocco': 'MA',
+    'Sudan': 'SD',
+    'United States': 'US',
+    'United Kingdom': 'GB',
+    'Germany': 'DE',
+    'France': 'FR',
+    'Japan': 'JP',
+    'Brazil': 'BR',
+    'Canada': 'CA',
+    'Australia': 'AU',
+  };
+
   @override
   ConsumerState<UploadTrackScreen> createState() => _UploadTrackScreenState();
 }
@@ -231,6 +260,7 @@ class _UploadTrackScreenState extends ConsumerState<UploadTrackScreen>
                   content: Text('Track uploaded successfully!'),
                 ),
               );
+              context.pop();
             }
           },
           onError: (error) {
@@ -272,6 +302,7 @@ class _TrackInfoTab extends ConsumerStatefulWidget {
 
 class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   late TextEditingController _titleController;
+  late TextEditingController _tagController;
   late TextEditingController _collaboratorController;
   late TextEditingController _descriptionController;
   final ImagePicker _picker = ImagePicker();
@@ -281,6 +312,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
     super.initState();
     final draft = ref.read(uploadFormProvider).draft;
     _titleController = TextEditingController(text: draft?.title ?? '');
+    _tagController = TextEditingController();
     _collaboratorController = TextEditingController();
     _descriptionController = TextEditingController(
       text: draft?.description ?? '',
@@ -290,6 +322,7 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
   @override
   void dispose() {
     _titleController.dispose();
+    _tagController.dispose();
     _collaboratorController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -444,11 +477,11 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Tags — picker from backend list ───────────────────
+                // ── Tags — free text input ───────────────────────────
                 const _FieldLabel(label: 'Tags'),
                 const SizedBox(height: 8),
-                _TagsPickerField(
-                  availableTags: state.availableTags,
+                _TagsInput(
+                  controller: _tagController,
                   selectedTags: draft?.tags ?? [],
                   onAdd: notifier.addTag,
                   onRemove: notifier.removeTag,
@@ -623,24 +656,330 @@ class _TrackInfoTabState extends ConsumerState<_TrackInfoTab> {
 // ADVANCED TAB
 // ══════════════════════════════════════════════════════════════════════════════
 
-class _AdvancedTab extends StatelessWidget {
+class _AdvancedTab extends ConsumerWidget {
   const _AdvancedTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(uploadFormProvider);
+    final draft = state.draft;
+    final notifier = ref.read(uploadFormProvider.notifier);
+
+    if (draft == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      children: [
+        const _FieldLabel(label: 'Geo-Restrictions'),
+        const SizedBox(height: 16),
+        _GeoRestrictionSelector(
+          currentType: draft.geoRestrictionType,
+          onChanged: (type) {
+            notifier.setGeoRestrictionType(type);
+            if (type == 'worldwide') {
+              notifier.clearGeoRegions();
+            }
+          },
+        ),
+        if (draft.geoRestrictionType != 'worldwide') ...[
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _FieldLabel(
+                label: draft.geoRestrictionType == 'exclusive_regions'
+                    ? 'Allowed Countries'
+                    : 'Blocked Countries',
+              ),
+              TextButton(
+                onPressed: () => _showCountryPicker(context, ref),
+                child: const Text(
+                  'Add Countries',
+                  style: TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (draft.geoRegions.isEmpty)
+            const Text(
+              'No countries selected yet.',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: draft.geoRegions.map((code) {
+                final name = UploadTrackScreen._countries.entries
+                    .firstWhere((e) => e.value == code,
+                        orElse: () => MapEntry(code, code))
+                    .key;
+                return Chip(
+                  label: Text(
+                    name,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  backgroundColor: Colors.white12,
+                  deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white54),
+                  onDeleted: () => notifier.toggleGeoRegion(code),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: const BorderSide(color: Colors.white24),
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+        const SizedBox(height: 40),
+        const Text(
+          'Advanced features like scheduled releases and custom licenses are coming soon.',
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  void _showCountryPicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => const _CountryPickerModal(),
+    );
+  }
+}
+
+class _GeoRestrictionSelector extends StatelessWidget {
+  final String currentType;
+  final ValueChanged<String> onChanged;
+
+  const _GeoRestrictionSelector({
+    required this.currentType,
+    required this.onChanged,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.tune_rounded, color: Colors.grey, size: 48),
-          SizedBox(height: 16),
-          Text(
-            'Advanced settings',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+    return Column(
+      children: [
+        _RestrictionOption(
+          title: 'Worldwide',
+          subtitle: 'Available everywhere',
+          isSelected: currentType == 'worldwide',
+          onTap: () => onChanged('worldwide'),
+        ),
+        const SizedBox(height: 16),
+        _RestrictionOption(
+          title: 'Allow Selected',
+          subtitle: 'Only available in specific countries',
+          isSelected: currentType == 'exclusive_regions',
+          onTap: () => onChanged('exclusive_regions'),
+        ),
+        const SizedBox(height: 16),
+        _RestrictionOption(
+          title: 'Block Selected',
+          subtitle: 'Available everywhere except specific countries',
+          isSelected: currentType == 'blocked_regions',
+          onTap: () => onChanged('blocked_regions'),
+        ),
+      ],
+    );
+  }
+}
+
+class _RestrictionOption extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RestrictionOption({
+    required this.title,
+    required this.subtitle,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white.withValues(alpha: 0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white12,
+            width: 1.5,
           ),
-          SizedBox(height: 8),
-          Text(
-            'Coming soon',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CountryPickerModal extends ConsumerStatefulWidget {
+  const _CountryPickerModal();
+
+  @override
+  ConsumerState<_CountryPickerModal> createState() => _CountryPickerModalState();
+}
+
+class _CountryPickerModalState extends ConsumerState<_CountryPickerModal> {
+  String _searchQuery = '';
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(uploadFormProvider);
+    final draft = state.draft!;
+    final notifier = ref.read(uploadFormProvider.notifier);
+
+    final filteredCountries = UploadTrackScreen._countries.entries.where((e) {
+      return e.key.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Select Countries',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _searchController,
+            onChanged: (v) => setState(() => _searchQuery = v),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Search countries...',
+              hintStyle: const TextStyle(color: Colors.grey),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.white10,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredCountries.length,
+              itemBuilder: (context, i) {
+                final entry = filteredCountries[i];
+                final isSelected = draft.geoRegions.contains(entry.value);
+
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    entry.key,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: Checkbox(
+                    value: isSelected,
+                    onChanged: (v) => notifier.toggleGeoRegion(entry.value),
+                    activeColor: Colors.white,
+                    checkColor: Colors.black,
+                    side: const BorderSide(color: Colors.white38, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  onTap: () => notifier.toggleGeoRegion(entry.value),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -931,97 +1270,60 @@ class _GenrePicker extends StatelessWidget {
   }
 }
 
-// ── Tags picker (from backend list — replaces free-text input) ────────────────
+// ── Tags input (free text) ──────────────────────────────────────────────────
 
-class _TagsPickerField extends StatelessWidget {
-  final List<String> availableTags;
+class _TagsInput extends StatelessWidget {
+  final TextEditingController controller;
   final List<String> selectedTags;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
 
-  const _TagsPickerField({
-    required this.availableTags,
+  const _TagsInput({
+    required this.controller,
     required this.selectedTags,
     required this.onAdd,
     required this.onRemove,
   });
 
-  void _showPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => StatefulBuilder(
-        builder: (context, setModalState) => ListView.builder(
-          itemCount: availableTags.length,
-          itemBuilder: (_, i) {
-            final tag = availableTags[i];
-            final isSelected = selectedTags.contains(tag);
-            return ListTile(
-              title: Text(
-                tag,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-              trailing: isSelected
-                  ? const Icon(Icons.check_rounded, color: Colors.white)
-                  : null,
-              onTap: () {
-                if (isSelected) {
-                  onRemove(tag);
-                } else if (selectedTags.length < 10) {
-                  onAdd(tag);
-                }
-                setModalState(() {}); // refresh checkmarks inside modal
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final atLimit = selectedTags.length >= 10;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: availableTags.isEmpty ? null : () => _showPicker(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.white24)),
+        TextField(
+          controller: controller,
+          enabled: !atLimit,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          cursorColor: Colors.white,
+          decoration: InputDecoration(
+            hintText: atLimit
+                ? 'Maximum 10 tags reached'
+                : 'Add tags to describe track for reachability',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+            filled: true,
+            fillColor: AppTheme.background,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 0,
+              vertical: 10,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    availableTags.isEmpty
-                        ? 'Loading tags...'
-                        : selectedTags.isEmpty
-                        ? 'Add tags to describe your track'
-                        : '${selectedTags.length} tag(s) selected',
-                    style: TextStyle(
-                      color: selectedTags.isNotEmpty
-                          ? Colors.white
-                          : Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                const Icon(
-                  Icons.unfold_more_rounded,
-                  color: Colors.grey,
-                  size: 20,
-                ),
-              ],
+            enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white24),
+            ),
+            focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 1.5),
+            ),
+            suffixIcon: const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey,
             ),
           ),
+          onSubmitted: (value) {
+            final tag = value.trim().toLowerCase();
+            if (tag.isEmpty || atLimit) return;
+            onAdd(tag);
+            controller.clear();
+          },
         ),
         const SizedBox(height: 10),
         if (selectedTags.isNotEmpty)

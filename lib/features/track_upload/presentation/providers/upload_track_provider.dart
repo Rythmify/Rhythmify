@@ -178,6 +178,23 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   void removeArtwork() =>
       _updateDraft(state.draft!.copyWith(clearArtwork: true));
 
+  void setGeoRestrictionType(String type) =>
+      _updateDraft(state.draft!.copyWith(geoRestrictionType: type));
+
+  void toggleGeoRegion(String region) {
+    if (state.draft == null) return;
+    final current = List<String>.from(state.draft!.geoRegions);
+    if (current.contains(region)) {
+      current.remove(region);
+    } else {
+      current.add(region);
+    }
+    _updateDraft(state.draft!.copyWith(geoRegions: current));
+  }
+
+  void clearGeoRegions() =>
+      _updateDraft(state.draft!.copyWith(geoRegions: []));
+
   void setUploadProgress(double progress) {
     if (state.draft == null) return;
     _updateDraft(

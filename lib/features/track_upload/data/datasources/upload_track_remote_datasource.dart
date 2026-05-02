@@ -70,6 +70,8 @@ class UploadTrackRemoteDataSource {
     String? caption,
     required List<String> tags,
     required bool isPublic,
+    String? geoRestrictionType,
+    List<String>? geoRegions,
     void Function(double progress)? onProgress,
   }) async {
     try {
@@ -92,6 +94,10 @@ class UploadTrackRemoteDataSource {
         fields['description'] = description;
       }
 
+      if (geoRestrictionType != null) {
+        fields['geo_restriction_type'] = geoRestrictionType;
+      }
+
       // Cover image — spec: 'cover_image'
       if (artworkFile != null) {
         final artMime = lookupMimeType(artworkFile.path) ?? 'image/jpeg';
@@ -107,6 +113,13 @@ class UploadTrackRemoteDataSource {
       // Tags sent as repeated fields — spec: tags is array
       for (final tag in tags) {
         formData.fields.add(MapEntry('tags', tag));
+      }
+
+      // Geo regions sent as repeated fields
+      if (geoRegions != null) {
+        for (final region in geoRegions) {
+          formData.fields.add(MapEntry('geo_regions', region));
+        }
       }
 
       debugPrint('=== SENDING TO BACKEND ===');

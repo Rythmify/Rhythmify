@@ -52,6 +52,8 @@ class UploadTrackRepositoryImpl implements UploadTrackRepository {
         caption: draft.caption,
         tags: draft.tags,
         isPublic: draft.isPublic,
+        geoRestrictionType: draft.geoRestrictionType,
+        geoRegions: draft.geoRegions,
         onProgress: onProgress,
       );
       return Right(response.id);
