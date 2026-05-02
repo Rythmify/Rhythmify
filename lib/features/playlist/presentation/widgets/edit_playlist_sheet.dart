@@ -363,6 +363,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                           TextField(
                             key: const Key('edit_playlist_name_field'),
                             controller: _nameController,
+                            onSubmitted: (_) => _onSave(),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -387,6 +388,7 @@ class _EditPlaylistSheetState extends ConsumerState<EditPlaylistSheet> {
                           TextField(
                             key: const Key('edit_playlist_description_field'),
                             controller: _descController,
+                            onSubmitted: (_) => _onSave(),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
