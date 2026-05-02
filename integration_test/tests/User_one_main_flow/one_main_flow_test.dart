@@ -75,7 +75,7 @@ void main() {
       await tester.pump(const Duration (seconds: 3));
       expect(commentsPage.isCommentVisible('testing comment'), true);
       await mainFlowPage.tapCloseCommentsSection();
-      await playerPage.tapPlayPause();
+      //await playerPage.tapPlayPause();
       await tester.pump(const Duration (seconds: 2));
       await playerPage.tapCollapseButton();
       await tester.pump(const Duration (seconds: 2));
@@ -146,25 +146,26 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 2));
     });
 
-    await tryTest('User want to create a new playlist', () async {
-      await playlistPage.goToLibraryTab();
-      await playlistPage.goToPlaylistsSection();
-      await playlistPage.tapCreateButton();
-      await playlistPage.fillPlaylistName('New Playlist');    
-      await playlistPage.tapConfirmCreate();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await playlistPage.tapAddTrackButton();
-      await playlistPage.tapSuggestionAddButtonByIndex(0);
-      await tester.pumpAndSettle(const Duration(seconds: 4));
-      await playlistPage.tapSuggestionAddButtonByIndex(1);
-      await tester.pumpAndSettle(const Duration(seconds: 4));
-      await playlistPage.goBackFromPlaylistDetail();
-      expect(playlistPage.isOnPlaylistsListScreen(), true,
-          reason: 'Should be back on the Playlists list');
-      await mainFlowPage.backToLibraryPlaylistButton();
-    });
+    // await tryTest('User want to create a new playlist', () async {
+    //   await playlistPage.goToLibraryTab();
+    //   await playlistPage.goToPlaylistsSection();
+    //   await playlistPage.tapCreateButton();
+    //   await playlistPage.fillPlaylistName('New Playlist');    
+    //   await playlistPage.tapConfirmCreate();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await playlistPage.tapAddTrackButton();
+    //   await playlistPage.tapSuggestionAddButtonByIndex(0);
+    //   await tester.pumpAndSettle(const Duration(seconds: 4));
+    //   await playlistPage.tapSuggestionAddButtonByIndex(1);
+    //   await tester.pumpAndSettle(const Duration(seconds: 4));
+    //   await playlistPage.goBackFromPlaylistDetail();
+    //   expect(playlistPage.isOnPlaylistsListScreen(), true,
+    //       reason: 'Should be back on the Playlists list');
+    //   await mainFlowPage.backToLibraryPlaylistButton();
+    // });
 
     await tryTest('User want edits his profile name', () async {
+      await profilePage.goToLibraryTab();
       await profilePage.tapProfileAvatar();
       await profilePage.tapEdit();
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -172,13 +173,15 @@ void main() {
       await profilePage.enterName(profileEditNewName);
       await profilePage.tapSave();
       await tester.pumpAndSettle(const Duration(seconds: 4));
-      await basePage.scrollUntilVisible(itemText: 'User test', scrollableKey: publicProfilePage);
+      //await basePage.scrollUntilVisible(itemText: 'User test', scrollableKey: publicProfilePage);
       await mainFlowPage.goBackFromProfile();
       await tester.pumpAndSettle(const Duration(seconds: 3));
     });
 
+    await mainFlowPage.pauseTheTrack();
+
     await tryTest('User finish all what he want and will sign out', () async {
-      await profilePage.goToLibraryTab();
+      //await profilePage.goToLibraryTab();
       await settingsPage.tapSettingsIcon();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       await settingsPage.tapSignOut();

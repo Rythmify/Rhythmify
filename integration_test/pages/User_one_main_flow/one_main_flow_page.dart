@@ -61,4 +61,7 @@ class OneMainFlowPage extends BasePage {
 
   // -- Profile scenario --
   Future<void> goBackFromProfile() async => await tapByKey(publicProfileBackButton);
+
+  // -- Debug the Failure --
+  Future<void> pauseTheTrack() async => await tapByKey(playerMiniPlayerPlayPauseButton);
 }
