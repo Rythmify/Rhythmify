@@ -49,6 +49,7 @@ class FeedRemoteDatasourceImpl implements FeedDatasource {
     return data
         .map((e) => _parseItem(e as Map<String, dynamic>))
         .whereType<FeedItemModel>()
+        .where((item) => item.contentType == 'track')
         .toList();
   }
 
