@@ -180,6 +180,7 @@ const String editProfileBioGesture          = 'edit_profile_bio_gesture';
 const String editProfileScrollView          = 'edit_profile_scroll_view';
 
 // --- Public Profile ---
+const String publicProfilePage              = 'public_profile_avatar_fullscreen_gesture_detector';
 const String publicProfileBackButton        = 'public_profile_back_button';
 const String publicProfileEditGesture       = 'public_profile_edit_gesture';
 const String publicProfileFollowGesture     = 'public_profile_follow_gesture';
@@ -326,7 +327,6 @@ const String inboxComposeButton             = 'inbox_compose_button';
 const String messagingComposeButton         = 'messaging_compose_floating_action_button';
 const String messagingEmptyInboxMessage     = 'messaging_empty_inbox_message_text';
 const String messagingEmptyInboxInstruction = 'messaging_empty_inbox_instruction_text';
-const String messagingMessageInputField     = 'messaging_message_input_text_field';
 const String messagingSearchTextField       = 'messaging_search_text_field';
 const String messagingSearchClearButton     = 'messaging_search_clear_icon_button';
 const String messagingSearchMessageButton   = 'messaging_search_message_elevated_button';
@@ -340,12 +340,8 @@ const String chatScreenAppBar               = 'chat_screen_app_bar';
 const String chatScreenBlockedUserWidget    = 'chat_screen_blocked_user_widget';
 const String chatScreenBlockedByWidget      = 'chat_screen_blocked_by_widget';
 const String chatScreenSelectedEmbedsPreview = 'chat_screen_selected_embeds_preview';
-const String chatScreenAddEmbedButton       = 'chat_screen_add_embed_button';
-const String chatScreenMessageInput         = 'chat_screen_message_input';
-const String chatScreenSendButton           = 'chat_screen_send_button';
 const String likesPlaylistsScaffold         = 'likes_playlists_screen_scaffold';
 const String likesPlaylistsCloseButton      = 'likes_playlists_app_bar_close_button';
-const String likesPlaylistsDoneButton       = 'likes_playlists_done_button';
 const String likesPlaylistsTabBarView       = 'likes_playlists_tab_bar_view';
 const String likesPlaylistsTracksList       = 'likes_playlists_tracks_list';
 const String likesPlaylistsPlaylistsAlbumsList = 'likes_playlists_playlists_albums_list';
@@ -575,9 +571,15 @@ const String notificationsEmptyAll        = 'notifications_empty_all';
 const String notificationsListKey         = 'notifications_list';
 
 // ── M14 — Premium / Upgrade ──────────────────────────────────────────────────
-// PascalCase names match usage in premium_test.dart
-// The scroll helpers in PremiumPage use find.byType, so the string values
-// are placeholders — they are not used as widget keys.
 const String premiumPlansSection             = 'premium_plans_section';
 const String premiumManageSubscriptionButton = 'premium_manage_subscribtion_button';
 const String premiumCancelsubscriptionButton = 'premium_cancel_subscribtion_button';
+
+// ── One Main Flow ──────────────────────────────────────────────────
+String messagingInboxItemTile(String participantName) => 'messaging_inbox_item_${participantName}_tile';
+const String chatScreenMessageInput         = 'chat_screen_message_input';
+const String messagingMessageInputField     = 'messaging_message_input_text_field';
+const String chatScreenSendButton           = 'chat_screen_send_button';
+const String chatScreenAddEmbedButton       = 'chat_screen_add_embed_button';
+const String doneButton                     = 'likes_playlists_done_button';
+String playlisTile(int index)               => 'playlist_tile_${index}';
