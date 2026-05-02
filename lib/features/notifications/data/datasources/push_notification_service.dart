@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rythmify/core/network/api_client.dart';
@@ -19,7 +18,6 @@ class PushNotificationService {
   PushNotificationService(this._route);
 
   Future<void> initialize() async {
-    debugPrint('🔔 [PUSH] initialize() started');
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     await _requestPermission();
@@ -29,16 +27,14 @@ class PushNotificationService {
     _handleForegroundmessages();
     _handleMessageOpenApp();
     await _handleIntitialMessage();
-    debugPrint('✅ [PUSH] initialize() complete');
   }
 
   Future<void> _requestPermission() async {
-    final settings = await _fcm.requestPermission(
+    await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
-    debugPrint('🔐 [PUSH] permission status: ${settings.authorizationStatus}');
   }
 
   Future<void> _initLocalNotifications() async {
@@ -65,21 +61,16 @@ class PushNotificationService {
 
   Future<void> _registerToken() async {
     final token = await _fcm.getToken();
-    debugPrint('📱 [PUSH] FCM token: $token');
     if (token != null) _postToken(token);
   }
 
   Future<void> _postToken(String token) async {
     try {
-      debugPrint('📤 [PUSH] registering token with backend...');
       await apiClient.dio.post(
         '/notifications/push/register',
         data: {'token': token, 'platform': 'android'},
       );
-      debugPrint('✅ [PUSH] token registered successfully');
-    } catch (e) {
-      debugPrint('❌ [PUSH] token registration failed: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> unregisterToken() async {
@@ -96,9 +87,6 @@ class PushNotificationService {
 
   void _handleForegroundmessages() {
     FirebaseMessaging.onMessage.listen((message) {
-      debugPrint(
-        '📩 [PUSH] foreground message received: title="${message.notification?.title}" data=${message.data}',
-      );
       final notification = message.notification;
       if (notification == null) return;
 
@@ -122,9 +110,6 @@ class PushNotificationService {
 
   void _handleMessageOpenApp() {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint(
-        '👆 [PUSH] notification tapped (app was background): data=${message.data}',
-      );
       _navigateFromData(message.data);
     });
   }
@@ -132,9 +117,6 @@ class PushNotificationService {
   Future<void> _handleIntitialMessage() async {
     final message = await _fcm.getInitialMessage();
     if (message != null) {
-      debugPrint(
-        '🚀 [PUSH] app launched from notification: data=${message.data}',
-      );
       _navigateFromData(message.data);
     }
   }
@@ -171,10 +153,7 @@ class PushNotificationService {
   }
 
   void _listenForTokenRefresh() {
-    _fcm.onTokenRefresh.listen((token) {
-      debugPrint('🔄 [PUSH] token refreshed, re-registering...');
-      _postToken(token);
-    });
+    _fcm.onTokenRefresh.listen(_postToken);
   }
 
   void _navigateByType({
@@ -182,9 +161,6 @@ class PushNotificationService {
     String? resourceType,
     String? resourceId,
   }) {
-    debugPrint(
-      '🧭 [PUSH] navigating — type=$type resourceType=$resourceType resourceId=$resourceId',
-    );
     final hasResource = resourceId != null && resourceId.isNotEmpty;
 
     switch (type) {

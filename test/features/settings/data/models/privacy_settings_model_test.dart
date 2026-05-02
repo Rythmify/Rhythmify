@@ -173,7 +173,7 @@ void main() {
         expect(patch.containsKey('is_private'), false);
       });
 
-      test('never includes show_top_fans_on_tracks even when changed', () {
+      test('includes show_top_fans_on_tracks when changed', () {
         const current = PrivacySettingsModel(
           isPrivate: false,
           receiveMessageFromAnyone: true,
@@ -182,7 +182,8 @@ void main() {
           showTopFansOnTracks: false, // changed
         );
         final patch = current.toPatch(base);
-        expect(patch.containsKey('show_top_fans_on_tracks'), false);
+        expect(patch['show_top_fans_on_tracks'], false);
+        expect(patch.length, 1);
       });
     });
 
