@@ -11,6 +11,8 @@ import 'core/theme/app_theme.dart';
 import 'package:audio_service/audio_service.dart';
 import 'features/player/data/datasources/audio_handler.dart';
 import 'features/player/presentation/providers/player_dependency_providers.dart';
+import 'core/widget/widget_sync_provider.dart';
+import 'core/widget/likes_widget_sync_provider.dart';
 
 late AudioHandler globalAudioHandler;
 
@@ -98,6 +100,9 @@ class RythmifyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep widget sync notifiers alive for the entire app lifetime
+    ref.watch(widgetSyncProvider);
+    ref.watch(likesWidgetSyncProvider);
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(

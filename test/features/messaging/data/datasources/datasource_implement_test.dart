@@ -640,7 +640,12 @@ void main() {
             {'id': 'p3', 'name': 'Created One', 'cover_image': null},
           ];
 
-          when(() => mockDio.get(any())).thenAnswer((inv) async {
+          when(
+            () => mockDio.get(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            ),
+          ).thenAnswer((inv) async {
             final url = inv.positionalArguments.first as String;
             if (url.contains('liked-playlists')) {
               return _resp({
@@ -666,7 +671,12 @@ void main() {
           {'id': 'p3', 'cover_image': null},
         ];
 
-        when(() => mockDio.get(any())).thenAnswer(
+        when(
+          () => mockDio.get(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+          ),
+        ).thenAnswer(
           (_) async => _resp({
             'data': {'items': items},
           }),
@@ -680,7 +690,12 @@ void main() {
       });
 
       test('returns empty list when both sources are empty', () async {
-        when(() => mockDio.get(any())).thenAnswer(
+        when(
+          () => mockDio.get(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+          ),
+        ).thenAnswer(
           (_) async => _resp({
             'data': {'items': []},
           }),
