@@ -23,6 +23,9 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Index of the track the native player is currently loaded with.
   int _currentHardwareIndex = 0;
 
+  /// Internal flag to prevent auto-advance races while a manual load is in progress.
+  bool _isManualLoading = false;
+
   /// Broadcasts index changes so [AudioRepositoryImpl] can update its state.
   final _indexController = StreamController<int?>.broadcast();
 
@@ -34,8 +37,8 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   void _init() {
     // Auto-advance when the current track finishes.
-    _player.processingStateStream.listen((ps) async {
-      if (ps == ProcessingState.completed) {
+    _player.processingStateStream.distinct().listen((ps) async {
+      if (ps == ProcessingState.completed && !_isManualLoading) {
         final next = _currentHardwareIndex + 1;
         if (next < _currentQueue.length) {
           await _loadTrackAtIndex(next);
@@ -83,6 +86,7 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> _loadTrackAtIndex(int index, {bool autoPlay = true}) async {
     if (index < 0 || index >= _currentQueue.length) return;
 
+    _isManualLoading = true;
     _currentHardwareIndex = index;
     final track = _currentQueue[index];
 
@@ -129,6 +133,8 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
       if (autoPlay) _player.play();
     } catch (e) {
       debugPrint('[RythmifyAudioHandler] _loadTrackAtIndex error: $e');
+    } finally {
+      _isManualLoading = false;
     }
   }
 
@@ -194,6 +200,18 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
         if (wasPlaying) _player.play();
       }
     }
+  }
+
+  /// Updates only the queue list and current index without touching the native player.
+  /// Use this when the playing track hasn't changed (e.g. after a server-side
+  /// reorder or when fetchQueueContext returns). Avoids calling setAudioSource
+  /// on an active player which causes abort() on just_audio_windows.
+  void updateQueueData(List<Track> tracks, int activeIndex) {
+    _currentQueue = List.from(tracks);
+    _currentHardwareIndex =
+        activeIndex.clamp(0, _currentQueue.isNotEmpty ? _currentQueue.length - 1 : 0);
+    // Emit current index so AudioRepositoryImpl state stays consistent.
+    _indexController.add(_currentHardwareIndex);
   }
 
   /// Jumps to [index] in the Dart queue and loads that track.

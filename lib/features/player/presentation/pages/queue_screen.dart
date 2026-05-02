@@ -166,9 +166,17 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                     child: _QueueTile(
                       item: item,
                       onTap: () {
-                        ref
-                            .read(queueStateProvider.notifier)
-                            .playFromQueue(index);
+                        // Find this item's position in the FULL upcomingTracks
+                        // list (which includes recommended tracks). Using the
+                        // filtered-list index directly would be off-by-one
+                        // whenever recommended tracks appear before this item.
+                        final queue = ref.read(queueStateProvider);
+                        final fullIndex = queue.upcomingTracks.indexOf(item);
+                        if (fullIndex != -1) {
+                          ref
+                              .read(queueStateProvider.notifier)
+                              .playFromQueue(fullIndex);
+                        }
                       },
                     ),
                   ),

@@ -11,6 +11,8 @@ class MockRythmifyAudioHandler extends Mock implements RythmifyAudioHandler {}
 
 class MockPlaybackEvent extends Mock implements PlaybackEvent {}
 
+class TrackFake extends Fake implements Track {}
+
 void main() {
   late AudioRepositoryImpl repository;
   late MockRythmifyAudioHandler mockHandler;
@@ -19,6 +21,11 @@ void main() {
   late StreamController<Duration> positionController;
   late StreamController<int?> currentIndexController;
   late StreamController<bool> playingController;
+
+  setUpAll(() {
+    registerFallbackValue(const Duration(seconds: 1));
+    registerFallbackValue(TrackFake());
+  });
 
   final tTrack = Track(
     id: 'track-1',

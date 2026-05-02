@@ -156,7 +156,9 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       final streamUrl = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(targetTrack.id);
-      updatedTracks[initialIndex] = targetTrack.copyWith(streamUrl: streamUrl);
+      if (streamUrl.isNotEmpty) {
+        updatedTracks[initialIndex] = targetTrack.copyWith(streamUrl: streamUrl);
+      }
     } catch (e) {
       // Fallback to existing URL if API fails, or let it throw if critical
     }
@@ -184,7 +186,9 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       final url = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(track.id);
-      resolved = track.copyWith(streamUrl: url);
+      if (url.isNotEmpty) {
+        resolved = track.copyWith(streamUrl: url);
+      }
     } catch (_) {}
     _queue.insert(_currentIndex + 1, resolved);
     await ref
@@ -205,7 +209,9 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       final url = await ref
           .read(initiatePlaybackUseCaseProvider)
           .call(track.id);
-      resolved = track.copyWith(streamUrl: url);
+      if (url.isNotEmpty) {
+        resolved = track.copyWith(streamUrl: url);
+      }
     } catch (_) {}
     _queue.add(resolved);
     await ref
@@ -223,7 +229,7 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
           .call(initialTrack.id);
     } catch (_) {}
 
-    final trackToPlay = streamUrl != null
+    final trackToPlay = (streamUrl != null && streamUrl!.isNotEmpty)
         ? initialTrack.copyWith(streamUrl: streamUrl)
         : initialTrack;
 

@@ -127,11 +127,25 @@ class AudioRepositoryImpl implements AudioRepository {
     Duration initialPosition = Duration.zero,
   }) async {
     _updateState(_currentState.copyWith(status: PlayerStatus.loading));
-    await _audioHandler.loadQueue(
-      tracks,
-      initialIndex: initialIndex,
-      initialPosition: initialPosition,
-    );
+
+    // If the track at initialIndex is the same track that's currently playing,
+    // only update the queue metadata — don't call setAudioSource. Calling
+    // setAudioSource on an active just_audio_windows player causes abort().
+    final targetId = tracks.isNotEmpty ? tracks[initialIndex].id : null;
+    final currentId = _currentState.currentTrack?.id;
+    final isCurrentlyPlaying =
+        _currentState.status == PlayerStatus.playing ||
+        _currentState.status == PlayerStatus.loading;
+
+    if (isCurrentlyPlaying && targetId != null && targetId == currentId) {
+      _audioHandler.updateQueueData(tracks, initialIndex);
+    } else {
+      await _audioHandler.loadQueue(
+        tracks,
+        initialIndex: initialIndex,
+        initialPosition: initialPosition,
+      );
+    }
     _queueController.add(tracks);
   }
 
@@ -167,18 +181,20 @@ class AudioRepositoryImpl implements AudioRepository {
 
   @override
   Future<void> updateQueue(List<Track> tracks) async {
-    final currentIndex = _audioHandler.currentQueue.indexOf(
-      _currentState.currentTrack!,
-    );
-    final effectiveIndex = currentIndex != -1 ? currentIndex : 0;
-    final currentPosition = _currentState.position;
+    // Determine which index in the new list corresponds to the currently
+    // playing track. We must NOT call loadQueue/setAudioSource here because
+    // the native player is already playing — doing so crashes just_audio_windows.
+    final currentTrack = _currentState.currentTrack;
+    int activeIndex = 0;
+    if (currentTrack != null) {
+      final found = tracks.indexWhere((t) => t.id == currentTrack.id);
+      activeIndex = found != -1 ? found : _audioHandler.currentQueue
+          .indexOf(currentTrack)
+          .clamp(0, tracks.isEmpty ? 0 : tracks.length - 1);
+    }
 
-    // We use loadQueue but maintain current track and position
-    await _audioHandler.loadQueue(
-      tracks,
-      initialIndex: effectiveIndex,
-      initialPosition: currentPosition,
-    );
+    // Metadata-only update: queue list changes, player keeps playing.
+    _audioHandler.updateQueueData(tracks, activeIndex);
     _queueController.add(tracks);
   }
 
