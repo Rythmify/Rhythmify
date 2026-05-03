@@ -1,3 +1,158 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:rythmify/core/domain/entities/track.dart';
+import 'package:rythmify/features/playlist/domain/entities/playlist_entity.dart';
+import 'package:rythmify/features/playlist/domain/entities/playlist_track.dart';
+
+void main() {
+  group('Playlist domain entities', () {
+    test('PlaylistTrack.fromTrack keeps player-facing track identity', () {
+      final track = Track(
+        id: 'track-001',
+        userId: 'user-001',
+        title: 'Neon Lights',
+        artist: 'DJ Sample',
+        audioUrl: 'https://example.com/audio.mp3',
+        streamUrl: 'https://example.com/stream',
+        duration: const Duration(minutes: 3, seconds: 31),
+        createdAt: DateTime(2024, 1, 1),
+        playCount: 99000,
+        isLiked: true,
+        coverImage: 'https://example.com/cover.jpg',
+      );
+
+      final playlistTrack = PlaylistTrack.fromTrack(track, position: 4);
+
+      expect(playlistTrack.id, 'track-001');
+      expect(playlistTrack.trackId, 'track-001');
+      expect(playlistTrack.title, 'Neon Lights');
+      expect(playlistTrack.artistName, 'DJ Sample');
+      expect(playlistTrack.position, 4);
+      expect(playlistTrack.formattedDuration, '3:31');
+      expect(playlistTrack.formattedPlayCount, '99.0K');
+      expect(playlistTrack.isLiked, isTrue);
+      expect(playlistTrack.isUnavailable, isFalse);
+      expect(playlistTrack.toTrack().audioUrl, 'https://example.com/stream');
+    });
+
+    test(
+      'PlaylistEntity labels public/private playlist variants correctly',
+      () {
+        final playlist = PlaylistEntity(
+          id: 'playlist-1',
+          name: 'My Playlist',
+          ownerName: 'Hana',
+          ownerId: 'user-me',
+          isPublic: false,
+          type: PlaylistType.playlist,
+          trackCount: 3,
+          totalDuration: const Duration(minutes: 9, seconds: 25),
+          createdAt: DateTime(2024, 1, 1),
+        );
+
+        expect(playlist.typeLabel, 'Playlist');
+        expect(playlist.subtitleLine, contains('3 tracks'));
+        expect(playlist.detailSubtitle, '3 tracks');
+        expect(playlist.isPublic, isFalse);
+
+        expect(playlist.copyWith(type: PlaylistType.album).typeLabel, 'Album');
+        expect(
+          playlist.copyWith(type: PlaylistType.station).typeLabel,
+          'Station',
+        );
+        expect(
+          playlist.copyWith(type: PlaylistType.album).detailSubtitle,
+          contains('3 tracks'),
+        );
+        expect(
+          playlist.copyWith(type: PlaylistType.station).detailSubtitle,
+          contains('3 tracks'),
+        );
+        expect(
+          playlist.copyWith(type: PlaylistType.album).subtitleLine,
+          contains('3 tracks'),
+        );
+        expect(
+          playlist.copyWith(type: PlaylistType.station).subtitleLine,
+          contains('3 tracks'),
+        );
+        expect(playlist.copyWith(isGeneratedMix: true).typeLabel, 'Mix');
+        expect(
+          playlist.copyWith(isTrackRadio: true).subtitleLine,
+          contains('3 tracks'),
+        );
+      },
+    );
+
+    test('copyWith can clear cover while preserving unrelated metadata', () {
+      final playlist = PlaylistEntity(
+        id: 'playlist-1',
+        name: 'My Playlist',
+        ownerName: 'Hana',
+        ownerId: 'user-me',
+        isPublic: true,
+        type: PlaylistType.playlist,
+        trackCount: 0,
+        totalDuration: Duration.zero,
+        createdAt: DateTime(2024, 1, 1),
+        coverUrl: 'https://example.com/cover.jpg',
+      );
+
+      final updated = playlist.copyWith(
+        name: 'Updated',
+        clearCover: true,
+        isPublic: false,
+      );
+
+      expect(updated.name, 'Updated');
+      expect(updated.coverUrl, isNull);
+      expect(updated.ownerId, 'user-me');
+      expect(updated.isPublic, isFalse);
+    });
+
+    test(
+      'PlaylistTrack formats play counts and preserves copyWith defaults',
+      () {
+        const small = PlaylistTrack(
+          id: 'small',
+          title: 'Small',
+          artistName: 'Artist',
+          duration: Duration(seconds: 61),
+          playCount: 999,
+          position: 3,
+          streamUrl: 'stream',
+          audioUrl: 'audio',
+        );
+        const thousands = PlaylistTrack(
+          id: 'thousands',
+          title: 'Thousands',
+          artistName: 'Artist',
+          duration: Duration.zero,
+          playCount: 1200,
+          position: 1,
+        );
+        const millions = PlaylistTrack(
+          id: 'millions',
+          title: 'Millions',
+          artistName: 'Artist',
+          duration: Duration(seconds: 30),
+          playCount: 1500000,
+          position: 1,
+        );
+
+        expect(small.formattedDuration, '1:01');
+        expect(small.formattedPlayCount, '999');
+        expect(thousands.formattedPlayCount, '1.2K');
+        expect(millions.formattedPlayCount, '1.5M');
+        expect(small.copyWith().position, 3);
+        expect(small.copyWith(position: 4).position, 4);
+        expect(small.copyWith(isLiked: true).isLiked, isTrue);
+        expect(small.copyWith(streamUrl: 'new').streamUrl, 'new');
+        expect(small.copyWith(audioUrl: 'new-audio').audioUrl, 'new-audio');
+      },
+    );
+  });
+}
+
 // import 'package:flutter_test/flutter_test.dart';
 // import 'package:rythmify/features/playlist/domain/entities/playlist_entity.dart';
 // import 'package:rythmify/features/playlist/domain/entities/playlist_track.dart';

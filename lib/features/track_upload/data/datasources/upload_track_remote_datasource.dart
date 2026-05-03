@@ -22,9 +22,22 @@ import 'package:flutter/foundation.dart';
 /// - Does NOT return domain entities, only data models
 
 class UploadTrackRemoteDataSource {
+  UploadTrackRemoteDataSource({
+    Dio? dio,
+    Future<MultipartFile> Function(String path, DioMediaType contentType)?
+    multipartFileFactory,
+  }) : _dio = dio ?? apiClient.dio,
+       _multipartFileFactory =
+           multipartFileFactory ??
+           ((path, contentType) {
+             return MultipartFile.fromFile(path, contentType: contentType);
+           });
+
   // Uses the shared ApiClient your team leader built
   // Auth token is attached automatically — you don't touch it here
-  final Dio _dio = apiClient.dio;
+  final Dio _dio;
+  final Future<MultipartFile> Function(String path, DioMediaType contentType)
+  _multipartFileFactory;
 
   // ── Fetch Tags ─────────────────────────────────────────────────────────────
 
@@ -85,10 +98,10 @@ class UploadTrackRemoteDataSource {
         'genre': genre,
         'is_public': isPublic, // Pass as boolean
         'is_hidden': isHidden,
-        'audio_file': await MultipartFile.fromFile(
+        'audio_file': await _multipartFileFactory(
           // spec: 'audio_file'
           audioFile.path,
-          contentType: DioMediaType.parse(audioMime),
+          DioMediaType.parse(audioMime),
         ),
       };
 
@@ -103,10 +116,10 @@ class UploadTrackRemoteDataSource {
       // Cover image — spec: 'cover_image'
       if (artworkFile != null) {
         final artMime = lookupMimeType(artworkFile.path) ?? 'image/jpeg';
-        fields['cover_image'] = await MultipartFile.fromFile(
+        fields['cover_image'] = await _multipartFileFactory(
           // spec: 'cover_image'
           artworkFile.path,
-          contentType: DioMediaType.parse(artMime),
+          DioMediaType.parse(artMime),
         );
       }
 
