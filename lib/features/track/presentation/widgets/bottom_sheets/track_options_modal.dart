@@ -1,0 +1,583 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../../../../core/domain/entities/track.dart';
+import '../../../../../core/presentation/pages/report_page.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/error/error_handler.dart';
+import '../../../../../core/utils/ui_utils.dart';
+import '../../providers/track_interaction_provider.dart';
+import '../../providers/track_sync_provider.dart';
+import '../../../../player/presentation/providers/queue_provider.dart';
+import '../../../../messaging/presentation/providers/conversations_provider.dart';
+import '../../../../authentication/presentation/providers/auth_provider.dart';
+import '../../../../authentication/presentation/providers/auth_state.dart';
+import '../../../../track_upload/presentation/screens/upload_track_screen.dart';
+
+import 'bottom_sheet_container.dart';
+import 'track_sheet_header.dart';
+
+//add to playlist HANA (this import +on tap action)
+import '../../../../playlist/presentation/widgets/add_to_playlist_sheet.dart';
+//stations HANA
+import '../../../../playlist/data/datasources/playlist_remote_datasource.dart';
+import '../../../../playlist/presentation/providers/saved_content_provider.dart';
+import '../../../../../core/network/api_client.dart';
+
+// 1. Define the modes
+enum TrackModalMode { share, info }
+
+class TrackOptionsModal extends ConsumerWidget {
+  final Track track;
+  final TrackModalMode mode;
+  final VoidCallback? onCollapse;
+
+  const TrackOptionsModal({
+    super.key,
+    required this.track,
+    this.mode = TrackModalMode.info, // Default to info if not specified
+    this.onCollapse,
+  });
+
+  // --- Share Methods ---
+
+  String _getAzureShareUrl(Track track) {
+    final username = (track.artistUsername ?? track.artist)
+        .replaceAll(' ', '')
+        .toLowerCase();
+    return 'https://gray-grass-0ab138600.7.azurestaticapps.net/$username/${track.id}';
+  }
+
+  void _shareToWhatsApp(BuildContext context) {
+    final text = 'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
+    Navigator.pop(context);
+    Share.share(text);
+  }
+
+  void _shareToSMS(BuildContext context) {
+    final text = 'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
+    Navigator.pop(context);
+    Share.share(text);
+  }
+
+  void _copyLink(BuildContext context) {
+    final text =
+        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final syncedTrack = ref.watch(syncedTrackProvider(track));
+    final convsAsync = ref.watch(conversationProvider);
+    final authState = ref.watch(authProvider);
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : null;
+    final isOwner =
+        currentUserId != null && currentUserId == syncedTrack.userId;
+
+    // WRAPPED IN DRAGGABLE SCROLLABLE SHEET
+    return DraggableScrollableSheet(
+      initialChildSize: mode == TrackModalMode.share ? 0.6 : 0.9,
+      minChildSize: 0.5, // Closes if dragged below 50%
+      maxChildSize: 0.95, // Stops just short of the very top of the screen
+      expand: false, // MUST be false to work inside a bottom sheet
+      builder: (context, scrollController) {
+        return BottomSheetContainer(
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Header always shows at the top
+                TrackSheetHeader(track: syncedTrack),
+
+                // 2. Share stuff ALWAYS shows
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    'SEND TO',
+                    style: AppTheme.labelSmall.copyWith(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 100,
+                  child: convsAsync.when(
+                    data: (convs) => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: convs.length,
+                      itemBuilder: (context, index) {
+                        final conv = convs[index];
+                        return GestureDetector(
+                          key: Key(
+                            'track_options_contact_gesture_detector_${conv.conversationId}',
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            context.push(
+                              '/home/inbox/chat/${conv.conversationId}',
+                              extra: conv,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: SizedBox(
+                              width: 60,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 28,
+                                    backgroundColor: Colors.grey[800],
+                                    backgroundImage:
+                                        conv.participantAvatar != null
+                                        ? NetworkImage(conv.participantAvatar!)
+                                        : null,
+                                    child: conv.participantAvatar == null
+                                        ? const Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                          )
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    conv.participantName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => const Center(
+                      child: Text(
+                        'Error loading contacts',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: Text(
+                    'SHARE',
+                    style: AppTheme.labelSmall.copyWith(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 100,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _ShareIcon(
+                        key: const Key(
+                          'track_options_share_message_gesture_detector',
+                        ),
+                        iconData: Icons.chat_bubble_outline,
+                        color: Colors.blueAccent,
+                        label: 'Message',
+                        onTap: () {
+                          Navigator.pop(context);
+                          final text =
+                              'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
+                          Share.share(text);
+                        },
+                      ),
+                      _ShareIcon(
+                        key: const Key(
+                          'track_options_share_copy_link_gesture_detector',
+                        ),
+                        iconData: Icons.link,
+                        color: Colors.grey[700]!,
+                        label: 'Copy Link',
+                        onTap: () => _copyLink(context),
+                      ),
+                      _ShareIcon(
+                        key: const Key(
+                          'track_options_share_whatsapp_gesture_detector',
+                        ),
+                        svgAsset: 'assets/icons/whatsapp.svg',
+                        color: const Color(0xFF25D366),
+                        label: 'WhatsApp',
+                        onTap: () => _shareToWhatsApp(context),
+                      ),
+                      _ShareIcon(
+                        key: const Key(
+                          'track_options_share_sms_gesture_detector',
+                        ),
+                        iconData: Icons.sms_outlined,
+                        color: Colors.orangeAccent,
+                        label: 'SMS',
+                        onTap: () => _shareToSMS(context),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: Colors.white24, height: 1),
+                // 3. Info actions ONLY show if mode is 'info'
+                if (mode == TrackModalMode.info) ...[
+                  if (isOwner) ...[
+                    _buildActionRow(
+                      key: const Key(
+                        'track_options_action_update_track_inkwell',
+                      ),
+                      icon: Icons.edit_note,
+                      label: 'Update track',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                UploadTrackScreen(track: syncedTrack),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  const Divider(color: Colors.white24, height: 1),
+                  _buildActionRow(
+                    key: const Key('track_options_action_toggle_like_inkwell'),
+                    icon: syncedTrack.isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    iconColor: syncedTrack.isLiked
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
+                    label: syncedTrack.isLiked ? 'Liked' : 'Like track',
+                    labelColor: syncedTrack.isLiked
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
+                    onTap: () {
+                      ref
+                          .read(trackInteractionProvider)
+                          .handleToggleLike(
+                            syncedTrack.id,
+                            syncedTrack.isLiked,
+                            currentTrack: syncedTrack,
+                          );
+                      Navigator.pop(context);
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key('track_options_action_play_next_inkwell'),
+                    icon: Icons.playlist_play,
+                    label: 'Play Next',
+                    onTap: () {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .addToQueueNext(syncedTrack);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to Next Up')),
+                      );
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key('track_options_action_play_last_inkwell'),
+                    icon: Icons.playlist_play,
+                    label: 'Play Last',
+                    onTap: () {
+                      ref
+                          .read(queueStateProvider.notifier)
+                          .addToQueueLast(syncedTrack);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to Queue')),
+                      );
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key(
+                      'track_options_action_add_to_playlist_inkwell',
+                    ),
+                    icon: Icons.queue_music,
+                    label: 'Add to Playlist',
+                    onTap: () {
+                      Navigator.of(
+                        context,
+                      ).pop(); // close the track options sheet first
+                      showAddToPlaylistSheet(context, trackId: syncedTrack.id);
+                    },
+                  ),
+
+                  _buildActionRow(
+                    key: const Key(
+                      'track_options_action_start_station_inkwell',
+                    ),
+                    icon: Icons.radio,
+                    label: 'Start Station',
+                    onTap: () async {
+                      Navigator.of(context).pop();
+
+                      final artistId = syncedTrack.userId;
+                      final artistName =
+                          syncedTrack.artist; // ← adjust if needed
+
+                      // Save station to backend
+                      try {
+                        final ds = PlaylistRemoteDatasource(apiClient.dio);
+                        await ds.likeStation(artistId);
+                      } catch (e) {
+                        debugPrint('[StartStation] likeStation failed: $e');
+                      }
+
+                      // Refresh library stations so it appears immediately
+                      try {
+                        await ref
+                            .read(savedStationsProvider.notifier)
+                            .refresh();
+                      } catch (e) {
+                        debugPrint(
+                          '[StartStation] refresh stations failed: $e',
+                        );
+                      }
+
+                      // Navigate to station screen
+                      if (context.mounted) {
+                        context.push(
+                          '/home/station/$artistId',
+                          extra: {
+                            'artistName': artistName,
+                            'stationName': '$artistName Radio',
+                            'coverUrl': syncedTrack
+                                .coverImage, // ← adjust field name if needed
+                          },
+                        );
+                      }
+                    },
+                  ),
+                  const Divider(color: Colors.white24, height: 1),
+                  _buildActionRow(
+                    key: const Key('track_options_action_view_profile_inkwell'),
+                    icon: Icons.person_outline,
+                    label: 'Go to profile',
+                    onTap: () {
+                      Navigator.pop(context);
+                      onCollapse?.call();
+                      context.push('/home/profile/${syncedTrack.userId}');
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key(
+                      'track_options_action_view_comments_inkwell',
+                    ),
+                    icon: Icons.chat_outlined,
+                    label: 'View comments',
+                    onTap: () {
+                      Navigator.pop(context);
+                      onCollapse?.call();
+                      context.pushNamed(
+                        'comments',
+                        pathParameters: {'trackId': syncedTrack.id},
+                        extra: syncedTrack,
+                      );
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key(
+                      'track_options_action_toggle_repost_inkwell',
+                    ),
+                    icon: Icons.repeat,
+                    iconColor: syncedTrack.isReposted
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
+                    label: syncedTrack.isReposted
+                        ? 'Reposted'
+                        : 'Repost on Rythmify',
+                    labelColor: syncedTrack.isReposted
+                        ? AppTheme.primaryBrand
+                        : Colors.white,
+                    onTap: () async {
+                      final ctx = context;
+                      Navigator.pop(context);
+                      try {
+                        await ref
+                            .read(trackInteractionProvider)
+                            .handleToggleRepost(
+                              syncedTrack.id,
+                              syncedTrack.isReposted,
+                              currentTrack: syncedTrack,
+                            );
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          UIUtils.showErrorSnackBar(
+                            ctx,
+                            ErrorHandler.getFriendlyMessage(e),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key(
+                      'track_options_action_behind_this_track_inkwell',
+                    ),
+                    icon: Icons.music_note,
+                    label: 'Behind This Track',
+                    onTap: () {
+                      Navigator.pop(context);
+                      onCollapse?.call();
+                      context.pushNamed(
+                        'behindTheTrack',
+                        pathParameters: {'trackId': syncedTrack.id},
+                      );
+                    },
+                  ),
+                  _buildActionRow(
+                    key: const Key('track_options_action_report_track_inkwell'),
+                    icon: Icons.flag_outlined,
+                    label: 'Report Track',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (context) => ReportPage(
+                            reportedContentId: syncedTrack.id,
+                            resourceType: 'track',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionRow({
+    Key? key,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color iconColor = Colors.white,
+    Color labelColor = Colors.white,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: key,
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        highlightColor: Colors.white.withValues(alpha: 0.1),
+        splashColor: Colors.white.withValues(alpha: 0.2),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTheme.bodyNormal.copyWith(
+                    color: labelColor,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareIcon extends StatelessWidget {
+  final IconData? iconData;
+  final String? svgAsset;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ShareIcon({
+    super.key,
+    this.iconData,
+    this.svgAsset,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 20),
+        child: SizedBox(
+          width: 60,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                alignment: Alignment.center,
+                child: svgAsset != null
+                    ? SvgPicture.asset(
+                        svgAsset!,
+                        width: 28,
+                        height: 28,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                      )
+                    : Icon(iconData, color: Colors.white, size: 28),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

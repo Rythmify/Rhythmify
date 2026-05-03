@@ -1,0 +1,268 @@
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+import '../../data/models/comment_dto.dart';
+
+/// Abstract contract for the local data source.
+///
+/// This interface defines the local database operations for managing comments.
+abstract class CommentLocalDataSource {
+  /// Fetches paginated root comments for a track.
+  Future<List<CommentDto>> getTrackComments({
+    required String trackId,
+    required int page,
+    required int limit,
+    required String sortValue,
+  });
+
+  /// Fetches paginated replies for a specific comment.
+  Future<List<CommentDto>> getCommentReplies({
+    required String commentId,
+    required int page,
+    required int limit,
+    required String sortValue,
+  });
+
+  /// Returns paginated replies to the specified top-level comment.
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  });
+
+  /// Fetches all comments for a track to build the floating widget map.
+  Future<List<CommentDto>> getAllCommentsForTrack(String trackId);
+
+  /// Inserts a newly created comment or reply.
+  Future<CommentDto> insertComment(CommentDto comment);
+
+  /// Posts a reply to the specified top-level comment.
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  });
+
+  /// Toggles the like status for a comment, returning the new status.
+  Future<bool> toggleLike(String commentId);
+
+  /// Deletes a comment by its ID.
+  Future<void> deleteComment(String commentId);
+
+  /// Simulates blocking a user.
+  Future<void> blockUser(String userId);
+
+  /// Simulates unblocking a user.
+  Future<void> unblockUser(String userId);
+}
+
+/// Mock implementation utilizing a JSON file to simulate an API response.
+///
+/// This reads from `assets/mock_comments.json` on the first call, stores the
+/// objects in memory, and performs standard database operations (filtering,
+/// sorting, paginating) on that in-memory list.
+class MockCommentLocalDataSourceImpl implements CommentLocalDataSource {
+  List<CommentDto> _db = [];
+  bool _isInitialized = false;
+  final Duration _delay = const Duration(milliseconds: 500);
+
+  Future<void> _initDatabase() async {
+    if (_isInitialized) return;
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/mocks/mock_comments.json',
+      );
+      final List<dynamic> jsonData = jsonDecode(jsonString);
+      _db = jsonData.map((json) => CommentDto.fromJson(json)).toList();
+      _isInitialized = true;
+    } catch (e) {
+      throw Exception('Failed to load mock comments JSON: $e');
+    }
+  }
+
+  @override
+  Future<List<CommentDto>> getTrackComments({
+    required String trackId,
+    required int page,
+    required int limit,
+    required String sortValue,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    var results = _db
+        .where((c) => c.trackId == trackId && c.parentCommentId == null)
+        .toList();
+    _sortComments(results, sortValue);
+
+    final startIndex = (page - 1) * limit;
+    if (startIndex >= results.length) return [];
+    return results.skip(startIndex).take(limit).toList();
+  }
+
+  @override
+  Future<List<CommentDto>> getCommentReplies({
+    required String commentId,
+    required int page,
+    required int limit,
+    required String sortValue,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    var results = _db.where((c) => c.parentCommentId == commentId).toList();
+    _sortComments(results, sortValue);
+
+    final startIndex = (page - 1) * limit;
+    if (startIndex >= results.length) return [];
+    return results.skip(startIndex).take(limit).toList();
+  }
+
+  @override
+  Future<List<CommentDto>> getReplies({
+    required String commentId,
+    required int limit,
+    required int offset,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    var results = _db.where((c) => c.parentCommentId == commentId).toList();
+    // Default sort by newest for getReplies mock
+    results.sort(
+      (a, b) =>
+          DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)),
+    );
+
+    if (offset >= results.length) return [];
+    return results.skip(offset).take(limit).toList();
+  }
+
+  @override
+  Future<List<CommentDto>> getAllCommentsForTrack(String trackId) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+    return _db.where((c) => c.trackId == trackId).toList();
+  }
+
+  @override
+  Future<CommentDto> insertComment(CommentDto comment) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+    _db.add(comment);
+
+    if (comment.parentCommentId != null) {
+      final parentIndex = _db.indexWhere(
+        (c) => c.id == comment.parentCommentId,
+      );
+      if (parentIndex != -1) {
+        final parent = _db[parentIndex];
+        _db[parentIndex] = CommentDto(
+          id: parent.id,
+          trackId: parent.trackId,
+          userId: parent.userId,
+          userDisplayName: parent.userDisplayName,
+          userPfp: parent.userPfp,
+          content: parent.content,
+          timestamp: parent.timestamp,
+          createdAt: parent.createdAt,
+          likeCount: parent.likeCount,
+          isLikedByMe: parent.isLikedByMe,
+          replyCount: parent.replyCount + 1,
+          parentCommentId: parent.parentCommentId,
+        );
+      }
+    }
+    return comment;
+  }
+
+  @override
+  Future<CommentDto> postReply({
+    required String commentId,
+    required String content,
+  }) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    final parent = _db.firstWhere((c) => c.id == commentId);
+
+    final reply = CommentDto(
+      id: 'mock_reply_${DateTime.now().millisecondsSinceEpoch}',
+      trackId: parent.trackId,
+      userId: 'current_user_id',
+      userDisplayName: 'Current User',
+      userPfp: null,
+      content: content,
+      timestamp: parent.timestamp,
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+      likeCount: 0,
+      isLikedByMe: false,
+      replyCount: 0,
+      parentCommentId: commentId,
+    );
+
+    return insertComment(reply);
+  }
+
+  @override
+  Future<bool> toggleLike(String commentId) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+
+    final index = _db.indexWhere((c) => c.id == commentId);
+    if (index == -1) throw Exception('Comment not found in mock JSON');
+
+    final comment = _db[index];
+    final isNowLiked = !comment.isLikedByMe;
+    final newLikeCount = isNowLiked
+        ? comment.likeCount + 1
+        : comment.likeCount - 1;
+
+    _db[index] = CommentDto(
+      id: comment.id,
+      trackId: comment.trackId,
+      userId: comment.userId,
+      userDisplayName: comment.userDisplayName,
+      userPfp: comment.userPfp,
+      content: comment.content,
+      timestamp: comment.timestamp,
+      createdAt: comment.createdAt,
+      likeCount: newLikeCount,
+      isLikedByMe: isNowLiked,
+      replyCount: comment.replyCount,
+      parentCommentId: comment.parentCommentId,
+    );
+    return isNowLiked;
+  }
+
+  @override
+  Future<void> deleteComment(String commentId) async {
+    await _initDatabase();
+    await Future.delayed(_delay);
+    _db.removeWhere((c) => c.id == commentId);
+  }
+
+  @override
+  Future<void> blockUser(String userId) async {
+    await Future.delayed(_delay);
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    await Future.delayed(_delay);
+  }
+
+  void _sortComments(List<CommentDto> comments, String sortValue) {
+    if (sortValue == 'newest') {
+      comments.sort(
+        (a, b) =>
+            DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)),
+      );
+    } else if (sortValue == 'oldest') {
+      comments.sort(
+        (a, b) =>
+            DateTime.parse(a.createdAt).compareTo(DateTime.parse(b.createdAt)),
+      );
+    } else if (sortValue == 'top') {
+      comments.sort((a, b) => b.likeCount.compareTo(a.likeCount));
+    }
+  }
+}

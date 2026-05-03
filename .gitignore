@@ -43,3 +43,30 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Flutter generated plugin registrants
+**/generated_plugin_registrant.*
+**/GeneratedPluginRegistrant.*
+
+# Flutter plugin build files
+**/generated_plugins.cmake
+
+# Flutter plugin metadata
+.flutter-plugins
+.flutter-plugins-dependencies
+android/.kotlin/sessions/kotlin-compiler-13249507405906181982.salive
+macos/Flutter/GeneratedPluginRegistrant.swift
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugins.cmake
+
+# Signing and Keystores
+key.properties
+*.keystore
+*.jks
+**/android/key.properties
+
+# Explicitly un-ignore debug.keystore
+!android/app/debug.keystore
+BUGFIX_SUMMARY.md
+WINDOWS_PLAYBACK_FIX.md

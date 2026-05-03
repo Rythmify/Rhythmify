@@ -2,17 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-
   // ==========================================
   // ----------------- COLORS -----------------
   // ==========================================
 
-  static const Color primaryBrand = Color(0xFFFF5500); 
+  static const Color primaryBrand = Color(0xFFFF5500);
   static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF2E2E2E);
+  static const Color surface = Color(0xFF1E1E1E);
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.grey;
+  static const Color semiWhite = Color(0xFFBCBCBC);
   static const Color appBarItems = Color(0xFFD6D6D6);
+  static const Color link = Color(0xFF2F80ED);
+  static const Color whatsApp = Color(0xFF25D366);
+  static const Color whatsAppStatus = Color(0xFF128C7E);
+  static const Color instagram = Color(0xFFE1306C);
+  static const Color sms = Color(0xFF2F80ED);
+  static const Color shareCircle = Color(0xFF3A3A3A);
+  static const Color lighterSurface = Color(0xFF2E2E2E);
+  static const Color iconBg = Color(0xFF121212);
+  static const Color babyBlue = Color(0xFF99C5FF);
+  static const Color fadedWhite = Color(0xFFD8D8D8);
+  static const Color perfectGrey = Color(0xFF2C2C2C);
+  static const Color miniPlayer = Color(0xFF36363F);
 
   // ==========================================   /// --- USAGE EXAMPLE ACROSS THE PROJECT ---
   // ----------- CUSTOM TEXT STYLES -----------   /// style: AppTheme.headlineLarge,
@@ -32,10 +44,52 @@ class AppTheme {
     color: textSecondary,
   );
 
+  static TextStyle get miniPlayerFont1 => GoogleFonts.inter(
+    fontSize: 15,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
+  static TextStyle get miniPlayerFont2 => GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    color: semiWhite,
+  );
+
+  static TextStyle get bodyNormal => GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
+  static TextStyle get trackTitle => GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
+  static TextStyle get artistTitle => GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.25,
+    color: semiWhite,
+  );
+
+  static TextStyle get homeTitle => GoogleFonts.inter(
+    fontSize: 21,
+    fontWeight: FontWeight.w900,
+    letterSpacing: -0.25,
+    color: textPrimary,
+  );
+
   // ==========================================
   // ---------- GENERAL TEXT STYLES -----------
   // ==========================================
-  
+
   // --- HEADLINES ---
   static TextStyle get displayLarge => GoogleFonts.inter(
     fontSize: 57,
@@ -52,14 +106,15 @@ class AppTheme {
 
   // --- TITLES ---
   static TextStyle get titleLarge => GoogleFonts.inter(
-    fontSize: 22,
-    fontWeight: FontWeight.w600, // SemiBold
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.25,
     color: textPrimary,
   );
 
   static TextStyle get titleMedium => GoogleFonts.inter(
-    fontSize: 16,
-    fontWeight: FontWeight.w500, // Medium
+    fontSize: 18,
+    fontWeight: FontWeight.w900, // Medium
     letterSpacing: 0.15,
     color: textPrimary,
   );
@@ -94,9 +149,16 @@ class AppTheme {
     color: textSecondary,
   );
 
-  // ==========================================
-  // ------------  THE MAIN THEME  ------------
-  // ==========================================
+  static TextStyle get commentLabel => GoogleFonts.inter(
+    fontSize: 11,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.1,
+    color: textSecondary,
+  );
+
+  // ========================================
+  // ------------ THE MAIN THEME ------------
+  // ========================================
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -105,18 +167,18 @@ class AppTheme {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       splashFactory: NoSplash.splashFactory,
-      
+
       colorScheme: const ColorScheme.dark(
         primary: primaryBrand,
         surface: surface,
       ),
-      
+
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         toolbarHeight: 56.0,
         elevation: 0,
-        titleTextStyle: appBarTitle, 
-        iconTheme: const IconThemeData(color:appBarItems), 
+        titleTextStyle: appBarTitle,
+        iconTheme: const IconThemeData(color: appBarItems),
       ),
     );
   }

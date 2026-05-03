@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/likes_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/likes_widget_background"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Logo only — no pfp/title at this size -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="14dp"
+            android:scaleType="fitEnd"
+            android:src="@drawable/logo" />
+
+    </LinearLayout>
+
+    <!-- Track art fills the remaining space -->
+    <ImageView
+        android:id="@+id/likes_mini_art"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="4dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo" />
+
+</LinearLayout>

@@ -1,0 +1,171 @@
+class Track {
+  final String id;
+  final String userId;
+  final String title;
+  final String artist;
+  final String? artistUsername;
+  final String? artistPfp;
+  final String? artistCity;
+  final String? artistCountry;
+  final String? description; // "Heavy" data (Nullable)
+  final String? coverImage;
+  final String audioUrl;
+  final String? streamUrl;
+  final String? waveformUrl;
+  final Duration duration;
+
+  final int playCount;
+  final int likeCount;
+  final int commentCount;
+  final int repostCount;
+
+  final bool isLiked;
+  final bool isReposted;
+  final bool isArtistFollowed;
+  final List<String> tags;
+
+  final List<double>? waveformData; // "Heavy" data (Nullable)
+
+  final String? genre;
+  final String? artists;
+  final String? recordLabel;
+  final String? releaseDate;
+  final bool explicitContent;
+
+  final bool isTrending;
+  final bool isFeatured;
+  final bool isPublic;
+  final bool isHidden;
+  final bool isGeoBlocked;
+  final String? geoRestrictionType;
+  final List<String> geoRegions;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final String? status;
+
+  const Track({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.artist,
+    this.artistUsername,
+    this.artistPfp,
+    this.artistCity,
+    this.artistCountry,
+    required this.audioUrl,
+    required this.duration,
+    required this.createdAt,
+    this.description,
+    this.coverImage,
+    this.streamUrl,
+    this.waveformUrl,
+    this.playCount = 0,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.repostCount = 0,
+    this.isLiked = false,
+    this.isReposted = false,
+    this.isArtistFollowed = false,
+    this.tags = const [],
+    this.waveformData,
+    this.genre,
+    this.artists,
+    this.recordLabel,
+    this.releaseDate,
+    this.explicitContent = false,
+    this.isTrending = false,
+    this.isFeatured = false,
+    this.isPublic = true,
+    this.isHidden = false,
+    this.isGeoBlocked = false,
+    this.geoRestrictionType,
+    this.geoRegions = const [],
+    this.updatedAt,
+    this.status,
+  });
+
+  // Compatibility with older artworkUrl field
+  String get artworkUrl => coverImage ?? '';
+
+  Track copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? artist,
+    String? artistUsername,
+    String? artistPfp,
+    String? artistCity,
+    String? artistCountry,
+    String? description,
+    String? coverImage,
+    String? audioUrl,
+    String? streamUrl,
+    String? waveformUrl,
+    Duration? duration,
+    int? playCount,
+    int? likeCount,
+    int? commentCount,
+    int? repostCount,
+    bool? isLiked,
+    bool? isReposted,
+    bool? isArtistFollowed,
+    List<String>? tags,
+    List<double>? waveformData,
+    String? genre,
+    String? artists,
+    String? recordLabel,
+    String? releaseDate,
+    bool? explicitContent,
+    bool? isTrending,
+    bool? isFeatured,
+    bool? isPublic,
+    bool? isHidden,
+    bool? isGeoBlocked,
+    String? geoRestrictionType,
+    List<String>? geoRegions,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? status,
+  }) {
+    return Track(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      artist: artist ?? this.artist,
+      artistUsername: artistUsername ?? this.artistUsername,
+      artistPfp: artistPfp ?? this.artistPfp,
+      artistCity: artistCity ?? this.artistCity,
+      artistCountry: artistCountry ?? this.artistCountry,
+      description: description ?? this.description,
+      coverImage: coverImage ?? this.coverImage,
+      audioUrl: audioUrl ?? this.audioUrl,
+      streamUrl: streamUrl ?? this.streamUrl,
+      waveformUrl: waveformUrl ?? this.waveformUrl,
+      duration: duration ?? this.duration,
+      playCount: playCount ?? this.playCount,
+      likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
+      repostCount: repostCount ?? this.repostCount,
+      isLiked: isLiked ?? this.isLiked,
+      isReposted: isReposted ?? this.isReposted,
+      isArtistFollowed: isArtistFollowed ?? this.isArtistFollowed,
+      tags: tags ?? this.tags,
+      waveformData: waveformData ?? this.waveformData,
+      genre: genre ?? this.genre,
+      artists: artists ?? this.artists,
+      recordLabel: recordLabel ?? this.recordLabel,
+      releaseDate: releaseDate ?? this.releaseDate,
+      explicitContent: explicitContent ?? this.explicitContent,
+      isTrending: isTrending ?? this.isTrending,
+      isFeatured: isFeatured ?? this.isFeatured,
+      isPublic: isPublic ?? this.isPublic,
+      isHidden: isHidden ?? this.isHidden,
+      isGeoBlocked: isGeoBlocked ?? this.isGeoBlocked,
+      geoRestrictionType: geoRestrictionType ?? this.geoRestrictionType,
+      geoRegions: geoRegions ?? this.geoRegions,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
+    );
+  }
+}
