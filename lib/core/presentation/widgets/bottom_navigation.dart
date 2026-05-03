@@ -71,24 +71,28 @@ class BottomNavigation extends StatelessWidget {
           ),
 
           BottomNavigationBarItem(
+            key: const Key('feed_nav_button'),
             icon: _inactiveIcon('feed_outlined'),
             activeIcon: _activeIcon('feed'),
             label: 'Feed',
           ),
 
           BottomNavigationBarItem(
+            key: const Key('search_nav_button'),
             icon: _inactiveIcon('search_outlined'),
             activeIcon: _activeIcon('search'),
             label: 'Search',
           ),
 
           BottomNavigationBarItem(
+            key: const Key('library_nav_button'),
             icon: _inactiveIcon('library_outlined'),
             activeIcon: _activeIcon('library'),
             label: 'Library',
           ),
 
           BottomNavigationBarItem(
+            key: const Key('upgrade_nav_button'),
             icon: _inactiveIcon('logo'),
             activeIcon: _activeIcon('logo'),
             label: 'Upgrade',

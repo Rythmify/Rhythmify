@@ -9,9 +9,12 @@ abstract class PlaybackLocalDataSource {
 
 class PlaybackLocalDataSourceImpl implements PlaybackLocalDataSource {
   static const String _boxName = 'pending_history_v1';
+  final Box? _box;
+
+  PlaybackLocalDataSourceImpl({Box? box}) : _box = box;
 
   Future<Box> _openBox() async {
-    return await Hive.openBox(_boxName);
+    return _box ?? await Hive.openBox(_boxName);
   }
 
   @override

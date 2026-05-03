@@ -192,7 +192,7 @@ class FeedListState extends ConsumerState<FeedList> {
               Positioned(
                 top: 0,
                 left: 0,
-                right: 0,
+                right: 80,
                 bottom: 350,
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
@@ -255,7 +255,7 @@ class FeedListState extends ConsumerState<FeedList> {
             Positioned(
               top: 0,
               left: 0,
-              right: 0,
+              right: 80,
               bottom: 350,
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,

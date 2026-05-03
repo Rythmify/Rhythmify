@@ -22,19 +22,7 @@ class LoginPage extends BasePage {
   Future<void> tapLogin() async {
     await tapByKey(authLoginPasswordSignInElevatedButton);
   }
-
-  Future<void> tapGoogleSignIn() async {
-    await tapByKey(authSocialGoogleButton);
-  }
-
-  Future<void> tapAppleSignIn() async {
-    await tapByKey(authSocialAppleButton);
-  }
-
-  Future<void> tapFacebookSignIn() async {
-    await tapByKey(authSocialFacebookButton);
-  }
-
+  
   Future<void> tapPasswordBack() async {
     await tapByKey(authLoginPasswordBackButton);
   }

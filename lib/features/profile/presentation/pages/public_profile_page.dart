@@ -64,11 +64,6 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
 
     Future.microtask(() async {
       if (_resolvedUserId == 'me') {
-        final currentState = ref.read(ownProfileProvider);
-        if (currentState is ProfileLoaded) return;
-      }
-
-      if (_resolvedUserId == 'me') {
         await ref
             .read(ownProfileProvider.notifier)
             .loadProfile(userId: _resolvedUserId);
@@ -716,7 +711,7 @@ class _PublicProfilePageState extends ConsumerState<PublicProfilePage> {
           Text(
             'Artist Pro',
             style: AppTheme.labelSmall.copyWith(
-              color: const Color(0xFFFBC02D),
+              color: const Color(0xFFFFFFFF),
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),

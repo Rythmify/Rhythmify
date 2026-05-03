@@ -12,29 +12,27 @@ final queueStateProvider = NotifierProvider<QueueNotifier, AppQueueState>(() {
 });
 
 class QueueNotifier extends Notifier<AppQueueState> {
-  String? _lastFetchedRelatedId;
+  String? _lastFetchedSeedId;
 
   @override
   AppQueueState build() {
     ref.listen(playerStateProvider, (previous, next) {
-      // ── Unified Reactive Logic ─────────────────────────────────────────────
-      // We react differently depending on WHAT changed in the player.
-
       final oldId = previous?.currentTrack?.id;
       final newId = next.currentTrack?.id;
-      final oldIndex = previous?.queueIndex;
-      final newIndex = next.queueIndex;
+      final oldWave = previous?.currentTrack?.waveformData;
+      final newWave = next.currentTrack?.waveformData;
 
       // 1. TRACK CHANGED (Auto-advance or Skip)
-      // We sync state and check if we need to fetch more recommendations.
-      if (oldId != newId && newId != null) {
-        _syncWithHardware(newIndex ?? 0);
+      if (newId != null && oldId != newId) {
+        _syncWithHardware(next.queueIndex ?? 0);
         _checkAndFetchRelated();
       }
-      // 2. INDEX CHANGED (Same track, different position in hardware queue)
-      // This happens during reorders or manual queue syncs. We just sync state.
-      else if (oldIndex != newIndex && newIndex != null) {
-        _syncWithHardware(newIndex);
+      // 2. METADATA RESOLVED (Waveform or detail update for the same track)
+      else if (newId != null &&
+          oldId == newId &&
+          oldWave == null &&
+          newWave != null) {
+        _syncWithHardware(next.queueIndex ?? 0);
       }
     });
 
@@ -76,60 +74,86 @@ class QueueNotifier extends Notifier<AppQueueState> {
         );
   }
 
-  /// Proactively fetches discovery tracks BEFORE the manual queue ends.
+  /// Super simple proactive fetch: uses the LAST track in queue as seed.
   Future<void> _checkAndFetchRelated() async {
     final upcoming = state.upcomingTracks;
     final current = state.currentTrack;
 
-    if (current == null) return;
+    if (current == null || state.isLoadingRecommendations) return;
 
-    // Threshold: Fetch when total remaining tracks are 5 or fewer.
-    if (upcoming.length <= 5 &&
-        !state.isLoadingRecommendations &&
-        _lastFetchedRelatedId != current.track.id) {
-      _lastFetchedRelatedId = current.track.id;
+    // 1. Identify the seed: The absolute last track we know about.
+    final seedItem = upcoming.isNotEmpty ? upcoming.last : current;
+    final seedId = seedItem.track.id;
+
+    // 2. Threshold: If we have 5 or fewer tracks left in the queue.
+    // 3. Guard: Don't fetch for the same seed twice in a row.
+    if (upcoming.length <= 5 && _lastFetchedSeedId != seedId) {
+      _lastFetchedSeedId = seedId;
       state = state.copyWith(isLoadingRecommendations: true);
 
       try {
         final relatedTracks = await ref
             .read(getRelatedTracksUseCaseProvider)
-            .call(current.track.id);
+            .call(seedId);
 
-        final existingIds = {
-          ...state.history.map((e) => e.track.id),
-          ...state.upcomingTracks.map((e) => e.track.id),
-          current.track.id,
-        };
+        // Simple duplicate filter (don't add what's already upcoming or playing)
+        final upcomingIds = upcoming.map((e) => e.track.id).toSet();
+        final forbiddenIds = {...upcomingIds, current.track.id};
 
-        final newRelated = relatedTracks
-            .where((t) => !existingIds.contains(t.id))
-            .map(
-              (t) => QueueItem(
-                track: t,
-                queueBucket: 'context',
-                sourceType: 'related',
-                sourceId: current.track.id,
-                isRecommended: true,
-              ),
-            )
+        final filteredTracks = relatedTracks
+            .where((t) => !forbiddenIds.contains(t.id))
             .toList();
 
-        if (newRelated.isNotEmpty) {
-          // Hardware sync
+        if (filteredTracks.isNotEmpty) {
+          // RESOLVE FULL METADATA AND WAVEFORMS BEFORE ADDING
+          // This ensures the queue is never filled with skeletons
+          final fullTracks = await Future.wait(
+            filteredTracks.map((t) async {
+              try {
+                // Fetch details and waveform concurrently
+                final results = await Future.wait([
+                  ref.read(getTrackDetailsUseCaseProvider).call(t.id),
+                  ref
+                      .read(getWaveformUseCaseProvider)
+                      .call(t.id)
+                      .catchError((_) => <double>[]),
+                ]);
+                final track = results[0] as Track;
+                final wave = results[1] as List<double>;
+                return track.copyWith(
+                  waveformData: wave.isNotEmpty ? wave : track.waveformData,
+                );
+              } catch (_) {
+                return t; // Fallback to skeleton if resolution fails
+              }
+            }),
+          );
+
+          final newItems = fullTracks
+              .map(
+                (t) => QueueItem(
+                  track: t,
+                  queueBucket: 'context',
+                  sourceType: 'related',
+                  sourceId: seedId,
+                  isRecommended: true,
+                ),
+              )
+              .toList();
+
+          // Append to hardware and UI
           await ref
               .read(appendTracksUseCaseProvider)
-              .call(newRelated.map((e) => e.track).toList());
-
-          // UI sync
+              .call(newItems.map((e) => e.track).toList());
           state = state.copyWith(
-            upcomingTracks: [...state.upcomingTracks, ...newRelated],
+            upcomingTracks: [...state.upcomingTracks, ...newItems],
             isLoadingRecommendations: false,
           );
         } else {
           state = state.copyWith(isLoadingRecommendations: false);
         }
       } catch (e) {
-        debugPrint('[QueueNotifier] Proactive fetch failed: $e');
+        debugPrint('[QueueNotifier] Fetch failed: $e');
         state = state.copyWith(isLoadingRecommendations: false);
       }
     }
@@ -146,7 +170,7 @@ class QueueNotifier extends Notifier<AppQueueState> {
     }
 
     final tappedTrack = tracks[initialIndex];
-    _lastFetchedRelatedId = null;
+    _lastFetchedSeedId = null;
 
     final localItems = tracks.asMap().entries.map((entry) {
       final t = entry.value;

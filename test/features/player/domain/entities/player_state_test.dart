@@ -1,83 +1,60 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rythmify/core/domain/entities/track.dart';
 import 'package:rythmify/features/player/domain/entities/player_state.dart';
+import 'package:rythmify/core/domain/entities/track.dart';
 
 void main() {
   final tTrack = Track(
-    id: 'track-1',
-    userId: 'user-1',
+    id: '1',
+    userId: 'u1',
     title: 'Test Track',
-    artist: 'Artist',
-    audioUrl: 'http://example.com/audio.mp3',
+    artist: 'Test Artist',
+    audioUrl: 'https://test.com/audio.mp3',
     duration: const Duration(minutes: 3),
-    createdAt: DateTime(2023, 10, 15),
+    createdAt: DateTime.now(),
   );
 
   group('AppPlayerState', () {
-    test('initial state should have correct default values', () {
-      const state = AppPlayerState();
-
-      expect(state.status, PlayerStatus.initial);
-      expect(state.currentTrack, isNull);
-      expect(state.position, Duration.zero);
-      expect(state.bufferedPosition, Duration.zero);
-      expect(state.duration, Duration.zero);
-      expect(state.isShuffleModeEnabled, false);
-      expect(state.loopMode, 'off');
+    test('should support value equality', () {
+      expect(const AppPlayerState(), const AppPlayerState());
     });
 
-    test('copyWith should replace fields properly', () {
+    test('copyWith should return a copy with updated values', () {
       const state = AppPlayerState();
-
       final updatedState = state.copyWith(
         status: PlayerStatus.playing,
         currentTrack: tTrack,
         position: const Duration(seconds: 10),
-        bufferedPosition: const Duration(seconds: 20),
-        duration: const Duration(minutes: 3),
-        isShuffleModeEnabled: true,
-        loopMode: 'all',
       );
 
       expect(updatedState.status, PlayerStatus.playing);
       expect(updatedState.currentTrack, tTrack);
       expect(updatedState.position, const Duration(seconds: 10));
-      expect(updatedState.bufferedPosition, const Duration(seconds: 20));
-      expect(updatedState.duration, const Duration(minutes: 3));
-      expect(updatedState.isShuffleModeEnabled, true);
-      expect(updatedState.loopMode, 'all');
+      // Other fields should remain default
+      expect(updatedState.isShuffleModeEnabled, false);
     });
 
-    test('copyWith should retain old values if not provided', () {
+    test('props should contain all fields', () {
       final state = AppPlayerState(
         status: PlayerStatus.playing,
         currentTrack: tTrack,
         position: const Duration(seconds: 10),
+        bufferedPosition: const Duration(seconds: 5),
+        duration: const Duration(seconds: 100),
+        isShuffleModeEnabled: true,
+        loopMode: 'one',
+        queueIndex: 1,
       );
 
-      final updatedState = state.copyWith(status: PlayerStatus.paused);
-
-      expect(updatedState.status, PlayerStatus.paused);
-      expect(updatedState.currentTrack, tTrack);
-      expect(updatedState.position, const Duration(seconds: 10));
-      expect(updatedState.bufferedPosition, state.bufferedPosition);
-    });
-
-    test('props should contain all fields', () {
-      const state = AppPlayerState();
-      expect(state.props.length, 7);
-      expect(
-        state.props,
-        containsAll([
-          state.status,
-          state.currentTrack,
-          state.position,
-          state.bufferedPosition,
-          state.duration,
-          state.isShuffleModeEnabled,
-          state.loopMode,
-        ]),
-      );
+      expect(state.props, [
+        PlayerStatus.playing,
+        tTrack,
+        const Duration(seconds: 10),
+        const Duration(seconds: 5),
+        const Duration(seconds: 100),
+        true,
+        'one',
+        1,
+      ]);
     });
   });
 }

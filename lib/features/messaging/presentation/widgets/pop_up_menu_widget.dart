@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rythmify/core/presentation/pages/report_page.dart';
 import 'package:rythmify/features/messaging/presentation/providers/block_user_provider.dart';
 import 'package:rythmify/features/messaging/presentation/providers/is_blocked_provider.dart';
 import 'package:rythmify/features/messaging/presentation/widgets/confirm_block_widget.dart';
@@ -89,8 +90,16 @@ class PopUpMenuWidget extends ConsumerWidget {
                 'Report user',
                 style: TextStyle(color: Colors.white),
               ),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(context);
+                Navigator.of(parentContext, rootNavigator: true).push(
+                  MaterialPageRoute(
+                    builder: (_) => ReportPage(
+                      reportedContentId: participantId,
+                      resourceType: 'user',
+                    ),
+                  ),
+                );
               },
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rythmify/features/messaging/data/repositories/repository_implement.dart';
 import 'package:rythmify/features/messaging/domain/entities/conversation.dart';
 import 'package:rythmify/features/messaging/domain/repositories/messaging_repository.dart';
 import 'package:rythmify/features/messaging/presentation/providers/conversations_provider.dart';
@@ -39,6 +40,17 @@ void main() {
       overrides: [repositoryprovider.overrideWithValue(mockRepo)],
     );
   }
+
+  group('repositoryprovider wiring', () {
+    test('builds the concrete repository implementation', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final repository = container.read(repositoryprovider);
+
+      expect(repository, isA<RepositoryImplement>());
+    });
+  });
 
   group('conversationProvider wiring', () {
     test(

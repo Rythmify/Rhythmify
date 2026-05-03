@@ -120,18 +120,48 @@ class MixedPlaylistCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(1),
                     border: Border.all(color: Colors.grey, width: 0.5),
-                    image: imagePath.isNotEmpty
-                        ? DecorationImage(
-                            image: imagePath.startsWith('http')
-                                ? NetworkImage(imagePath) as ImageProvider
-                                : AssetImage(imagePath),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+                    color: Colors.grey[800],
                   ),
-                  child: imagePath.isEmpty
-                      ? const Center(child: Icon(Icons.music_note))
-                      : null,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(1),
+                    child: imagePath.isEmpty
+                        ? const Center(
+                            child: Icon(
+                              Icons.music_note,
+                              color: Colors.white54,
+                              size: 32,
+                            ),
+                          )
+                        : imagePath.startsWith('http')
+                        ? Image.network(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 130,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(
+                                    Icons.music_note,
+                                    color: Colors.white54,
+                                    size: 32,
+                                  ),
+                                ),
+                          )
+                        : Image.asset(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 130,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(
+                                    Icons.music_note,
+                                    color: Colors.white54,
+                                    size: 32,
+                                  ),
+                                ),
+                          ),
+                  ),
                 ),
                 Positioned(
                   bottom: 8,

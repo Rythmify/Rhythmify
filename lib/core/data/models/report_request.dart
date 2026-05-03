@@ -1,31 +1,22 @@
 class ReportRequest {
-  final String contentId;
+  final String resourceId;
+  final String resourceType;
   final String reason;
-  final String details;
-  final String name;
-  final String email;
-  final String url;
-  final List<String> violations;
+  final String description;
 
   ReportRequest({
-    required this.contentId,
+    required this.resourceId,
+    this.resourceType = 'track',
     required this.reason,
-    required this.details,
-    required this.name,
-    required this.email,
-    required this.url,
-    required this.violations,
+    required this.description,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      "contentId": contentId,
+      "resource_id": resourceId,
+      "resource_type": resourceType,
       "reason": reason,
-      "details": details,
-      "name": name,
-      "email": email,
-      "url": url,
-      "violations": violations,
+      "description": description,
     };
   }
 }

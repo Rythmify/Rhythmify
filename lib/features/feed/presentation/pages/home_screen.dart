@@ -29,6 +29,8 @@ import '../../../../core/error/error_handler.dart';
 // ── Added for artist name fix ──
 import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+import 'package:rythmify/features/messaging/presentation/providers/unread_messages_count_provider.dart';
+import 'package:rythmify/features/notifications/presentation/providers/unread_count_provider.dart';
 
 // 1. Temporary provider to fetch the ENTIRE list of tracks for UI testing
 final testAllTracksProvider = FutureProvider<List<Track>>((ref) async {
@@ -163,6 +165,10 @@ class HomeScreen extends ConsumerWidget {
       ],
     );
 
+    final unreadMessages = ref.watch(unreadMessagesCountProvider);
+    final unreadNotifications =
+        ref.watch(unreadNotificationsCountProvider).asData?.value ?? 0;
+
     return Scaffold(
       key: const Key('home_scaffold'),
       appBar: AppBar(
@@ -223,7 +229,7 @@ class HomeScreen extends ConsumerWidget {
           /// Navigates user to inbox/messages screen.
           IconButton(
             key: const Key('home_inbox_icon_button'),
-            icon: const Icon(Icons.mail_outline),
+            icon: _badgeIcon(Icons.mail_outline, hasUnread: unreadMessages > 0),
             onPressed: () {
               context.push('/home/inbox');
             },
@@ -232,7 +238,10 @@ class HomeScreen extends ConsumerWidget {
           /// Navigates user to notifications screen.
           IconButton(
             key: const Key('home_notifications_icon_button'),
-            icon: const Icon(Icons.notifications_none),
+            icon: _badgeIcon(
+              Icons.notifications_none,
+              hasUnread: unreadNotifications > 0,
+            ),
             onPressed: () {
               context.push('/home/notifications');
             },
@@ -291,6 +300,27 @@ class HomeScreen extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _badgeIcon(IconData icon, {required bool hasUnread}) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icon),
+        if (hasUnread)
+          Positioned(
+            top: -2,
+            right: -2,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBrand,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(width: 8, height: 8),
+            ),
+          ),
+      ],
     );
   }
 }

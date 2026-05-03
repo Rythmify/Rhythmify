@@ -240,39 +240,56 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
   /// Internal helper to fetch full track metadata and waveform data.
   Future<void> _updateTrackInBackground(String trackId) async {
     try {
+      final currentTrack = state.currentTrack;
+      if (currentTrack == null || currentTrack.id != trackId) return;
+
       // Run both calls concurrently.
-      // Note: If one fails, Future.wait will throw immediately.
-      // We wrap individual calls to allow partial success if possible,
-      // or just catch the whole thing.
       final results = await Future.wait([
         ref.read(getTrackDetailsUseCaseProvider).call(trackId).catchError((e) {
           debugPrint(
             '[PlayerNotifier] Failed to fetch track details for $trackId: $e',
           );
-          return state.currentTrack!; // Fallback to existing track info
+          return currentTrack; // Fallback to existing
         }),
         ref.read(getWaveformUseCaseProvider).call(trackId).catchError((e) {
           debugPrint(
             '[PlayerNotifier] Failed to fetch waveform for $trackId: $e',
           );
-          return <double>[]; // Fallback to empty waveform
+          return <double>[]; // Fallback to empty
         }),
       ]);
 
       final fullTrack = results[0] as Track;
       final waveform = results[1] as List<double>;
 
-      // Only update if we actually got new useful info
-      if (waveform.isNotEmpty || fullTrack != state.currentTrack) {
-        final updatedTrack = fullTrack.copyWith(
-          waveformData: waveform.isNotEmpty ? waveform : fullTrack.waveformData,
-        );
+      // CRITICAL: Merge the new data with current data to ensure no fields are lost
+      // (e.g. if currentTrack has a streamUrl but fullTrack doesn't, keep current)
+      final mergedTrack = currentTrack.copyWith(
+        userId: fullTrack.userId.isNotEmpty
+            ? fullTrack.userId
+            : currentTrack.userId,
+        artistUsername: fullTrack.artistUsername ?? currentTrack.artistUsername,
+        artistPfp: fullTrack.artistPfp ?? currentTrack.artistPfp,
+        waveformData: waveform.isNotEmpty
+            ? waveform
+            : (fullTrack.waveformData ?? currentTrack.waveformData),
+        isLiked: fullTrack.isLiked,
+        isReposted: fullTrack.isReposted,
+        isArtistFollowed: fullTrack.isArtistFollowed,
+        playCount: fullTrack.playCount > 0
+            ? fullTrack.playCount
+            : currentTrack.playCount,
+      );
+
+      // Only update if we actually got new useful info (waveform is the big one)
+      if (mergedTrack.waveformData != currentTrack.waveformData ||
+          mergedTrack.userId != currentTrack.userId ||
+          mergedTrack.artistUsername != currentTrack.artistUsername) {
         await ref
             .read(updateTrackInfoUseCaseProvider)
-            .call(trackId, updatedTrack);
+            .call(trackId, mergedTrack);
       }
     } catch (e) {
-      // Catch-all for any other unexpected errors in the background update flow
       debugPrint(
         '[PlayerNotifier] Critical error in _updateTrackInBackground: $e',
       );

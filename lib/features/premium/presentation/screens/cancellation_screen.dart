@@ -113,7 +113,7 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
       builder: (_) => _ConfirmDialog(),
     );
     if (confirm != true || !mounted) return;
-    _timer?.cancel();
+
     setState(() => _isCanceled = true);
     await ref.read(premiumProvider.notifier).cancel();
   }
@@ -477,7 +477,46 @@ class _CancellationScreenState extends ConsumerState<CancellationScreen> {
                           elevation: 0,
                           shape: const RoundedRectangleBorder(),
                         ),
-                        onPressed: () => context.push('/upgrade/plans'),
+                        onPressed: () {
+                          final currentPlan = ref
+                              .read(premiumProvider)
+                              .subscription
+                              ?.plan;
+                          final premiumPlans = ref
+                              .read(premiumProvider)
+                              .plans
+                              .where((p) => p.isPremium)
+                              .toList();
+
+                          final targetPlan =
+                              currentPlan ??
+                              (premiumPlans.isNotEmpty
+                                  ? premiumPlans.first
+                                  : null);
+
+                          if (targetPlan != null) {
+                            context.go(
+                              '/upgrade/checkout',
+                              extra: {
+                                'planId': targetPlan.planId,
+                                'planName': targetPlan.name == 'premium'
+                                    ? 'Artist Pro'
+                                    : targetPlan.name,
+                                'price': targetPlan.price,
+                                'features': [
+                                  'Unlimited track uploads',
+                                  'Unlimited playlists',
+                                  'Offline listening',
+                                  'No ads',
+                                  'Priority support',
+                                ],
+                              },
+                            );
+                          } else {
+                            // Fallback to plans if no plan found
+                            context.go('/upgrade/plans');
+                          }
+                        },
                         child: Text(
                           'Resubscribe',
                           style: GoogleFonts.inter(

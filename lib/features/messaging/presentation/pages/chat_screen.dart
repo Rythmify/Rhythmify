@@ -188,8 +188,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
     });
     _socket.onMessageReceived((data) {
-      debugPrint('🔥 onMessageReceived fired: $data');
-
       if (mounted) {
         final message = MessageModel.fromJson(
           data['message'] as Map<String, dynamic>,
