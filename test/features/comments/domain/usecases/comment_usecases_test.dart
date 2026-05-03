@@ -6,8 +6,10 @@ import 'package:rythmify/features/comments/domain/usecases/block_user_usecase.da
 import 'package:rythmify/features/comments/domain/usecases/delete_comment_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/get_comment_replies_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/get_floating_comments_usecase.dart';
+import 'package:rythmify/features/comments/domain/usecases/get_replies_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/get_track_comments_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/post_comment_usecase.dart';
+import 'package:rythmify/features/comments/domain/usecases/post_reply_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/toggle_comment_like_usecase.dart';
 import 'package:rythmify/features/comments/domain/usecases/unblock_user_usecase.dart';
 
@@ -38,6 +40,10 @@ final tComment = Comment(
 
 void main() {
   late MockCommentRepository mockRepository;
+
+  setUpAll(() {
+    registerFallbackValue(CommentSortType.newest);
+  });
 
   setUp(() {
     mockRepository = MockCommentRepository();
@@ -128,6 +134,41 @@ void main() {
   });
 
   // =========================================================================
+  // GetRepliesUseCase
+  // =========================================================================
+
+  group('GetRepliesUseCase', () {
+    late GetRepliesUseCase useCase;
+
+    setUp(() => useCase = GetRepliesUseCase(mockRepository));
+
+    test('should return offset-based replies from repository', () async {
+      when(
+        () => mockRepository.getReplies(
+          commentId: any(named: 'commentId'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [tComment]);
+
+      final result = await useCase(
+        commentId: 'comment-123',
+        limit: 5,
+        offset: 10,
+      );
+
+      expect(result, [tComment]);
+      verify(
+        () => mockRepository.getReplies(
+          commentId: 'comment-123',
+          limit: 5,
+          offset: 10,
+        ),
+      ).called(1);
+    });
+  });
+
+  // =========================================================================
   // GetFloatingCommentsUseCase
   // =========================================================================
 
@@ -208,6 +249,35 @@ void main() {
         );
       },
     );
+  });
+
+  // =========================================================================
+  // PostReplyUseCase
+  // =========================================================================
+
+  group('PostReplyUseCase', () {
+    late PostReplyUseCase useCase;
+
+    setUp(() => useCase = PostReplyUseCase(mockRepository));
+
+    test('should post a reply and return the created comment', () async {
+      when(
+        () => mockRepository.postReply(
+          commentId: any(named: 'commentId'),
+          content: any(named: 'content'),
+        ),
+      ).thenAnswer((_) async => tComment);
+
+      final result = await useCase(commentId: 'comment-123', content: 'reply');
+
+      expect(result, tComment);
+      verify(
+        () => mockRepository.postReply(
+          commentId: 'comment-123',
+          content: 'reply',
+        ),
+      ).called(1);
+    });
   });
 
   // =========================================================================

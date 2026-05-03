@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../domain/entities/comment.dart';
-import '../providers/track_comments_notifier.dart';
-import 'track_comments_state.dart';
-import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+import 'package:rythmify/features/comments/domain/entities/comment.dart';
+import 'package:rythmify/features/comments/presentation/providers/track_comments_notifier.dart';
+import 'package:rythmify/features/comments/presentation/providers/track_comments_state.dart';
+import 'package:rythmify/features/comments/presentation/providers/comment_di_providers.dart';
 
 /// A Riverpod [StateNotifierProvider] that provides a [CommentRepliesNotifier] for a specific parent comment.
 ///

@@ -152,8 +152,8 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('Comment Entity — props', () {
-    test('should expose all 12 fields in props', () {
-      expect(tComment.props.length, 12);
+    test('should expose all 13 fields in props', () {
+      expect(tComment.props.length, 13);
     });
 
     test('should include null fields in props', () {

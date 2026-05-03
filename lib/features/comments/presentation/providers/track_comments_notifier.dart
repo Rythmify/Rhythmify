@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../../../authentication/presentation/providers/auth_state.dart';
-import '../../domain/entities/comment.dart';
-import '../../domain/repositories/comment_repository.dart';
-import '../../../../core/domain/entities/track.dart';
-import 'track_comments_state.dart';
-import 'comment_di_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
-
-import '../../../track/presentation/providers/track_sync_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:rythmify/features/authentication/presentation/providers/auth_state.dart';
+import 'package:rythmify/features/comments/domain/entities/comment.dart';
+import 'package:rythmify/features/comments/domain/repositories/comment_repository.dart';
+import 'package:rythmify/core/domain/entities/track.dart';
+import 'package:rythmify/features/comments/presentation/providers/track_comments_state.dart';
+import 'package:rythmify/features/comments/presentation/providers/comment_di_providers.dart';
+import 'package:rythmify/features/track/presentation/providers/track_sync_provider.dart';
+import 'package:rythmify/features/comments/presentation/providers/comment_replies_notifier.dart';
 
 /// A Riverpod [StateNotifierProvider] that provides a [TrackCommentsNotifier] for a specific track.
 ///
