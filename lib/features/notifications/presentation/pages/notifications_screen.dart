@@ -297,6 +297,7 @@ class _NotificationScreenState extends ConsumerState<NotificationsScreen> {
       case NotificationType.comment:
         if (embedId != null) context.push('/home/behind-the-track/$embedId');
       case NotificationType.newPostByFollowed:
+      case NotificationType.artistProActivated:
         return;
     }
   }

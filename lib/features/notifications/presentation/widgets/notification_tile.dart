@@ -29,7 +29,8 @@ class NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (notification.type == NotificationType.newPostByFollowed) {
+    if (notification.type == NotificationType.newPostByFollowed ||
+        notification.type == NotificationType.artistProActivated) {
       return const SizedBox.shrink();
     }
     return InkWell(
@@ -136,6 +137,7 @@ class NotificationTile extends StatelessWidget {
           ],
         );
       case NotificationType.newPostByFollowed:
+      case NotificationType.artistProActivated:
         return const SizedBox.shrink();
     }
   }
@@ -280,6 +282,7 @@ class _AvatarWithBadge extends StatelessWidget {
       case NotificationType.repost:
         return const Color(0xFF00BCD4);
       case NotificationType.newPostByFollowed:
+      case NotificationType.artistProActivated:
         return Colors.transparent;
     }
   }
@@ -295,6 +298,7 @@ class _AvatarWithBadge extends StatelessWidget {
       case NotificationType.repost:
         return Icons.repeat_rounded;
       case NotificationType.newPostByFollowed:
+      case NotificationType.artistProActivated:
         return Icons.notifications_rounded;
     }
   }

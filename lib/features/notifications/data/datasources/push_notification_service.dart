@@ -168,6 +168,8 @@ class PushNotificationService {
         } else {
           _route.push('/home/notifications');
         }
+      case 'artist_pro_activated':
+        return;
       case 'new_post_by_followed':
         _route.push('/home/behind-the-track/$resourceId');
       case 'new_message':
