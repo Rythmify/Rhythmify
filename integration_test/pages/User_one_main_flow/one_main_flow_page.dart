@@ -48,11 +48,33 @@ class OneMainFlowPage extends BasePage {
     await tester.pumpAndSettle();
   }
 
-  // -- Search Scenario
   Future<void> backToSearchResults() async => await tapByKey(playlistDetailBackButton);
 
-  // -- Playlist Scenrio --
+  Future<void> tapTrack(int index) async{
+    await tester.tap(find.byKey(Key(trackTile(index))));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  Future<void> tapTrackMoreOptions(int index) async {
+    final moreButtons = find.byWidgetPredicate(
+      (widget) => widget.key is ValueKey<String> &&
+                  (widget.key as ValueKey<String>).value.startsWith('track_card_') &&
+                  (widget.key as ValueKey<String>).value.endsWith('_more_inkwell'),
+    );
+    await tester.tap(moreButtons.at(index));
+    await tester.pumpAndSettle();
+  }
+  Future <void> tapAddToPlaylist() async => await tapByKey(trackOptionAddToPlaylist);
+  Future <void> tapNewPlaylist() async => await _tapByText('New playlist');
+  Future <void> writePlaylistName( String playlistName) async {
+      await enterTextByKey(trackOptionAddToPlaylist, playlistName);
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  Future <void> tapCreate() async => await _tapByText('Craete');
+  Future <void> tapDone() async => await _tapByText('Done');
+
   Future<void> playPlaylist() async => await tapByKey(playlistDetailPlayButton);
+
   Future<void> tapPlaylist(int index) async{
     await tester.tap(find.byKey(Key(playlisTile(index))));
     await tester.pumpAndSettle(const Duration(seconds: 2));

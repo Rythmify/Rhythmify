@@ -153,6 +153,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
           style: TextStyle(color: Colors.white),
         ),
         content: TextField(
+          key: const Key('playlist_create_name_textfield'),
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white),

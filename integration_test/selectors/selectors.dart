@@ -582,4 +582,7 @@ const String messagingMessageInputField     = 'messaging_message_input_text_fiel
 const String chatScreenSendButton           = 'chat_screen_send_button';
 const String chatScreenAddEmbedButton       = 'chat_screen_add_embed_button';
 const String doneButton                     = 'likes_playlists_done_button';
+const String trackOptionAddToPlaylist       = 'track_options_action_add_to_playlist_inkwell';
+const String playlistNameField              = 'playlist_create_name_textfield';
 String playlisTile(int index)               => 'playlist_tile_${index}';
+String trackTile(int index)                 => 'track_tile_${index}';

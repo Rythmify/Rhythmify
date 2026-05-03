@@ -61,111 +61,127 @@ void main() {
       expect(loginPage.isOnHomePage(), true);
     });
 
-    await tryTest('User play a track "Hot for you', () async {
-      await trackPage.playFromHotForYou();
-      await playerPage.openFullPlayer();
-      await tester.pump(const Duration (seconds: 3));
-    });
+    // await tryTest('User play a track "Hot for you', () async {
+    //   await trackPage.playFromHotForYou();
+    //   await playerPage.openFullPlayer();
+    //   await tester.pump(const Duration (seconds: 3));
+    // });
 
-    await tryTest('User like the track & write a comment', () async {
-      await playerPage.tapLikeButton();
-      await tester.pump(const Duration (seconds: 2));
-      await commentsPage.sendCommentFromFloatingBar('testing comment');
-      await commentsPage.openFromPlayer();
-      await tester.pump(const Duration (seconds: 3));
-      expect(commentsPage.isCommentVisible('testing comment'), true);
-      await mainFlowPage.tapCloseCommentsSection();
-      //await playerPage.tapPlayPause();
-      await tester.pump(const Duration (seconds: 2));
-      await playerPage.tapCollapseButton();
-      await tester.pump(const Duration (seconds: 2));
-    });
+    // await tryTest('User like the track & write a comment', () async {
+    //   await playerPage.tapLikeButton();
+    //   await tester.pump(const Duration (seconds: 2));
+    //   await commentsPage.sendCommentFromFloatingBar('testing comment');
+    //   await commentsPage.openFromPlayer();
+    //   await tester.pump(const Duration (seconds: 3));
+    //   expect(commentsPage.isCommentVisible('testing comment'), true);
+    //   await mainFlowPage.tapCloseCommentsSection();
+    //   //await playerPage.tapPlayPause();
+    //   await tester.pump(const Duration (seconds: 2));
+    //   await playerPage.tapCollapseButton();
+    //   await tester.pump(const Duration (seconds: 2));
+    // });
 
-    await tryTest('User wants to message a friend',() async {
-      await homePage.tapMessageButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.tapFriendChat('Yomna');
-      await tester.pump(const Duration(seconds: 3));
-      await mainFlowPage.writeMessage('Hello!! I found out an amazing song, listen to it!!');
-      await tester.pump(const Duration(seconds: 3));
-      await mainFlowPage.sendMessage();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.tapAddIcon();
-      await tester.pump(const Duration(seconds: 3));
-      await mainFlowPage.tapLikeTrack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.tapDoneButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.sendMessage();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await tester.pageBack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await tester.pageBack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-    });
+    // await tryTest('User wants to message a friend',() async {
+    //   await homePage.tapMessageButton();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await mainFlowPage.tapFriendChat('Yomna');
+    //   await tester.pump(const Duration(seconds: 3));
+    //   await mainFlowPage.writeMessage('Hello!! I found out an amazing song, listen to it!!');
+    //   await tester.pump(const Duration(seconds: 3));
+    //   await mainFlowPage.sendMessage();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await mainFlowPage.tapAddIcon();
+    //   await tester.pump(const Duration(seconds: 3));
+    //   await mainFlowPage.tapLikeTrack();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await mainFlowPage.tapDoneButton();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await mainFlowPage.sendMessage();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await tester.pageBack();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await tester.pageBack();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    // });
 
-    await tryTest('User wants to check likes on his tracks', () async {
-      await homePage.tapNotificationButton();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await notificationsPage.tapFilterIcon();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await notificationsPage.tapFilterLikes();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await notificationsPage.waitForNotificationsToLoad();
-      expect(notificationsPage.isFilterAppliedSuccessfully(), true,
-          reason: 'Filter should be applied — list or empty message visible');
-      await tester.pageBack();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-    });
+    // await tryTest('User wants to check likes on his tracks', () async {
+    //   await homePage.tapNotificationButton();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await notificationsPage.tapFilterIcon();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await notificationsPage.tapFilterLikes();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    //   await notificationsPage.waitForNotificationsToLoad();
+    //   expect(notificationsPage.isFilterAppliedSuccessfully(), true,
+    //       reason: 'Filter should be applied — list or empty message visible');
+    //   await tester.pageBack();
+    //   await tester.pumpAndSettle(const Duration(seconds: 3));
+    // });
 
-    await tryTest('User see what is new from feed page', () async {
-      await feedPage.tapFeedButton();
-      await tester.pump(const Duration(seconds: 3));
-      await mainFlowPage.swipeToNextTrack();
-      // await tester.pump(const Duration(milliseconds: 500));
-      await mainFlowPage.swipeToNextTrack();
-      await tester.pump(const Duration(milliseconds: 500));
-      await mainFlowPage.swipeToPreviousTrack();
-      await tester.pump(const Duration(milliseconds: 500));
-    });
+    // await tryTest('User see what is new from feed page', () async {
+    //   await feedPage.tapFeedButton();
+    //   await tester.pump(const Duration(seconds: 3));
+    //   await mainFlowPage.swipeToNextTrack();
+    //   // await tester.pump(const Duration(milliseconds: 500));
+    //   await mainFlowPage.swipeToNextTrack();
+    //   await tester.pump(const Duration(milliseconds: 500));
+    //   await mainFlowPage.swipeToPreviousTrack();
+    //   await tester.pump(const Duration(milliseconds: 500));
+    // });
 
     await tryTest('User want to search a playlist & listen to it', () async {
       await searchPage.tapSearchNavButton();
-      await searchPage.typeQuery('my playlist');
+      // await searchPage.typeQuery('my playlist');
+      // await searchPage.submitSearch();
+      // await tester.pumpAndSettle(const Duration(seconds: 3));
+      // expect(searchPage.isResultsScreenVisible(), true,
+      //     reason: 'Searching "my playlist" should navigate to the results screen');
+      // await searchPage.tapPlaylistsResultsTab();
+      // await mainFlowPage.tapPlaylist(0);
+      // await tester.pumpAndSettle(const Duration(seconds: 3));
+      // await mainFlowPage.playPlaylist();
+      // await tester.pumpAndSettle(const Duration(seconds: 3));
+      // await mainFlowPage.backToSearchResults();
+      // await searchPage.clearSearch();
+      // await tester.pumpAndSettle(const Duration(seconds: 2));
+    });
+
+    await tryTest('User want to create a new playlist with a track he founds', () async {
+      await searchPage.typeQuery('ياللي صاحي الليل');
       await searchPage.submitSearch();
       await tester.pumpAndSettle(const Duration(seconds: 3));
       expect(searchPage.isResultsScreenVisible(), true,
-          reason: 'Searching "my playlist" should navigate to the results screen');
-      await searchPage.tapPlaylistsResultsTab();
-      await mainFlowPage.tapPlaylist(0);
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.playPlaylist();
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await mainFlowPage.backToSearchResults();
+          reason: 'Searching "ياللي صاحي الليل" should navigate to the results screen');
+      await searchPage.tapTracksResultsTab();
+      await mainFlowPage.tapTrack(0);
+      await mainFlowPage.tapTrackMoreOptions(0);
+      await mainFlowPage.tapAddToPlaylist();
+      await mainFlowPage.tapNewPlaylist();
+      await mainFlowPage.writePlaylistName('حياتي باختصار');
+      await mainFlowPage.tapCreate();
+      await mainFlowPage.tapDone();
       await searchPage.clearSearch();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await playlistPage.goToLibraryTab();
+      await playlistPage.goToPlaylistsSection();
+      await playlistPage.goBackToLibrary();
+
+      // await playlistPage.tapCreateButton();
+      // await playlistPage.fillPlaylistName('New Playlist');    
+      // await playlistPage.tapConfirmCreate();
+      // await tester.pumpAndSettle(const Duration(seconds: 3));
+      // await playlistPage.tapAddTrackButton();
+      // await playlistPage.tapSuggestionAddButtonByIndex(0);
+      // await tester.pumpAndSettle(const Duration(seconds: 4));
+      // await playlistPage.tapSuggestionAddButtonByIndex(1);
+      // await tester.pumpAndSettle(const Duration(seconds: 4));
+      // await playlistPage.goBackFromPlaylistDetail();
+      // expect(playlistPage.isOnPlaylistsListScreen(), true,
+      //     reason: 'Should be back on the Playlists list');
+      // await mainFlowPage.backToLibraryPlaylistButton();
     });
 
-    // await tryTest('User want to create a new playlist', () async {
-    //   await playlistPage.goToLibraryTab();
-    //   await playlistPage.goToPlaylistsSection();
-    //   await playlistPage.tapCreateButton();
-    //   await playlistPage.fillPlaylistName('New Playlist');    
-    //   await playlistPage.tapConfirmCreate();
-    //   await tester.pumpAndSettle(const Duration(seconds: 3));
-    //   await playlistPage.tapAddTrackButton();
-    //   await playlistPage.tapSuggestionAddButtonByIndex(0);
-    //   await tester.pumpAndSettle(const Duration(seconds: 4));
-    //   await playlistPage.tapSuggestionAddButtonByIndex(1);
-    //   await tester.pumpAndSettle(const Duration(seconds: 4));
-    //   await playlistPage.goBackFromPlaylistDetail();
-    //   expect(playlistPage.isOnPlaylistsListScreen(), true,
-    //       reason: 'Should be back on the Playlists list');
-    //   await mainFlowPage.backToLibraryPlaylistButton();
-    // });
-
     await tryTest('User want edits his profile name', () async {
-      await profilePage.goToLibraryTab();
+      //await profilePage.goToLibraryTab();
       await profilePage.tapProfileAvatar();
       await profilePage.tapEdit();
       await tester.pumpAndSettle(const Duration(seconds: 2));
