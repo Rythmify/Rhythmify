@@ -147,6 +147,7 @@ class TrackDetailsSection extends ConsumerWidget {
           SizedBox(
             height: 32,
             child: ListView.separated(
+              key: const Key('behind_the_track_tags_list_view'),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               scrollDirection: Axis.horizontal,
               itemCount: track.tags.length,

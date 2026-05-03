@@ -1,0 +1,153 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
+import '../base_page.dart';
+import '../../selectors/selectors.dart';
+
+class HomePage extends BasePage {
+  HomePage(WidgetTester tester) : super(tester);
+
+  // ── Visibility ──
+  bool isOnHomePage() => isVisible(homeScaffold);
+
+  bool isHeaderVisible() => isVisible(homeAppBar);
+
+  bool isAllNavTabsVisible() {
+    return isVisible(mainBottomNavigationBar);
+  }
+
+  bool isAllHeaderElementsVisible() {
+    return isVisible(homeAppBar) &&
+        isVisible(homeUploadTrackButton) &&
+        isVisible(homeInboxButton) &&
+        isVisible(homeNotificationsButton);
+  }
+
+  bool isActivityCardVisible() => isVisible(hotForYouSection);
+
+  bool isActionButtonVisible() => isVisible(hotForYouPlayButton);
+
+  bool isHotForYouMetadataVisible() {
+    return isVisible(hotForYouTrackTitle) &&
+        isVisible(hotForYouTrackArtist) &&
+        isVisible(hotForYouLikeCount);
+  }
+
+  bool isMixedForYouVisible() => isVisible(mixedForYouSection);
+
+  bool isDiscoverWithStationsVisible() => isVisible(discoverWithStationsSection);
+
+  bool isMoreOfWhatYouLikeVisible() => isVisible(moreOfWhatYouLikeSection);
+
+  bool isTrendingByGenreVisible() => isVisible(trendingByGenreSection);
+
+  bool isGenreTabBarVisible() => isVisible(genreTabBar);
+
+  bool isReggaeGenreVisible() => find.text('Reggae').evaluate().isNotEmpty;
+
+  bool isOnInboxPage() => isVisible(messagingComposeButton);
+  bool isOnNotificationsPage() => isVisible(notificationsScreenKey);
+
+  // ── Navigation Taps ──
+
+  Future<void> tapUploadButton() async => await tapByKey(homeUploadTrackButton);
+  Future<void> tapMessageButton() async => await tapByKey(homeInboxButton);
+  Future<void> tapNotificationButton() async => await tapByKey(homeNotificationsButton);
+  // Audio may be playing after TC-HOME-006 — use tapByKeyNow to avoid pumpAndSettle blocking.
+  Future<void> mixedForYouBackButton() async => await tapByKeyNow(mixedForYouBackbutton);
+  Future<void> relatedTracksBackButton() async => await tapByKeyNow(relatedTracksBackbutton);
+  Future<void> tapMixedForYou() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(mixedListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
+
+Future<void> tapDiscoverWithStations() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(discoverListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
+
+Future<void> tapMoreOfWhatYouLike() async {
+  await tester.tap(find.descendant(
+    of: find.byKey(Key(moreListView)),
+    matching: find.byType(GestureDetector),
+  ).first);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+}
+
+  /// Taps the like button on a playlist / mix / station detail page.
+  /// Uses [tapByKeyNow] to avoid pumpAndSettle stalling on audio playback.
+  Future<void> tapPlaylistDetailLikeButton() async =>
+      await tapByKeyNow(playlistDetailLikeButton);
+
+  /// Taps the like button on the Mix Detail page (Key: 'mix_detail_like_button').
+  Future<void> tapMixDetailLikeButton() async =>
+      await tapByKeyNow(mixDetailLikeButton);
+
+  /// Taps the like button on the Related Tracks page
+  /// (used by both /home/station/:id and /home/related-tracks/:id).
+  Future<void> tapRelatedTracksLikeButton() async =>
+      await tapByKeyNow(relatedTracksLikeButton);
+
+  /// Tap the inbox button, verify navigation, then return to the home screen.
+  Future<void> tapInboxAndReturn() async {
+    await tapByKey(homeInboxButton);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pageBack();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  /// Tap the notifications button, verify navigation, then return to the home screen.
+  Future<void> tapNotificationsAndReturn() async {
+    await tapByKey(homeNotificationsButton);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pageBack();
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+
+  // ── Genre Tabs ──
+
+  Future<void> tapGenreTab(String genreName) async {
+    await tester.tap(find.text(genreName));
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
+  // ── Scroll Helpers ──
+
+  /// Scrolls the main feed down until the widget with [key] is visible.
+  /// Uses key-based lookup so section keys resolve correctly.
+  Future<void> scrollDownUntilVisible(String key) async {
+    await tester.dragUntilVisible(
+      find.byKey(Key(key)),
+      find.byKey(const Key(homeScrollView)),
+      const Offset(0, -100),
+      maxIteration: 50,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+  /// Overrides BasePage to use pump instead of pumpAndSettle so horizontal
+  /// scrolls do not block when audio is playing in the background.
+  /// [dx] is the horizontal drag distance in logical pixels (negative = scroll left).
+  @override
+  Future<void> scrollHorizontallyInSection(String sectionKey, [double dx = -300]) async {
+    await tester.drag(find.byKey(Key(sectionKey)), Offset(dx, 0));
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  Future<void> pauseIfPlaying() async {
+  final pauseFinder = find.byKey(const Key(playerMiniPlayerPlayPauseButton ));
+  if (pauseFinder.evaluate().isNotEmpty) {
+    await tester.tap(pauseFinder, warnIfMissed: false);
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+}
+
+Future<void> settle([Duration d = const Duration(seconds: 3)]) async {
+  await tester.pump(d);
+  await tester.pump(const Duration(milliseconds: 500));
+}
+}
