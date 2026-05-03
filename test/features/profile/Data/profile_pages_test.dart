@@ -476,10 +476,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.byKey(const Key('public_profile_play_button')),
-        findsWidgets,
-      );
+      expect(find.byKey(const Key('public_profile_play_button')), findsWidgets);
     });
 
     testWidgets('should show shuffle button', (tester) async {
