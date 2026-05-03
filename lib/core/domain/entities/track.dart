@@ -3,6 +3,7 @@ class Track {
   final String userId;
   final String title;
   final String artist;
+  final String? artistUsername;
   final String? artistPfp;
   final String? artistCity;
   final String? artistCountry;
@@ -46,6 +47,7 @@ class Track {
     required this.userId,
     required this.title,
     required this.artist,
+    this.artistUsername,
     this.artistPfp,
     this.artistCity,
     this.artistCountry,
@@ -88,6 +90,7 @@ class Track {
     String? userId,
     String? title,
     String? artist,
+    String? artistUsername,
     String? artistPfp,
     String? artistCity,
     String? artistCountry,
@@ -126,6 +129,7 @@ class Track {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       artist: artist ?? this.artist,
+      artistUsername: artistUsername ?? this.artistUsername,
       artistPfp: artistPfp ?? this.artistPfp,
       artistCity: artistCity ?? this.artistCity,
       artistCountry: artistCountry ?? this.artistCountry,

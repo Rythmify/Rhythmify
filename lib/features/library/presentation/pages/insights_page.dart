@@ -233,8 +233,9 @@ class _SoundCloudDataView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalPlays = insights.fold(0, (s, i) => s + i.totalPlays);
-    final totalListeners = insights.fold(0, (s, i) => s + i.uniqueListeners);
     final totalLikes = insights.fold(0, (s, i) => s + i.likes);
+    final totalReposts = insights.fold(0, (s, i) => s + i.reposts);
+    final totalComments = insights.fold(0, (s, i) => s + i.comments);
 
     return ListView(
       key: const Key('insights_sc_data_list_view'),
@@ -263,10 +264,10 @@ class _SoundCloudDataView extends StatelessWidget {
               ),
               Expanded(
                 child: _StatItem(
-                  icon: Icons.people_outline,
-                  label: 'Listeners',
-                  value: _fmt(totalListeners),
-                  key: const Key('insights_total_listeners_stat'),
+                  icon: Icons.repeat,
+                  label: 'Reposts',
+                  value: _fmt(totalReposts),
+                  key: const Key('insights_total_reposts_stat'),
                 ),
               ),
               Expanded(
@@ -275,6 +276,14 @@ class _SoundCloudDataView extends StatelessWidget {
                   label: 'Likes',
                   value: _fmt(totalLikes),
                   key: const Key('insights_total_likes_stat'),
+                ),
+              ),
+              Expanded(
+                child: _StatItem(
+                  icon: Icons.comment,
+                  label: 'Comments',
+                  value: _fmt(totalComments),
+                  key: const Key('insights_total_comments_stat'),
                 ),
               ),
             ],
@@ -459,10 +468,10 @@ class _InsightTrackCard extends StatelessWidget {
               ),
               Expanded(
                 child: _MiniStat(
-                  icon: Icons.people_outline,
-                  value: _fmt(insight.uniqueListeners),
-                  label: 'listeners',
-                  key: Key('insights_track_${insight.trackId}_listeners_stat'),
+                  icon: Icons.comment,
+                  value: _fmt(insight.comments),
+                  label: 'comments',
+                  key: Key('insights_track_${insight.trackId}_comments_stat'),
                 ),
               ),
               Expanded(

@@ -119,6 +119,40 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
           );
     }
 
+    Future<void> showDeleteConfirmation(Track track) async {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Text('Delete Download'),
+          content: Text(
+            'Do you really want to delete "${track.title}" from your downloads? It cannot be restored.',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await ref.read(downloadsProvider.notifier).removeTrack(track.id);
+      }
+    }
+
     return CustomScrollView(
       key: const Key('downloads_scroll_view'),
       controller: _scrollController,
@@ -214,12 +248,22 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
             sliver: SliverList.builder(
               itemCount: filtered.length,
               itemBuilder: (context, index) {
+                final track = filteredTracks[index];
                 return TrackCard(
-                  key: Key('downloads_item_${filteredTracks[index].id}_$index'),
-                  track: filteredTracks[index],
+                  key: Key('downloads_item_${track.id}_$index'),
+                  track: track,
                   onTap: () => playAt(index),
                   showOptions: false,
                   showStats: false,
+                  trailing: IconButton(
+                    key: Key('downloads_delete_button_${track.id}'),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.white54,
+                      size: 22,
+                    ),
+                    onPressed: () => showDeleteConfirmation(track),
+                  ),
                 );
               },
             ),
