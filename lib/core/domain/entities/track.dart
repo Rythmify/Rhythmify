@@ -36,6 +36,7 @@ class Track {
   final bool isFeatured;
   final bool isPublic;
   final bool isHidden;
+  final bool isGeoBlocked;
   final String? geoRestrictionType;
   final List<String> geoRegions;
   final DateTime createdAt;
@@ -76,6 +77,7 @@ class Track {
     this.isFeatured = false,
     this.isPublic = true,
     this.isHidden = false,
+    this.isGeoBlocked = false,
     this.geoRestrictionType,
     this.geoRegions = const [],
     this.updatedAt,
@@ -118,6 +120,7 @@ class Track {
     bool? isFeatured,
     bool? isPublic,
     bool? isHidden,
+    bool? isGeoBlocked,
     String? geoRestrictionType,
     List<String>? geoRegions,
     DateTime? createdAt,
@@ -157,6 +160,7 @@ class Track {
       isFeatured: isFeatured ?? this.isFeatured,
       isPublic: isPublic ?? this.isPublic,
       isHidden: isHidden ?? this.isHidden,
+      isGeoBlocked: isGeoBlocked ?? this.isGeoBlocked,
       geoRestrictionType: geoRestrictionType ?? this.geoRestrictionType,
       geoRegions: geoRegions ?? this.geoRegions,
       createdAt: createdAt ?? this.createdAt,

@@ -30,73 +30,87 @@ class HomeTopTrackCard extends ConsumerWidget {
     final isThisTrackLoaded = currentPlayingId == track.id;
 
     return InkWell(
-      onTap: () {
-        if (onTap != null) {
-          onTap!();
-          return;
-        }
-        if (isThisTrackLoaded) {
-          ref.read(playerStateProvider.notifier).togglePlayPause();
-        } else {
-          final tracksToPlay = allTracks ?? [track];
-          final initialIndex = index ?? 0;
+      onTap: track.isGeoBlocked
+          ? null
+          : () {
+              if (onTap != null) {
+                onTap!();
+                return;
+              }
+              if (isThisTrackLoaded) {
+                ref.read(playerStateProvider.notifier).togglePlayPause();
+              } else {
+                final tracksToPlay = allTracks ?? [track];
+                final initialIndex = index ?? 0;
 
-          ref
-              .read(queueStateProvider.notifier)
-              .playQueue(
-                tracks: tracksToPlay,
-                initialIndex: initialIndex,
-                context: const QueueContext(type: QueueSource.listeningHistory),
-              );
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5.0),
-        decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            // Artwork
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.grey.shade700, width: 0.7),
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: tracksToPlay,
+                      initialIndex: initialIndex,
+                      context: const QueueContext(
+                        type: QueueSource.listeningHistory,
+                      ),
+                    );
+              }
+            },
+      child: Opacity(
+        opacity: track.isGeoBlocked ? 0.5 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              // Artwork
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey.shade700, width: 0.7),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(7.3),
+                  child: _buildArtwork(track.artworkUrl),
+                ),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(7.3),
-                child: _buildArtwork(track.artworkUrl),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    track.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+              const SizedBox(width: 8),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    track.artist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      track.isGeoBlocked
+                          ? 'Not available in your country'
+                          : track.artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: track.isGeoBlocked
+                            ? Colors.redAccent.withValues(alpha: 0.8)
+                            : Colors.grey[400],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

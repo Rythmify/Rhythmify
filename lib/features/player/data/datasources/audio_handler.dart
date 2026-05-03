@@ -12,22 +12,7 @@ import '../../../../core/domain/entities/track.dart';
 /// hardware button support.
 class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The underlying audio player instance.
-  final AudioPlayer _player = AudioPlayer(
-    audioLoadConfiguration: const AudioLoadConfiguration(
-      androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 30), // Buffer 30 seconds ahead
-        maxBufferDuration: Duration(seconds: 120), // Up to 2 minutes
-        bufferForPlaybackDuration: Duration(
-          milliseconds: 500,
-        ), // Start playing fast
-        bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
-      ),
-
-      darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true,
-      ),
-    ),
-  );
+  final AudioPlayer _player;
 
   // ignore: deprecated_member_use
   final _playlist = ConcatenatingAudioSource(children: []);
@@ -35,7 +20,22 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
   /// The current list of tracks in the playback queue.
   List<Track> _currentQueue = [];
 
-  RythmifyAudioHandler() {
+  RythmifyAudioHandler({AudioPlayer? player})
+    : _player =
+          player ??
+          AudioPlayer(
+            audioLoadConfiguration: const AudioLoadConfiguration(
+              androidLoadControl: AndroidLoadControl(
+                minBufferDuration: Duration(seconds: 30),
+                maxBufferDuration: Duration(seconds: 120),
+                bufferForPlaybackDuration: Duration(milliseconds: 500),
+                bufferForPlaybackAfterRebufferDuration: Duration(seconds: 1),
+              ),
+              darwinLoadControl: DarwinLoadControl(
+                automaticallyWaitsToMinimizeStalling: true,
+              ),
+            ),
+          ) {
     _init();
   }
 
@@ -175,9 +175,10 @@ class RythmifyAudioHandler extends BaseAudioHandler with SeekHandler {
     List<Track> tracks, {
     int initialIndex = 0,
     Duration initialPosition = Duration.zero,
+    bool useCache = true,
   }) async {
     _currentQueue = List.from(tracks);
-    final audioSources = _convertToAudioSources(tracks);
+    final audioSources = _convertToAudioSources(tracks, useCache: useCache);
 
     if (audioSources.isEmpty) return;
 

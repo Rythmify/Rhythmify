@@ -110,124 +110,139 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        key: Key('hot_track_card_${widget.track.id}'),
+      child: Opacity(
+        opacity: widget.track.isGeoBlocked ? 0.6 : 1.0,
+        child: Container(
+          key: Key('hot_track_card_${widget.track.id}'),
 
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          image: DecorationImage(
-            image:
-                widget.track.coverImage != null &&
-                    widget.track.coverImage!.startsWith('http')
-                ? NetworkImage(widget.track.coverImage!) as ImageProvider
-                : AssetImage(
-                    widget.track.coverImage ?? widget.track.artworkUrl,
-                  ),
-            fit: BoxFit.cover,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image:
+                  widget.track.coverImage != null &&
+                      widget.track.coverImage!.startsWith('http')
+                  ? NetworkImage(widget.track.coverImage!) as ImageProvider
+                  : AssetImage(
+                      widget.track.coverImage ?? widget.track.artworkUrl,
+                    ),
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
 
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
 
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(
-                  alpha: 0.3,
-                ), // Slightly dark layer for text
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white24, // Subtle white border
-                  width: 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(
+                    alpha: 0.3,
+                  ), // Slightly dark layer for text
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white24, // Subtle white border
+                    width: 1.0,
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        buildAlbum(),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.track.title,
-                                key: const Key('hot_for_you_track_title_text'),
-                                style: AppTheme.bodyNormal.copyWith(
-                                  fontSize: 16,
-                                  color: AppTheme.textPrimary,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          buildAlbum(),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.track.title,
+                                  key: const Key(
+                                    'hot_for_you_track_title_text',
+                                  ),
+                                  style: AppTheme.bodyNormal.copyWith(
+                                    fontSize: 16,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                widget.track.artist,
-                                key: const Key('hot_for_you_track_artist_text'),
-                                style: AppTheme.bodyNormal.copyWith(
-                                  fontSize: 13,
-                                  color: AppTheme.fadedWhite,
+                                const SizedBox(height: 2),
+                                Text(
+                                  widget.track.artist,
+                                  key: const Key(
+                                    'hot_for_you_track_artist_text',
+                                  ),
+                                  style: AppTheme.bodyNormal.copyWith(
+                                    fontSize: 13,
+                                    color: AppTheme.fadedWhite,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          key: const Key('hot_for_you_play_icon_button'),
-                          iconSize: 60,
-                          icon: Icon(
-                            isPlaying && isThisTrack
-                                ? Icons.pause_circle
-                                : Icons.play_circle,
-                            color: AppTheme.textPrimary,
+                          IconButton(
+                            key: const Key('hot_for_you_play_icon_button'),
+                            iconSize: 60,
+                            icon: Icon(
+                              isPlaying && isThisTrack
+                                  ? Icons.pause_circle
+                                  : Icons.play_circle,
+                              color: AppTheme.textPrimary,
+                            ),
+                            onPressed: widget.track.isGeoBlocked
+                                ? null
+                                : () {
+                                    if (isThisTrack) {
+                                      ref
+                                          .read(playerStateProvider.notifier)
+                                          .togglePlayPause();
+                                    } else {
+                                      ref
+                                          .read(queueStateProvider.notifier)
+                                          .playQueue(
+                                            tracks: [widget.track],
+                                            initialIndex: 0,
+                                            context: const QueueContext(
+                                              type: QueueSource.unknown,
+                                            ),
+                                          );
+                                    }
+                                  },
                           ),
-                          onPressed: () {
-                            if (isThisTrack) {
-                              ref
-                                  .read(playerStateProvider.notifier)
-                                  .togglePlayPause();
-                            } else {
-                              ref
-                                  .read(queueStateProvider.notifier)
-                                  .playQueue(
-                                    tracks: [widget.track],
-                                    initialIndex: 0,
-                                    context: const QueueContext(
-                                      type: QueueSource.unknown,
-                                    ),
-                                  );
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.favorite,
-                          color: AppTheme.fadedWhite,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "${formatCount(widget.track.likeCount)} people liked this track",
-                          key: const Key('hot_for_you_like_count_text'),
-                          style: AppTheme.bodyNormal.copyWith(
-                            fontSize: 12,
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.favorite,
                             color: AppTheme.fadedWhite,
+                            size: 18,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              widget.track.isGeoBlocked
+                                  ? "Not available in your country"
+                                  : "${formatCount(widget.track.likeCount)} people liked this track",
+                              key: const Key('hot_for_you_like_count_text'),
+                              style: AppTheme.bodyNormal.copyWith(
+                                fontSize: 12,
+                                color: widget.track.isGeoBlocked
+                                    ? AppTheme.primaryBrand
+                                    : AppTheme.fadedWhite,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
