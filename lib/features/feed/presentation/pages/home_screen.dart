@@ -166,8 +166,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     final unreadMessages = ref.watch(unreadMessagesCountProvider);
-    final unreadNotifications =
-        ref.watch(unreadNotificationsCountProvider).asData?.value ?? 0;
+    final unreadNotifications = ref.watch(unreadNotificationsCountProvider);
 
     return Scaffold(
       key: const Key('home_scaffold'),

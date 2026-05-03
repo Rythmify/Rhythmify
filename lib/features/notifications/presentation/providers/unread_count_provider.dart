@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/notifications/domain/usecases/get_unread_count_usecase.dart';
-import 'repo_provider.dart';
+import 'notifications_provider.dart';
 
-final unreadNotificationsCountProvider = FutureProvider<int>((ref) {
-  final repo = ref.watch(repositoryprovider);
-  return GetUnreadCountUsecase(repo).call();
+/// Badge count shown in the app bar / tab bar.
+///
+/// Derived from [notificationsProvider] so it drops to zero immediately
+/// after the notifications page opens and marks everything as read.
+final unreadNotificationsCountProvider = Provider<int>((ref) {
+  return ref.watch(notificationsProvider).unreadCount;
 });

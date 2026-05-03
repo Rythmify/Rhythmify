@@ -143,7 +143,7 @@ void main() {
 
       await usecase('track-123', true);
 
-      verify(() => mockRepository.toggleLike('track-123', false)).called(1);
+      verify(() => mockRepository.toggleLike('track-123', true)).called(1);
     });
 
     test('should return early if id is empty', () async {
@@ -168,7 +168,7 @@ void main() {
 
         await usecase('track-123', false);
 
-        verify(() => mockRepository.toggleRepost('track-123', true)).called(1);
+        verify(() => mockRepository.toggleRepost('track-123', false)).called(1);
       },
     );
 

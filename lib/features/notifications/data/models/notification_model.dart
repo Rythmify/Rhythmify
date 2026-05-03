@@ -70,6 +70,8 @@ class NotificationModel extends NotificationEntity {
         return NotificationType.comment;
       case 'new_post_by_followed':
         return NotificationType.newPostByFollowed;
+      case 'artist_pro_activated':
+        return NotificationType.artistProActivated;
       default:
         return NotificationType.newPostByFollowed;
     }

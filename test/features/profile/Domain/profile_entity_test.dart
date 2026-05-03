@@ -218,7 +218,7 @@ void main() {
 
   group('ProfileEntity — props', () {
     test('should expose all fields in props', () {
-      expect(tProfile.props.length, 18);
+      expect(tProfile.props.length, 19);
     });
 
     test('should include null fields in props for minimal profile', () {

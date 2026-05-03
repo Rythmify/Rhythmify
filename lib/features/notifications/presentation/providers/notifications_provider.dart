@@ -123,7 +123,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
       state = state.copyWith(
         items: result.items,
-        unreadCount: result.unreadCount,
         hasNext: result.hasNext,
         currentPage: 1,
         isLoading: false,
@@ -138,6 +137,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       for (final n in unread) {
         _markRead(n.id).catchError((_) {});
       }
+
+      // All unread items have been marked as read — drop the badge to zero.
+      state = state.copyWith(unreadCount: 0);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -221,11 +223,21 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   /// optimistically (if the payload is complete) or falls back to a silent
   /// re-fetch (when the backend sends a stripped payload without actor info).
   void onSocketNotificationCreated(Map<String, dynamic> data) {
-    state = state.copyWith(unreadCount: state.unreadCount + 1);
     try {
       final payload = data['notification'] as Map<String, dynamic>;
       final notification = NotificationModel.fromJson(payload);
       final rawType = payload['type'] as String?;
+      if (notification.type == NotificationType.artistProActivated ||
+          notification.type == NotificationType.newPostByFollowed) {
+        _markRead(notification.id).catchError((_) {});
+        return;
+      }
+      // Skip replays of notifications already in the list
+      if (state.items.any((n) => n.id == notification.id)) return;
+      // Only bump the badge for genuinely new unread notifications
+      if (!notification.isRead) {
+        state = state.copyWith(unreadCount: state.unreadCount + 1);
+      }
       if (_activeType == null || rawType == _activeType) {
         state = state.copyWith(items: [notification, ...state.items]);
         return;
