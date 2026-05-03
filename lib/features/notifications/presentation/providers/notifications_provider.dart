@@ -120,17 +120,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     try {
       final result = await _getNotifications(page: 1, type: _activeType);
       final unread = result.items.where((n) => !n.isRead).toList();
-      final hiddenUnread = unread
-          .where(
-            (n) =>
-                n.type == NotificationType.artistProActivated ||
-                n.type == NotificationType.newPostByFollowed,
-          )
-          .length;
 
       state = state.copyWith(
         items: result.items,
-        unreadCount: result.unreadCount - hiddenUnread,
         hasNext: result.hasNext,
         currentPage: 1,
         isLoading: false,
@@ -145,6 +137,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       for (final n in unread) {
         _markRead(n.id).catchError((_) {});
       }
+
+      // All unread items have been marked as read — drop the badge to zero.
+      state = state.copyWith(unreadCount: 0);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

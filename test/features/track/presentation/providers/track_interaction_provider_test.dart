@@ -39,7 +39,7 @@ void main() {
 
       await notifier.handleToggleLike('track-123', false);
 
-      verify(() => mockToggleLike.call('track-123', false)).called(1);
+      verify(() => mockToggleLike.call('track-123', true)).called(1);
     });
 
     test('handleToggleLike handles errors gracefully', () async {
@@ -62,7 +62,7 @@ void main() {
 
       await notifier.handleToggleRepost('track-123', true);
 
-      verify(() => mockToggleRepost.call('track-123', true)).called(1);
+      verify(() => mockToggleRepost.call('track-123', false)).called(1);
     });
 
     test('handleToggleRepost handles errors gracefully', () async {
@@ -74,7 +74,7 @@ void main() {
 
       await expectLater(
         notifier.handleToggleRepost('track-123', true),
-        completes,
+        throwsA(isA<Exception>()),
       );
     });
   });

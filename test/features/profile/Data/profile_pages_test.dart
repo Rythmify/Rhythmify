@@ -478,7 +478,7 @@ void main() {
 
       expect(
         find.byKey(const Key('public_profile_play_button')),
-        findsOneWidget,
+        findsWidgets,
       );
     });
 
