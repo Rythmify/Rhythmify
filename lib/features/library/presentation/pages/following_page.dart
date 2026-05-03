@@ -131,7 +131,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
                     ),
                   ),
                 )
-              : const SizedBox.shrink();
+              : const SizedBox(height: 500); // bottom spacing
         }
         return _UserTile(user: state.users[index]);
       },
@@ -214,7 +214,7 @@ class _UserTile extends ConsumerWidget {
         ],
       ),
       subtitle: Text(
-        '${_formatCount(user.followersCount)} followers',
+        '@${user.username}',
         key: Key('following_item_${user.id}_followers_text'),
         style: AppTheme.labelSmall,
       ),
@@ -232,16 +232,5 @@ class _UserTile extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  /// Formats a count integer with K/M suffix abbreviations.
-  ///
-  /// - Values >= 1,000,000 are shown as `X.XM`
-  /// - Values >= 1,000 are shown as `X.XK`
-  /// - Smaller values are shown as-is
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return count.toString();
   }
 }
