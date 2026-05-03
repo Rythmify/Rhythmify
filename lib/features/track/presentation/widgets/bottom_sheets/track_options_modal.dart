@@ -464,8 +464,10 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.pop(context);
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (context) =>
-                              ReportPage(reportedContentId: syncedTrack.id),
+                          builder: (context) => ReportPage(
+                            reportedContentId: syncedTrack.id,
+                            resourceType: 'track',
+                          ),
                         ),
                       );
                     },

@@ -68,11 +68,14 @@ class CommentActionBottomSheet extends ConsumerWidget {
     }
   }
 
-  void _reportUser(BuildContext context) {
+  void _reportComment(BuildContext context) {
     Navigator.pop(context);
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (context) => ReportPage(reportedContentId: comment.id),
+        builder: (context) => ReportPage(
+          reportedContentId: comment.userId,
+          resourceType: 'user',
+        ),
       ),
     );
   }
@@ -159,8 +162,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
             _buildActionRow(
               key: const Key('comment_action_report_inkwell'),
               icon: Icons.flag_outlined,
-              label: 'Report user',
-              onTap: () => _reportUser(context),
+              label: 'Report comment',
+              onTap: () => _reportComment(context),
             ),
 
             // Row 6 (Other): Block/Unblock

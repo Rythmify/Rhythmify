@@ -94,8 +94,10 @@ class PopUpMenuWidget extends ConsumerWidget {
                 Navigator.pop(context);
                 Navigator.of(parentContext, rootNavigator: true).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        ReportPage(reportedContentId: participantId),
+                    builder: (_) => ReportPage(
+                      reportedContentId: participantId,
+                      resourceType: 'user',
+                    ),
                   ),
                 );
               },
