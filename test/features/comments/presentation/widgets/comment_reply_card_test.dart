@@ -23,15 +23,13 @@ void main() {
     testWidgets('renders CommentCard with isReply true', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: CommentReplyCard(reply: tReply),
-          ),
+          home: Scaffold(body: CommentReplyCard(reply: tReply)),
         ),
       );
 
       final commentCardFinder = find.byType(CommentCard);
       expect(commentCardFinder, findsOneWidget);
-      
+
       final commentCard = tester.widget<CommentCard>(commentCardFinder);
       expect(commentCard.isReply, isTrue);
       expect(commentCard.comment, tReply);

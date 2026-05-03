@@ -4,7 +4,10 @@ import 'package:rythmify/core/utils/formatters.dart';
 void main() {
   group('Formatters', () {
     test('formatDuration formats correctly', () {
-      expect(Formatters.formatDuration(const Duration(minutes: 1, seconds: 5)), '01:05');
+      expect(
+        Formatters.formatDuration(const Duration(minutes: 1, seconds: 5)),
+        '01:05',
+      );
       expect(Formatters.formatDuration(const Duration(seconds: 120)), '02:00');
     });
 

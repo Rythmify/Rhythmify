@@ -10,7 +10,7 @@ class MockPremiumNotifier extends PremiumNotifier {
   MockPremiumNotifier(this._initialState);
   @override
   PremiumState build() => _initialState;
-  
+
   set state(PremiumState newState) => super.state = newState;
 
   @override
@@ -77,7 +77,9 @@ void main() {
       await tester.pump();
     });
 
-    testWidgets('shows success sheet when checkoutSuccess is true', (tester) async {
+    testWidgets('shows success sheet when checkoutSuccess is true', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -85,9 +87,7 @@ void main() {
       final notifier = MockPremiumNotifier(const PremiumState());
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            premiumProvider.overrideWith(() => notifier),
-          ],
+          overrides: [premiumProvider.overrideWith(() => notifier)],
           child: MaterialApp.router(routerConfig: router),
         ),
       );
@@ -124,11 +124,13 @@ void main() {
       expect(backButton, findsOneWidget);
       await tester.tap(backButton);
       await tester.pumpAndSettle();
-      
+
       expect(find.text('plans'), findsOneWidget);
     });
 
-    testWidgets('shows loading state when isCheckingOut is true', (tester) async {
+    testWidgets('shows loading state when isCheckingOut is true', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -137,7 +139,8 @@ void main() {
         ProviderScope(
           overrides: [
             premiumProvider.overrideWith(
-              () => MockPremiumNotifier(const PremiumState(isCheckingOut: true)),
+              () =>
+                  MockPremiumNotifier(const PremiumState(isCheckingOut: true)),
             ),
           ],
           child: MaterialApp.router(routerConfig: router),
@@ -159,7 +162,9 @@ void main() {
         ProviderScope(
           overrides: [
             premiumProvider.overrideWith(
-              () => MockPremiumNotifier(const PremiumState(error: 'Payment failed')),
+              () => MockPremiumNotifier(
+                const PremiumState(error: 'Payment failed'),
+              ),
             ),
           ],
           child: MaterialApp.router(routerConfig: router),

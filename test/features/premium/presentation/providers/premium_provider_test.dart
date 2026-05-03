@@ -239,7 +239,7 @@ void main() {
         final container = createContainer();
         // Skip auto-init for checkout test to avoid parallel state updates
         await container.read(premiumProvider.notifier).loadPlans();
-        
+
         await container.read(premiumProvider.notifier).checkout('plan-123');
 
         final state = container.read(premiumProvider);
@@ -256,7 +256,7 @@ void main() {
               requestOptions: RequestOptions(path: ''),
               statusCode: 409,
               data: {
-                'error': {'code': 'SUBSCRIPTION_ALREADY_ACTIVE'}
+                'error': {'code': 'SUBSCRIPTION_ALREADY_ACTIVE'},
               },
             ),
           ),
@@ -278,7 +278,7 @@ void main() {
               requestOptions: RequestOptions(path: ''),
               statusCode: 409,
               data: {
-                'error': {'code': 'SUBSCRIPTION_CHECKOUT_PENDING'}
+                'error': {'code': 'SUBSCRIPTION_CHECKOUT_PENDING'},
               },
             ),
           ),
@@ -395,7 +395,7 @@ void main() {
               requestOptions: RequestOptions(path: ''),
               statusCode: 409,
               data: {
-                'error': {'code': 'SUBSCRIPTION_CHECKOUT_PENDING'}
+                'error': {'code': 'SUBSCRIPTION_CHECKOUT_PENDING'},
               },
             ),
           ),

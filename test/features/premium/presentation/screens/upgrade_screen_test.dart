@@ -29,7 +29,10 @@ void main() {
         ),
       );
 
-      expect(find.text("What's next in music is first\non Rythmify"), findsOneWidget);
+      expect(
+        find.text("What's next in music is first\non Rythmify"),
+        findsOneWidget,
+      );
       expect(find.text('Artist Pro ★'), findsAtLeast(1));
       expect(find.text('Subscribe now'), findsAtLeast(1));
       expect(find.text('Frequently asked questions'), findsOneWidget);

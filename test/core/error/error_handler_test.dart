@@ -9,7 +9,10 @@ void main() {
         requestOptions: RequestOptions(),
         response: Response(requestOptions: RequestOptions(), statusCode: 401),
       );
-      expect(ErrorHandler.getFriendlyMessage(error), 'Please log in to continue.');
+      expect(
+        ErrorHandler.getFriendlyMessage(error),
+        'Please log in to continue.',
+      );
     });
 
     test('returns friendly message for 403 reposting own track', () {
@@ -21,7 +24,10 @@ void main() {
           data: {'message': 'Cannot repost your own track'},
         ),
       );
-      expect(ErrorHandler.getFriendlyMessage(error), 'You cannot repost your own tracks.');
+      expect(
+        ErrorHandler.getFriendlyMessage(error),
+        'You cannot repost your own tracks.',
+      );
     });
 
     test('returns generic message for 500 server error', () {
@@ -29,7 +35,10 @@ void main() {
         requestOptions: RequestOptions(),
         response: Response(requestOptions: RequestOptions(), statusCode: 500),
       );
-      expect(ErrorHandler.getFriendlyMessage(error), 'Our server is having trouble. Please try again later.');
+      expect(
+        ErrorHandler.getFriendlyMessage(error),
+        'Our server is having trouble. Please try again later.',
+      );
     });
 
     test('returns connection error for Dio connection timeout', () {
@@ -37,7 +46,10 @@ void main() {
         requestOptions: RequestOptions(),
         type: DioExceptionType.connectionTimeout,
       );
-      expect(ErrorHandler.getFriendlyMessage(error), 'Connection error. Please check your internet.');
+      expect(
+        ErrorHandler.getFriendlyMessage(error),
+        'Connection error. Please check your internet.',
+      );
     });
 
     test('returns friendly message for regular Exception', () {

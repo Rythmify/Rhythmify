@@ -50,7 +50,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Unlock artist tools\n& unlimited\nuploads.'), findsOneWidget);
+      expect(
+        find.text('Unlock artist tools\n& unlimited\nuploads.'),
+        findsOneWidget,
+      );
       expect(find.text('Continue'), findsOneWidget);
       expect(find.text('See all plans'), findsOneWidget);
     });
@@ -91,7 +94,7 @@ void main() {
 
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
-      
+
       expect(find.text('checkout'), findsOneWidget);
     });
 
@@ -111,7 +114,7 @@ void main() {
 
       await tester.tap(find.text('See all plans'));
       await tester.pumpAndSettle();
-      
+
       expect(find.text('plans'), findsOneWidget);
     });
   });

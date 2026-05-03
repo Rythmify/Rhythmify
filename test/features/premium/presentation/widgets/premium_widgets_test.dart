@@ -30,10 +30,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: BlueLink(
-              label: 'Link Label',
-              onTap: () => tapped = true,
-            ),
+            body: BlueLink(label: 'Link Label', onTap: () => tapped = true),
           ),
         ),
       );
@@ -106,7 +103,8 @@ void main() {
             body: Builder(
               builder: (context) {
                 return ElevatedButton(
-                  onPressed: () => showTextDocSheet(context, 'Title', 'Body Text'),
+                  onPressed: () =>
+                      showTextDocSheet(context, 'Title', 'Body Text'),
                   child: const Text('Open Doc'),
                 );
               },
@@ -131,27 +129,34 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: PremiumDarkInfoSection(bottomPad: 0),
-          ),
+          home: Scaffold(body: PremiumDarkInfoSection(bottomPad: 0)),
         ),
       );
 
-      expect(find.text('Rythmify supports\nindependent artists'), findsOneWidget);
+      expect(
+        find.text('Rythmify supports\nindependent artists'),
+        findsOneWidget,
+      );
       expect(find.text('Frequently asked questions'), findsOneWidget);
 
       // Tap first FAQ
       final faqText = "What's the difference between fan and artist plans?";
       expect(find.text(faqText), findsOneWidget);
-      
+
       // Answer should be hidden initially
-      expect(find.textContaining('Our fan-oriented plans are designed'), findsNothing);
+      expect(
+        find.textContaining('Our fan-oriented plans are designed'),
+        findsNothing,
+      );
 
       await tester.tap(find.text(faqText));
       await tester.pumpAndSettle();
 
       // Answer should be visible
-      expect(find.textContaining('Our fan-oriented plans are designed'), findsOneWidget);
+      expect(
+        find.textContaining('Our fan-oriented plans are designed'),
+        findsOneWidget,
+      );
     });
   });
 

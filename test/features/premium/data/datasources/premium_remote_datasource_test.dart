@@ -53,8 +53,8 @@ void main() {
           (_) async => Response(
             data: {
               'data': {
-                'items': [tPlanJson]
-              }
+                'items': [tPlanJson],
+              },
             },
             statusCode: 200,
             requestOptions: RequestOptions(path: '/subscriptions/plans'),
@@ -94,9 +94,7 @@ void main() {
     group('startCheckout', () {
       test('should return CheckoutSession on success', () async {
         // Arrange
-        when(
-          () => mockDio.post(any(), data: any(named: 'data')),
-        ).thenAnswer(
+        when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
           (_) async => Response(
             data: {'data': tCheckoutSessionJson},
             statusCode: 200,
@@ -120,9 +118,7 @@ void main() {
 
       test('should parse planId to int if possible', () async {
         // Arrange
-        when(
-          () => mockDio.post(any(), data: any(named: 'data')),
-        ).thenAnswer(
+        when(() => mockDio.post(any(), data: any(named: 'data'))).thenAnswer(
           (_) async => Response(
             data: {'data': tCheckoutSessionJson},
             statusCode: 200,
@@ -197,8 +193,8 @@ void main() {
           (_) async => Response(
             data: {
               'data': [
-                {'transaction_id': 'trans-pending'}
-              ]
+                {'transaction_id': 'trans-pending'},
+              ],
             },
             statusCode: 200,
             requestOptions: RequestOptions(path: '/subscriptions/transactions'),

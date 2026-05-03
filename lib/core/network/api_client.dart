@@ -23,8 +23,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// 4. If the refresh fails (expired / invalid refresh token) all tokens are
 ///    cleared and [onSessionExpired] is invoked so the app navigates to login.
 class ApiClient {
-  static const String _baseUrl =
-      'https://rythmify.duckdns.org/api/v1';
+  static const String _baseUrl = 'https://rythmify.duckdns.org/api/v1';
   static const String baseUrl = _baseUrl;
 
   static const String _accessTokenKey = 'access_token';

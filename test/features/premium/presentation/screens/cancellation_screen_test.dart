@@ -114,7 +114,10 @@ void main() {
 
       expect(find.text('FREE TIER'), findsOneWidget);
       expect(find.text("Not Premium."), findsOneWidget);
-      expect(find.text('Upgrade to Artist Pro to unlock the full experience.'), findsOneWidget);
+      expect(
+        find.text('Upgrade to Artist Pro to unlock the full experience.'),
+        findsOneWidget,
+      );
     });
   });
 }

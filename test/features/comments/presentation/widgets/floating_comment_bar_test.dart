@@ -41,14 +41,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            playerStateProvider.overrideWith(() => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack))),
-            floatingCommentsProvider('track-123').overrideWith((ref) => Future.value(<int, ({String? pfp, String text})>{})),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: FloatingCommentBar(),
+            playerStateProvider.overrideWith(
+              () => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack)),
             ),
-          ),
+            floatingCommentsProvider('track-123').overrideWith(
+              (ref) => Future.value(<int, ({String? pfp, String text})>{}),
+            ),
+          ],
+          child: const MaterialApp(home: Scaffold(body: FloatingCommentBar())),
         ),
       );
 
@@ -64,14 +64,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            playerStateProvider.overrideWith(() => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack))),
-            floatingCommentsProvider('track-123').overrideWith((ref) => Future.value(<int, ({String? pfp, String text})>{})),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: FloatingCommentBar(),
+            playerStateProvider.overrideWith(
+              () => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack)),
             ),
-          ),
+            floatingCommentsProvider('track-123').overrideWith(
+              (ref) => Future.value(<int, ({String? pfp, String text})>{}),
+            ),
+          ],
+          child: const MaterialApp(home: Scaffold(body: FloatingCommentBar())),
         ),
       );
 
@@ -88,14 +88,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            playerStateProvider.overrideWith(() => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack))),
-            floatingCommentsProvider('track-123').overrideWith((ref) => Future.value(<int, ({String? pfp, String text})>{})),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: FloatingCommentBar(),
+            playerStateProvider.overrideWith(
+              () => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack)),
             ),
-          ),
+            floatingCommentsProvider('track-123').overrideWith(
+              (ref) => Future.value(<int, ({String? pfp, String text})>{}),
+            ),
+          ],
+          child: const MaterialApp(home: Scaffold(body: FloatingCommentBar())),
         ),
       );
 
@@ -110,20 +110,29 @@ void main() {
     });
 
     testWidgets('posts comment on send button tap', (tester) async {
-      when(() => mockTrackNotifier.postNewComment(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockTrackNotifier.postNewComment(any(), any()),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            playerStateProvider.overrideWith(() => MockPlayerNotifier(AppPlayerState(currentTrack: tTrack, position: const Duration(seconds: 10)))),
-            floatingCommentsProvider('track-123').overrideWith((ref) => Future.value(<int, ({String? pfp, String text})>{})),
-            trackCommentsProvider('track-123').overrideWith((ref) => mockTrackNotifier),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: FloatingCommentBar(),
+            playerStateProvider.overrideWith(
+              () => MockPlayerNotifier(
+                AppPlayerState(
+                  currentTrack: tTrack,
+                  position: const Duration(seconds: 10),
+                ),
+              ),
             ),
-          ),
+            floatingCommentsProvider('track-123').overrideWith(
+              (ref) => Future.value(<int, ({String? pfp, String text})>{}),
+            ),
+            trackCommentsProvider(
+              'track-123',
+            ).overrideWith((ref) => mockTrackNotifier),
+          ],
+          child: const MaterialApp(home: Scaffold(body: FloatingCommentBar())),
         ),
       );
 
