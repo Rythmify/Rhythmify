@@ -28,9 +28,7 @@ class _ReportPageState extends State<ReportPage> {
 
   final _detailsController = TextEditingController();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController(
-    text: 'basseialaa33@gmail.com',
-  );
+  final _emailController = TextEditingController(text: '');
   final _urlController = TextEditingController();
   final _resourceTypeController = TextEditingController();
   final _resourceIdController = TextEditingController();
@@ -38,31 +36,17 @@ class _ReportPageState extends State<ReportPage> {
   late final ReportRepository _repository;
 
   final List<String> _reasons = [
-    "It's hate speech",
-    "It's harassing or abusive content",
-    "It contains sexual content or nudity",
-    "It contains graphic violence",
-    "It promotes self-harm",
-    "It's infringement of intellectual property",
-    "It's spam or misleading content",
-    "It's private or confidential information",
-    "It's selling illegal goods",
-    "Something else",
-    "I just don't like it",
+    "Copyright",
+    "Inappropriate content",
+    "Spam",
+    "Impersonation",
   ];
 
   final Map<String, String> _reasonMapping = {
-    "It's hate speech": "hate_speech",
-    "It's harassing or abusive content": "harassment",
-    "It contains sexual content or nudity": "sexual_content",
-    "It contains graphic violence": "violence",
-    "It promotes self-harm": "self_harm",
-    "It's infringement of intellectual property": "copyright",
-    "It's spam or misleading content": "spam",
-    "It's private or confidential information": "privacy",
-    "It's selling illegal goods": "illegal_goods",
-    "Something else": "other",
-    "I just don't like it": "dislike",
+    "Copyright": "copyright",
+    "Inappropriate content": "inappropriate",
+    "Spam": "spam",
+    "Impersonation": "impersonation",
   };
 
   final Map<String, bool> _violations = {
@@ -85,9 +69,11 @@ class _ReportPageState extends State<ReportPage> {
 
     // Adjust URL generation based on type
     if (widget.resourceType == 'track') {
-      _urlController.text = 'https://rythmify.com/tracks/${widget.reportedContentId}';
+      _urlController.text =
+          'https://rythmify.com/tracks/${widget.reportedContentId}';
     } else if (widget.resourceType == 'user') {
-      _urlController.text = 'https://rythmify.com/profile/${widget.reportedContentId}';
+      _urlController.text =
+          'https://rythmify.com/profile/${widget.reportedContentId}';
     }
   }
 
@@ -103,23 +89,13 @@ class _ReportPageState extends State<ReportPage> {
   }
 
   Future<void> _submitReport() async {
-    if (!_formKey.currentState!.validate() || !_isConsentChecked) {
+    if (!_formKey.currentState!.validate() ||
+        _selectedReason == null ||
+        !_isConsentChecked) {
       return;
     }
 
-    // If it's a track and no reason is selected, default to 'copyright'
-    String reasonSlug;
-    if (_selectedReason != null) {
-      reasonSlug = _reasonMapping[_selectedReason!] ?? 'other';
-    } else if (widget.resourceType == 'track') {
-      reasonSlug = 'copyright';
-    } else {
-      // For other types (like users), we still require a reason
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a reason for reporting')),
-      );
-      return;
-    }
+    final reasonSlug = _reasonMapping[_selectedReason!] ?? 'inappropriate';
 
     final request = ReportRequest(
       resourceId: widget.reportedContentId,
@@ -154,11 +130,14 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    // For tracks, reason is optional (defaults to copyright)
-    // For others, reason must be selected
-    final bool isReasonValid =
-        widget.resourceType == 'track' || _selectedReason != null;
-    final bool isFormValid = isReasonValid && _isConsentChecked && !_isLoading;
+    // Determine which reasons to show based on resource type
+    final filteredReasons = _reasons.where((r) {
+      if (widget.resourceType == 'user' && r == 'Copyright') return false;
+      return true;
+    }).toList();
+
+    final bool isFormValid =
+        _selectedReason != null && _isConsentChecked && !_isLoading;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -216,16 +195,14 @@ class _ReportPageState extends State<ReportPage> {
 
               /// TITLE
               Text(
-                widget.resourceType == 'track'
-                    ? 'Reason for Reporting (Default: Copyright)'
-                    : 'Reason for Reporting',
+                'Reason for Reporting',
                 style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
               ),
 
               const SizedBox(height: 12),
 
               Column(
-                children: _reasons.map((reason) {
+                children: filteredReasons.map((reason) {
                   return RadioListTile<String>(
                     title: Text(reason, style: AppTheme.bodyNormal),
                     value: reason,

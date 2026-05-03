@@ -66,7 +66,9 @@ class QueueNotifier extends Notifier<AppQueueState> {
     );
 
     // 3. Centralized Backend Sync: Every time the index changes, notify the server.
-    ref.read(syncPlayerStateUseCaseProvider).call(
+    ref
+        .read(syncPlayerStateUseCaseProvider)
+        .call(
           trackId: newCurrent.track.id,
           queue: newUpcoming.map((e) => e.toJson()).toList(),
         );
@@ -90,15 +92,17 @@ class QueueNotifier extends Notifier<AppQueueState> {
       state = state.copyWith(isLoadingRecommendations: true);
 
       try {
-        final relatedTracks =
-            await ref.read(getRelatedTracksUseCaseProvider).call(seedId);
+        final relatedTracks = await ref
+            .read(getRelatedTracksUseCaseProvider)
+            .call(seedId);
 
         // Simple duplicate filter (don't add what's already upcoming or playing)
         final upcomingIds = upcoming.map((e) => e.track.id).toSet();
         final forbiddenIds = {...upcomingIds, current.track.id};
 
-        final filteredTracks =
-            relatedTracks.where((t) => !forbiddenIds.contains(t.id)).toList();
+        final filteredTracks = relatedTracks
+            .where((t) => !forbiddenIds.contains(t.id))
+            .toList();
 
         if (filteredTracks.isNotEmpty) {
           // RESOLVE FULL METADATA AND WAVEFORMS BEFORE ADDING

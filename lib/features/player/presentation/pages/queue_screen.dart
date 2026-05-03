@@ -338,7 +338,11 @@ class _QueueTile extends StatelessWidget {
                   index: index!,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),
-                    child: Icon(Icons.drag_handle, color: Colors.grey, size: 22),
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Colors.grey,
+                      size: 22,
+                    ),
                   ),
                 )
               else

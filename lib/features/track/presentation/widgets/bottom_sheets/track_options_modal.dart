@@ -210,7 +210,8 @@ class TrackOptionsModal extends ConsumerWidget {
                         label: 'Message',
                         onTap: () {
                           Navigator.pop(context);
-                          final text = 'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
+                          final text =
+                              'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
                           Share.share(text);
                         },
                       ),

@@ -72,10 +72,8 @@ class CommentActionBottomSheet extends ConsumerWidget {
     Navigator.pop(context);
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (context) => ReportPage(
-          reportedContentId: comment.userId,
-          resourceType: 'user',
-        ),
+        builder: (context) =>
+            ReportPage(reportedContentId: comment.userId, resourceType: 'user'),
       ),
     );
   }

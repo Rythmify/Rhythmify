@@ -110,7 +110,9 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
 
     void playAt(int index) {
       if (filteredTracks.isEmpty) return;
-      ref.read(queueStateProvider.notifier).playQueue(
+      ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: filteredTracks,
             initialIndex: index,
             context: const QueueContext(type: QueueSource.downloads),
@@ -130,11 +132,17 @@ class _DownloadsPageState extends ConsumerState<DownloadsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.redAccent),
+              ),
             ),
           ],
         ),

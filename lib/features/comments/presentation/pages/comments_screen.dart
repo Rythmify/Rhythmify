@@ -52,7 +52,9 @@ class _CommentsScreenState extends ConsumerState<CommentsScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notifier = ref.read(trackCommentsProvider(widget.track.id).notifier);
+      final notifier = ref.read(
+        trackCommentsProvider(widget.track.id).notifier,
+      );
       notifier.setInitialTrack(widget.track);
       // Force a fresh fetch from the server every time the screen opens
       notifier.fetchComments(refresh: true);

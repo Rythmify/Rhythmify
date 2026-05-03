@@ -259,14 +259,20 @@ class PlayerNotifier extends Notifier<AppPlayerState> {
       // CRITICAL: Merge the new data with current data to ensure no fields are lost
       // (e.g. if currentTrack has a streamUrl but fullTrack doesn't, keep current)
       final mergedTrack = currentTrack.copyWith(
-        userId: fullTrack.userId.isNotEmpty ? fullTrack.userId : currentTrack.userId,
+        userId: fullTrack.userId.isNotEmpty
+            ? fullTrack.userId
+            : currentTrack.userId,
         artistUsername: fullTrack.artistUsername ?? currentTrack.artistUsername,
         artistPfp: fullTrack.artistPfp ?? currentTrack.artistPfp,
-        waveformData: waveform.isNotEmpty ? waveform : (fullTrack.waveformData ?? currentTrack.waveformData),
+        waveformData: waveform.isNotEmpty
+            ? waveform
+            : (fullTrack.waveformData ?? currentTrack.waveformData),
         isLiked: fullTrack.isLiked,
         isReposted: fullTrack.isReposted,
         isArtistFollowed: fullTrack.isArtistFollowed,
-        playCount: fullTrack.playCount > 0 ? fullTrack.playCount : currentTrack.playCount,
+        playCount: fullTrack.playCount > 0
+            ? fullTrack.playCount
+            : currentTrack.playCount,
       );
 
       // Only update if we actually got new useful info (waveform is the big one)

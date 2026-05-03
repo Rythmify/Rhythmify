@@ -60,17 +60,17 @@ final _stationTracksProvider = FutureProvider.autoDispose
     });
 
 Track _toTrack(PlaylistTrack pt) => Track(
-      id: pt.id,
-      userId: '',
-      title: pt.title,
-      artist: pt.artistName,
-      audioUrl: pt.audioUrl ?? pt.streamUrl ?? pt.id,
-      streamUrl: pt.streamUrl,
-      coverImage: pt.coverUrl,
-      duration: pt.duration,
-      playCount: pt.playCount,
-      createdAt: DateTime.now(),
-    );
+  id: pt.id,
+  userId: '',
+  title: pt.title,
+  artist: pt.artistName,
+  audioUrl: pt.audioUrl ?? pt.streamUrl ?? pt.id,
+  streamUrl: pt.streamUrl,
+  coverImage: pt.coverUrl,
+  duration: pt.duration,
+  playCount: pt.playCount,
+  createdAt: DateTime.now(),
+);
 
 class RelatedTracksScreen extends ConsumerWidget {
   const RelatedTracksScreen({
@@ -194,7 +194,9 @@ class _BodyState extends ConsumerState<_Body> {
         list.map((t) => ref.read(getTrackDetailsUseCaseProvider).call(t.id)),
       );
 
-      await ref.read(queueStateProvider.notifier).playQueue(
+      await ref
+          .read(queueStateProvider.notifier)
+          .playQueue(
             tracks: fullTracks,
             initialIndex: index,
             context: QueueContext(
