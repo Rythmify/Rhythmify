@@ -87,7 +87,9 @@ class TrackCard extends ConsumerWidget {
               if (isThisTrackLoaded) {
                 ref.read(playerStateProvider.notifier).togglePlayPause();
               } else {
-                ref.read(queueStateProvider.notifier).playQueue(
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
                       tracks: [track],
                       initialIndex: 0,
                       context: queueContext,

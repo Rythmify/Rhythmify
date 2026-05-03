@@ -43,11 +43,14 @@ class HomeTopTrackCard extends ConsumerWidget {
                 final tracksToPlay = allTracks ?? [track];
                 final initialIndex = index ?? 0;
 
-                ref.read(queueStateProvider.notifier).playQueue(
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
                       tracks: tracksToPlay,
                       initialIndex: initialIndex,
-                      context:
-                          const QueueContext(type: QueueSource.listeningHistory),
+                      context: const QueueContext(
+                        type: QueueSource.listeningHistory,
+                      ),
                     );
               }
             },
