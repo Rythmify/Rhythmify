@@ -24,7 +24,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 ///    cleared and [onSessionExpired] is invoked so the app navigates to login.
 class ApiClient {
   static const String _baseUrl =
-      'https://rythmify-backend-dev.livelypebble-6b7965ef.uaenorth.azurecontainerapps.io/api/v1';
+      'https://rythmify.duckdns.org/api/v1';
   static const String baseUrl = _baseUrl;
 
   static const String _accessTokenKey = 'access_token';
