@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rythmify/features/settings/presentation/widgets/switch_widget.dart';
 
-/// A reusable settings tile with an embedded [SwitchWidget].
-/// Displays a [title], optional [subtitle], and a toggle switch aligned to the top right.
-/// The text content flows freely including beneath the switch area.
-/// Used across analytics, advertising, communication, social, inbox, and notification screens.
-
 class SwitchTileWidget extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -59,14 +54,11 @@ class SwitchTileWidget extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: SwitchWidget(
-                key: Key('switch$title'),
-                initValue: initSwitchValue,
-                onChanged: onSwitchChanged,
-              ),
+            // REMOVED Positioned wrapper! Just standard SwitchWidget.
+            SwitchWidget(
+              key: Key('switch$title'),
+              initValue: initSwitchValue,
+              onChanged: onSwitchChanged,
             ),
           ],
         ),
