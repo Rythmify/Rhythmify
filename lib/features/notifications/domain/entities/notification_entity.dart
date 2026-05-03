@@ -8,7 +8,14 @@ import 'package:equatable/equatable.dart';
 /// - [comment] — a comment was left on a track.
 /// - [newPostByFollowed] — a followed user uploaded a new track. Filtered out
 ///   at the data layer and never shown in the UI.
-enum NotificationType { follow, like, repost, comment, newPostByFollowed }
+enum NotificationType {
+  follow,
+  like,
+  repost,
+  comment,
+  newPostByFollowed,
+  artistProActivated,
+}
 
 /// The kind of content the notification refers to.
 ///
