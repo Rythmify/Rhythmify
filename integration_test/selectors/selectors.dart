@@ -586,3 +586,6 @@ const String trackOptionAddToPlaylist       = 'track_options_action_add_to_playl
 const String playlistNameField              = 'playlist_create_name_textfield';
 String playlisTile(int index)               => 'playlist_tile_${index}';
 String trackTile(int index)                 => 'track_tile_${index}';
+const String addToPlaylistNewNameField           = 'add_to_playlist_new_name_field';
+const String confirmAddToPlaylist           = 'add_to_playlist_confirm_create_button';
+const String doneAddToPlaylistButton        = 'add_to_playlist_done_button';

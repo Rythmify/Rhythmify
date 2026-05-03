@@ -66,12 +66,16 @@ class OneMainFlowPage extends BasePage {
   }
   Future <void> tapAddToPlaylist() async => await tapByKey(trackOptionAddToPlaylist);
   Future <void> tapNewPlaylist() async => await _tapByText('New playlist');
-  Future <void> writePlaylistName( String playlistName) async {
-      await enterTextByKey(trackOptionAddToPlaylist, playlistName);
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+  Future<void> writePlaylistName(String name) async {
+    await tester.enterText(
+      find.byKey(const Key(addToPlaylistNewNameField)),
+      name,
+    );
+    await tester.pumpAndSettle();
   }
-  Future <void> tapCreate() async => await _tapByText('Craete');
-  Future <void> tapDone() async => await _tapByText('Done');
+  Future <void> tapCreate() async => await tapByKey(confirmAddToPlaylist);
+  Future <void> tapDone() async => await tapByKey(doneAddToPlaylistButton);
 
   Future<void> playPlaylist() async => await tapByKey(playlistDetailPlayButton);
 

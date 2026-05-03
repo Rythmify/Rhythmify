@@ -9,24 +9,6 @@
 /// - Allows creating a new playlist directly from the sheet
 /// - Adds the selected track to all chosen playlists
 /// - Shows loading and success/error feedback
-///
-/// Main Components:
-/// - showAddToPlaylistSheet():
-///     Opens the modal bottom sheet.
-///
-/// - _AddToPlaylistSheet:
-///     Main stateful widget handling playlist loading, searching,
-///     selection, and saving.
-///
-/// - _PlaylistPickerRow:
-///     Reusable row widget displaying playlist info with a selectable
-///     checkbox.
-///
-/// Dependencies:
-/// - Riverpod providers
-/// - Playlist datasource/provider
-/// - PlaylistEntity model
-/// - Shared playlist UI widgets
 library;
 
 import 'package:flutter/material.dart';
@@ -38,7 +20,6 @@ import '../../../../core/theme/app_theme.dart';
 import 'playlist_shared_widgets.dart';
 
 /// Shows the "Add to playlist" picker bottom sheet.
-/// Call this after closing the track options sheet.
 Future<void> showAddToPlaylistSheet(
   BuildContext context, {
   required String trackId,
@@ -72,7 +53,6 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
   @override
   void initState() {
     super.initState();
-    // Use addPostFrameCallback to avoid modifying providers during build
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPlaylists());
   }
 
@@ -86,7 +66,6 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
     if (!mounted) return;
     setState(() => _loading = true);
     try {
-      // Fetch directly from the datasource — avoids touching shared provider state
       final ds = ref.read(playlistDatasourceProvider);
       final playlists = await ds.fetchMyPlaylists(filter: 'created');
       if (mounted) {
@@ -147,13 +126,14 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        key: const Key('add_to_playlist_create_dialog'),
         backgroundColor: const Color(0xFF1E1E1E),
         title: const Text(
           'New playlist',
           style: TextStyle(color: Colors.white),
         ),
         content: TextField(
-          key: const Key('playlist_create_name_textfield'),
+          key: const Key('add_to_playlist_new_name_field'),
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white),
@@ -170,6 +150,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
         ),
         actions: [
           TextButton(
+            key: const Key('add_to_playlist_cancel_create_button'),
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text(
               'Cancel',
@@ -177,6 +158,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
             ),
           ),
           TextButton(
+            key: const Key('add_to_playlist_confirm_create_button'),
             onPressed: () {
               final name = controller.text.trim();
               Navigator.of(ctx).pop();
@@ -239,6 +221,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
     final filtered = _filtered;
 
     return Container(
+      key: const Key('add_to_playlist_sheet'),
       height: MediaQuery.of(context).size.height * 0.88,
       decoration: const BoxDecoration(
         color: Color(0xFF1C1C1C),
@@ -246,10 +229,9 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
       ),
       child: Column(
         children: [
-          // ── Handle ────────────────────────────────────────────
           const BottomSheetHandle(),
-
-          // ── Search row ────────────────────────────────────────
+          
+          // Search row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Row(
@@ -262,6 +244,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: TextField(
+                      key: const Key('add_to_playlist_search_field'),
                       controller: _searchController,
                       onChanged: (v) => setState(() => _query = v),
                       style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -291,8 +274,9 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
             ),
           ),
 
-          // ── New playlist row ──────────────────────────────────
+          // New playlist row
           InkWell(
+            key: const Key('add_to_playlist_create_new_row'),
             onTap: _showCreateDialog,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -320,45 +304,48 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
 
           const Divider(color: Colors.white12, height: 1),
 
-          // ── Playlist list ─────────────────────────────────────
+          // Playlist list
           Expanded(
             child: _loading
                 ? const Center(
                     child: CircularProgressIndicator(
+                      key: Key('add_to_playlist_loading_indicator'),
                       color: AppTheme.primaryBrand,
                       strokeWidth: 2,
                     ),
                   )
                 : filtered.isEmpty
-                ? Center(
-                    child: Text(
-                      _query.isEmpty
-                          ? 'No playlists yet.\nTap "New playlist" to create one.'
-                          : 'No playlists match "$_query"',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final playlist = filtered[index];
-                      final isSelected = _selectedIds.contains(playlist.id);
-                      return _PlaylistPickerRow(
-                        playlist: playlist,
-                        isSelected: isSelected,
-                        onTap: () => setState(() {
-                          isSelected
-                              ? _selectedIds.remove(playlist.id)
-                              : _selectedIds.add(playlist.id);
-                        }),
-                      );
-                    },
-                  ),
+                    ? Center(
+                        child: Text(
+                          _query.isEmpty
+                              ? 'No playlists yet.\nTap "New playlist" to create one.'
+                              : 'No playlists match "$_query"',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : ListView.builder(
+                        key: const Key('add_to_playlist_listview'),
+                        padding: const EdgeInsets.only(bottom: 16),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final playlist = filtered[index];
+                          final isSelected = _selectedIds.contains(playlist.id);
+                          return _PlaylistPickerRow(
+                            key: Key('playlist_item_${playlist.id}'),
+                            playlist: playlist,
+                            isSelected: isSelected,
+                            onTap: () => setState(() {
+                              isSelected
+                                  ? _selectedIds.remove(playlist.id)
+                                  : _selectedIds.add(playlist.id);
+                            }),
+                          );
+                        },
+                      ),
           ),
 
-          // ── Fixed Done button ─────────────────────────────────
+          // Fixed Done button
           Container(
             color: const Color(0xFF1C1C1C),
             padding: EdgeInsets.fromLTRB(24, 12, 24, bottomInset + 20),
@@ -367,6 +354,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                 width: 160,
                 height: 48,
                 child: ElevatedButton(
+                  key: const Key('add_to_playlist_done_button'),
                   onPressed: _saving ? null : _onDone,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -382,6 +370,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
+                            key: Key('add_to_playlist_saving_indicator'),
                             color: Colors.black,
                             strokeWidth: 2,
                           ),
@@ -403,9 +392,9 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
   }
 }
 
-// ── Playlist row with checkbox ────────────────────────────────────────────────
 class _PlaylistPickerRow extends StatelessWidget {
   const _PlaylistPickerRow({
+    super.key,
     required this.playlist,
     required this.isSelected,
     required this.onTap,
@@ -452,6 +441,7 @@ class _PlaylistPickerRow extends StatelessWidget {
             ),
             // Animated checkbox
             AnimatedContainer(
+              key: Key('playlist_checkbox_${playlist.id}'),
               duration: const Duration(milliseconds: 150),
               width: 24,
               height: 24,

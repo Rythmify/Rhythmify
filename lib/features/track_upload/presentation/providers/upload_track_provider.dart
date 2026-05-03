@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rythmify/features/track_upload/data/datasources/upload_track_mock_datasource.dart';
 import 'package:rythmify/features/track_upload/data/datasources/upload_track_remote_datasource.dart';
 import 'package:rythmify/features/track_upload/data/repositories/upload_track_repository_impl.dart';
 import 'package:rythmify/features/track_upload/domain/entities/track_draft.dart';
@@ -370,17 +369,12 @@ final uploadFormProvider =
       UploadFormNotifier.new,
     );
 
-// ====================
-//  --- The Switch ---
-// ====================
-const bool _useMockUpload = true;
-
 // ── Infrastructure providers ───────────────────────────────────────────────
 // These wire the datasource → repository → usecase together
 // ApiClient handles auth automatically — no token injection needed here
 
 final _uploadDataSourceProvider = Provider<UploadTrackRemoteDataSource>(
-  (_) => _useMockUpload ? UploadTrackMockDataSource() : UploadTrackRemoteDataSource(),
+  (_) => UploadTrackRemoteDataSource(),
 );
 
 final _uploadRepositoryProvider = Provider<UploadTrackRepositoryImpl>(
