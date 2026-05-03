@@ -230,7 +230,7 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
       child: Column(
         children: [
           const BottomSheetHandle(),
-          
+
           // Search row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -315,34 +315,34 @@ class _AddToPlaylistSheetState extends ConsumerState<_AddToPlaylistSheet> {
                     ),
                   )
                 : filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          _query.isEmpty
-                              ? 'No playlists yet.\nTap "New playlist" to create one.'
-                              : 'No playlists match "$_query"',
-                          style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : ListView.builder(
-                        key: const Key('add_to_playlist_listview'),
-                        padding: const EdgeInsets.only(bottom: 16),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final playlist = filtered[index];
-                          final isSelected = _selectedIds.contains(playlist.id);
-                          return _PlaylistPickerRow(
-                            key: Key('playlist_item_${playlist.id}'),
-                            playlist: playlist,
-                            isSelected: isSelected,
-                            onTap: () => setState(() {
-                              isSelected
-                                  ? _selectedIds.remove(playlist.id)
-                                  : _selectedIds.add(playlist.id);
-                            }),
-                          );
-                        },
-                      ),
+                ? Center(
+                    child: Text(
+                      _query.isEmpty
+                          ? 'No playlists yet.\nTap "New playlist" to create one.'
+                          : 'No playlists match "$_query"',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    key: const Key('add_to_playlist_listview'),
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final playlist = filtered[index];
+                      final isSelected = _selectedIds.contains(playlist.id);
+                      return _PlaylistPickerRow(
+                        key: Key('playlist_item_${playlist.id}'),
+                        playlist: playlist,
+                        isSelected: isSelected,
+                        onTap: () => setState(() {
+                          isSelected
+                              ? _selectedIds.remove(playlist.id)
+                              : _selectedIds.add(playlist.id);
+                        }),
+                      );
+                    },
+                  ),
           ),
 
           // Fixed Done button
