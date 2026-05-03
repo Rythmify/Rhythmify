@@ -221,15 +221,18 @@ class _LibraryAlbumsScreenState extends ConsumerState<LibraryAlbumsScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    key: _filterIconKey,
-                    icon: Icon(
-                      Icons.tune,
-                      color: _isFiltered
-                          ? AppTheme.primaryBrand
-                          : AppTheme.textSecondary,
+                  KeyedSubtree(
+                    key: const Key('library_albums_filter_button'),
+                    child: IconButton(
+                      key: _filterIconKey,
+                      icon: Icon(
+                        Icons.tune,
+                        color: _isFiltered
+                            ? AppTheme.primaryBrand
+                            : AppTheme.textSecondary,
+                      ),
+                      onPressed: _toggleOverlay,
                     ),
-                    onPressed: _toggleOverlay,
                   ),
                 ],
               ),
@@ -351,16 +354,19 @@ class _AlbumFilterDropdown extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _DropdownItem(
+              key: const Key('library_albums_filter_recently_added'),
               label: 'Recently added',
               checked: sort == _AlbumSort.recentlyAdded,
               onTap: () => onSortChanged(_AlbumSort.recentlyAdded),
             ),
             _DropdownItem(
+              key: const Key('library_albums_filter_first_added'),
               label: 'First added',
               checked: sort == _AlbumSort.firstAdded,
               onTap: () => onSortChanged(_AlbumSort.firstAdded),
             ),
             _DropdownItem(
+              key: const Key('library_albums_filter_album_name'),
               label: 'Album name',
               checked: sort == _AlbumSort.albumName,
               onTap: () => onSortChanged(_AlbumSort.albumName),
@@ -400,6 +406,7 @@ class _AlbumFilterDropdown extends StatelessWidget {
 
 class _DropdownItem extends StatelessWidget {
   const _DropdownItem({
+    super.key,
     required this.label,
     required this.checked,
     required this.onTap,
@@ -463,6 +470,7 @@ class _AlbumTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      key: Key('album_tile_${album.id}_inkwell'),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

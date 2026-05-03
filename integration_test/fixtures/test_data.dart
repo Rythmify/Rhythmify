@@ -33,29 +33,29 @@ class InvalidPassword {
 }
 
 // Valid test user for login
-const String validEmail = 'bassel@rythmify.com';
-const String validPassword = 'Biso1234';
+const String validEmail = 'yoeweida@gmail.com';
+const String validPassword = 'Yomna1234';
 
 // New user for registration
 final TestUser newUser = TestUser(
-  email: 'newuser@rythmify.com',
+  email: 'testingNewUser1@gmail.com',
   password: 'NewUser1234',
-  username: 'newuser',
-  month: 'March',
-  day: '3',
-  year: '2013',
+  username: 'testing_user',
+  month: 'June',
+  day: '30',
+  year: '1999',
   gender: 'Female',
 );
 
 // Existing user 
 final TestUser existingUser = TestUser(
-  email: 'bassel@rythmify.com',
-  password: 'Biso1234',
-  username: 'user-002',
+  email: 'yoeweida@gmail.com',
+  password: 'Yomna1234',
+  username: 'yoeweidalll',
   month: 'March',
-  day: '5',
-  year: '2013',
-  gender: 'Male',
+  day: '3',
+  year: '2006',
+  gender: 'Female',
 );
 
 // User with restricted age (below 13)
@@ -92,6 +92,16 @@ final List<InvalidPassword> invalidPasswords = [
     errorKey: 'ERROR_PASSWORD_NO_NUMBER',
   ),
 ];
+
+// Profile edit test data
+const String profileEditNewName        = 'User Test';
+const String profileEditUserName       = 'yoeweida';
+const String profileEditFirstName      = 'YOMNA';
+const String profileEditLastName       = 'Mahmoud';
+const String profileEditNewCity        = 'Yafa';
+const String profileEditNewCountry     = 'EG';      
+const String profileEditNewCountryName = 'Egypt';   
+const String profileEditNewBio         = 'Integration test bio';
 
 // Scroll test values
 class ScrollValues {

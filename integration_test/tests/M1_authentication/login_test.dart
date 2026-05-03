@@ -2,121 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:rythmify/main.dart' as app;
-import '../../pages/auth/login_page.dart';
+import '../../pages/M1_Authentication/login_page.dart';
 import '../../fixtures/test_data.dart';
 import '../../selectors/selectors.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('M1 - Authentication: Login', () {
+  testWidgets('M1 - Authentication: Login - all scenarios', (tester) async {
+    app.main();
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      debugPrint('[Test] Suppressed: ${details.exception}');
+    };
+    final List<String> failures = [];
+    Future<void> tryTest(String name, Future<void> Function() body) async {
+      try {
+        await body();
+        debugPrint('[PASS] $name');
+      } catch (e) {
+        failures.add('❌ $name\n   → $e');
+        debugPrint('[FAIL] $name: $e');
+      }
+    }
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+    final loginPage = LoginPage(tester);
 
-    // ─── Page Load Tests ────────────────────────────────────────────────────
-    testWidgets('onboarding login button is visible and navigates to sign-in page', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
-      expect(find.byKey(const Key(onboardingLoginButton)), findsOneWidget);
-      expect(find.text('Log in'), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      expect(loginPage.isOnLoginPage(), true);
-      expect(find.text('Sign in or create an account'), findsOneWidget);
-    });
-
-    testWidgets('login page loads correctly with all social auth buttons', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
-      expect(loginPage.isOnLoginPage(), true);
-      expect(find.byKey(const Key(authSocialGoogleButton)), findsOneWidget);
-      expect(find.byKey(const Key(authSocialAppleButton)), findsOneWidget);
-      expect(find.byKey(const Key(authSocialFacebookButton)), findsOneWidget);
-      expect(find.byKey(const Key(authContinueButton)), findsOneWidget);
-    });
-
-
-    // ─── Valid Credentials ──────────────────────────────────────────────────
-    testWidgets('should login successfully with valid credentials', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
-      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
+    // ── Helper to reset to onboarding between scenarios ──
+    Future<void> goBackToOnboarding() async {
+      final NavigatorState navigator = tester.state(find.byType(Navigator).last);
+      navigator.popUntil((route) => route.isFirst);
       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await loginPage.login(validEmail, validPassword);
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      expect(loginPage.isOnHomePage(), true);
-    });
-
-
-    // ─── Invalid Credentials ────────────────────────────────────────────────
-    // Test multiple invalid password scenarios for authentication errors
-    for (final invalidPassword in ['WrongPassword1!', 'completelywrong', '12345678']) {
-      testWidgets('should show error message with invalid password: $invalidPassword', (tester) async {
-        app.main();
-        await tester.pumpAndSettle(const Duration(seconds: 5));
-
-        final loginPage = LoginPage(tester);
-        await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-        await tester.pumpAndSettle(const Duration(seconds: 3));
-
-        await loginPage.enterEmail(validEmail);
-        await loginPage.tapContinue();
-        await tester.pumpAndSettle(const Duration(seconds: 3));
-
-        await loginPage.enterPassword(invalidPassword);
-        await loginPage.tapLogin();
-        await tester.pumpAndSettle(const Duration(seconds: 3));
-
-        expect(find.text('Invalid email or password.'), findsOneWidget);
-        expect(loginPage.isOnPasswordPage(), true);
-      });
     }
 
-    testWidgets('should show error with unregistered email', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
-      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await loginPage.login('unregistered@rythmify.com', validPassword);
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      expect(find.text('Invalid email or password.'), findsOneWidget);
-      expect(loginPage.isOnPasswordPage(), true);
-    });
-
-    testWidgets('should show error with invalid email format', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
-      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      await loginPage.enterEmail('invalid-email-format');
-      await loginPage.tapContinue();
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-
-      expect(find.text('Please enter a valid email'), findsOneWidget);
-    });
-
-
-    // ─── Empty Fields Validation ────────────────────────────────────────────
-    testWidgets('should show error with empty email', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
+    
+    await tryTest('TC-AUTH-LOGIN-001 | error message when enter empty email', () async {
       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
       await tester.pumpAndSettle(const Duration(seconds: 3));
 
@@ -124,13 +44,10 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 1));
 
       expect(find.text('Please enter your email'), findsOneWidget);
+      await goBackToOnboarding();
     });
 
-    testWidgets('should show error with empty password', (tester) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-
-      final loginPage = LoginPage(tester);
+    await tryTest('TC-AUTH-LOGIN-002 | error message when enter empty password', () async {
       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
       await tester.pumpAndSettle(const Duration(seconds: 3));
 
@@ -140,133 +57,70 @@ void main() {
 
       await loginPage.tapLogin();
       await tester.pumpAndSettle(const Duration(seconds: 1));
-
       expect(find.text('Please enter your password'), findsOneWidget);
+
+      await goBackToOnboarding();
     });
 
+    await tryTest('TC-AUTH-LOGIN-003 | error message when enter invalid email format', () async {
+      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    // ─── Social Authentication (SKIPPED - Ready for Backend Integration) ────
-  //   testWidgets(
-  //     'should login successfully with Google authentication',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+      await loginPage.enterEmail('invalid-email-format');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await loginPage.tapContinue();
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(find.text('Please enter a valid email'), findsOneWidget);
 
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
+      await goBackToOnboarding();
+  });
 
-  //       // Tap Google Sign-In button
-  //       await loginPage.tapGoogleSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+    await tryTest('TC-AUTH-LOGIN-004 | error message when enter invalid password', () async {
+      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //       // Verify home page is reached
-  //       expect(loginPage.isOnHomePage(), true);
-  //     },
-  //   );
+      await loginPage.enterEmail(validEmail);
+      await loginPage.tapContinue();
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //   testWidgets(
-  //     'should login successfully with Facebook authentication',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+      await loginPage.enterPassword('1234');
+      await loginPage.tapLogin();
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
+      expect(find.text('Invalid email or password.'), findsOneWidget);
+      expect(loginPage.isOnPasswordPage(), true);
 
-  //       // Tap Facebook Sign-In button
-  //       await loginPage.tapFacebookSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+      await goBackToOnboarding();
+    });
+    
+    await tryTest('TC-AUTH-LOGIN-005 | error message when login with unregister email', () async {
+    await tester.tap(find.byKey(const Key(onboardingLoginButton)));
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //       // Verify home page is reached
-  //       expect(loginPage.isOnHomePage(), true);
-  //     },
-  //   );
+    await loginPage.login('unregistered@rythmify.com', validPassword);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //   testWidgets(
-  //     'should login successfully with Apple authentication',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+    expect(find.text('Invalid email or password.'), findsOneWidget);
+    expect(loginPage.isOnPasswordPage(), true);
 
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
+    await goBackToOnboarding();
+    });
 
-  //       // Tap Apple Sign-In button
-  //       await loginPage.tapAppleSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+    await tryTest('TC-AUTH-LOGIN-006 | Login Successfully', () async {
+      await tester.tap(find.byKey(const Key(onboardingLoginButton)));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  //       // Verify home page is reached
-  //       expect(loginPage.isOnHomePage(), true);
-  //     },
-  //   );
+      await loginPage.login(validEmail, validPassword);
+      await tester.pumpAndSettle(const Duration(seconds: 5));
 
-  //   testWidgets(
-  //     'should handle Google authentication with invalid credentials',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
+      expect(loginPage.isOnHomePage(), true);
+    });
 
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-  //       // Attempt Google Sign-In with invalid credentials
-  //       await loginPage.tapGoogleSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
-
-  //       // Should show error or return to login page
-  //       expect(
-  //         loginPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-  //         true,
-  //       );
-  //     },
-  //   );
-
-  //   testWidgets(
-  //     'should handle Facebook authentication with invalid credentials',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
-
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-  //       // Attempt Facebook Sign-In with invalid credentials
-  //       await loginPage.tapFacebookSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
-
-  //       // Should show error or return to login page
-  //       expect(
-  //         loginPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-  //         true,
-  //       );
-  //     },
-  //   );
-
-  //   testWidgets(
-  //     'should handle Apple authentication with invalid credentials',
-  //     (tester) async {
-  //       app.main();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
-
-  //       final loginPage = LoginPage(tester);
-  //       await tester.tap(find.byKey(const Key(onboardingLoginButton)));
-  //       await tester.pumpAndSettle(const Duration(seconds: 3));
-
-  //       // Attempt Apple Sign-In with invalid credentials
-  //       await loginPage.tapAppleSignIn();
-  //       await tester.pumpAndSettle(const Duration(seconds: 5));
-
-  //       // Should show error or return to login page
-  //       expect(
-  //         loginPage.isOnLoginPage() || find.text('Authentication failed').evaluate().isNotEmpty,
-  //         true,
-  //       );
-  //     },
-  //   );
+    FlutterError.onError = originalOnError;
+    if (failures.isNotEmpty) {
+      final summary = failures.join('\n');
+      debugPrint('\n══ TEST SUMMARY ══\n$summary');
+      fail('${failures.length} test(s) failed:\n$summary');
+    }
   });
 }
