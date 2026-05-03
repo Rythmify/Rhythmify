@@ -110,8 +110,10 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        key: Key('hot_track_card_${widget.track.id}'),
+      child: Opacity(
+        opacity: widget.track.isGeoBlocked ? 0.6 : 1.0,
+        child: Container(
+          key: Key('hot_track_card_${widget.track.id}'),
 
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -188,23 +190,25 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                                 : Icons.play_circle,
                             color: AppTheme.textPrimary,
                           ),
-                          onPressed: () {
-                            if (isThisTrack) {
-                              ref
-                                  .read(playerStateProvider.notifier)
-                                  .togglePlayPause();
-                            } else {
-                              ref
-                                  .read(queueStateProvider.notifier)
-                                  .playQueue(
-                                    tracks: [widget.track],
-                                    initialIndex: 0,
-                                    context: const QueueContext(
-                                      type: QueueSource.unknown,
-                                    ),
-                                  );
-                            }
-                          },
+                          onPressed: widget.track.isGeoBlocked
+                              ? null
+                              : () {
+                                  if (isThisTrack) {
+                                    ref
+                                        .read(playerStateProvider.notifier)
+                                        .togglePlayPause();
+                                  } else {
+                                    ref
+                                        .read(queueStateProvider.notifier)
+                                        .playQueue(
+                                          tracks: [widget.track],
+                                          initialIndex: 0,
+                                          context: const QueueContext(
+                                            type: QueueSource.unknown,
+                                          ),
+                                        );
+                                  }
+                                },
                         ),
                       ],
                     ),
@@ -217,12 +221,18 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
                           size: 18,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          "${formatCount(widget.track.likeCount)} people liked this track",
-                          key: const Key('hot_for_you_like_count_text'),
-                          style: AppTheme.bodyNormal.copyWith(
-                            fontSize: 12,
-                            color: AppTheme.fadedWhite,
+                        Expanded(
+                          child: Text(
+                            widget.track.isGeoBlocked
+                                ? "Not available in your country"
+                                : "${formatCount(widget.track.likeCount)} people liked this track",
+                            key: const Key('hot_for_you_like_count_text'),
+                            style: AppTheme.bodyNormal.copyWith(
+                              fontSize: 12,
+                              color: widget.track.isGeoBlocked
+                                  ? AppTheme.primaryBrand
+                                  : AppTheme.fadedWhite,
+                            ),
                           ),
                         ),
                       ],
@@ -234,7 +244,9 @@ class _HotForYouCardState extends ConsumerState<HotForYouCard>
           ),
         ),
       ),
+    )
     );
+    
   }
 
   Widget buildAlbum() {
