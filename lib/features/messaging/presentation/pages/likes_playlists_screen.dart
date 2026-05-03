@@ -103,8 +103,11 @@ class _LikesPlaylistsScreenState extends ConsumerState<LikesPlaylistsScreen>
                   //Tracks Tab
                   data: (tracks) => ListView.builder(
                     key: const Key('likes_playlists_tracks_list'),
-                    itemCount: tracks.length,
+                    itemCount: tracks.length + 1,
                     itemBuilder: (context, index) {
+                      if (index == tracks.length) {
+                        return const SizedBox(height: 50);
+                      }
                       final track = tracks[index];
                       return SharedEmbedTileWidget(
                         key: Key('likes_playlists_track_${track.embedId}_tile'),
@@ -137,8 +140,11 @@ class _LikesPlaylistsScreenState extends ConsumerState<LikesPlaylistsScreen>
                   //Playlists Tab, Note: this tab has both liked/created playlists/albums
                   data: (embeds) => ListView.builder(
                     key: const Key('likes_playlists_playlists_albums_list'),
-                    itemCount: embeds.length,
+                    itemCount: embeds.length + 1,
                     itemBuilder: (context, index) {
+                      if (index == embeds.length) {
+                        return const SizedBox(height: 50);
+                      }
                       final embed = embeds[index];
                       return SharedEmbedTileWidget(
                         key: Key('likes_playlists_embed_${embed.embedId}_tile'),

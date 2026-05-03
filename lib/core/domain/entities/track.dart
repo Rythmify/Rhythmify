@@ -3,6 +3,7 @@ class Track {
   final String userId;
   final String title;
   final String artist;
+  final String? artistUsername;
   final String? artistPfp;
   final String? artistCity;
   final String? artistCountry;
@@ -35,6 +36,7 @@ class Track {
   final bool isFeatured;
   final bool isPublic;
   final bool isHidden;
+  final bool isGeoBlocked;
   final String? geoRestrictionType;
   final List<String> geoRegions;
   final DateTime createdAt;
@@ -46,6 +48,7 @@ class Track {
     required this.userId,
     required this.title,
     required this.artist,
+    this.artistUsername,
     this.artistPfp,
     this.artistCity,
     this.artistCountry,
@@ -74,6 +77,7 @@ class Track {
     this.isFeatured = false,
     this.isPublic = true,
     this.isHidden = false,
+    this.isGeoBlocked = false,
     this.geoRestrictionType,
     this.geoRegions = const [],
     this.updatedAt,
@@ -88,6 +92,7 @@ class Track {
     String? userId,
     String? title,
     String? artist,
+    String? artistUsername,
     String? artistPfp,
     String? artistCity,
     String? artistCountry,
@@ -115,6 +120,7 @@ class Track {
     bool? isFeatured,
     bool? isPublic,
     bool? isHidden,
+    bool? isGeoBlocked,
     String? geoRestrictionType,
     List<String>? geoRegions,
     DateTime? createdAt,
@@ -126,6 +132,7 @@ class Track {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       artist: artist ?? this.artist,
+      artistUsername: artistUsername ?? this.artistUsername,
       artistPfp: artistPfp ?? this.artistPfp,
       artistCity: artistCity ?? this.artistCity,
       artistCountry: artistCountry ?? this.artistCountry,
@@ -153,6 +160,7 @@ class Track {
       isFeatured: isFeatured ?? this.isFeatured,
       isPublic: isPublic ?? this.isPublic,
       isHidden: isHidden ?? this.isHidden,
+      isGeoBlocked: isGeoBlocked ?? this.isGeoBlocked,
       geoRestrictionType: geoRestrictionType ?? this.geoRestrictionType,
       geoRegions: geoRegions ?? this.geoRegions,
       createdAt: createdAt ?? this.createdAt,

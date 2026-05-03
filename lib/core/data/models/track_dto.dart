@@ -21,6 +21,10 @@ class TrackDto {
           data['artists'] as String? ??
           data['user']?['display_name'] as String? ??
           '',
+      artistUsername:
+          data['username'] as String? ??
+          data['artist_username'] as String? ??
+          data['user']?['username'] as String?,
 
       artistPfp:
           data['profile_picture'] as String? ??
@@ -85,6 +89,7 @@ class TrackDto {
       isFeatured: data['is_featured'] as bool? ?? false,
       isPublic: data['is_public'] as bool? ?? true,
       isHidden: data['is_hidden'] as bool? ?? false,
+      isGeoBlocked: data['is_geo_blocked'] as bool? ?? false,
       geoRestrictionType: data['geo_restriction_type'] as String?,
       geoRegions:
           (data['geo_regions'] as List<dynamic>?)
@@ -101,6 +106,7 @@ class TrackDto {
       'user_id': track.userId,
       'title': track.title,
       'artist': track.artist,
+      'artist_username': track.artistUsername,
       'artist_pfp': track.artistPfp,
       'artist_city': track.artistCity,
       'artist_country': track.artistCountry,
@@ -134,6 +140,7 @@ class TrackDto {
       'is_featured': track.isFeatured,
       'is_public': track.isPublic,
       'is_hidden': track.isHidden,
+      'is_geo_blocked': track.isGeoBlocked,
       'geo_restriction_type': track.geoRestrictionType,
       'geo_regions': track.geoRegions,
       'status': track.status,

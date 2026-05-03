@@ -52,7 +52,15 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(title: const Text('Following'), centerTitle: false),
+      appBar: AppBar(
+        title: const Text('Following'),
+        centerTitle: false,
+        leading: IconButton(
+          key: const Key('following_back_button'),
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: RefreshIndicator(
         color: AppTheme.primaryBrand,
         onRefresh: () =>
@@ -131,7 +139,7 @@ class _FollowingPageState extends ConsumerState<FollowingPage> {
                     ),
                   ),
                 )
-              : const SizedBox.shrink();
+              : const SizedBox(height: 500); // bottom spacing
         }
         return _UserTile(user: state.users[index]);
       },
@@ -155,6 +163,7 @@ class _UserTile extends ConsumerWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        key: const Key('unfollow_dialog'),
         backgroundColor: AppTheme.surface,
         title: const Text('Unfollow?', style: TextStyle(color: Colors.white)),
         content: Text(
@@ -163,10 +172,12 @@ class _UserTile extends ConsumerWidget {
         ),
         actions: [
           TextButton(
+            key: const Key('unfollow_dialog_cancel_button'),
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text('Cancel', style: AppTheme.labelLarge),
           ),
           TextButton(
+            key: const Key('unfollow_dialog_unfollow_button'),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
               'Unfollow',
@@ -214,7 +225,7 @@ class _UserTile extends ConsumerWidget {
         ],
       ),
       subtitle: Text(
-        '${_formatCount(user.followersCount)} followers',
+        '@${user.username}',
         key: Key('following_item_${user.id}_followers_text'),
         style: AppTheme.labelSmall,
       ),
@@ -232,16 +243,5 @@ class _UserTile extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  /// Formats a count integer with K/M suffix abbreviations.
-  ///
-  /// - Values >= 1,000,000 are shown as `X.XM`
-  /// - Values >= 1,000 are shown as `X.XK`
-  /// - Smaller values are shown as-is
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return count.toString();
   }
 }

@@ -36,6 +36,10 @@ class TrackCard extends ConsumerWidget {
   /// Whether to show the bottom stats row (play count, duration, etc.).
   final bool showStats;
 
+  /// Optional widget to display on the right side (e.g. a delete bin).
+  /// If provided, this replaces the default more options icon.
+  final Widget? trailing;
+
   /// Creates a [TrackCard].
   const TrackCard({
     super.key,
@@ -45,6 +49,7 @@ class TrackCard extends ConsumerWidget {
     this.observePlayerState = true,
     this.showOptions = true,
     this.showStats = true,
+    this.trailing,
   });
 
   // --- Formatting Helpers ---
@@ -72,100 +77,116 @@ class TrackCard extends ConsumerWidget {
 
     return InkWell(
       key: Key('track_card_${track.id}_inkwell'),
-      onTap: () {
-        if (onTap != null) {
-          onTap!();
-          return;
-        }
-        if (isThisTrackLoaded) {
-          ref.read(playerStateProvider.notifier).togglePlayPause();
-        } else {
-          ref
-              .read(queueStateProvider.notifier)
-              .playQueue(
-                tracks: [track],
-                initialIndex: 0,
-                context: queueContext,
-              );
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6.0),
-                border: Border.all(color: Colors.grey.shade700, width: 0.5),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(5.5),
-                child: _buildArtwork(track.artworkUrl),
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            // Middle Text Column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Title
-                  Text(
-                    track.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-
-                  // Artist
-                  Text(
-                    track.artist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                  ),
-                  const SizedBox(height: 2),
-
-                  // 3. Bottom Status Row (Dynamic)
-                  if (showStats)
-                    isThisTrackLoaded
-                        ? _buildPlayingState(isPlaying)
-                        : _buildStatsState(track),
-                ],
-              ),
-            ),
-
-            // 4. Trailing More Icon
-            if (showOptions)
-              InkWell(
-                key: Key('track_card_${track.id}_more_inkwell'),
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useRootNavigator: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => TrackOptionsModal(track: track),
-                  );
-                },
-                borderRadius: BorderRadius.circular(8),
-                highlightColor: Colors.white.withValues(alpha: 0.1),
-                splashColor: Colors.white.withValues(alpha: 0.2),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  child: Icon(Icons.more_vert, color: Colors.grey),
+      onTap: track.isGeoBlocked
+          ? null
+          : () {
+              if (onTap != null) {
+                onTap!();
+                return;
+              }
+              if (isThisTrackLoaded) {
+                ref.read(playerStateProvider.notifier).togglePlayPause();
+              } else {
+                ref
+                    .read(queueStateProvider.notifier)
+                    .playQueue(
+                      tracks: [track],
+                      initialIndex: 0,
+                      context: queueContext,
+                    );
+              }
+            },
+      child: Opacity(
+        opacity: track.isGeoBlocked ? 0.5 : 1.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6.0),
+                  border: Border.all(color: Colors.grey.shade700, width: 0.5),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5.5),
+                  child: _buildArtwork(track.artworkUrl),
                 ),
               ),
-          ],
+
+              const SizedBox(width: 10),
+
+              // Middle Text Column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Title
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+
+                    // Artist
+                    Text(
+                      track.artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+
+                    // Geo-blocked message or stats
+                    if (track.isGeoBlocked)
+                      const Text(
+                        'Not available in your country',
+                        style: TextStyle(
+                          color: AppTheme.primaryBrand,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    else if (showStats)
+                      isThisTrackLoaded
+                          ? _buildPlayingState(isPlaying)
+                          : _buildStatsState(track),
+                  ],
+                ),
+              ),
+
+              // 4. Trailing Action
+              if (trailing != null)
+                trailing!
+              else if (showOptions && !track.isGeoBlocked)
+                InkWell(
+                  key: Key('track_card_${track.id}_more_inkwell'),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useRootNavigator: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => TrackOptionsModal(track: track),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    child: Icon(Icons.more_vert, color: Colors.grey),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -80,6 +80,8 @@ class ApiClient {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    options.headers['X-Country-Code'] = 'EG';
+
     final skipAuth = options.extra['skipAuth'] == true;
     if (!skipAuth) {
       final token = await getToken();

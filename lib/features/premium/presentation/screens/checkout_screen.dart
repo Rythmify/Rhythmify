@@ -89,7 +89,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             color: Colors.white,
             size: 18,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/upgrade/plans');
+            }
+          },
         ),
         title: Text(
           'Complete your order',

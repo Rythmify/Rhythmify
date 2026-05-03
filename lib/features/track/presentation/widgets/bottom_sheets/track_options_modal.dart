@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../../core/domain/entities/track.dart';
 import '../../../../../core/presentation/pages/report_page.dart';
@@ -44,27 +44,24 @@ class TrackOptionsModal extends ConsumerWidget {
   });
 
   // --- Share Methods ---
-  Future<void> _launchUrl(String urlString) async {
-    final url = Uri.parse(urlString);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
+
+  String _getAzureShareUrl(Track track) {
+    final username = (track.artistUsername ?? track.artist)
+        .replaceAll(' ', '')
+        .toLowerCase();
+    return 'https://gray-grass-0ab138600.7.azurestaticapps.net/$username/${track.id}';
   }
 
   void _shareToWhatsApp(BuildContext context) {
-    final text =
-        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
-    final urlString = 'whatsapp://send?text=${Uri.encodeComponent(text)}';
-    _launchUrl(urlString);
+    final text = 'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
     Navigator.pop(context);
+    Share.share(text);
   }
 
   void _shareToSMS(BuildContext context) {
-    final text =
-        'Listen Now On Rythmify: https://rythmify.com/tracks/${track.id}';
-    final urlString = 'sms:?body=${Uri.encodeComponent(text)}';
-    _launchUrl(urlString);
+    final text = 'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
     Navigator.pop(context);
+    Share.share(text);
   }
 
   void _copyLink(BuildContext context) {
@@ -213,7 +210,9 @@ class TrackOptionsModal extends ConsumerWidget {
                         label: 'Message',
                         onTap: () {
                           Navigator.pop(context);
-                          context.push('/home/inbox');
+                          final text =
+                              'Listen Now On Rythmify: ${_getAzureShareUrl(track)}';
+                          Share.share(text);
                         },
                       ),
                       _ShareIcon(
@@ -466,8 +465,10 @@ class TrackOptionsModal extends ConsumerWidget {
                       Navigator.pop(context);
                       Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
-                          builder: (context) =>
-                              ReportPage(reportedContentId: syncedTrack.id),
+                          builder: (context) => ReportPage(
+                            reportedContentId: syncedTrack.id,
+                            resourceType: 'track',
+                          ),
                         ),
                       );
                     },

@@ -212,7 +212,8 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
   //added in backend integration phase
   Future<void> startUpload({
-    required WidgetRef ref,
+    WidgetRef? ref,
+    UploadTrackUseCase? useCaseOverride,
     required void Function(String trackId) onSuccess,
     required void Function(String error) onError,
   }) async {
@@ -224,8 +225,14 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
       draft.copyWith(status: UploadStatus.uploading, uploadProgress: 0.0),
     );
 
-    // Get the usecase
-    final useCase = ref.read(uploadUseCaseProvider);
+    // Get the usecase. Production passes WidgetRef; tests can inject the
+    // use case directly because WidgetRef is sealed.
+    final useCase = useCaseOverride ?? ref?.read(uploadUseCaseProvider);
+    if (useCase == null) {
+      _updateDraft(state.draft!.copyWith(status: UploadStatus.error));
+      onError('Upload service unavailable.');
+      return;
+    }
 
     // Call usecase with draft and progress callback
     final result = await useCase(
@@ -257,9 +264,14 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   }
 
   //added in back integration to fix 400 error when ftetching genres
-  Future<void> fetchGenres(WidgetRef ref) async {
+  Future<void> fetchGenres([
+    WidgetRef? ref,
+    UploadTrackRemoteDataSource? dataSourceOverride,
+  ]) async {
     try {
-      final dataSource = ref.read(_uploadDataSourceProvider);
+      final dataSource =
+          dataSourceOverride ?? ref?.read(_uploadDataSourceProvider);
+      if (dataSource == null) return;
       final genres = await dataSource.fetchGenres();
       state = state.copyWith(availableGenres: genres);
       debugPrint('Genres loaded: $genres');
@@ -268,9 +280,14 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
     }
   }
 
-  Future<void> fetchTags(WidgetRef ref) async {
+  Future<void> fetchTags([
+    WidgetRef? ref,
+    UploadTrackRemoteDataSource? dataSourceOverride,
+  ]) async {
     try {
-      final dataSource = ref.read(_uploadDataSourceProvider);
+      final dataSource =
+          dataSourceOverride ?? ref?.read(_uploadDataSourceProvider);
+      if (dataSource == null) return;
       final tags = await dataSource.fetchTags();
       state = state.copyWith(availableTags: tags);
       debugPrint('Tags loaded: $tags');
@@ -305,7 +322,9 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   }
 
   Future<void> handleUpdate({
-    required WidgetRef ref,
+    WidgetRef? ref,
+    Future<void> Function(String trackId, Map<String, dynamic> data)?
+    updateOverride,
     required void Function() onSuccess,
     required void Function(String error) onError,
   }) async {
@@ -314,7 +333,20 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
     state = state.copyWith(isLoading: true);
 
-    final updateTrack = ref.read(updateTrackUseCaseProvider);
+    final updateTrack =
+        updateOverride ??
+        (ref == null
+            ? null
+            : (String trackId, Map<String, dynamic> data) =>
+                  ref.read(updateTrackUseCaseProvider).call(trackId, data));
+    if (updateTrack == null) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Update service unavailable.',
+      );
+      onError('Update service unavailable.');
+      return;
+    }
 
     final Map<String, dynamic> data = {
       "title": draft.title,
@@ -330,7 +362,7 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
     };
 
     try {
-      await updateTrack.call(draft.trackId!, data);
+      await updateTrack(draft.trackId!, data);
       state = state.copyWith(isLoading: false);
       onSuccess();
     } catch (e) {
@@ -340,7 +372,8 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
   }
 
   Future<void> handleDelete({
-    required WidgetRef ref,
+    WidgetRef? ref,
+    Future<void> Function(String trackId)? deleteOverride,
     required void Function() onSuccess,
     required void Function(String error) onError,
   }) async {
@@ -349,10 +382,23 @@ class UploadFormNotifier extends Notifier<UploadFormState> {
 
     state = state.copyWith(isLoading: true);
 
-    final deleteTrack = ref.read(deleteTrackUseCaseProvider);
+    final deleteTrack =
+        deleteOverride ??
+        (ref == null
+            ? null
+            : (String trackId) =>
+                  ref.read(deleteTrackUseCaseProvider).call(trackId));
+    if (deleteTrack == null) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Delete service unavailable.',
+      );
+      onError('Delete service unavailable.');
+      return;
+    }
 
     try {
-      await deleteTrack.call(draft.trackId!);
+      await deleteTrack(draft.trackId!);
       state = state.copyWith(isLoading: false);
       onSuccess();
     } catch (e) {

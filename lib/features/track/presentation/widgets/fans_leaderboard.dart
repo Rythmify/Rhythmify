@@ -136,14 +136,11 @@ class FansLeaderboard extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(vertical: 40.0),
                   child: CircularProgressIndicator(),
                 ),
-                error: (err, stack) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 40.0,
-                    horizontal: 24,
-                  ),
+                error: (err, stack) => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40.0, horizontal: 24),
                   child: Text(
-                    "Error loading leaderboard: $err",
-                    style: const TextStyle(color: Colors.red),
+                    "Leaderboard is currently unavailable. Please check back later.",
+                    style: TextStyle(color: AppTheme.textSecondary),
                     textAlign: TextAlign.center,
                   ),
                 ),

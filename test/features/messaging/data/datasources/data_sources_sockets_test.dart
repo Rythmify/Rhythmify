@@ -88,19 +88,6 @@ void main() {
 
   /// Waits until [condition] is true, polling every [interval].
   /// Fails (throws) after [timeout] if condition is never met.
-  Future<void> waitFor(
-    bool Function() condition, {
-    Duration timeout = const Duration(seconds: 5),
-    Duration interval = const Duration(milliseconds: 20),
-  }) async {
-    final deadline = DateTime.now().add(timeout);
-    while (!condition()) {
-      if (DateTime.now().isAfter(deadline)) {
-        throw TimeoutException('waitFor condition not met within $timeout');
-      }
-      await Future.delayed(interval);
-    }
-  }
 
   // ── without connect ────────────────────────────────────────────────────────
 

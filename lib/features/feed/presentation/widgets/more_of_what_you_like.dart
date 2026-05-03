@@ -112,18 +112,48 @@ class PlaylistSquareCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(1),
                 border: Border.all(color: const Color(0xFF6C7C71), width: 0.5),
-                image: imagePath.isNotEmpty
-                    ? DecorationImage(
-                        image: imagePath.startsWith('http')
-                            ? NetworkImage(imagePath) as ImageProvider
-                            : AssetImage(imagePath),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                color: Colors.grey[800], // fallback background always present
               ),
-              child: imagePath.isEmpty
-                  ? const Center(child: Icon(Icons.playlist_play))
-                  : null,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(1),
+                child: imagePath.isEmpty
+                    ? const Center(
+                        child: Icon(
+                          Icons.music_note,
+                          color: Colors.white54,
+                          size: 32,
+                        ),
+                      )
+                    : imagePath.startsWith('http')
+                    ? Image.network(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 140,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(
+                                Icons.music_note,
+                                color: Colors.white54,
+                                size: 32,
+                              ),
+                            ),
+                      )
+                    : Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 140,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(
+                                Icons.music_note,
+                                color: Colors.white54,
+                                size: 32,
+                              ),
+                            ),
+                      ),
+              ),
             ),
             const SizedBox(height: 8),
             Text(

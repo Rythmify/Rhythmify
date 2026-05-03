@@ -264,6 +264,16 @@ class IntroducingWidget extends StatelessWidget {
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[800],
+                      child: const Icon(
+                        Icons.music_note,
+                        color: Colors.white54,
+                        size: 22,
+                      ),
+                    ),
                   )
                 : Image.asset(
                     playlist.coverImage.isNotEmpty
@@ -272,6 +282,16 @@ class IntroducingWidget extends StatelessWidget {
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[800],
+                      child: const Icon(
+                        Icons.music_note,
+                        color: Colors.white54,
+                        size: 22,
+                      ),
+                    ),
                   ),
           ),
           const SizedBox(width: 12),

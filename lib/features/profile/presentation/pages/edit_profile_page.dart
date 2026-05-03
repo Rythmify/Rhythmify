@@ -306,6 +306,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => ListView(
+        key: const Key('edit_profile_country_list_view'),
         children: _countries.entries
             .map(
               (entry) => ListTile(
@@ -472,6 +473,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   ),
                 )
               : SingleChildScrollView(
+                  key: const Key('edit_profile_scroll_view'),
                   padding: const EdgeInsets.only(bottom: 174),
                   child: Column(
                     children: [

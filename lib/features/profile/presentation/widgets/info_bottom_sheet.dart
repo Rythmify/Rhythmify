@@ -114,11 +114,6 @@ class InfoBottomSheet extends StatelessWidget {
                 key: const Key('profile_info_following_stat'),
               ),
               const SizedBox(width: 24),
-              _statItem(
-                '${profile.tracksCount}',
-                'Tracks',
-                key: const Key('profile_info_tracks_stat'),
-              ),
             ],
           ),
 

@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 
 import '../../theme/app_theme.dart';
 import '../../data/models/report_request.dart';
 import '../../data/models/report_repository.dart';
+import '../../network/api_client.dart';
 
 class ReportPage extends StatefulWidget {
   final String reportedContentId;
+  final String resourceType;
 
-  const ReportPage({super.key, required this.reportedContentId});
+  const ReportPage({
+    super.key,
+    required this.reportedContentId,
+    this.resourceType = 'track',
+  });
 
   @override
   State<ReportPage> createState() => _ReportPageState();
@@ -23,26 +28,26 @@ class _ReportPageState extends State<ReportPage> {
 
   final _detailsController = TextEditingController();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController(
-    text: 'basseialaa33@gmail.com',
-  );
+  final _emailController = TextEditingController(text: '');
   final _urlController = TextEditingController();
+  final _resourceTypeController = TextEditingController();
+  final _resourceIdController = TextEditingController();
 
   late final ReportRepository _repository;
 
   final List<String> _reasons = [
-    "It's hate speech",
-    "It's harassing or abusive content",
-    "It contains sexual content or nudity",
-    "It contains graphic violence",
-    "It promotes self-harm",
-    "It's infringement of intellectual property",
-    "It's spam or misleading content",
-    "It's private or confidential information",
-    "It's selling illegal goods",
-    "Something else",
-    "I just don't like it",
+    "Copyright",
+    "Inappropriate content",
+    "Spam",
+    "Impersonation",
   ];
+
+  final Map<String, String> _reasonMapping = {
+    "Copyright": "copyright",
+    "Inappropriate content": "inappropriate",
+    "Spam": "spam",
+    "Impersonation": "impersonation",
+  };
 
   final Map<String, bool> _violations = {
     'Audio': false,
@@ -57,11 +62,19 @@ class _ReportPageState extends State<ReportPage> {
   void initState() {
     super.initState();
 
-    _repository = ReportRepository(Dio());
+    _repository = ReportRepository(apiClient.dio);
 
-    // ✅ Auto-generate URL
-    _urlController.text =
-        'https://rythmify.com/tracks/${widget.reportedContentId}';
+    _resourceIdController.text = widget.reportedContentId;
+    _resourceTypeController.text = widget.resourceType;
+
+    // Adjust URL generation based on type
+    if (widget.resourceType == 'track') {
+      _urlController.text =
+          'https://rythmify.com/tracks/${widget.reportedContentId}';
+    } else if (widget.resourceType == 'user') {
+      _urlController.text =
+          'https://rythmify.com/profile/${widget.reportedContentId}';
+    }
   }
 
   @override
@@ -70,6 +83,8 @@ class _ReportPageState extends State<ReportPage> {
     _nameController.dispose();
     _emailController.dispose();
     _urlController.dispose();
+    _resourceIdController.dispose();
+    _resourceTypeController.dispose();
     super.dispose();
   }
 
@@ -80,19 +95,13 @@ class _ReportPageState extends State<ReportPage> {
       return;
     }
 
-    final selectedViolations = _violations.entries
-        .where((e) => e.value)
-        .map((e) => e.key)
-        .toList();
+    final reasonSlug = _reasonMapping[_selectedReason!] ?? 'inappropriate';
 
     final request = ReportRequest(
-      contentId: widget.reportedContentId,
-      reason: _selectedReason!,
-      details: _detailsController.text,
-      name: _nameController.text,
-      email: _emailController.text,
-      url: _urlController.text,
-      violations: selectedViolations,
+      resourceId: widget.reportedContentId,
+      resourceType: widget.resourceType,
+      reason: reasonSlug,
+      description: _detailsController.text,
     );
 
     setState(() => _isLoading = true);
@@ -121,6 +130,12 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine which reasons to show based on resource type
+    final filteredReasons = _reasons.where((r) {
+      if (widget.resourceType == 'user' && r == 'Copyright') return false;
+      return true;
+    }).toList();
+
     final bool isFormValid =
         _selectedReason != null && _isConsentChecked && !_isLoading;
 
@@ -144,6 +159,40 @@ class _ReportPageState extends State<ReportPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// RESOURCE PREVIEW
+              Text(
+                'Report Details',
+                style: AppTheme.titleMedium.copyWith(color: AppTheme.babyBlue),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _resourceTypeController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Resource Type',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white10,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _resourceIdController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Resource ID',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white10,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
               /// TITLE
               Text(
                 'Reason for Reporting',
@@ -152,9 +201,8 @@ class _ReportPageState extends State<ReportPage> {
 
               const SizedBox(height: 12),
 
-              /// ✅ FIXED RADIO LIST (NO NEGATIVE SPACING)
               Column(
-                children: _reasons.map((reason) {
+                children: filteredReasons.map((reason) {
                   return RadioListTile<String>(
                     title: Text(reason, style: AppTheme.bodyNormal),
                     value: reason,
@@ -165,7 +213,7 @@ class _ReportPageState extends State<ReportPage> {
                       setState(() => _selectedReason = value);
                     },
                     contentPadding: EdgeInsets.zero,
-                    dense: true, // ✅ cleaner spacing
+                    dense: true,
                     activeColor: AppTheme.primaryBrand,
                   );
                 }).toList(),

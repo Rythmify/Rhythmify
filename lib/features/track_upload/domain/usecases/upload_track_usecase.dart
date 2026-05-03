@@ -28,8 +28,16 @@ import 'package:rythmify/features/track_upload/domain/repositories/upload_track_
 
 class UploadTrackUseCase {
   final UploadTrackRepository repository;
+  final File Function(String path) fileFactory;
+  final bool Function(File file) fileExists;
 
-  const UploadTrackUseCase(this.repository);
+  const UploadTrackUseCase(
+    this.repository, {
+    this.fileFactory = File.new,
+    bool Function(File file)? fileExists,
+  }) : fileExists = fileExists ?? _defaultFileExists;
+
+  static bool _defaultFileExists(File file) => file.existsSync();
 
   Future<Either<Failure, String>> call({
     required TrackDraft draft,
@@ -47,7 +55,7 @@ class UploadTrackUseCase {
 
     // Double-check audio file still exists on device
     //commented for teting will uncomment later
-    if (!audioFile.existsSync()) {
+    if (!fileExists(audioFile)) {
       return const Left(
         FileFailure('Audio file no longer exists on your device.'),
       );
