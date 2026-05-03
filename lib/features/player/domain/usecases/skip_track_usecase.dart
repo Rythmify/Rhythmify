@@ -19,3 +19,13 @@ class SkipToPreviousUseCase {
     return await repository.skipToPrevious();
   }
 }
+
+/// Intent: Jumps to a specific index in the current native queue.
+class SkipToIndexUseCase {
+  final AudioRepository repository;
+  SkipToIndexUseCase(this.repository);
+
+  Future<void> call(int index) async {
+    return await repository.skipToIndex(index);
+  }
+}
