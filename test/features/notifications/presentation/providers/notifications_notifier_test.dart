@@ -240,7 +240,7 @@ void main() {
           final s = notifier.state;
           expect(s.isLoading, false);
           expect(s.items, [tFollowNotif, tLikeNotif]);
-          expect(s.unreadCount, 1);
+          expect(s.unreadCount, 0);
           expect(s.hasNext, true);
           expect(s.currentPage, 1);
           expect(s.error, isNull);
@@ -606,14 +606,16 @@ void main() {
     group('onSocketNotificationCreated', () {
       test('increments unreadCount immediately', () {
         expect(notifier.state.unreadCount, 0);
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _emptyPage());
 
-        notifier.onSocketNotificationCreated({});
+        notifier.onSocketNotificationCreated({
+          'notification': {
+            'id': 'socket-n1',
+            'type': 'follow',
+            'actor': {'id': 'u1', 'display_name': 'Alice'},
+            'is_read': false,
+            'created_at': '2024-01-15T10:30:00.000Z',
+          },
+        });
 
         expect(notifier.state.unreadCount, 1);
       });
@@ -720,14 +722,25 @@ void main() {
     // -----------------------------------------------------------------------
 
     group('onSocketNotificationRead', () {
-      test('decrements unreadCount when count is greater than 0', () async {
-        when(
-          () => mockGetNotifications(
-            page: any(named: 'page'),
-            type: any(named: 'type'),
-          ),
-        ).thenAnswer((_) async => _page([], unread: 2));
-        await notifier.fetch();
+      test('decrements unreadCount when count is greater than 0', () {
+        notifier.onSocketNotificationCreated({
+          'notification': {
+            'id': 'socket-r1',
+            'type': 'follow',
+            'actor': {'id': 'u1', 'display_name': 'Alice'},
+            'is_read': false,
+            'created_at': '2024-01-15T10:30:00.000Z',
+          },
+        });
+        notifier.onSocketNotificationCreated({
+          'notification': {
+            'id': 'socket-r2',
+            'type': 'follow',
+            'actor': {'id': 'u2', 'display_name': 'Bob'},
+            'is_read': false,
+            'created_at': '2024-01-15T10:30:00.000Z',
+          },
+        });
         expect(notifier.state.unreadCount, 2);
 
         notifier.onSocketNotificationRead();
@@ -750,20 +763,25 @@ void main() {
   // =========================================================================
 
   group('unreadNotificationsCountProvider', () {
-    test('exposes unreadCount from notificationsProvider state', () async {
-      when(
-        () => mockGetNotifications(
-          page: any(named: 'page'),
-          type: any(named: 'type'),
-        ),
-      ).thenAnswer((_) async => _page([], unread: 7));
-
+    test('exposes unreadCount from notificationsProvider state', () {
       final container = ProviderContainer(
         overrides: [notificationsProvider.overrideWith((_) => notifier)],
       );
       addTearDown(container.dispose);
 
-      await container.read(notificationsProvider.notifier).fetch();
+      for (var i = 0; i < 7; i++) {
+        container
+            .read(notificationsProvider.notifier)
+            .onSocketNotificationCreated({
+              'notification': {
+                'id': 'socket-n$i',
+                'type': 'follow',
+                'actor': {'id': 'u$i', 'display_name': 'User $i'},
+                'is_read': false,
+                'created_at': '2024-01-15T10:30:00.000Z',
+              },
+            });
+      }
 
       expect(container.read(unreadNotificationsCountProvider), 7);
     });
