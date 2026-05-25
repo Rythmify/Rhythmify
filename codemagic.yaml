@@ -11,40 +11,32 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Disable code signing
+      - name: Build with xcodebuild
         script: |
+          flutter pub get
           cd ios
-          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' Runner.xcodeproj/project.pbxproj
-
-      - name: Build IPA (no codesign)
-        script: |
-          flutter build ios --debug --no-codesign --verbose
+          pod install
+          cd ..
           
-          echo "=== ALL Runner.app found ==="
-          find . -name "Runner.app" -type d 2>/dev/null
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/ios/derived \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            build
           
-          echo "=== Contents of build/ios ==="
-          ls -la build/ios/ 2>/dev/null || echo "No build/ios"
-          ls -la build/ios/iphoneos/ 2>/dev/null || echo "No iphoneos folder"
-          
-          APP_PATH="build/ios/iphoneos/Runner.app"
-          
-          echo "=== Info.plist check ==="
-          ls "$APP_PATH/Info.plist" || echo "Info.plist NOT FOUND"
-          ls "$APP_PATH/" || echo "Runner.app is empty or missing"
+          APP_PATH=$(find build/ios/derived -name "Runner.app" -type d | head -1)
+          echo "App found at: $APP_PATH"
           
           rm -rf Payload
           mkdir Payload
           cp -r "$APP_PATH" Payload/Runner.app
-          
-          echo "=== Final Payload check ==="
-          ls Payload/Runner.app/Info.plist
-          
           zip -qr Rythmify.ipa Payload
-          
-          echo "=== IPA created ==="
           ls -lh Rythmify.ipa
 
     artifacts:
