@@ -20,25 +20,31 @@ workflows:
 
       - name: Build IPA (no codesign)
         script: |
-          flutter build ios --debug --no-codesign
+          flutter build ios --debug --no-codesign --verbose
           
-          # Find Runner.app
-          APP_PATH=$(find build -name "Runner.app" -type d | head -1)
-          echo "Found app at: $APP_PATH"
-          echo "Contents of Runner.app:"
-          ls "$APP_PATH"
+          echo "=== ALL Runner.app found ==="
+          find . -name "Runner.app" -type d 2>/dev/null
           
-          # Package correctly
+          echo "=== Contents of build/ios ==="
+          ls -la build/ios/ 2>/dev/null || echo "No build/ios"
+          ls -la build/ios/iphoneos/ 2>/dev/null || echo "No iphoneos folder"
+          
+          APP_PATH="build/ios/iphoneos/Runner.app"
+          
+          echo "=== Info.plist check ==="
+          ls "$APP_PATH/Info.plist" || echo "Info.plist NOT FOUND"
+          ls "$APP_PATH/" || echo "Runner.app is empty or missing"
+          
           rm -rf Payload
           mkdir Payload
           cp -r "$APP_PATH" Payload/Runner.app
           
-          # Verify Info.plist exists before zipping
-          echo "Checking Info.plist:"
+          echo "=== Final Payload check ==="
           ls Payload/Runner.app/Info.plist
           
           zip -qr Rythmify.ipa Payload
-          echo "IPA created, size:"
+          
+          echo "=== IPA created ==="
           ls -lh Rythmify.ipa
 
     artifacts:
