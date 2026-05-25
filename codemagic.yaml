@@ -31,12 +31,26 @@ workflows:
             build
           
           APP_PATH=$(find build/ios/derived -name "Runner.app" -type d | head -1)
-          echo "App found at: $APP_PATH"
+          echo "=== App found at: $APP_PATH ==="
+          echo "=== Runner.app contents ==="
+          ls -la "$APP_PATH"
           
           rm -rf Payload
           mkdir Payload
           cp -r "$APP_PATH" Payload/Runner.app
+          
+          echo "=== Payload contents ==="
+          ls -la Payload/
+          ls -la Payload/Runner.app/
+          
+          echo "=== Info.plist check ==="
+          ls Payload/Runner.app/Info.plist && echo "INFO.PLIST EXISTS ✅" || echo "INFO.PLIST MISSING ❌"
+          
           zip -qr Rythmify.ipa Payload
+          
+          echo "=== IPA contents ==="
+          unzip -l Rythmify.ipa | head -30
+          
           ls -lh Rythmify.ipa
 
     artifacts:
